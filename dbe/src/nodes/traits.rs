@@ -7,6 +7,10 @@ use smallvec::{Array, SmallVec};
 
 pub trait EValueTypeAdapter {
     fn value_type() -> MyDataType;
+
+    fn input_kind() -> InputParamKind {
+        InputParamKind::ConnectionOrConstant
+    }
 }
 
 pub trait IntoNodeInputPort {
@@ -39,8 +43,8 @@ impl<T: EValueTypeAdapter> IntoNodeInputPort for T {
             name,
             T::value_type(),
             T::value_type().default_value(),
-            InputParamKind::ConnectionOrConstant,
-            true,
+            T::input_kind(),
+            !matches![T::input_kind(), InputParamKind::ConnectionOnly],
         );
     }
 }
@@ -68,9 +72,9 @@ impl<T: EValueTypeAdapter> IntoNodeInputPort for Vec<T> {
             name,
             T::value_type(),
             T::value_type().default_value(),
-            InputParamKind::ConnectionOrConstant,
+            T::input_kind(),
             None,
-            true,
+            !matches![T::input_kind(), InputParamKind::ConnectionOnly],
         );
     }
 }
@@ -86,9 +90,9 @@ impl<T: EValueTypeAdapter, A: Array<Item = T>> IntoNodeInputPort for SmallVec<A>
             name,
             T::value_type(),
             T::value_type().default_value(),
-            InputParamKind::ConnectionOrConstant,
+            T::input_kind(),
             None,
-            true,
+            !matches![T::input_kind(), InputParamKind::ConnectionOnly],
         );
     }
 }

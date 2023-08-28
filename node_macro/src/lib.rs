@@ -190,6 +190,10 @@ fn process(attr: TokenStream, data: ItemFn) -> Result<TokenStream, Error> {
                 fn categories(&self) -> Vec<&'static str> {
                     vec![#(#categories,)*]
                 }
+
+                fn has_side_effects(&self) -> bool {
+                    return #uses_commands;
+                }
             }
         }
     };

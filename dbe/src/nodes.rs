@@ -26,9 +26,9 @@ pub trait EditorNode {
         node_id: NodeId,
     );
 
-    fn categories(&self) -> Vec<&'static str> {
-        vec![]
-    }
+    fn categories(&self) -> Vec<&'static str>;
+
+    fn has_side_effects(&self) -> bool;
 
     fn evaluate(
         &self,
@@ -45,6 +45,7 @@ pub trait EditorNode {
 #[derive(Debug, Clone, Copy, serde::Serialize, serde::Deserialize, AsRefStr, EnumIter)]
 #[enum_dispatch(EditorNode)]
 pub enum NodeType {
+    // Scalar
     Scalar(ScalarMake),
     ScalarAdd(ScalarAdd),
     ScalarSub(ScalarSub),
@@ -52,6 +53,7 @@ pub enum NodeType {
     ScalarDiv(ScalarDiv),
     ScalarPrint(ScalarPrint),
 
+    // Vec2
     Vec2(Vec2Make),
     Vec2Add(Vec2Add),
     Vec2Sub(Vec2Sub),

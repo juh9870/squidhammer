@@ -5,6 +5,7 @@ use crate::value::etype::MyDataType;
 use crate::value::EValue;
 use eframe::egui::{self, TextStyle};
 use egui_node_graph::*;
+use nodes::EditorNode;
 use rust_i18n::i18n;
 use serde_derive::{Deserialize, Serialize};
 use strum::IntoEnumIterator;
@@ -69,35 +70,7 @@ impl NodeDataTrait for MyNodeData {
     where
         MyResponse: UserResponseTrait,
     {
-        // This logic is entirely up to the user. In this case, we check if the
-        // current node we're drawing is the active one, by comparing against
-        // the value stored in the global user state, and draw different button
-        // UIs based on that.
-
-        let mut responses = vec![];
-        let is_active = user_state
-            .active_node
-            .map(|id| id == node_id)
-            .unwrap_or(false);
-
-        // Pressing the button will emit a custom user response to either set,
-        // or clear the active node. These responses do nothing by themselves,
-        // the library only makes the responses available to you after the graph
-        // has been drawn. See below at the update method for an example.
-        if !is_active {
-            if ui.button("👁 Set active").clicked() {
-                responses.push(NodeResponse::User(MyResponse::SetActiveNode(node_id)));
-            }
-        } else {
-            let button =
-                egui::Button::new(egui::RichText::new("👁 Active").color(egui::Color32::BLACK))
-                    .fill(egui::Color32::GOLD);
-            if ui.add(button).clicked() {
-                responses.push(NodeResponse::User(MyResponse::ClearActiveNode));
-            }
-        }
-
-        responses
+        vec![]
     }
 }
 
@@ -128,6 +101,27 @@ impl NodeGraphExample {
             user_state: MyGraphState::default(),
         }
     }
+}
+
+fn evaluate_graph(graph: &EditorGraph) -> anyhow::Result<String> {
+    let mut cache = Default::default();
+    let mut commands = vec![];
+
+    for (id, node) in &graph.nodes {
+        if node.user_data.template.has_side_effects() {
+            evaluate_node(graph, &mut cache, &mut commands, id)?
+        }
+    }
+    let mut texts = vec![];
+    for cmd in commands {
+        match cmd {
+            Command::Println(line) => {
+                texts.push(line);
+            }
+        }
+    }
+
+    Ok(texts.join("\n"))
 }
 
 impl eframe::App for NodeGraphExample {
@@ -161,38 +155,18 @@ impl eframe::App for NodeGraphExample {
             }
         }
 
-        if let Some(node) = self.user_state.active_node {
-            if self.state.graph.nodes.contains_key(node) {
-                let mut cache = Default::default();
-                let mut commands = vec![];
-                let mut text =
-                    match evaluate_node(&self.state.graph, &mut cache, &mut commands, node) {
-                        Ok(_) => "".to_string(),
-                        Err(err) => format!("Execution error: {}", err),
-                    };
+        let text = match evaluate_graph(&self.state.graph) {
+            Ok(text) => text,
+            Err(err) => format!("Execution error: {err}"),
+        };
 
-                for cmd in commands {
-                    match cmd {
-                        Command::Println(line) => {
-                            if text.len() > 0 {
-                                text += "\n";
-                            }
-                            text += &line
-                        }
-                    }
-                }
-
-                ctx.debug_painter().text(
-                    egui::pos2(10.0, 35.0),
-                    egui::Align2::LEFT_TOP,
-                    text,
-                    TextStyle::Button.resolve(&ctx.style()),
-                    egui::Color32::WHITE,
-                );
-            } else {
-                self.user_state.active_node = None;
-            }
-        }
+        ctx.debug_painter().text(
+            egui::pos2(10.0, 35.0),
+            egui::Align2::LEFT_TOP,
+            text,
+            TextStyle::Button.resolve(&ctx.style()),
+            egui::Color32::WHITE,
+        );
     }
     /// If the persistence function is enabled,
     /// Called by the frame work to save state before shutdown.
