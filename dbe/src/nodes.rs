@@ -1,19 +1,23 @@
 use crate::commands::Command;
 use crate::evaluator::OutputsCache;
+use crate::graph::MyGraphState;
+use crate::nodes::data::MyNodeData;
 use crate::nodes::scalar::{ScalarAdd, ScalarDiv, ScalarMake, ScalarMult, ScalarPrint, ScalarSub};
 use crate::nodes::traits::{IntoNodeInputPort, IntoNodeOutputPort};
 use crate::nodes::vector::{Vec2Add, Vec2Make, Vec2Print, Vec2Scale, Vec2Sub};
 use crate::value::etype::MyDataType;
 use crate::value::EValue;
-use crate::{EditorGraph, MyGraphState};
-use egui_node_graph::{Graph, NodeId, NodeTemplateTrait};
+use crate::EditorGraph;
+use egui_node_graph::{Graph, NodeId, NodeTemplateIter, NodeTemplateTrait};
 use enum_dispatch::enum_dispatch;
 use rust_i18n::t;
 use std::borrow::Cow;
+use strum::IntoEnumIterator;
 use strum_macros::{AsRefStr, EnumIter};
 
 pub mod traits;
 
+pub mod data;
 pub mod scalar;
 pub mod vector;
 
@@ -67,14 +71,6 @@ impl NodeType {
     }
 }
 
-/// The NodeData holds a custom data struct inside each node. It's useful to
-/// store additional information that doesn't live in parameters. For this
-/// example, the node data stores the template (i.e. the "type") of the node.
-#[derive(Debug, serde::Serialize, serde::Deserialize)]
-pub struct MyNodeData {
-    pub template: NodeType,
-}
-
 // A trait for the node kinds, which tells the library how to build new nodes
 // from the templates in the node finder
 impl NodeTemplateTrait for NodeType {
@@ -112,6 +108,16 @@ impl NodeTemplateTrait for NodeType {
         self.create_ports(graph, user_state, node_id);
     }
 }
+
+pub struct AllMyNodeTemplates;
+impl NodeTemplateIter for AllMyNodeTemplates {
+    type Item = NodeType;
+
+    fn all_kinds(&self) -> Vec<Self::Item> {
+        NodeType::iter().collect()
+    }
+}
+
 pub fn create_input_port<T: IntoNodeInputPort>(
     graph: &mut Graph<MyNodeData, MyDataType, EValue>,
     user_state: &mut MyGraphState,

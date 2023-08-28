@@ -1,17 +1,12 @@
-use crate::commands::Command;
-use crate::evaluator::evaluate_node;
-use crate::nodes::{MyNodeData, NodeType};
-use crate::value::etype::MyDataType;
-use crate::value::EValue;
+use crate::graph::{evaluate_graph, EditorGraph, MyEditorState, MyGraphState};
+use crate::nodes::AllMyNodeTemplates;
 use eframe::egui::{self, TextStyle};
-use egui_node_graph::*;
-use nodes::EditorNode;
 use rust_i18n::i18n;
 use serde_derive::{Deserialize, Serialize};
-use strum::IntoEnumIterator;
 
 mod commands;
 mod evaluator;
+mod graph;
 mod nodes;
 mod value;
 
@@ -19,63 +14,7 @@ i18n!();
 
 // ========= First, define your user data types =============
 
-/// The response type is used to encode side-effects produced when drawing a
-/// node in the graph. Most side-effects (creating new nodes, deleting existing
-/// nodes, handling connections...) are already handled by the library, but this
-/// mechanism allows creating additional side effects from user code.
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub enum MyResponse {
-    SetActiveNode(NodeId),
-    ClearActiveNode,
-}
-
-/// The graph 'global' state. This state struct is passed around to the node and
-/// parameter drawing callbacks. The contents of this struct are entirely up to
-/// the user. For this example, we use it to keep track of the 'active' node.
-#[derive(Default, serde::Serialize, serde::Deserialize)]
-pub struct MyGraphState {
-    pub active_node: Option<NodeId>,
-}
-
 // =========== Then, you need to implement some traits ============
-
-pub struct AllMyNodeTemplates;
-impl NodeTemplateIter for AllMyNodeTemplates {
-    type Item = NodeType;
-
-    fn all_kinds(&self) -> Vec<Self::Item> {
-        NodeType::iter().collect()
-    }
-}
-
-impl UserResponseTrait for MyResponse {}
-impl NodeDataTrait for MyNodeData {
-    type Response = MyResponse;
-    type UserState = MyGraphState;
-    type DataType = MyDataType;
-    type ValueType = EValue;
-
-    // This method will be called when drawing each node. This allows adding
-    // extra ui elements inside the nodes. In this case, we create an "active"
-    // button which introduces the concept of having an active node in the
-    // graph. This is done entirely from user code with no modifications to the
-    // node graph library.
-    fn bottom_ui(
-        &self,
-        ui: &mut egui::Ui,
-        node_id: NodeId,
-        _graph: &Graph<MyNodeData, MyDataType, EValue>,
-        user_state: &mut Self::UserState,
-    ) -> Vec<NodeResponse<MyResponse, MyNodeData>>
-    where
-        MyResponse: UserResponseTrait,
-    {
-        vec![]
-    }
-}
-
-type EditorGraph = Graph<MyNodeData, MyDataType, EValue>;
-type MyEditorState = GraphEditorState<MyNodeData, MyDataType, EValue, NodeType, MyGraphState>;
 
 #[derive(Default, Serialize, Deserialize)]
 pub struct NodeGraphExample {
@@ -103,27 +42,6 @@ impl NodeGraphExample {
     }
 }
 
-fn evaluate_graph(graph: &EditorGraph) -> anyhow::Result<String> {
-    let mut cache = Default::default();
-    let mut commands = vec![];
-
-    for (id, node) in &graph.nodes {
-        if node.user_data.template.has_side_effects() {
-            evaluate_node(graph, &mut cache, &mut commands, id)?
-        }
-    }
-    let mut texts = vec![];
-    for cmd in commands {
-        match cmd {
-            Command::Println(line) => {
-                texts.push(line);
-            }
-        }
-    }
-
-    Ok(texts.join("\n"))
-}
-
 impl eframe::App for NodeGraphExample {
     /// Called each time the UI needs repainting, which may be many times per second.
     /// Put your widgets into a `SidePanel`, `TopPanel`, `CentralPanel`, `Window` or `Area`.
@@ -147,12 +65,12 @@ impl eframe::App for NodeGraphExample {
             // Here, we ignore all other graph events. But you may find
             // some use for them. For example, by playing a sound when a new
             // connection is created
-            if let NodeResponse::User(user_event) = node_response {
-                match user_event {
-                    MyResponse::SetActiveNode(node) => self.user_state.active_node = Some(node),
-                    MyResponse::ClearActiveNode => self.user_state.active_node = None,
-                }
-            }
+            // if let NodeResponse::User(user_event) = node_response {
+            //     match user_event {
+            //         MyResponse::SetActiveNode(node) => self.user_state.active_node = Some(node),
+            //         MyResponse::ClearActiveNode => self.user_state.active_node = None,
+            //     }
+            // }
         }
 
         let text = match evaluate_graph(&self.state.graph) {
@@ -168,6 +86,7 @@ impl eframe::App for NodeGraphExample {
             egui::Color32::WHITE,
         );
     }
+
     /// If the persistence function is enabled,
     /// Called by the frame work to save state before shutdown.
     fn save(&mut self, storage: &mut dyn eframe::Storage) {

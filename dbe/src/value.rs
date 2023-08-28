@@ -1,6 +1,7 @@
-use crate::nodes::MyNodeData;
+use crate::graph::MyResponse;
+use crate::nodes::data::MyNodeData;
 use crate::value::draw::{draw_f32, draw_vec2f32};
-use crate::{MyGraphState, MyResponse};
+use crate::MyGraphState;
 use egui_node_graph::{NodeId, WidgetValueTrait};
 use nalgebra::Vector2;
 use smallvec::{Array, SmallVec};

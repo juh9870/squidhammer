@@ -166,8 +166,8 @@ fn process(attr: TokenStream, data: ItemFn) -> Result<TokenStream, Error> {
             impl #crate_ident::nodes::EditorNode for #struct_name {
                 fn create_ports(
                     &self,
-                    graph: &mut #crate_ident::EditorGraph,
-                    user_state: &mut #crate_ident::MyGraphState,
+                    graph: &mut #crate_ident::graph::EditorGraph,
+                    user_state: &mut #crate_ident::graph::MyGraphState,
                     node_id: egui_node_graph::NodeId,
                 ) {
                     #(#input_ports)*
@@ -176,7 +176,7 @@ fn process(attr: TokenStream, data: ItemFn) -> Result<TokenStream, Error> {
 
                 fn evaluate(
                     &self,
-                    graph: &#crate_ident::EditorGraph,
+                    graph: &#crate_ident::graph::EditorGraph,
                     outputs_cache: &mut #crate_ident::evaluator::OutputsCache,
                     commands: &mut Vec<Command>,
                     node_id: egui_node_graph::NodeId,
