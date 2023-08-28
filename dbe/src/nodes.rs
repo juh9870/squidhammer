@@ -1,18 +1,21 @@
 use crate::commands::Command;
 use crate::evaluator::OutputsCache;
+use crate::nodes::scalar::{ScalarAdd, ScalarDiv, ScalarMake, ScalarMult, ScalarPrint, ScalarSub};
 use crate::nodes::traits::{IntoNodeInputPort, IntoNodeOutputPort};
+use crate::nodes::vector::{Vec2Add, Vec2Make, Vec2Print, Vec2Scale, Vec2Sub};
 use crate::value::etype::MyDataType;
-use crate::value::{ENumber, EValue};
+use crate::value::EValue;
 use crate::{EditorGraph, MyGraphState};
 use egui_node_graph::{Graph, NodeId, NodeTemplateTrait};
 use enum_dispatch::enum_dispatch;
-use node_macro::editor_node;
 use rust_i18n::t;
-use smallvec::SmallVec;
 use std::borrow::Cow;
 use strum_macros::{AsRefStr, EnumIter};
 
 pub mod traits;
+
+pub mod scalar;
+pub mod vector;
 
 #[enum_dispatch]
 pub trait EditorNode {
@@ -48,6 +51,12 @@ pub enum NodeType {
     ScalarMult(ScalarMult),
     ScalarDiv(ScalarDiv),
     ScalarPrint(ScalarPrint),
+
+    Vec2(Vec2Make),
+    Vec2Add(Vec2Add),
+    Vec2Sub(Vec2Sub),
+    Vec2Scale(Vec2Scale),
+    Vec2Print(Vec2Print),
 }
 
 impl NodeType {
@@ -117,34 +126,4 @@ pub fn create_output_port<T: IntoNodeOutputPort>(
     name: String,
 ) {
     T::create_output_port(graph, user_state, node_id, name)
-}
-
-#[editor_node(name = ScalarMake, outputs = [result])]
-pub fn scalar_make(value: ENumber) -> ENumber {
-    value
-}
-
-#[editor_node(name = ScalarAdd, outputs = [result])]
-pub fn scalar_add(values: SmallVec<[ENumber; 2]>) -> ENumber {
-    values.iter().sum()
-}
-
-#[editor_node(name = ScalarSub, outputs = [result])]
-pub fn scalar_sub(a: ENumber, b: ENumber) -> ENumber {
-    a - b
-}
-
-#[editor_node(name = ScalarMult, outputs = [result])]
-pub fn scalar_mult(values: SmallVec<[ENumber; 2]>) -> ENumber {
-    values.iter().product()
-}
-
-#[editor_node(name = ScalarDiv, outputs = [result])]
-pub fn scalar_div(a: ENumber, b: ENumber) -> ENumber {
-    a / b
-}
-
-#[editor_node(name = ScalarPrint, outputs = [])]
-pub fn scalar_print(commands: &mut Vec<Command>, item: ENumber) {
-    commands.push(Command::Println(format!("{item}")));
 }

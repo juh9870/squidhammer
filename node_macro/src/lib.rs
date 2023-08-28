@@ -13,6 +13,8 @@ use syn::{parse_macro_input, Error, FnArg, ItemFn, Pat, ReturnType, Type};
 struct AttributeInput {
     name: Ident,
     outputs: Vec<Ident>,
+    #[attribute(optional)]
+    categories: Vec<String>,
 }
 
 #[derive(Default)]
@@ -144,7 +146,7 @@ fn process(attr: TokenStream, data: ItemFn) -> Result<TokenStream, Error> {
 
         let output_eval_ports = node.outputs.iter().map(|(_, ident)| {
             let name = ident.to_string();
-            quote_spanned!(ident.span() => #crate_ident::evaluator::populate_output(graph, outputs_cache, node_id, #name, std::convert::Into::<EValue>::into(#ident))?;)
+            quote_spanned!(ident.span() => #crate_ident::evaluator::populate_output(graph, outputs_cache, node_id, #name, std::convert::Into::<#crate_ident::value::EValue>::into(#ident))?;)
         });
 
         let commands = if uses_commands {
@@ -153,9 +155,13 @@ fn process(attr: TokenStream, data: ItemFn) -> Result<TokenStream, Error> {
             quote!()
         };
 
+        let categories = attribute.categories;
+
+        let visibility = &data.vis;
+
         quote! {
             #[derive(Debug, Copy, Clone, Default, serde::Serialize, serde::Deserialize)]
-            pub struct #struct_name;
+            #visibility struct #struct_name;
 
             impl #crate_ident::nodes::EditorNode for #struct_name {
                 fn create_ports(
@@ -170,15 +176,19 @@ fn process(attr: TokenStream, data: ItemFn) -> Result<TokenStream, Error> {
 
                 fn evaluate(
                     &self,
-                    graph: &EditorGraph,
-                    outputs_cache: &mut OutputsCache,
+                    graph: &#crate_ident::EditorGraph,
+                    outputs_cache: &mut #crate_ident::evaluator::OutputsCache,
                     commands: &mut Vec<Command>,
-                    node_id: NodeId,
+                    node_id: egui_node_graph::NodeId,
                 ) -> anyhow::Result<()> {
                     #(#input_eval_ports)*
                     let #output_bindings = #function_name(#commands #(#input_args,)*);
                     #(#output_eval_ports)*
                     Ok(())
+                }
+
+                fn categories(&self) -> Vec<&'static str> {
+                    vec![#(#categories,)*]
                 }
             }
         }
