@@ -61,7 +61,7 @@ impl eframe::App for NodeGraphExample {
                 )
             })
             .inner;
-        for node_response in graph_response.node_responses {
+        for _node_response in graph_response.node_responses {
             // Here, we ignore all other graph events. But you may find
             // some use for them. For example, by playing a sound when a new
             // connection is created

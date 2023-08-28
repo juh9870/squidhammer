@@ -3,7 +3,7 @@ use crate::nodes::EditorNode;
 use crate::value::{EValue, EValueInputWrapper};
 use crate::EditorGraph;
 use anyhow::anyhow;
-use egui_node_graph::{NodeId, NodeTemplateTrait, OutputId};
+use egui_node_graph::{NodeId, OutputId};
 use rustc_hash::FxHashMap;
 use smallvec::{smallvec, SmallVec};
 
