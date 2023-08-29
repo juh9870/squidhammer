@@ -1,4 +1,4 @@
-use crate::commands::Command;
+use crate::graph::commands::Command;
 use crate::value::ENumber;
 use node_macro::editor_node;
 use smallvec::SmallVec;

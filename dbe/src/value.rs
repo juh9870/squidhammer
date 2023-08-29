@@ -1,7 +1,7 @@
-use crate::graph::MyResponse;
-use crate::nodes::data::MyNodeData;
+use crate::graph::nodes::data::EditorNodeData;
+use crate::graph::EditorGraphResponse;
 use crate::value::draw::{draw_f32, draw_vec2f32};
-use crate::MyGraphState;
+use crate::EditorGraphState;
 use egui_node_graph::{NodeId, WidgetValueTrait};
 use nalgebra::Vector2;
 use smallvec::{Array, SmallVec};
@@ -129,17 +129,17 @@ impl<'a, T: TryFrom<&'a EValue, Error = anyhow::Error>, A: Array<Item = T>>
 }
 
 impl WidgetValueTrait for EValue {
-    type Response = MyResponse;
-    type UserState = MyGraphState;
-    type NodeData = MyNodeData;
+    type Response = EditorGraphResponse;
+    type UserState = EditorGraphState;
+    type NodeData = EditorNodeData;
     fn value_widget(
         &mut self,
         param_name: &str,
         _node_id: NodeId,
         ui: &mut egui::Ui,
-        _user_state: &mut MyGraphState,
-        _node_data: &MyNodeData,
-    ) -> Vec<MyResponse> {
+        _user_state: &mut EditorGraphState,
+        _node_data: &EditorNodeData,
+    ) -> Vec<EditorGraphResponse> {
         // This trait is used to tell the library which UI to display for the
         // inline parameter widgets.
         match self {

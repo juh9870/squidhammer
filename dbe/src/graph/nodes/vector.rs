@@ -1,4 +1,4 @@
-use crate::commands::Command;
+use crate::graph::commands::Command;
 use crate::value::{ENumber, EVector2};
 use nalgebra::vector;
 use node_macro::editor_node;

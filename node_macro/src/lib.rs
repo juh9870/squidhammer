@@ -104,7 +104,7 @@ fn process(attr: TokenStream, data: ItemFn) -> Result<TokenStream, Error> {
         let struct_name = attribute.name;
         let input_ports = node.inputs.iter().map(|(ty, ident)| {
             let name = ident.to_string();
-            quote_spanned!(ident.span() => #crate_ident::nodes::create_input_port::<#ty>(graph, user_state, node_id, #name.into());)
+            quote_spanned!(ident.span() => #crate_ident::graph::nodes::create_input_port::<#ty>(graph, user_state, node_id, #name.into());)
         });
 
         let output_ports = node
@@ -112,12 +112,12 @@ fn process(attr: TokenStream, data: ItemFn) -> Result<TokenStream, Error> {
             .iter()
             .map(|(ty, ident)| {
                 let name = ident.to_string();
-                quote_spanned!(ident.span() => #crate_ident::nodes::create_output_port::<#ty>(graph, user_state, node_id, #name.into());)
+                quote_spanned!(ident.span() => #crate_ident::graph::nodes::create_output_port::<#ty>(graph, user_state, node_id, #name.into());)
             });
 
         let input_eval_ports = node.inputs.iter().map(|(ty, ident)| {
             let name = ident.to_string();
-            quote_spanned!(ident.span() => let #ident = #crate_ident::evaluator::evaluate_input_as::<#ty>(graph, outputs_cache, commands, node_id, #name)?;)
+            quote_spanned!(ident.span() => let #ident = #crate_ident::graph::evaluator::evaluate_input_as::<#ty>(graph, outputs_cache, commands, node_id, #name)?;)
         });
 
         let input_args = node.inputs.iter().map(|e| e.1);
@@ -146,7 +146,7 @@ fn process(attr: TokenStream, data: ItemFn) -> Result<TokenStream, Error> {
 
         let output_eval_ports = node.outputs.iter().map(|(_, ident)| {
             let name = ident.to_string();
-            quote_spanned!(ident.span() => #crate_ident::evaluator::populate_output(graph, outputs_cache, node_id, #name, std::convert::Into::<#crate_ident::value::EValue>::into(#ident))?;)
+            quote_spanned!(ident.span() => #crate_ident::graph::evaluator::populate_output(graph, outputs_cache, node_id, #name, std::convert::Into::<#crate_ident::value::EValue>::into(#ident))?;)
         });
 
         let commands = if uses_commands {
@@ -163,11 +163,11 @@ fn process(attr: TokenStream, data: ItemFn) -> Result<TokenStream, Error> {
             #[derive(Debug, Copy, Clone, Default, serde::Serialize, serde::Deserialize)]
             #visibility struct #struct_name;
 
-            impl #crate_ident::nodes::EditorNode for #struct_name {
+            impl #crate_ident::graph::nodes::EditorNode for #struct_name {
                 fn create_ports(
                     &self,
                     graph: &mut #crate_ident::graph::EditorGraph,
-                    user_state: &mut #crate_ident::graph::MyGraphState,
+                    user_state: &mut #crate_ident::graph::EditorGraphState,
                     node_id: egui_node_graph::NodeId,
                 ) {
                     #(#input_ports)*
@@ -177,7 +177,7 @@ fn process(attr: TokenStream, data: ItemFn) -> Result<TokenStream, Error> {
                 fn evaluate(
                     &self,
                     graph: &#crate_ident::graph::EditorGraph,
-                    outputs_cache: &mut #crate_ident::evaluator::OutputsCache,
+                    outputs_cache: &mut #crate_ident::graph::evaluator::OutputsCache,
                     commands: &mut Vec<Command>,
                     node_id: egui_node_graph::NodeId,
                 ) -> anyhow::Result<()> {

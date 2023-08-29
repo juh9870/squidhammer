@@ -1,5 +1,5 @@
-use crate::commands::Command;
-use crate::nodes::EditorNode;
+use crate::graph::commands::Command;
+use crate::graph::nodes::EditorNode;
 use crate::value::{EValue, EValueInputWrapper};
 use crate::EditorGraph;
 use anyhow::anyhow;

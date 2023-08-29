@@ -1,11 +1,13 @@
-use crate::commands::Command;
-use crate::evaluator::OutputsCache;
-use crate::graph::MyGraphState;
-use crate::nodes::data::MyNodeData;
-use crate::nodes::scalar::{ScalarAdd, ScalarDiv, ScalarMake, ScalarMult, ScalarPrint, ScalarSub};
-use crate::nodes::traits::{IntoNodeInputPort, IntoNodeOutputPort};
-use crate::nodes::vector::{Vec2Add, Vec2Make, Vec2Print, Vec2Scale, Vec2Sub};
-use crate::value::etype::MyDataType;
+use crate::graph::commands::Command;
+use crate::graph::evaluator::OutputsCache;
+use crate::graph::nodes::data::EditorNodeData;
+use crate::graph::nodes::scalar::{
+    ScalarAdd, ScalarDiv, ScalarMake, ScalarMult, ScalarPrint, ScalarSub,
+};
+use crate::graph::nodes::traits::{IntoNodeInputPort, IntoNodeOutputPort};
+use crate::graph::nodes::vector::{Vec2Add, Vec2Make, Vec2Print, Vec2Scale, Vec2Sub};
+use crate::graph::EditorGraphState;
+use crate::value::etype::EDataType;
 use crate::value::EValue;
 use crate::EditorGraph;
 use egui_node_graph::{Graph, NodeId, NodeTemplateIter, NodeTemplateTrait};
@@ -25,8 +27,8 @@ pub mod vector;
 pub trait EditorNode {
     fn create_ports(
         &self,
-        graph: &mut Graph<MyNodeData, MyDataType, EValue>,
-        user_state: &mut MyGraphState,
+        graph: &mut Graph<EditorNodeData, EDataType, EValue>,
+        user_state: &mut EditorGraphState,
         node_id: NodeId,
     );
 
@@ -74,10 +76,10 @@ impl NodeType {
 // A trait for the node kinds, which tells the library how to build new nodes
 // from the templates in the node finder
 impl NodeTemplateTrait for NodeType {
-    type NodeData = MyNodeData;
-    type DataType = MyDataType;
+    type NodeData = EditorNodeData;
+    type DataType = EDataType;
     type ValueType = EValue;
-    type UserState = MyGraphState;
+    type UserState = EditorGraphState;
     type CategoryType = &'static str;
 
     fn node_finder_label(&self, _user_state: &mut Self::UserState) -> Cow<'_, str> {
@@ -96,7 +98,7 @@ impl NodeTemplateTrait for NodeType {
     }
 
     fn user_data(&self, _user_state: &mut Self::UserState) -> Self::NodeData {
-        MyNodeData { template: *self }
+        EditorNodeData { template: *self }
     }
 
     fn build_node(
@@ -109,8 +111,8 @@ impl NodeTemplateTrait for NodeType {
     }
 }
 
-pub struct AllMyNodeTemplates;
-impl NodeTemplateIter for AllMyNodeTemplates {
+pub struct AllEditorNodeTypes;
+impl NodeTemplateIter for AllEditorNodeTypes {
     type Item = NodeType;
 
     fn all_kinds(&self) -> Vec<Self::Item> {
@@ -119,8 +121,8 @@ impl NodeTemplateIter for AllMyNodeTemplates {
 }
 
 pub fn create_input_port<T: IntoNodeInputPort>(
-    graph: &mut Graph<MyNodeData, MyDataType, EValue>,
-    user_state: &mut MyGraphState,
+    graph: &mut Graph<EditorNodeData, EDataType, EValue>,
+    user_state: &mut EditorGraphState,
     node_id: NodeId,
     name: String,
 ) {
@@ -128,8 +130,8 @@ pub fn create_input_port<T: IntoNodeInputPort>(
 }
 
 pub fn create_output_port<T: IntoNodeOutputPort>(
-    graph: &mut Graph<MyNodeData, MyDataType, EValue>,
-    user_state: &mut MyGraphState,
+    graph: &mut Graph<EditorNodeData, EDataType, EValue>,
+    user_state: &mut EditorGraphState,
     node_id: NodeId,
     name: String,
 ) {

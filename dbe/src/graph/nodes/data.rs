@@ -1,6 +1,6 @@
-use crate::graph::{MyGraphState, MyResponse};
-use crate::nodes::NodeType;
-use crate::value::etype::MyDataType;
+use crate::graph::nodes::NodeType;
+use crate::graph::{EditorGraphResponse, EditorGraphState};
+use crate::value::etype::EDataType;
 use crate::value::EValue;
 use crate::EditorGraph;
 use egui_node_graph::{NodeDataTrait, NodeId, NodeResponse, UserResponseTrait};
@@ -9,14 +9,14 @@ use egui_node_graph::{NodeDataTrait, NodeId, NodeResponse, UserResponseTrait};
 /// store additional information that doesn't live in parameters. For this
 /// example, the node data stores the template (i.e. the "type") of the node.
 #[derive(Debug, serde::Serialize, serde::Deserialize)]
-pub struct MyNodeData {
+pub struct EditorNodeData {
     pub template: NodeType,
 }
 
-impl NodeDataTrait for MyNodeData {
-    type Response = MyResponse;
-    type UserState = MyGraphState;
-    type DataType = MyDataType;
+impl NodeDataTrait for EditorNodeData {
+    type Response = EditorGraphResponse;
+    type UserState = EditorGraphState;
+    type DataType = EDataType;
     type ValueType = EValue;
 
     // This method will be called when drawing each node. This allows adding
@@ -30,9 +30,9 @@ impl NodeDataTrait for MyNodeData {
         _node_id: NodeId,
         _graph: &EditorGraph,
         _user_state: &mut Self::UserState,
-    ) -> Vec<NodeResponse<MyResponse, MyNodeData>>
+    ) -> Vec<NodeResponse<EditorGraphResponse, EditorNodeData>>
     where
-        MyResponse: UserResponseTrait,
+        EditorGraphResponse: UserResponseTrait,
     {
         vec![]
     }

@@ -1,13 +1,10 @@
-use crate::graph::{evaluate_graph, EditorGraph, MyEditorState, MyGraphState};
-use crate::nodes::AllMyNodeTemplates;
+use crate::graph::nodes::AllEditorNodeTypes;
+use crate::graph::{evaluate_graph, EditorGraph, EditorGraphState, EditorState};
 use eframe::egui::{self, TextStyle};
 use rust_i18n::i18n;
 use serde_derive::{Deserialize, Serialize};
 
-mod commands;
-mod evaluator;
 mod graph;
-mod nodes;
 mod value;
 
 i18n!();
@@ -20,9 +17,9 @@ i18n!();
 pub struct NodeGraphExample {
     // The `GraphEditorState` is the top-level object. You "register" all your
     // custom types by specifying it as its generic parameters.
-    state: MyEditorState,
+    state: EditorState,
 
-    user_state: MyGraphState,
+    user_state: EditorGraphState,
 }
 
 const PERSISTENCE_KEY: &str = "egui_node_graph";
@@ -37,7 +34,7 @@ impl NodeGraphExample {
             .unwrap_or_default();
         Self {
             state,
-            user_state: MyGraphState::default(),
+            user_state: EditorGraphState::default(),
         }
     }
 }
@@ -55,7 +52,7 @@ impl eframe::App for NodeGraphExample {
             .show(ctx, |ui| {
                 self.state.draw_graph_editor(
                     ui,
-                    AllMyNodeTemplates,
+                    AllEditorNodeTypes,
                     &mut self.user_state,
                     Vec::default(),
                 )

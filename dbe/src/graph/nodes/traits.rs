@@ -1,12 +1,12 @@
-use crate::nodes::MyNodeData;
-use crate::value::etype::MyDataType;
+use crate::graph::nodes::EditorNodeData;
+use crate::value::etype::EDataType;
 use crate::value::{ENumber, EValue, EVector2};
-use crate::MyGraphState;
+use crate::EditorGraphState;
 use egui_node_graph::{Graph, InputParamKind, NodeId};
 use smallvec::{Array, SmallVec};
 
 pub trait EValueTypeAdapter {
-    fn value_type() -> MyDataType;
+    fn value_type() -> EDataType;
 
     fn input_kind() -> InputParamKind {
         InputParamKind::ConnectionOrConstant
@@ -15,8 +15,8 @@ pub trait EValueTypeAdapter {
 
 pub trait IntoNodeInputPort {
     fn create_input_port(
-        graph: &mut Graph<MyNodeData, MyDataType, EValue>,
-        user_state: &mut MyGraphState,
+        graph: &mut Graph<EditorNodeData, EDataType, EValue>,
+        user_state: &mut EditorGraphState,
         node_id: NodeId,
         name: String,
     );
@@ -24,8 +24,8 @@ pub trait IntoNodeInputPort {
 
 pub trait IntoNodeOutputPort {
     fn create_output_port(
-        graph: &mut Graph<MyNodeData, MyDataType, EValue>,
-        user_state: &mut MyGraphState,
+        graph: &mut Graph<EditorNodeData, EDataType, EValue>,
+        user_state: &mut EditorGraphState,
         node_id: NodeId,
         name: String,
     );
@@ -33,8 +33,8 @@ pub trait IntoNodeOutputPort {
 
 impl<T: EValueTypeAdapter> IntoNodeInputPort for T {
     fn create_input_port(
-        graph: &mut Graph<MyNodeData, MyDataType, EValue>,
-        _user_state: &mut MyGraphState,
+        graph: &mut Graph<EditorNodeData, EDataType, EValue>,
+        _user_state: &mut EditorGraphState,
         node_id: NodeId,
         name: String,
     ) {
@@ -51,8 +51,8 @@ impl<T: EValueTypeAdapter> IntoNodeInputPort for T {
 
 impl<T: EValueTypeAdapter> IntoNodeOutputPort for T {
     fn create_output_port(
-        graph: &mut Graph<MyNodeData, MyDataType, EValue>,
-        _user_state: &mut MyGraphState,
+        graph: &mut Graph<EditorNodeData, EDataType, EValue>,
+        _user_state: &mut EditorGraphState,
         node_id: NodeId,
         name: String,
     ) {
@@ -62,8 +62,8 @@ impl<T: EValueTypeAdapter> IntoNodeOutputPort for T {
 
 impl<T: EValueTypeAdapter> IntoNodeInputPort for Vec<T> {
     fn create_input_port(
-        graph: &mut Graph<MyNodeData, MyDataType, EValue>,
-        _user_state: &mut MyGraphState,
+        graph: &mut Graph<EditorNodeData, EDataType, EValue>,
+        _user_state: &mut EditorGraphState,
         node_id: NodeId,
         name: String,
     ) {
@@ -80,8 +80,8 @@ impl<T: EValueTypeAdapter> IntoNodeInputPort for Vec<T> {
 }
 impl<T: EValueTypeAdapter, A: Array<Item = T>> IntoNodeInputPort for SmallVec<A> {
     fn create_input_port(
-        graph: &mut Graph<MyNodeData, MyDataType, EValue>,
-        _user_state: &mut MyGraphState,
+        graph: &mut Graph<EditorNodeData, EDataType, EValue>,
+        _user_state: &mut EditorGraphState,
         node_id: NodeId,
         name: String,
     ) {
@@ -98,13 +98,13 @@ impl<T: EValueTypeAdapter, A: Array<Item = T>> IntoNodeInputPort for SmallVec<A>
 }
 
 impl EValueTypeAdapter for ENumber {
-    fn value_type() -> MyDataType {
-        MyDataType::Scalar
+    fn value_type() -> EDataType {
+        EDataType::Scalar
     }
 }
 
 impl EValueTypeAdapter for EVector2 {
-    fn value_type() -> MyDataType {
-        MyDataType::Vec2
+    fn value_type() -> EDataType {
+        EDataType::Vec2
     }
 }
