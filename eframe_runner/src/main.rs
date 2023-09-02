@@ -1,17 +1,20 @@
-use dbe::NodeGraphExample;
+use dbe::{DbeData, DbeState};
 use eframe::{egui, Error};
+
 fn main() -> Result<(), Error> {
     let native_options = eframe::NativeOptions::default();
     eframe::run_native(
         "Database Editor",
         native_options,
-        Box::new(|cc| Box::new(NodeGraphExample::new(cc))),
+        Box::new(|cc| Box::new(DbeApp::new(cc))),
     )?;
     Ok(())
 }
 
 #[derive(Default)]
-struct DbeApp {}
+struct DbeApp {
+    data: DbeState,
+}
 
 impl DbeApp {
     fn new(_cc: &eframe::CreationContext<'_>) -> Self {
@@ -25,8 +28,6 @@ impl DbeApp {
 
 impl eframe::App for DbeApp {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
-        egui::CentralPanel::default().show(ctx, |ui| {
-            ui.heading("Hello World!");
-        });
+        dbe::update_dbe(ctx, &mut self.data);
     }
 }

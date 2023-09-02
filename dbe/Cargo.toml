@@ -9,6 +9,8 @@ edition = "2021"
 egui = "0.22.0"
 eframe = { version = "0.22.0", features = ["persistence"] }
 egui_node_graph = { path = "../egui_node_graph/egui_node_graph", features = ["persistence"] }
+egui_dock = {git = "https://github.com/Adanos020/egui_dock.git", branch = "release-0.7"}
+egui_file = "0.10"
 anyhow = "1.0.72"
 nalgebra = { version = "0.32.3", features = ["serde-serialize"] }
 serde = "1.0.171"

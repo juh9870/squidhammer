@@ -1,92 +1,78 @@
-use crate::graph::nodes::AllEditorNodeTypes;
-use crate::graph::{evaluate_graph, EditorGraph, EditorGraphState, EditorState};
-use eframe::egui::{self, TextStyle};
-use rust_i18n::i18n;
-use serde_derive::{Deserialize, Serialize};
-
+use crate::graph::{EditorGraph, EditorGraphState};
+use crate::states::loading_state::LoadingState;
+use crate::states::title_screen_state::TitleScreenState;
+use crate::states::DbeStateHolder;
+use egui::{Align2, RichText, Ui, Visuals, Widget, WidgetText};
+use rust_i18n::{i18n, t};
 mod graph;
+mod states;
 mod value;
 
 i18n!();
 
-// ========= First, define your user data types =============
-
-// =========== Then, you need to implement some traits ============
-
-#[derive(Default, Serialize, Deserialize)]
-pub struct NodeGraphExample {
-    // The `GraphEditorState` is the top-level object. You "register" all your
-    // custom types by specifying it as its generic parameters.
-    state: EditorState,
-
-    user_state: EditorGraphState,
+pub enum DbeState {
+    Broken,
+    TitleScreen(TitleScreenState),
+    Loading(LoadingState),
 }
 
-const PERSISTENCE_KEY: &str = "egui_node_graph";
+impl Default for DbeState {
+    fn default() -> Self {
+        DbeState::TitleScreen(TitleScreenState::default())
+    }
+}
 
-impl NodeGraphExample {
-    /// If the persistence feature is enabled, Called once before the first frame.
-    /// Load previous app state (if any).
-    pub fn new(cc: &eframe::CreationContext<'_>) -> Self {
-        let state = cc
-            .storage
-            .and_then(|storage| eframe::get_value(storage, PERSISTENCE_KEY))
-            .unwrap_or_default();
-        Self {
-            state,
-            user_state: EditorGraphState::default(),
+fn info_window<T>(
+    ui: &mut Ui,
+    title: impl Into<WidgetText>,
+    content: impl FnOnce(&mut Ui) -> T,
+) -> T {
+    egui::Window::new(title)
+        .anchor(Align2::CENTER_CENTER, egui::Vec2::ZERO)
+        .resizable(false)
+        .collapsible(false)
+        .show(ui.ctx(), |ui| content(ui))
+        .expect("Info window is never closed")
+        .inner
+        .expect("Info window is never collapsed")
+}
+
+impl DbeState {
+    fn update(self, ui: &mut Ui) -> Self {
+        match self {
+            DbeState::Broken => {
+                info_window(ui, t!("dbe.broken"), |ui| {
+                    ui.label(t!("dbe.check_logs"));
+                });
+                self
+            }
+            DbeState::TitleScreen(state) => state.update(ui),
+            DbeState::Loading(state) => state.update(ui),
         }
     }
 }
 
-impl eframe::App for NodeGraphExample {
-    /// Called each time the UI needs repainting, which may be many times per second.
-    /// Put your widgets into a `SidePanel`, `TopPanel`, `CentralPanel`, `Window` or `Area`.
-    fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
-        egui::TopBottomPanel::top("top").show(ctx, |ui| {
-            egui::menu::bar(ui, |ui| {
-                egui::widgets::global_dark_light_mode_switch(ui);
-            });
-        });
-        let graph_response = egui::CentralPanel::default()
-            .show(ctx, |ui| {
-                self.state.draw_graph_editor(
-                    ui,
-                    AllEditorNodeTypes,
-                    &mut self.user_state,
-                    Vec::default(),
-                )
-            })
-            .inner;
-        for _node_response in graph_response.node_responses {
-            // Here, we ignore all other graph events. But you may find
-            // some use for them. For example, by playing a sound when a new
-            // connection is created
-            // if let NodeResponse::User(user_event) = node_response {
-            //     match user_event {
-            //         MyResponse::SetActiveNode(node) => self.user_state.active_node = Some(node),
-            //         MyResponse::ClearActiveNode => self.user_state.active_node = None,
-            //     }
-            // }
-        }
+#[derive(Default)]
+pub struct DbeData {
+    state: DbeState,
+}
 
-        let text = match evaluate_graph(&self.state.graph) {
-            Ok(text) => text,
-            Err(err) => format!("Execution error: {err}"),
-        };
-
-        ctx.debug_painter().text(
-            egui::pos2(10.0, 35.0),
-            egui::Align2::LEFT_TOP,
-            text,
-            TextStyle::Button.resolve(&ctx.style()),
-            egui::Color32::WHITE,
-        );
-    }
-
-    /// If the persistence function is enabled,
-    /// Called by the frame work to save state before shutdown.
-    fn save(&mut self, storage: &mut dyn eframe::Storage) {
-        eframe::set_value(storage, PERSISTENCE_KEY, &self.state);
-    }
+pub fn update_dbe(ctx: &egui::Context, data: &mut DbeState) {
+    egui::TopBottomPanel::top("toolbar").show(ctx, |ui| {
+        ui.horizontal(|ui| {
+            if ui.button("Toggle Dark/Light Mode").clicked() {
+                let visuals = if ui.visuals().dark_mode {
+                    Visuals::light()
+                } else {
+                    Visuals::dark()
+                };
+                ctx.set_visuals(visuals);
+            }
+            ui.label("TODO: menubar")
+        })
+    });
+    egui::CentralPanel::default().show(ctx, |ui| {
+        let state = std::mem::replace(data, DbeState::Broken);
+        *data = state.update(ui);
+    });
 }

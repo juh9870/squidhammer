@@ -743,6 +743,8 @@ dependencies = [
  "anyhow",
  "eframe",
  "egui",
+ "egui_dock",
+ "egui_file",
  "egui_node_graph",
  "enum_dispatch",
  "nalgebra",
@@ -832,6 +834,16 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9ea835d29036a4087793836fa931b08837ad5e957da9e23886b29586fb9b6650"
 
 [[package]]
+name = "duplicate"
+version = "1.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "de78e66ac9061e030587b2a2e75cc88f22304913c907b11307bca737141230cb"
+dependencies = [
+ "heck",
+ "proc-macro-error",
+]
+
+[[package]]
 name = "ecolor"
 version = "0.22.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -913,6 +925,25 @@ dependencies = [
  "smithay-clipboard",
  "webbrowser",
  "winit",
+]
+
+[[package]]
+name = "egui_dock"
+version = "0.7.0"
+source = "git+https://github.com/Adanos020/egui_dock.git?branch=release-0.7#297aa63f5fcd790c399c6f4a64931abe847a930b"
+dependencies = [
+ "duplicate",
+ "egui",
+ "paste",
+]
+
+[[package]]
+name = "egui_file"
+version = "0.10.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "57fb96aae5ae55ab01ecbe3f8308d95d266f36a81e15d3d70626793e70f20cc1"
+dependencies = [
+ "egui",
 ]
 
 [[package]]
