@@ -58,7 +58,7 @@ impl DbeState {
 pub fn update_dbe(ctx: &egui::Context, data: &mut DbeState) {
     egui::TopBottomPanel::top("toolbar").show(ctx, |ui| {
         ui.horizontal(|ui| {
-            if ui.button("Toggle Dark/Light Mode").clicked() {
+            if ui.button(t!("dbe.light_mode")).clicked() {
                 let visuals = if ui.visuals().dark_mode {
                     Visuals::light()
                 } else {

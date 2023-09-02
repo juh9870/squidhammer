@@ -1,0 +1,8 @@
+﻿[dbe]
+broken="You shouldn't be seeing this"
+check_logs="Please check logs for more info"
+light_mode="Toggle Dark/Light Mode"
+
+[dbe.title]
+open_database="Please select a folder to start working"
+open_folder="Select folder"
