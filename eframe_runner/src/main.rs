@@ -1,4 +1,4 @@
-use dbe::{DbeData, DbeState};
+use dbe::DbeState;
 use eframe::{egui, Error};
 
 fn main() -> Result<(), Error> {

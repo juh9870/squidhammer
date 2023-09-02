@@ -2,7 +2,9 @@
 use crate::DbeState;
 use egui::Ui;
 use std::path::PathBuf;
+use std::sync::mpsc::Sender;
 
+#[derive(Debug)]
 pub struct LoadingState {
     path: PathBuf,
 }
@@ -12,6 +14,14 @@ impl LoadingState {
         Self { path }
     }
 }
+
+#[derive(Debug, Clone)]
+enum LoadingProgress {
+    Status(String),
+    Done(),
+}
+
+fn load_assets(channel: Sender<String>, path: PathBuf) {}
 
 impl DbeStateHolder for LoadingState {
     fn update(self, ui: &mut Ui) -> DbeState {

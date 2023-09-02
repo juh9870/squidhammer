@@ -1,3 +1,5 @@
+#![deny(missing_debug_implementations)]
+
 use crate::graph::{EditorGraph, EditorGraphState};
 use crate::states::loading_state::LoadingState;
 use crate::states::title_screen_state::TitleScreenState;
@@ -10,6 +12,7 @@ mod value;
 
 i18n!();
 
+#[derive(Debug)]
 pub enum DbeState {
     Broken,
     TitleScreen(TitleScreenState),
@@ -50,11 +53,6 @@ impl DbeState {
             DbeState::Loading(state) => state.update(ui),
         }
     }
-}
-
-#[derive(Default)]
-pub struct DbeData {
-    state: DbeState,
 }
 
 pub fn update_dbe(ctx: &egui::Context, data: &mut DbeState) {
