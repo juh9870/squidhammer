@@ -2,7 +2,7 @@ use crate::graph::{EditorGraph, EditorGraphState};
 use crate::states::loading_state::LoadingState;
 use crate::states::title_screen_state::TitleScreenState;
 use crate::states::DbeStateHolder;
-use egui::{Align2, RichText, Ui, Visuals, Widget, WidgetText};
+use egui::{Align2, Ui, Visuals, WidgetText};
 use rust_i18n::{i18n, t};
 mod graph;
 mod states;

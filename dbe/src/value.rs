@@ -3,7 +3,6 @@ use crate::graph::EditorGraphResponse;
 use crate::value::draw::{draw_f32, draw_vec2f32};
 use crate::EditorGraphState;
 use egui_node_graph::{NodeId, WidgetValueTrait};
-use nalgebra::Vector2;
 use smallvec::{Array, SmallVec};
 
 pub mod connections;
@@ -20,7 +19,11 @@ pub type ENumber = f32;
 #[cfg(all(feature = "f64", not(feature = "f32")))]
 pub type ENumber = f64;
 
-pub type EVector2 = Vector2<ENumber>;
+#[cfg(all(feature = "f32", not(feature = "f64")))]
+pub type EVector2 = glam::f32::Vec2;
+
+#[cfg(all(feature = "f64", not(feature = "f32")))]
+pub type EVector2 = glam::f64::Vec2;
 
 /// In the graph, input parameters can optionally have a constant value. This
 /// value can be directly edited in a widget inside the node itself.
@@ -32,7 +35,7 @@ pub type EVector2 = Vector2<ENumber>;
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub enum EValue {
     Scalar { value: ENumber },
-    Vec2 { value: Vector2<ENumber> },
+    Vec2 { value: EVector2 },
 }
 
 impl Default for EValue {
@@ -112,7 +115,7 @@ macro_rules! try_to {
 }
 
 try_to!(Scalar, ENumber, scalar);
-try_to!(Vec2, Vector2<ENumber>, vec2);
+try_to!(Vec2, EVector2, vec2);
 
 impl<'a, T: TryFrom<&'a EValue, Error = anyhow::Error>, A: Array<Item = T>>
     TryFrom<EValueInputWrapper<'a>> for SmallVec<A>

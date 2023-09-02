@@ -1,5 +1,5 @@
+use crate::value::EVector2;
 use egui::{DragValue, Ui};
-use nalgebra::Vector2;
 
 pub fn draw_f32(ui: &mut Ui, name: &str, value: &mut f32) {
     ui.horizontal(|ui| {
@@ -8,7 +8,7 @@ pub fn draw_f32(ui: &mut Ui, name: &str, value: &mut f32) {
     });
 }
 
-pub fn draw_vec2f32(ui: &mut Ui, name: &str, value: &mut Vector2<f32>) {
+pub fn draw_vec2f32(ui: &mut Ui, name: &str, value: &mut EVector2) {
     ui.horizontal(|ui| {
         ui.label(name);
         ui.horizontal(|ui| {

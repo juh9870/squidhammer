@@ -1,12 +1,11 @@
 use crate::graph::commands::Command;
 use crate::value::{ENumber, EVector2};
-use nalgebra::vector;
 use node_macro::editor_node;
 use smallvec::SmallVec;
 
 #[editor_node(name = Vec2Make, outputs = [result], categories = ["vec2"])]
 pub fn vec2_make(x: ENumber, y: ENumber) -> EVector2 {
-    vector![x, y]
+    EVector2::new(x, y)
 }
 
 #[editor_node(name = Vec2Add, outputs = [result], categories = ["vec2"])]

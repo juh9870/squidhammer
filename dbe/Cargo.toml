@@ -12,7 +12,7 @@ egui_node_graph = { path = "../egui_node_graph/egui_node_graph", features = ["pe
 egui_dock = {git = "https://github.com/Adanos020/egui_dock.git", branch = "release-0.7"}
 egui_file = "0.10"
 anyhow = "1.0.72"
-nalgebra = { version = "0.32.3", features = ["serde-serialize"] }
+glam = { version = "0.24.1", features = ["serde"] }
 serde = "1.0.171"
 serde_derive = "1.0.171"
 rust-i18n = "2.0.0"
