@@ -30,6 +30,10 @@ pub fn draw_string(ui: &mut Ui, name: &str, value: &mut String) {
     });
 }
 
+pub fn draw_boolean(ui: &mut Ui, name: &str, value: &mut bool) {
+    ui.checkbox(value, name);
+}
+
 fn error(ui: &mut Ui, label: impl Into<String>, text: impl Into<String>) {
     ui.horizontal(|ui| {
         ui.label(label.into());
@@ -76,12 +80,10 @@ pub fn draw_struct(
 
 pub fn draw_evalue(value: &mut EValue, ui: &mut Ui, label: &str, registry: &EStructRegistry) {
     match value {
-        EValue::Vec2 { value } => draw_vec2(ui, label, value),
+        EValue::Boolean { value } => draw_boolean(ui, label, value),
         EValue::Scalar { value } => draw_number(ui, label, value),
         EValue::String { value } => draw_string(ui, label, value),
+        EValue::Vec2 { value } => draw_vec2(ui, label, value),
         EValue::Struct { fields, ident } => draw_struct(ui, label, registry, ident, fields),
-        EValue::Boolean { .. } => {
-            todo!()
-        }
     }
 }
