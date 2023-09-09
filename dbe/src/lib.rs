@@ -11,6 +11,7 @@ use rust_i18n::{i18n, t};
 mod graph;
 mod states;
 mod value;
+mod vfs;
 
 i18n!();
 
