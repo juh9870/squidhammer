@@ -34,7 +34,7 @@ pub trait IntoNodeOutputPort {
 impl<T: EValueTypeAdapter> IntoNodeInputPort for T {
     fn create_input_port(
         graph: &mut Graph<EditorNodeData, EDataType, EValue>,
-        _user_state: &mut EditorGraphState,
+        user_state: &mut EditorGraphState,
         node_id: NodeId,
         name: String,
     ) {
@@ -42,7 +42,7 @@ impl<T: EValueTypeAdapter> IntoNodeInputPort for T {
             node_id,
             name,
             T::value_type(),
-            T::value_type().default_value(),
+            T::value_type().default_value(&user_state.registry),
             T::input_kind(),
             !matches![T::input_kind(), InputParamKind::ConnectionOnly],
         );
@@ -63,7 +63,7 @@ impl<T: EValueTypeAdapter> IntoNodeOutputPort for T {
 impl<T: EValueTypeAdapter> IntoNodeInputPort for Vec<T> {
     fn create_input_port(
         graph: &mut Graph<EditorNodeData, EDataType, EValue>,
-        _user_state: &mut EditorGraphState,
+        user_state: &mut EditorGraphState,
         node_id: NodeId,
         name: String,
     ) {
@@ -71,7 +71,7 @@ impl<T: EValueTypeAdapter> IntoNodeInputPort for Vec<T> {
             node_id,
             name,
             T::value_type(),
-            T::value_type().default_value(),
+            T::value_type().default_value(&user_state.registry),
             T::input_kind(),
             None,
             !matches![T::input_kind(), InputParamKind::ConnectionOnly],
@@ -81,7 +81,7 @@ impl<T: EValueTypeAdapter> IntoNodeInputPort for Vec<T> {
 impl<T: EValueTypeAdapter, A: Array<Item = T>> IntoNodeInputPort for SmallVec<A> {
     fn create_input_port(
         graph: &mut Graph<EditorNodeData, EDataType, EValue>,
-        _user_state: &mut EditorGraphState,
+        user_state: &mut EditorGraphState,
         node_id: NodeId,
         name: String,
     ) {
@@ -89,7 +89,7 @@ impl<T: EValueTypeAdapter, A: Array<Item = T>> IntoNodeInputPort for SmallVec<A>
             node_id,
             name,
             T::value_type(),
-            T::value_type().default_value(),
+            T::value_type().default_value(&user_state.registry),
             T::input_kind(),
             None,
             !matches![T::input_kind(), InputParamKind::ConnectionOnly],
@@ -106,5 +106,11 @@ impl EValueTypeAdapter for ENumber {
 impl EValueTypeAdapter for EVector2 {
     fn value_type() -> EDataType {
         EDataType::Vec2
+    }
+}
+
+impl EValueTypeAdapter for String {
+    fn value_type() -> EDataType {
+        EDataType::String
     }
 }

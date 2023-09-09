@@ -1,22 +1,26 @@
 #![deny(missing_debug_implementations)]
 
 use crate::graph::{EditorGraph, EditorGraphState};
-use crate::states::loading_state::LoadingState;
+use crate::states::init_state::InitState;
+use crate::states::loading_state::FilesLoadingState;
 use crate::states::title_screen_state::TitleScreenState;
 use crate::states::DbeStateHolder;
-use egui::{Align2, Ui, Visuals, WidgetText};
+use egui::{Align2, Id, Ui, Visuals, WidgetText};
 use rust_i18n::{i18n, t};
+
 mod graph;
 mod states;
 mod value;
 
 i18n!();
 
+#[allow(clippy::large_enum_variant)]
 #[derive(Debug)]
 pub enum DbeState {
     Broken,
     TitleScreen(TitleScreenState),
-    Loading(LoadingState),
+    Loading(FilesLoadingState),
+    Initializing(InitState),
 }
 
 impl Default for DbeState {
@@ -31,6 +35,7 @@ fn info_window<T>(
     content: impl FnOnce(&mut Ui) -> T,
 ) -> T {
     egui::Window::new(title)
+        .id(Id::from("info_window"))
         .anchor(Align2::CENTER_CENTER, egui::Vec2::ZERO)
         .resizable(false)
         .collapsible(false)
@@ -51,6 +56,7 @@ impl DbeState {
             }
             DbeState::TitleScreen(state) => state.update(ui),
             DbeState::Loading(state) => state.update(ui),
+            DbeState::Initializing(state) => state.update(ui),
         }
     }
 }

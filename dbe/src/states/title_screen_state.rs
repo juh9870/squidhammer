@@ -1,4 +1,4 @@
-﻿use crate::states::loading_state::LoadingState;
+﻿use crate::states::loading_state::FilesLoadingState;
 use crate::states::DbeStateHolder;
 use crate::{info_window, DbeState};
 use egui::Ui;
@@ -31,7 +31,7 @@ impl DbeStateHolder for TitleScreenState {
                 let result = dialog.show(ui.ctx());
                 if result.selected() {
                     if let Some(p) = dialog.path() {
-                        return LoadingState::new(p.to_path_buf()).into();
+                        return FilesLoadingState::new(p.to_path_buf()).into();
                     }
                     self.open_folder_dialog = None;
                 }

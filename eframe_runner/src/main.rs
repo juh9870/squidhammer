@@ -2,6 +2,7 @@ use dbe::DbeState;
 use eframe::{egui, Error};
 
 fn main() -> Result<(), Error> {
+    tracing_subscriber::fmt::init();
     let native_options = eframe::NativeOptions::default();
     eframe::run_native(
         "Database Editor",

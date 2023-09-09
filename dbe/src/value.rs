@@ -1,9 +1,12 @@
 use crate::graph::nodes::data::EditorNodeData;
 use crate::graph::EditorGraphResponse;
-use crate::value::draw::{draw_f32, draw_vec2f32};
+use crate::value::draw::{draw_evalue, draw_number, draw_string, draw_vec2};
+use crate::value::etype::registry::EStructId;
 use crate::EditorGraphState;
 use egui_node_graph::{NodeId, WidgetValueTrait};
+use rustc_hash::FxHashMap;
 use smallvec::{Array, SmallVec};
+use ustr::{Ustr, UstrMap};
 
 pub mod connections;
 pub mod draw;
@@ -34,8 +37,22 @@ pub type EVector2 = glam::f64::Vec2;
 /// with a DataType of Scalar and a ValueType of Vec2.
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub enum EValue {
-    Scalar { value: ENumber },
-    Vec2 { value: EVector2 },
+    Boolean {
+        value: bool,
+    },
+    Scalar {
+        value: ENumber,
+    },
+    Vec2 {
+        value: EVector2,
+    },
+    String {
+        value: String,
+    },
+    Struct {
+        ident: EStructId,
+        fields: UstrMap<EValue>,
+    },
 }
 
 impl Default for EValue {
@@ -73,7 +90,7 @@ macro_rules! try_to {
 
                 fn try_from(value: EValueInputWrapper<'a>) -> Result<Self, Self::Error> {
                     if value.0.len() != 1 {
-                        anyhow::bail!("Got {} inputs where only one was exepected.", value.0.len());
+                        anyhow::bail!("Got {} inputs where only one was expected.", value.0.len());
                     }
 
                     Self::try_from(value.0[0])
@@ -140,15 +157,12 @@ impl WidgetValueTrait for EValue {
         param_name: &str,
         _node_id: NodeId,
         ui: &mut egui::Ui,
-        _user_state: &mut EditorGraphState,
+        user_state: &mut EditorGraphState,
         _node_data: &EditorNodeData,
     ) -> Vec<EditorGraphResponse> {
         // This trait is used to tell the library which UI to display for the
         // inline parameter widgets.
-        match self {
-            EValue::Vec2 { value } => draw_vec2f32(ui, param_name, value),
-            EValue::Scalar { value } => draw_f32(ui, param_name, value),
-        }
+        draw_evalue(self, ui, param_name, &user_state.registry);
         // This allows you to return your responses from the inline widgets.
         Vec::new()
     }
