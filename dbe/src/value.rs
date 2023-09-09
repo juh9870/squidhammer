@@ -1,12 +1,11 @@
 use crate::graph::nodes::data::EditorNodeData;
 use crate::graph::EditorGraphResponse;
-use crate::value::draw::{draw_evalue, draw_number, draw_string, draw_vec2};
+use crate::value::draw::draw_evalue;
 use crate::value::etype::registry::EStructId;
 use crate::EditorGraphState;
 use egui_node_graph::{NodeId, WidgetValueTrait};
-use rustc_hash::FxHashMap;
 use smallvec::{Array, SmallVec};
-use ustr::{Ustr, UstrMap};
+use ustr::UstrMap;
 
 pub mod connections;
 pub mod draw;

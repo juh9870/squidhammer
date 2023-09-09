@@ -18,7 +18,7 @@ impl VfsRoot {
         Self {
             path: root.clone(),
             root: VfsEntry {
-                ty: VfsEntryType::Directory(VfsDirectory::new(root)),
+                ty: VfsEntryType::Directory(VfsDirectory::new(root.clone())),
                 name: root
                     .file_name()
                     .map(|e| e.to_string())
@@ -112,10 +112,10 @@ pub struct VfsEntry {
 }
 
 impl VfsEntry {
-    fn walk<'a>(&self, mut path: impl IntoIterator<Item = &'a str>) -> Result<&VfsEntry, VfsError> {
+    fn walk<'a>(&self, path: impl IntoIterator<Item = &'a str>) -> Result<&VfsEntry, VfsError> {
         let mut path = path.into_iter();
         match path.next() {
-            None => Ok(&self),
+            None => Ok(self),
             Some(segment) => match &self.ty {
                 VfsEntryType::File(path) => Err(VfsError::NotADirectory(path.clone())),
                 VfsEntryType::Directory(dir) => match dir.entry(segment) {
@@ -158,14 +158,14 @@ impl VfsEntry {
         }
     }
 
-    fn as_directory(&mut self) -> Result<&VfsDirectory, VfsError> {
+    pub fn as_directory(&mut self) -> Result<&VfsDirectory, VfsError> {
         match &self.ty {
             VfsEntryType::File(path) => Err(VfsError::NotADirectory(path.clone())),
             VfsEntryType::Directory(dir) => Ok(dir),
         }
     }
 
-    fn as_directory_mut(&mut self) -> Result<&mut VfsDirectory, VfsError> {
+    pub fn as_directory_mut(&mut self) -> Result<&mut VfsDirectory, VfsError> {
         match &mut self.ty {
             VfsEntryType::File(path) => Err(VfsError::NotADirectory(path.clone())),
             VfsEntryType::Directory(dir) => Ok(dir),
@@ -226,11 +226,7 @@ impl VfsDirectory {
         self.children.iter_mut()
     }
 
-    pub fn create(
-        &mut self,
-        name: String,
-        mut entry: VfsEntryType,
-    ) -> Result<&mut VfsEntry, VfsError> {
+    pub fn create(&mut self, name: String, entry: VfsEntryType) -> Result<&mut VfsEntry, VfsError> {
         if self.entry(&name).is_some() {
             return Err(VfsError::DuplicateEntry(self.path.clone(), name));
         }

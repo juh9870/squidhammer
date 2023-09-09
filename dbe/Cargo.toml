@@ -29,6 +29,7 @@ ustr = { version = "0.9.0", features = ["serialization"] }
 camino = "1.1.6"
 itertools = "0.11.0"
 utils = { path = "../utils" }
+thiserror = "1.0.43"
 
 [features]
 f32 = []

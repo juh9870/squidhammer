@@ -37,6 +37,7 @@
           pkgs.cargo-bloat
           pkgs.cargo-unused-features
           pkgs.rust-analyzer-unwrapped
+          pkgs.cargo-watch
         ];
 
         RUST_SRC_PATH = "${toolchain}/lib/rustlib/src/rust/library";

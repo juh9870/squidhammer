@@ -1,18 +1,18 @@
 ﻿use crate::states::init_state::InitState;
 use crate::states::title_screen_state::TitleScreenState;
-use crate::states::{DbeFileSystem, DbeStateHolder};
+use crate::states::{DbeFileSystem, DbeFileSystemBuilder, DbeStateHolder};
 use crate::{info_window, DbeState};
 use anyhow::Context;
 use camino::Utf8PathBuf;
-use egui::{TextEdit, Ui};
+use egui::Ui;
 use std::fmt::{Display, Formatter};
 use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::mpsc::{channel, Receiver, Sender};
 use std::sync::Arc;
 use std::thread::JoinHandle;
-use std::time::{Duration, Instant};
-use tracing::{error, info, trace, warn};
+use std::time::Duration;
+use tracing::{error, trace, warn};
 use utils::reporter::Reporter;
 
 #[derive(Debug)]
@@ -70,7 +70,7 @@ impl Display for LoadingProgress {
 
 fn load_path(
     path: impl AsRef<Path>,
-    fs: &mut DbeFileSystem,
+    fs: &mut DbeFileSystemBuilder,
     progress: &Sender<LoadingProgress>,
     canceled: &Arc<AtomicBool>,
 ) -> anyhow::Result<FileLoadingProgress> {
@@ -129,17 +129,9 @@ fn load_path(
             .try_into()
             .context("Non-Utf8 paths are not supported")?;
         match ext.as_str() {
-            "json" => {
-                let data = std::fs::read_to_string(path)?;
-                fs.raw_jsons.insert(utf_path, data);
-            }
-            "thing" => {
-                let data = std::fs::read_to_string(path)?;
-                fs.raw_things.insert(utf_path, data);
-            }
-            "jpg" | "jpeg" | "png" => {
+            "jpg" | "jpeg" | "png" | "json" | "thing" => {
                 let data = std::fs::read(path)?;
-                fs.raw_images.insert(utf_path, data);
+                fs.raw_files.insert(utf_path, data);
             }
             _ => return Ok(FileLoadingProgress::Skipped),
         }
@@ -148,15 +140,24 @@ fn load_path(
 }
 
 fn load_files(
+    path: PathBuf,
+    channel: &Sender<LoadingProgress>,
+    canceled: Arc<AtomicBool>,
+) -> anyhow::Result<DbeFileSystem> {
+    let mut fs = path.clone().try_into().map(DbeFileSystemBuilder::new)?;
+    load_path(path, &mut fs, channel, &canceled)?;
+    fs.build()
+}
+
+fn spawn(
     path: impl AsRef<Path>,
     channel: Sender<LoadingProgress>,
     canceled: Arc<AtomicBool>,
 ) -> JoinHandle<()> {
     let path = path.as_ref().to_path_buf();
     std::thread::spawn(move || {
-        let mut files = DbeFileSystem::new(path.clone());
-        match load_path(path, &mut files, &channel, &canceled) {
-            Ok(_) => channel.send(LoadingProgress::Done(files)),
+        match load_files(path, &channel, canceled) {
+            Ok(fs) => channel.send(LoadingProgress::Done(fs)),
             Err(err) => channel.send(LoadingProgress::Error(err)),
         }
         .unwrap_or_else(|_| error!("Main thread has died while loading items"));
@@ -170,7 +171,7 @@ impl DbeStateHolder for FilesLoadingState {
             None => {
                 let (sender, receiver) = channel();
                 let cancel: Arc<AtomicBool> = Default::default();
-                let handle = load_files(&path, sender, cancel.clone());
+                let handle = spawn(&path, sender, cancel.clone());
                 LoadingData {
                     progress: receiver,
                     cancel,
@@ -186,6 +187,10 @@ impl DbeStateHolder for FilesLoadingState {
 
         if let Some(progress) = loading.progress.try_iter().last() {
             if let LoadingProgress::Done(fs) = progress {
+                loading
+                    .handle
+                    .join()
+                    .expect("Expect loading thread to terminate successfully");
                 return InitState::new(fs).into();
             }
             loading.reporter.push(progress);

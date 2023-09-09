@@ -768,6 +768,7 @@ dependencies = [
  "smallvec",
  "strum",
  "strum_macros",
+ "thiserror",
  "tracing",
  "ustr",
  "utils",

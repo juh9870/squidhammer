@@ -2,8 +2,7 @@ use crate::value::etype::EDataType;
 use crate::value::EValue;
 use anyhow::{anyhow, bail, Context};
 use camino::{Utf8Path, Utf8PathBuf};
-use itertools::{Itertools, Position};
-use std::ffi::OsStr;
+use itertools::Itertools;
 use std::fmt::{Display, Formatter};
 use ustr::{Ustr, UstrMap};
 
@@ -75,7 +74,7 @@ pub struct EStructId(Ustr);
 impl EStructId {
     pub fn parse(data: &str) -> anyhow::Result<Self> {
         let (namespace, path): (&str, &str) = data
-            .split(":")
+            .split(':')
             .collect_tuple()
             .ok_or_else(|| anyhow!("Type path must be in a form of `namespace:path`"))?;
 
@@ -126,7 +125,7 @@ impl EStructId {
         let segments: Vec<String> = segments
             .with_position()
             .map(|(pos, path)| {
-                let str = if matches!(pos, Position::Last | Position::Only) {
+                let str = if matches!(pos, itertools::Position::Last | itertools::Position::Only) {
                     let p: &Utf8Path = path.as_ref();
                     p.file_stem().ok_or_else(||anyhow!("Final path segment has an empty filename"))?.to_string()
                 } else {

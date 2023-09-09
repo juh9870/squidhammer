@@ -3,18 +3,19 @@ use crate::{info_window, DbeState};
 use egui::Ui;
 #[derive(Debug)]
 pub struct InitState {
-    fs: DbeFileSystem,
+    _fs: DbeFileSystem,
 }
 
 impl InitState {
     pub fn new(fs: DbeFileSystem) -> Self {
-        Self { fs }
+        Self { _fs: fs }
     }
 }
 
 impl DbeStateHolder for InitState {
     fn update(self, ui: &mut Ui) -> DbeState {
         info_window(ui, "TODO", |_ui| {});
+
         self.into()
     }
 }

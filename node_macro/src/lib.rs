@@ -60,7 +60,7 @@ fn process(attr: TokenStream, data: ItemFn) -> Result<TokenStream, Error> {
         node.inputs.push((&pat.ty, &ident.ident))
     }
 
-    let attribute = AttributeInput::from_args(dbg!(attr).into())?;
+    let attribute = AttributeInput::from_args(attr.into())?;
 
     let mut is_tuple = false;
     let mut return_types = vec![];
