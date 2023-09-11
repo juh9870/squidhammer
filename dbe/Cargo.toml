@@ -30,6 +30,7 @@ camino = "1.1.6"
 itertools = "0.11.0"
 utils = { path = "../utils" }
 thiserror = "1.0.43"
+logos = "0.13.0"
 
 [features]
 f32 = []

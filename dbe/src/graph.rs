@@ -1,5 +1,5 @@
 use crate::graph::evaluator::evaluate_node;
-use crate::value::etype::registry::EStructRegistry;
+use crate::value::etype::registry::ETypesRegistry;
 use crate::value::etype::EDataType;
 use crate::value::EValue;
 use commands::Command;
@@ -22,9 +22,9 @@ pub enum EditorGraphResponse {}
 /// The graph 'global' state. This state struct is passed around to the node and
 /// parameter drawing callbacks. The contents of this struct are entirely up to
 /// the user. For this example, we use it to keep track of the 'active' node.
-#[derive(Debug, Default)]
+#[derive(Debug)]
 pub struct EditorGraphState {
-    pub registry: EStructRegistry,
+    pub registry: ETypesRegistry,
 }
 
 impl UserResponseTrait for EditorGraphResponse {}

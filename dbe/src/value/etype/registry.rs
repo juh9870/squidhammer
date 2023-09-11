@@ -1,59 +1,192 @@
+use crate::value::etype::registry::eenum::EEnumData;
+use crate::value::etype::registry::estruct::EStructData;
+use crate::value::etype::registry::serialization::deserialize_thing;
 use crate::value::etype::EDataType;
-use crate::value::EValue;
+use crate::value::{EValue, JsonValue};
 use anyhow::{anyhow, bail, Context};
 use camino::{Utf8Path, Utf8PathBuf};
 use itertools::Itertools;
+use rustc_hash::FxHashMap;
+use serde_json::Value;
 use std::fmt::{Display, Formatter};
 use ustr::{Ustr, UstrMap};
 
-#[derive(Debug, Copy, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
-pub struct EStructField {
-    pub name: Ustr,
-    pub ty: EDataType,
+pub mod eenum;
+pub mod estruct;
+pub mod serialization;
+
+#[derive(Debug, Clone)]
+pub enum EObjectType {
+    Struct(EStructData),
+    Enum(EEnumData),
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
-pub struct EStructData {
-    pub ident: EStructId,
-    pub fields: Vec<EStructField>,
+impl EObjectType {
+    pub fn as_struct(&self) -> Option<&EStructData> {
+        if let EObjectType::Struct(data) = self {
+            return Some(data);
+        }
+        None
+    }
+    pub fn as_enum(&self) -> Option<&EEnumData> {
+        if let EObjectType::Enum(data) = self {
+            return Some(data);
+        }
+        None
+    }
 }
 
-impl EStructData {
-    pub fn new(ident: EStructId) -> EStructData {
-        Self {
-            fields: Default::default(),
-            ident,
+#[derive(Debug, Clone)]
+enum RegistryItem {
+    Raw(Value),
+    DeserializationInProgress,
+    Ready(EObjectType),
+}
+
+impl RegistryItem {
+    #[inline(always)]
+    pub fn expect_ready(&self) -> &EObjectType {
+        match self {
+            RegistryItem::Ready(item) => item,
+            _ => panic!("Registry item is not ready when expected"),
         }
     }
 }
 
-#[derive(Debug, Default)]
-pub struct EStructRegistry {
+#[derive(Debug)]
+pub struct ETypesRegistry {
     root: Utf8PathBuf,
-    structs: UstrMap<EStructData>,
+    types: UstrMap<RegistryItem>,
 }
 
-impl EStructRegistry {
-    pub fn structs(&self) -> &UstrMap<EStructData> {
-        &self.structs
+impl ETypesRegistry {
+    pub fn from_raws(
+        root: Utf8PathBuf,
+        data: FxHashMap<Utf8PathBuf, JsonValue>,
+    ) -> anyhow::Result<Self> {
+        let mut types = UstrMap::with_capacity_and_hasher(data.len(), Default::default());
+
+        for (path, value) in data {
+            let id = ETypetId::from_path(&path, &root)
+                .with_context(|| format!("While generating type identifier for file {path}"))?;
+            types.insert(*id.raw(), RegistryItem::Raw(value));
+        }
+
+        let reg = Self { root, types };
+
+        reg.deserialize_all()
     }
 
-    pub fn register_struct(&mut self, id: EStructId, data: EStructData) -> EDataType {
-        self.structs.insert(*id.raw(), data);
-        EDataType::Struct { ident: id }
+    // pub fn types(&self) -> &UstrMap<EObjectType> {
+    //     &self.types
+    // }
+
+    pub fn get_object(&self, id: &ETypetId) -> Option<&EObjectType> {
+        self.types.get(id.raw()).map(RegistryItem::expect_ready)
     }
 
-    pub fn default_fields(&self, ident: EStructId) -> Option<UstrMap<EValue>> {
-        self.structs.get(ident.raw()).map(|e| {
-            e.fields
-                .iter()
-                .map(|f| (f.name, f.ty.default_value(self)))
-                .collect()
-        })
+    pub fn get_struct(&self, id: &ETypetId) -> Option<&EStructData> {
+        self.types
+            .get(id.raw())
+            .and_then(|e| e.expect_ready().as_struct())
+    }
+
+    pub fn get_enum(&self, id: &ETypetId) -> Option<&EEnumData> {
+        self.types
+            .get(id.raw())
+            .and_then(|e| e.expect_ready().as_enum())
+    }
+
+    pub fn register_struct(&mut self, id: ETypetId, data: EStructData) -> EDataType {
+        self.types
+            .insert(*id.raw(), RegistryItem::Ready(EObjectType::Struct(data)));
+        EDataType::Object { ident: id }
+    }
+
+    pub fn register_enum(&mut self, id: ETypetId, data: EEnumData) -> EDataType {
+        self.types
+            .insert(*id.raw(), RegistryItem::Ready(EObjectType::Enum(data)));
+        EDataType::Object { ident: id }
+    }
+
+    pub fn default_value(&self, ident: &ETypetId) -> EValue {
+        let Some(data) = self.types.get(ident.raw()) else {
+            return EValue::Unknown {
+                value: JsonValue::Null,
+            };
+        };
+
+        match data.expect_ready() {
+            EObjectType::Struct(data) => data.default_value(self),
+            EObjectType::Enum(data) => data.default_value(self),
+        }
     }
 
     pub fn root_path(&self) -> &Utf8Path {
         self.root.as_path()
+    }
+
+    fn register_raw_json_object(&mut self, id: ETypetId, data: JsonValue) -> EDataType {
+        self.types.insert(*id.raw(), RegistryItem::Raw(data));
+        EDataType::Object { ident: id }
+    }
+
+    fn fetch_or_deserialize(&mut self, id: ETypetId) -> anyhow::Result<&EObjectType> {
+        let data = self
+            .types
+            .get_mut(id.raw())
+            .with_context(|| format!("Type `{id}` is not defined"))?;
+
+        match data {
+            RegistryItem::Ready(_) => {
+                return Ok(self
+                    .types
+                    .get(id.raw())
+                    .expect("Should be present")
+                    .expect_ready());
+            }
+            RegistryItem::DeserializationInProgress => {
+                bail!("Recursion error! Type `{id}` is in process of getting evaluated")
+            }
+            RegistryItem::Raw(_) => {} // handled next
+        };
+
+        let RegistryItem::Raw(old) =
+            std::mem::replace(data, RegistryItem::DeserializationInProgress)
+        else {
+            panic!("Item should be raw")
+        };
+        let ready = RegistryItem::Ready(deserialize_thing(self, id, &old)?);
+        self.types.insert(*id.raw(), ready);
+        Ok(self
+            .types
+            .get(id.raw())
+            .expect("Item should be present")
+            .expect_ready())
+    }
+
+    fn deserialize_all(mut self) -> anyhow::Result<Self> {
+        let keys = self.types.keys().copied().collect_vec();
+        for id in keys.into_iter() {
+            self.fetch_or_deserialize(ETypetId(id))?;
+        }
+
+        debug_assert!(
+            self.types
+                .values()
+                .all(|e| matches!(e, RegistryItem::Ready(_))),
+            "All items should be deserialized"
+        );
+
+        Ok(self)
+    }
+
+    // MAYBE?: use https://github.com/compenguy/ngrammatic for hints
+    fn assert_defined(&self, id: &ETypetId) -> anyhow::Result<()> {
+        if !self.types.contains_key(id.raw()) {
+            bail!("Type `{id}` is not defined")
+        }
+        Ok(())
     }
 }
 
@@ -69,9 +202,9 @@ pub fn path_errors(namespace: &str) -> Option<(usize, char)> {
 }
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
-pub struct EStructId(Ustr);
+pub struct ETypetId(Ustr);
 
-impl EStructId {
+impl ETypetId {
     pub fn parse(data: &str) -> anyhow::Result<Self> {
         let (namespace, path): (&str, &str) = data
             .split(':')
@@ -97,7 +230,7 @@ impl EStructId {
             )
         }
 
-        Ok(EStructId(data.into()))
+        Ok(ETypetId(data.into()))
     }
 
     pub fn from_path(path: &Utf8Path, types_root: &Utf8Path) -> anyhow::Result<Self> {
@@ -148,12 +281,13 @@ impl EStructId {
         Self::parse(&format!("{namespace}:{path}"))
     }
 
+    #[inline(always)]
     pub fn raw(&self) -> &Ustr {
         &self.0
     }
 }
 
-impl Display for EStructId {
+impl Display for ETypetId {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", self.0)
     }

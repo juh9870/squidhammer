@@ -1,11 +1,16 @@
 use crate::graph::nodes::data::EditorNodeData;
 use crate::graph::EditorGraphResponse;
 use crate::value::draw::draw_evalue;
-use crate::value::etype::registry::EStructId;
+use crate::value::etype::registry::eenum::EEnumVariantId;
+use crate::value::etype::registry::ETypetId;
 use crate::EditorGraphState;
 use egui_node_graph::{NodeId, WidgetValueTrait};
+use itertools::Itertools;
 use smallvec::{Array, SmallVec};
+use std::fmt::{Display, Formatter};
 use ustr::UstrMap;
+
+pub use serde_json::Value as JsonValue;
 
 pub mod connections;
 pub mod draw;
@@ -36,6 +41,9 @@ pub type EVector2 = glam::f64::Vec2;
 /// with a DataType of Scalar and a ValueType of Vec2.
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub enum EValue {
+    Unknown {
+        value: JsonValue,
+    },
     Boolean {
         value: bool,
     },
@@ -49,8 +57,12 @@ pub enum EValue {
         value: String,
     },
     Struct {
-        ident: EStructId,
+        ident: ETypetId,
         fields: UstrMap<EValue>,
+    },
+    Enum {
+        ident: EEnumVariantId,
+        data: Box<EValue>,
     },
 }
 
@@ -132,6 +144,8 @@ macro_rules! try_to {
 
 try_to!(Scalar, ENumber, scalar);
 try_to!(Vec2, EVector2, vec2);
+try_to!(Boolean, bool, boolean);
+try_to!(String, String, string);
 
 impl<'a, T: TryFrom<&'a EValue, Error = anyhow::Error>, A: Array<Item = T>>
     TryFrom<EValueInputWrapper<'a>> for SmallVec<A>
@@ -164,5 +178,30 @@ impl WidgetValueTrait for EValue {
         draw_evalue(self, ui, param_name, &user_state.registry);
         // This allows you to return your responses from the inline widgets.
         Vec::new()
+    }
+}
+
+impl Display for EValue {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        match self {
+            EValue::Boolean { value } => write!(f, "{value}"),
+            EValue::Scalar { value } => write!(f, "{value}"),
+            EValue::Vec2 { value } => write!(f, "{value}"),
+            EValue::String { value } => write!(f, "\"{value}\""),
+            EValue::Struct { ident, fields } => {
+                write!(
+                    f,
+                    "{ident}{{{}}}",
+                    fields
+                        .iter()
+                        .map(|(field, value)| format!("\"{field}\": {value}"))
+                        .join(", ")
+                )
+            }
+            EValue::Enum { ident, data } => {
+                write!(f, "{ident}({data})")
+            }
+            EValue::Unknown { value } => write!(f, "JSON({value})"),
+        }
     }
 }
