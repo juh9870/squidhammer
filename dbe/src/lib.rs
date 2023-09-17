@@ -3,13 +3,19 @@
 use crate::graph::{EditorGraph, EditorGraphState};
 use crate::states::init_state::InitState;
 use crate::states::loading_state::FilesLoadingState;
+use crate::states::main_state::MainState;
 use crate::states::title_screen_state::TitleScreenState;
 use crate::states::DbeStateHolder;
 use bytesize::ByteSize;
 use camino::Utf8PathBuf;
-use egui::{Align2, Id, Ui, Visuals, WidgetText};
+use egui::{Align2, Id, Style, Ui, Visuals, WidgetText};
+use egui_node_graph::scale::Scale;
+use lazy_static::lazy_static;
 use pluralizer::pluralize;
 use rust_i18n::{i18n, t};
+use std::rc::Rc;
+use std::sync::atomic::{AtomicU64, Ordering};
+use std::sync::Arc;
 
 mod graph;
 mod states;
@@ -30,6 +36,7 @@ pub enum DbeState {
     TitleScreen(TitleScreenState),
     Loading(FilesLoadingState),
     Initializing(InitState),
+    Main(MainState),
 }
 
 impl DbeState {
@@ -70,8 +77,20 @@ impl DbeState {
             DbeState::TitleScreen(state) => state.update(ui),
             DbeState::Loading(state) => state.update(ui),
             DbeState::Initializing(state) => state.update(ui),
+            DbeState::Main(state) => state.update(ui),
         }
     }
+}
+lazy_static! {
+    static ref APP_SCALE: Arc<AtomicU64> = Arc::new(AtomicU64::from(10));
+}
+
+fn scale_style(style: &mut Style) {
+    style.scale(global_app_scale());
+}
+
+fn global_app_scale() -> f32 {
+    APP_SCALE.load(Ordering::Relaxed) as f32 / 10.0
 }
 
 pub fn update_dbe(ctx: &egui::Context, data: &mut DbeState) {
@@ -93,10 +112,17 @@ pub fn update_dbe(ctx: &egui::Context, data: &mut DbeState) {
                 ByteSize(ustr::total_allocated() as u64),
                 pluralize("entry", ustr::num_entries() as isize, true)
             ));
+            ui.separator();
+            ui.label("App scale");
+            let mut scale = APP_SCALE.load(Ordering::Relaxed);
+            ui.add(egui::Slider::new(&mut scale, 5..=30));
+            APP_SCALE.store(scale, Ordering::Relaxed);
         })
     });
     egui::CentralPanel::default().show(ctx, |ui| {
+        scale_style(ui.style_mut());
         let state = std::mem::replace(data, DbeState::Broken);
         *data = state.update(ui);
+        ui.reset_style();
     });
 }

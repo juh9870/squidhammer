@@ -6,6 +6,7 @@ use rustc_hash::FxHashMap;
 
 pub mod init_state;
 pub mod loading_state;
+pub mod main_state;
 pub mod project_config;
 pub mod title_screen_state;
 
@@ -33,7 +34,7 @@ impl DbeFileSystem {
         &mut self.fs
     }
 
-    pub fn content(&self, path: &Utf8PathBuf) -> Option<&Vec<u8>> {
+    pub fn content(&self, path: &Utf8Path) -> Option<&Vec<u8>> {
         self.raw_files.get(path)
     }
 }

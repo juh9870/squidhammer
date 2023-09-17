@@ -7,9 +7,8 @@ edition = "2021"
 
 [dependencies]
 egui = "0.22.0"
-eframe = { version = "0.22.0", features = ["persistence"] }
 egui_node_graph = { path = "../egui_node_graph/egui_node_graph", features = ["persistence"] }
-egui_dock = { git = "https://github.com/Adanos020/egui_dock.git", branch = "release-0.7" }
+egui_dock = { git = "https://github.com/Adanos020/egui_dock.git", rev = "567bf55" }
 egui_file = "0.10"
 anyhow = "1.0.72"
 glam = { version = "0.24.1", features = ["serde"] }
@@ -37,7 +36,9 @@ pluralizer = "0.4.0"
 serde_json5 = "0.1.0"
 toml = "0.8.0"
 ordered-float = "3.9.1"
+egui-toast = "0.8.1"
 lazy_static = "1.4.0"
+derivative = "2.2.0"
 
 [dev-dependencies]
 rstest = "0.18.2"

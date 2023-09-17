@@ -6,7 +6,6 @@ use crate::value::{EValue, JsonValue};
 use anyhow::{anyhow, bail, Context};
 use camino::{Utf8Path, Utf8PathBuf};
 use itertools::Itertools;
-use lazy_static::lazy_static;
 use serde_json::Value;
 use std::fmt::{Display, Formatter};
 use ustr::{Ustr, UstrMap};

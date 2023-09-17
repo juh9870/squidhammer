@@ -76,6 +76,10 @@ impl VfsRoot {
             VfsEntryType::File(path.to_path_buf()),
         )
     }
+
+    pub fn root(&self) -> &VfsEntry {
+        &self.root
+    }
 }
 
 #[derive(Debug, Clone, Error)]
@@ -112,7 +116,7 @@ pub struct VfsEntry {
 }
 
 impl VfsEntry {
-    pub fn path(&self) -> &Utf8PathBuf {
+    pub fn path(&self) -> &Utf8Path {
         match &self.ty {
             VfsEntryType::File(path) => path,
             VfsEntryType::Directory(dir) => &dir.path,
@@ -178,6 +182,14 @@ impl VfsEntry {
             VfsEntryType::Directory(dir) => Ok(dir),
         }
     }
+
+    pub fn ty(&self) -> &VfsEntryType {
+        &self.ty
+    }
+
+    pub fn name(&self) -> &str {
+        &self.name
+    }
 }
 
 #[derive(Debug, Clone)]
@@ -240,5 +252,9 @@ impl VfsDirectory {
         let entry = VfsEntry { ty: entry, name };
         self.children.push(entry);
         Ok(self.children.last_mut().expect("Should have children"))
+    }
+    
+    pub fn path(&self) -> &Utf8Path {
+        &self.path
     }
 }

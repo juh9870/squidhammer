@@ -1,4 +1,5 @@
-﻿use crate::states::project_config::ProjectConfig;
+﻿use crate::states::main_state::MainState;
+use crate::states::project_config::ProjectConfig;
 use crate::states::{DbeFileSystem, DbeStateHolder};
 use crate::value::etype::registry::ETypesRegistry;
 use crate::value::JsonValue;
@@ -81,12 +82,7 @@ impl DbeStateHolder for InitState {
                 Ok(reg) => Self::Ready(fs, reg).into(),
                 Err(err) => Self::Error(display_error(err)).into(),
             },
-            InitState::Ready(fs, reg) => {
-                info_window(ui, "Initialization finished", |ui| {
-                    ui.label(format!("Total types loaded: {}", reg.all_objects().count()));
-                });
-                InitState::Ready(fs, reg).into()
-            }
+            InitState::Ready(fs, reg) => MainState::new(fs, reg).into(),
             InitState::Error(err) => {
                 info_window(ui, "Something gone wrong", |ui| {
                     let mut cache = CommonMarkCache::default();
