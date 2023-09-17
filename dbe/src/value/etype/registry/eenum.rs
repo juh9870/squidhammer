@@ -141,6 +141,10 @@ impl EEnumVariant {
             }
             // Continue on object
             EDataType::Object { ident } => ident,
+            EDataType::Id { .. } => bail!("ID types are not supported as enum variants"),
+            EDataType::Ref { .. } => {
+                bail!("Reference types are not yet supported as enum variants")
+            }
         };
 
         registry.assert_defined(&target_id)?;

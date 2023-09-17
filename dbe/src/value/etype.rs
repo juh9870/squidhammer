@@ -5,7 +5,7 @@ use egui_node_graph::DataTypeTrait;
 use rust_i18n::t;
 use std::borrow::Cow;
 use std::fmt::{Display, Formatter};
-use std::hash::{Hash, Hasher};
+use std::hash::Hash;
 use ustr::Ustr;
 
 pub mod registry;
@@ -15,11 +15,21 @@ pub mod registry;
 /// attaching incompatible datatypes.
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub enum EDataType {
+    /// Primitive boolean type
     Boolean,
+    /// Primitive numeric type
     Scalar,
+    /// Primitive vector type
     Vec2,
+    /// Primitive string type
     String,
+    /// Object ID type
+    Id { ty: ETypetId },
+    /// Object reference type
+    Ref { ty: ETypetId },
+    /// Inline object or enum type
     Object { ident: ETypetId },
+    /// Primitive constant type
     Const { value: ETypeConst },
 }
 
@@ -36,6 +46,14 @@ impl EDataType {
             },
             EDataType::Object { ident } => reg.default_value(ident),
             EDataType::Const { value } => value.default_value(),
+            EDataType::Id { ty } => EValue::Id {
+                ty: *ty,
+                value: None,
+            },
+            EDataType::Ref { ty } => EValue::Ref {
+                ty: *ty,
+                value: None,
+            },
         }
     }
 }
@@ -50,17 +68,21 @@ impl DataTypeTrait<EditorGraphState> for EDataType {
             EDataType::String => egui::Color32::from_rgb(109, 207, 109),
             EDataType::Object { .. } => egui::Color32::from_rgb(255, 255, 255),
             EDataType::Const { .. } => todo!(),
+            EDataType::Id { .. } => todo!(),
+            EDataType::Ref { .. } => todo!(),
         }
     }
 
     fn name(&self) -> Cow<'_, str> {
         match self {
-            EDataType::Boolean => Cow::Owned(t!("boolean")),
-            EDataType::Scalar => Cow::Owned(t!("scalar")),
-            EDataType::Vec2 => Cow::Owned(t!("vec2")),
-            EDataType::String => Cow::Owned(t!("string")),
+            EDataType::Boolean => Cow::Owned(t!("types.boolean")),
+            EDataType::Scalar => Cow::Owned(t!("types.scalar")),
+            EDataType::Vec2 => Cow::Owned(t!("types.vec2")),
+            EDataType::String => Cow::Owned(t!("types.string")),
+            EDataType::Id { ty } => Cow::Owned(t!("types.id", ty = ty)),
+            EDataType::Ref { ty } => Cow::Owned(t!("types.ref", ty = ty)),
             EDataType::Object { ident } => Cow::Owned(t!(ident.raw())),
-            EDataType::Const { value } => Cow::Owned(value.default_value().to_string()),
+            EDataType::Const { value } => Cow::Owned(value.to_string()),
         }
     }
 }

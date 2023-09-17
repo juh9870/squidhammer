@@ -869,6 +869,7 @@ dependencies = [
  "enum_dispatch",
  "glam",
  "itertools 0.11.0",
+ "lazy_static",
  "logos",
  "node_macro",
  "ordered-float",

@@ -55,6 +55,14 @@ pub enum EValue {
         ident: ETypetId,
         fields: UstrMap<EValue>,
     },
+    Id {
+        ty: ETypetId,
+        value: Option<ETypetId>,
+    },
+    Ref {
+        ty: ETypetId,
+        value: Option<ETypetId>,
+    },
     Enum {
         ident: EEnumVariantId,
         data: Box<EValue>,
@@ -197,6 +205,20 @@ impl Display for EValue {
                 write!(f, "{ident}({data})")
             }
             EValue::Unknown { value } => write!(f, "JSON({value})"),
+            EValue::Id { ty, value } => {
+                write!(
+                    f,
+                    "Id<{ty}>({})",
+                    value.map(|e| e.raw().as_str()).unwrap_or("null")
+                )
+            }
+            EValue::Ref { ty, value } => {
+                write!(
+                    f,
+                    "Ref<{ty}>({})",
+                    value.map(|e| e.raw().as_str()).unwrap_or("null")
+                )
+            }
         }
     }
 }

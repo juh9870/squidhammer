@@ -124,5 +124,7 @@ pub fn draw_evalue(value: &mut EValue, ui: &mut Ui, label: &str, registry: &ETyp
         EValue::Vec2 { value } => draw_vec2(ui, label, value),
         EValue::Struct { fields, ident } => draw_struct(ui, label, registry, ident, fields),
         EValue::Enum { .. } => todo!(),
+        EValue::Id { .. } => todo!(),
+        EValue::Ref { .. } => todo!(),
     }
 }

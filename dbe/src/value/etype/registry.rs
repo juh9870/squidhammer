@@ -6,6 +6,7 @@ use crate::value::{EValue, JsonValue};
 use anyhow::{anyhow, bail, Context};
 use camino::{Utf8Path, Utf8PathBuf};
 use itertools::Itertools;
+use lazy_static::lazy_static;
 use serde_json::Value;
 use std::fmt::{Display, Formatter};
 use ustr::{Ustr, UstrMap};
@@ -242,9 +243,7 @@ impl ETypetId {
     pub fn from_path(path: &Utf8Path, types_root: &Utf8Path) -> anyhow::Result<Self> {
         let sub_path = path
             .strip_prefix(types_root)
-            .map_err(|_| {
-                anyhow!("Thing is outside of types root folder.\nThing: `{path}`")
-            })?
+            .map_err(|_| anyhow!("Thing is outside of types root folder.\nThing: `{path}`"))?
             .components()
             .collect_vec();
         if sub_path.len() < 2 {
