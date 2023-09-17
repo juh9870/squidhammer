@@ -129,7 +129,7 @@ fn load_path(
             .try_into()
             .context("Non-Utf8 paths are not supported")?;
         match ext.as_str() {
-            "jpg" | "jpeg" | "png" | "json" | "thing" => {
+            "jpg" | "jpeg" | "png" | "json" | "toml" | "thing" => {
                 let data = std::fs::read(path)?;
                 fs.raw_files.insert(utf_path, data);
             }

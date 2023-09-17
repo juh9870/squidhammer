@@ -5,6 +5,7 @@ use egui_node_graph::DataTypeTrait;
 use rust_i18n::t;
 use std::borrow::Cow;
 use std::fmt::{Display, Formatter};
+use std::hash::{Hash, Hasher};
 use ustr::Ustr;
 
 pub mod registry;
@@ -12,7 +13,7 @@ pub mod registry;
 /// `DataType`s are what defines the possible range of connections when
 /// attaching two ports together. The graph UI will make sure to not allow
 /// attaching incompatible datatypes.
-#[derive(Debug, Copy, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub enum EDataType {
     Boolean,
     Scalar,
@@ -64,10 +65,10 @@ impl DataTypeTrait<EditorGraphState> for EDataType {
     }
 }
 
-#[derive(Debug, Copy, Clone, serde::Serialize, serde::Deserialize)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Hash)]
 pub enum ETypeConst {
     Boolean(bool),
-    Scalar(ENumber),
+    Scalar(ordered_float::OrderedFloat<ENumber>),
     String(Ustr),
 }
 
@@ -75,24 +76,11 @@ impl ETypeConst {
     pub fn default_value(&self) -> EValue {
         match self {
             ETypeConst::Boolean(value) => (*value).into(),
-            ETypeConst::Scalar(value) => (*value).into(),
+            ETypeConst::Scalar(value) => value.0.into(),
             ETypeConst::String(value) => value.to_string().into(),
         }
     }
 }
-
-impl PartialEq for ETypeConst {
-    fn eq(&self, other: &Self) -> bool {
-        match (self, other) {
-            (Self::Boolean(a), Self::Boolean(b)) => a == b,
-            (Self::Scalar(a), Self::Scalar(b)) => a.total_cmp(b).is_eq(),
-            (Self::String(a), Self::String(b)) => a == b,
-            _ => false,
-        }
-    }
-}
-
-impl Eq for ETypeConst {}
 
 impl Display for ETypeConst {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {

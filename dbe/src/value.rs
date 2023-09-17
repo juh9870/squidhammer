@@ -16,20 +16,15 @@ pub mod connections;
 pub mod draw;
 pub mod etype;
 
-#[cfg(not(any(feature = "f32", feature = "f64")))]
-compile_error!("Either feature `f32` or `f64` should be enabled.");
-#[cfg(all(feature = "f32", feature = "f64"))]
-compile_error!("Features `f32` and `f64` shouldn't be enabled at the same time.");
-
-#[cfg(all(feature = "f32", not(feature = "f64")))]
+#[cfg(not(feature = "f64"))]
 pub type ENumber = f32;
-#[cfg(all(feature = "f64", not(feature = "f32")))]
+#[cfg(feature = "f64")]
 pub type ENumber = f64;
 
-#[cfg(all(feature = "f32", not(feature = "f64")))]
+#[cfg(not(feature = "f64"))]
 pub type EVector2 = glam::f32::Vec2;
 
-#[cfg(all(feature = "f64", not(feature = "f32")))]
+#[cfg(feature = "f64")]
 pub type EVector2 = glam::f64::Vec2;
 
 /// In the graph, input parameters can optionally have a constant value. This
@@ -39,7 +34,7 @@ pub type EVector2 = glam::f64::Vec2;
 /// this library makes no attempt to check this consistency. For instance, it is
 /// up to the user code in this example to make sure no parameter is created
 /// with a DataType of Scalar and a ValueType of Vec2.
-#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+#[derive(Debug, Clone)]
 pub enum EValue {
     Unknown {
         value: JsonValue,

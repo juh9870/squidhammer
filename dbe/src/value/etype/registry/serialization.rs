@@ -1,12 +1,10 @@
 use crate::value::etype::registry::eenum::EEnumData;
-use crate::value::etype::registry::estruct::{EStructData, EStructField};
+use crate::value::etype::registry::estruct::EStructData;
 use crate::value::etype::registry::{EObjectType, ETypesRegistry, ETypetId};
 use crate::value::etype::EDataType;
 use anyhow::{anyhow, bail, Context};
-use camino::Utf8Path;
 use serde_json::Value;
 use types_parsing::parse_type_string;
-use ustr::Ustr;
 
 mod types_parsing;
 

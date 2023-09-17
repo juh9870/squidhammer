@@ -1,22 +1,100 @@
-﻿use crate::states::{DbeFileSystem, DbeStateHolder};
+﻿use crate::states::project_config::ProjectConfig;
+use crate::states::{DbeFileSystem, DbeStateHolder};
+use crate::value::etype::registry::ETypesRegistry;
+use crate::value::JsonValue;
 use crate::{info_window, DbeState};
+use anyhow::{anyhow, Context};
 use egui::Ui;
+use egui_commonmark::{CommonMarkCache, CommonMarkViewer};
+use tracing::trace;
+use utils::errors::display_error;
+
 #[derive(Debug)]
-pub struct InitState {
-    _fs: DbeFileSystem,
+pub enum InitState {
+    Init(DbeFileSystem),
+    Ready(DbeFileSystem, ETypesRegistry),
+    Error(String),
 }
 
 impl InitState {
     pub fn new(fs: DbeFileSystem) -> Self {
-        Self { _fs: fs }
+        Self::Init(fs)
     }
+}
+
+fn init_editor(fs: &DbeFileSystem) -> anyhow::Result<ETypesRegistry> {
+    let mut registry_items = vec![];
+
+    let config = fs.fs().lookup("things_editor.toml").map_err(|_| {
+        anyhow!("`things_editor.toml` is missing. Are you sure this is a valid project folder?")
+    })?;
+    let config = fs
+        .content(config.path())
+        .context("Configuration file is present in fs but not in raw files, what's going on?")?;
+
+    let mut config: ProjectConfig =
+        toml::de::from_str(std::str::from_utf8(config).map_err(|_| {
+            anyhow!(
+                "Invalid file encoding, please check that `things_editor.toml` is encoded in UTF8"
+            )
+        })?)
+        .context("While parsing `things_editor.toml`")?;
+
+    config.types.root = fs.root().join(config.types.root).canonicalize_utf8()?;
+
+    anyhow::ensure!(
+        config.types.root.starts_with(fs.root()),
+        "`types_folder` option point to path outside of project root directory"
+    );
+
+    for (path, file) in &fs.raw_files {
+        let Some(ext) = path.extension().map(|e| e.to_ascii_lowercase()) else {
+            continue;
+        };
+
+        match ext.as_ref() {
+            "thing" => {
+                let value: JsonValue = serde_json5::from_slice(file.as_slice())
+                    .with_context(|| format!("While parsing file at \"{path}\""))?;
+                registry_items.push((path.clone(), value));
+                trace!("Deserialized thing at {path}");
+            }
+            "json" => {}
+            _ => {}
+        }
+    }
+
+    ETypesRegistry::from_raws(config.types.root.clone(), registry_items).with_context(|| {
+        format!(
+            "While initializing types registry\nRoot folder: `{}`",
+            config.types.root
+        )
+    })
 }
 
 impl DbeStateHolder for InitState {
     fn update(self, ui: &mut Ui) -> DbeState {
-        info_window(ui, "TODO", |_ui| {});
-
-        self.into()
+        match self {
+            InitState::Init(fs) => match init_editor(&fs)
+                .with_context(|| format!("While loading project directory at `{}`", fs.root()))
+            {
+                Ok(reg) => Self::Ready(fs, reg).into(),
+                Err(err) => Self::Error(display_error(err)).into(),
+            },
+            InitState::Ready(fs, reg) => {
+                info_window(ui, "Initialization finished", |ui| {
+                    ui.label(format!("Total types loaded: {}", reg.all_objects().count()));
+                });
+                InitState::Ready(fs, reg).into()
+            }
+            InitState::Error(err) => {
+                info_window(ui, "Something gone wrong", |ui| {
+                    let mut cache = CommonMarkCache::default();
+                    CommonMarkViewer::new("error_viewer").show(ui, &mut cache, &err)
+                });
+                InitState::Error(err).into()
+            }
+        }
     }
 }
 

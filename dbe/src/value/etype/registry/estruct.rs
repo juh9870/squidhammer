@@ -9,13 +9,13 @@ use crate::value::etype::registry::{ETypesRegistry, ETypetId};
 use crate::value::etype::EDataType;
 use crate::value::{EValue, JsonValue};
 
-#[derive(Debug, Copy, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub struct EStructField {
     pub name: Ustr,
     pub ty: EDataType,
 }
 
-#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+#[derive(Debug, Clone)]
 pub struct EStructData {
     pub ident: ETypetId,
     pub fields: Vec<EStructField>,

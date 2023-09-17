@@ -16,6 +16,9 @@ pub fn display_error(error: impl Into<anyhow::Error>) -> String {
         .enumerate()
         .map(|(i, e)| format!("{}. {}", i + 1, indent_by(3, e)))
         .join("\n");
+    #[cfg(target_os="windows")] {
+        main_error = main_error.replace(r"\\?\", "");
+    }
     main_error
 }
 

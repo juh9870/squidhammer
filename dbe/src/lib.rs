@@ -5,7 +5,10 @@ use crate::states::init_state::InitState;
 use crate::states::loading_state::FilesLoadingState;
 use crate::states::title_screen_state::TitleScreenState;
 use crate::states::DbeStateHolder;
+use bytesize::ByteSize;
+use camino::Utf8PathBuf;
 use egui::{Align2, Id, Ui, Visuals, WidgetText};
+use pluralizer::pluralize;
 use rust_i18n::{i18n, t};
 
 mod graph;
@@ -14,6 +17,11 @@ mod value;
 mod vfs;
 
 i18n!();
+
+#[derive(Debug)]
+pub struct DbeArguments {
+    pub project: Option<Utf8PathBuf>,
+}
 
 #[allow(clippy::large_enum_variant)]
 #[derive(Debug)]
@@ -24,9 +32,13 @@ pub enum DbeState {
     Initializing(InitState),
 }
 
-impl Default for DbeState {
-    fn default() -> Self {
-        DbeState::TitleScreen(TitleScreenState::default())
+impl DbeState {
+    pub fn new(args: DbeArguments) -> Self {
+        if let Some(path) = args.project {
+            Self::Loading(FilesLoadingState::new(path.into()))
+        } else {
+            Self::TitleScreen(TitleScreenState::default())
+        }
     }
 }
 
@@ -73,7 +85,14 @@ pub fn update_dbe(ctx: &egui::Context, data: &mut DbeState) {
                 };
                 ctx.set_visuals(visuals);
             }
-            ui.label("TODO: menubar")
+            ui.separator();
+            ui.label("TODO: menubar");
+            ui.separator();
+            ui.label(format!(
+                "Ustr cache size: {} ({})",
+                ByteSize(ustr::total_allocated() as u64),
+                pluralize("entry", ustr::num_entries() as isize, true)
+            ));
         })
     });
     egui::CentralPanel::default().show(ctx, |ui| {

@@ -6,7 +6,6 @@ use crate::value::{EValue, JsonValue};
 use anyhow::{anyhow, bail, Context};
 use camino::{Utf8Path, Utf8PathBuf};
 use itertools::Itertools;
-use rustc_hash::FxHashMap;
 use serde_json::Value;
 use std::fmt::{Display, Formatter};
 use ustr::{Ustr, UstrMap};
@@ -62,15 +61,18 @@ pub struct ETypesRegistry {
 impl ETypesRegistry {
     pub fn from_raws(
         root: Utf8PathBuf,
-        data: FxHashMap<Utf8PathBuf, JsonValue>,
+        data: impl IntoIterator<Item = (Utf8PathBuf, JsonValue)>,
     ) -> anyhow::Result<Self> {
-        let mut types = UstrMap::with_capacity_and_hasher(data.len(), Default::default());
+        let iter = data.into_iter();
 
-        for (path, value) in data {
-            let id = ETypetId::from_path(&path, &root)
-                .with_context(|| format!("While generating type identifier for file {path}"))?;
-            types.insert(*id.raw(), RegistryItem::Raw(value));
-        }
+        let types: UstrMap<RegistryItem> = iter
+            .map(|(path, v)| {
+                let id = ETypetId::from_path(&path, &root).with_context(|| {
+                    format!("While generating type identifier for file `{path}`")
+                })?;
+                anyhow::Result::<(Ustr, RegistryItem)>::Ok((*id.raw(), RegistryItem::Raw(v)))
+            })
+            .try_collect()?;
 
         let reg = Self { root, types };
 
@@ -80,6 +82,10 @@ impl ETypesRegistry {
     // pub fn types(&self) -> &UstrMap<EObjectType> {
     //     &self.types
     // }
+
+    pub fn all_objects(&self) -> impl Iterator<Item = &EObjectType> {
+        self.types.values().map(|e| e.expect_ready())
+    }
 
     pub fn get_object(&self, id: &ETypetId) -> Option<&EObjectType> {
         self.types.get(id.raw()).map(RegistryItem::expect_ready)
@@ -167,7 +173,7 @@ impl ETypesRegistry {
 
     fn deserialize_all(mut self) -> anyhow::Result<Self> {
         let keys = self.types.keys().copied().collect_vec();
-        for id in keys.into_iter() {
+        for id in keys {
             self.fetch_or_deserialize(ETypetId(id))?;
         }
 
@@ -236,8 +242,8 @@ impl ETypetId {
     pub fn from_path(path: &Utf8Path, types_root: &Utf8Path) -> anyhow::Result<Self> {
         let sub_path = path
             .strip_prefix(types_root)
-            .with_context(|| {
-                format!("Thing \"{path}\" is outside of types root folder \"{types_root}\"")
+            .map_err(|_| {
+                anyhow!("Thing is outside of types root folder.\nThing: `{path}`")
             })?
             .components()
             .collect_vec();
@@ -265,7 +271,7 @@ impl ETypetId {
                     path.to_string()
                 };
                 if let Some((i, c)) = path_errors(&str) {
-                    bail!("Path folder or file contains invalid symbol `{c}` at position {i} in segment \"{path}\"")
+                    bail!("Path folder or file contains invalid symbol `{c}` at position {i} in segment `{path}`")
                 }
 
                 Ok(str)
@@ -290,5 +296,58 @@ impl ETypetId {
 impl Display for ETypetId {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", self.0)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::ETypetId;
+    use rstest::rstest;
+
+    #[rstest]
+    #[case("namespace:id")]
+    #[case("namespace_123:a1/a2/a3/4/5/6")]
+    #[case("eh:objects/faction")]
+    fn should_parse_type_id(#[case] id: &str) {
+        assert!(ETypetId::parse(id).is_ok())
+    }
+
+    #[test]
+    fn should_fail_empty() {
+        assert!(ETypetId::parse("").is_err())
+    }
+
+    #[test]
+    fn should_fail_no_colon() {
+        assert!(ETypetId::parse("some_name").is_err())
+    }
+
+    #[test]
+    fn should_fail_empty_namespace() {
+        assert!(ETypetId::parse(":some_name").is_err())
+    }
+
+    #[test]
+    fn should_fail_empty_path() {
+        assert!(ETypetId::parse("some_name:").is_err())
+    }
+
+    #[test]
+    fn should_fail_slashes_in_namespace() {
+        assert!(ETypetId::parse("namespace/other:path").is_err())
+    }
+
+    #[test]
+    fn should_fail_capitalized() {
+        assert!(ETypetId::parse("namespace/Path").is_err());
+        assert!(ETypetId::parse("Namespace/path").is_err());
+    }
+
+    #[rstest]
+    #[case("name space:id")]
+    #[case("namespace:path.other")]
+    #[case("namespace:path-other")]
+    fn should_fail_invalid_characters(#[case] id: &str) {
+        assert!(ETypetId::parse(id).is_err())
     }
 }

@@ -83,13 +83,13 @@ impl VfsRoot {
 pub enum VfsError {
     #[error("Accessing parent entries is not supported")]
     ParentAccess,
-    #[error("Entry at \"{}\" is not a directory", .0)]
+    #[error("Entry at `{}` is not a directory", .0)]
     NotADirectory(Utf8PathBuf),
-    #[error("Folder at \"{}\" does not contain an entry \"{}\"", .0, .1)]
+    #[error("Folder at `{}` does not contain an entry `{}`", .0, .1)]
     NotFound(Utf8PathBuf, String),
-    #[error("Folder at \"{}\" already contain an entry \"{}\"", .0, .1)]
+    #[error("Folder at `{}` already contain an entry `{}`", .0, .1)]
     DuplicateEntry(Utf8PathBuf, String),
-    #[error("Path \"{}\" has an empty filename", .0)]
+    #[error("Path `{}` has an empty filename", .0)]
     EmptyFileName(Utf8PathBuf),
 }
 
@@ -112,6 +112,13 @@ pub struct VfsEntry {
 }
 
 impl VfsEntry {
+    pub fn path(&self) -> &Utf8PathBuf {
+        match &self.ty {
+            VfsEntryType::File(path) => path,
+            VfsEntryType::Directory(dir) => &dir.path,
+        }
+    }
+
     fn walk<'a>(&self, path: impl IntoIterator<Item = &'a str>) -> Result<&VfsEntry, VfsError> {
         let mut path = path.into_iter();
         match path.next() {
