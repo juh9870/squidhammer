@@ -40,6 +40,8 @@ ordered-float = "3.9.1"
 egui-toast = "0.8.1"
 lazy_static = "1.4.0"
 derivative = "2.2.0"
+egui-modal = "0.2.4"
+circular-buffer = "0.1.3"
 
 [dev-dependencies]
 rstest = "0.18.2"

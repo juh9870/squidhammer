@@ -1,5 +1,4 @@
-﻿use crate::states::error_state::ErrorState;
-use crate::states::init_state::InitState;
+﻿use crate::states::init_state::InitState;
 use crate::states::title_screen_state::TitleScreenState;
 use crate::states::{DbeFileSystem, DbeFileSystemBuilder, DbeStateHolder};
 use crate::{info_window, DbeState};
@@ -8,9 +7,6 @@ use camino::Utf8PathBuf;
 use egui::Ui;
 use std::fmt::{Display, Formatter};
 use std::path::{Path, PathBuf};
-use std::sync::atomic::{AtomicBool, Ordering};
-use std::sync::mpsc::{channel, Receiver, Sender};
-use std::sync::Arc;
 use std::thread::JoinHandle;
 use std::time::Duration;
 use tracing::{error, trace, warn};
@@ -48,7 +44,6 @@ enum FileLoadingProgress {
 enum LoadingProgress {
     LoadingDirectory(PathBuf),
     LoadingFile(PathBuf),
-    Error(anyhow::Error),
 }
 
 impl Display for LoadingProgress {
@@ -60,7 +55,6 @@ impl Display for LoadingProgress {
             LoadingProgress::LoadingFile(path) => {
                 write!(f, "Loading file {}", path.to_string_lossy())
             }
-            LoadingProgress::Error(error) => write!(f, "Error: {}", error),
         }
     }
 }

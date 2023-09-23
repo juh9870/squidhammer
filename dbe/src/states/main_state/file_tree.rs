@@ -5,7 +5,7 @@ use egui::{Label, Sense, Ui};
 use egui_toast::{Toast, ToastKind, ToastOptions};
 use rust_i18n::t;
 
-pub fn show_file_tree(state: &mut TabHandler, ui: &mut Ui) {
+pub(super) fn show_file_tree(state: &mut TabHandler, ui: &mut Ui) {
     let selected_path = show_subtree(ui, state.0.fs.fs.root(), state.1);
     if let Some(path) = selected_path {
         state.1.push(TabCommand::ShowToast(Toast {

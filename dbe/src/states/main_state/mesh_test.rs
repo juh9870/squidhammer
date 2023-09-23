@@ -1,9 +1,11 @@
 use crate::states::main_state::TabHandler;
-use egui::{Color32, DragValue, Pos2, Slider, Ui};
+use egui::epaint::Vertex;
+use egui::{emath, Color32, DragValue, Frame, Mesh, Pos2, Rect, Sense, Shape, Slider, Ui};
+use itertools::Itertools;
 use list_edit::list_editor;
 
-pub fn show_mesh_test(
-    state: &mut TabHandler,
+pub(super) fn show_mesh_test(
+    _state: &mut TabHandler,
     ui: &mut Ui,
     points: &mut Vec<(Pos2, Color32)>,
     indices: &mut Vec<u32>,

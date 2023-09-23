@@ -643,6 +643,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "circular-buffer"
+version = "0.1.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "49fb5c4da5d3ed977852daeb787f89091b5e11eeabc81fec4d1c24b695b78ab8"
+
+[[package]]
 name = "clap"
 version = "2.34.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -860,8 +866,10 @@ dependencies = [
  "anyhow",
  "bytesize",
  "camino",
+ "circular-buffer",
  "derivative",
  "egui",
+ "egui-modal",
  "egui-toast",
  "egui_commonmark",
  "egui_dock",
@@ -1022,6 +1030,15 @@ dependencies = [
  "nohash-hasher",
  "ron",
  "serde",
+]
+
+[[package]]
+name = "egui-modal"
+version = "0.2.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "868331421dda06e5dc8e96b2be78fd01c33a8e5c99ca452369cebecbef7b6639"
+dependencies = [
+ "egui",
 ]
 
 [[package]]

@@ -10,14 +10,16 @@ use crate::states::DbeStateHolder;
 use anyhow::Error;
 use bytesize::ByteSize;
 use camino::Utf8PathBuf;
+use circular_buffer::CircularBuffer;
 use egui::{Align2, Id, Style, Ui, Visuals, WidgetText};
 use egui_node_graph::scale::Scale;
 use lazy_static::lazy_static;
 use pluralizer::pluralize;
 use rust_i18n::{i18n, t};
-use std::rc::Rc;
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::Arc;
+use std::time::Instant;
+use utils::mem_temp;
 
 mod graph;
 mod states;
@@ -127,6 +129,16 @@ pub fn update_dbe(ctx: &egui::Context, data: &mut DbeState) {
             let mut scale = APP_SCALE.load(Ordering::Relaxed);
             ui.add(egui::Slider::new(&mut scale, 5..=30));
             APP_SCALE.store(scale, Ordering::Relaxed);
+
+            // ui.separator();
+            // ui.label("FPS");
+            // let fps_id = Id::from("FPS");
+            // let mut buf = mem_temp!(ui, fps_id).unwrap_or_else(CircularBuffer::<128, Instant>::new);
+            // buf.push_front(Instant::now());
+            // let elapsed = buf.back().unwrap().elapsed().as_millis() as f64 / 1000.0;
+            // let fps = buf.len() as f64 / elapsed;
+            // mem_temp!(ui, fps_id, buf);
+            // ui.label(format!("{fps:.2}"))
         })
     });
     egui::CentralPanel::default().show(ctx, |ui| {
@@ -134,5 +146,6 @@ pub fn update_dbe(ctx: &egui::Context, data: &mut DbeState) {
         let state = std::mem::replace(data, DbeState::Broken);
         *data = state.update(ui);
         ui.reset_style();
+        // ui.ctx().request_repaint();
     });
 }
