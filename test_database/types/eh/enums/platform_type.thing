@@ -1,0 +1,18 @@
+[
+  {
+    "name": "Common",
+    "type": "0",
+  },
+  {
+    "name": "AutoTarget",
+    "type": "1",
+  },
+  {
+    "name": "AutoTargetFrontal",
+    "type": "2",
+  },
+  {
+    "name": "TargetingUnit",
+    "type": "3",
+  }
+]

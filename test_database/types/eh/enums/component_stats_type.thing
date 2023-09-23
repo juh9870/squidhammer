@@ -1,0 +1,10 @@
+[
+  {
+    "name": "PerComponent",
+    "type": "0"
+  },
+  {
+    "name": "PerOneCell",
+    "type": "1"
+  }
+]
