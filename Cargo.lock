@@ -871,6 +871,7 @@ dependencies = [
  "glam",
  "itertools 0.11.0",
  "lazy_static",
+ "list_edit",
  "logos",
  "node_macro",
  "ordered-float",
@@ -1061,9 +1062,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "egui_dnd"
+version = "0.5.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7b200c2863e8799d27ea4c933cfef6aceb0f3c32b50768554a22963b2fa0af70"
+dependencies = [
+ "egui",
+ "web-time",
+]
+
+[[package]]
 name = "egui_dock"
-version = "0.7.0"
-source = "git+https://github.com/Adanos020/egui_dock.git?rev=567bf55#567bf55cf07409c7a93a67fe4ef917abffceb5b2"
+version = "0.7.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c257477084601e557ba4c905a79f66e9010b584ab7ef0e720d098d819c25cc33"
 dependencies = [
  "duplicate",
  "egui",
@@ -1820,6 +1832,14 @@ name = "linux-raw-sys"
 version = "0.4.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "57bcfdad1b858c2db7c38303a6d2ad4dfaf5eb53dfeb0910128b2c26d6158503"
+
+[[package]]
+name = "list_edit"
+version = "0.1.0"
+dependencies = [
+ "egui",
+ "egui_dnd",
+]
 
 [[package]]
 name = "lock_api"
@@ -3559,6 +3579,17 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9b85cbef8c220a6abc02aefd892dfc0fc23afb1c6a426316ec33253a3877249b"
 dependencies = [
  "js-sys",
+ "wasm-bindgen",
+]
+
+[[package]]
+name = "web-time"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "19353897b48e2c4d849a2d73cb0aeb16dc2be4e00c565abfc11eb65a806e47de"
+dependencies = [
+ "js-sys",
+ "once_cell",
  "wasm-bindgen",
 ]
 

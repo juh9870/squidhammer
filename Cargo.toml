@@ -1,6 +1,6 @@
 [workspace]
 resolver = "2"
-members = ["dbe", "node_macro", "eframe_runner", "egui_node_graph/egui_node_graph", "utils"]
+members = ["dbe", "node_macro", "eframe_runner", "egui_node_graph/egui_node_graph", "utils", "list_edit"]
 
 # Enable a small amount of optimization in debug mode
 [profile.dev]
