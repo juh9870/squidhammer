@@ -9,6 +9,7 @@ pub mod loading_state;
 pub mod main_state;
 pub mod project_config;
 pub mod title_screen_state;
+pub mod error_state;
 
 pub trait DbeStateHolder {
     fn update(self, ui: &mut Ui) -> DbeState;

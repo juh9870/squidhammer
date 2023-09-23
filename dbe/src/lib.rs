@@ -1,11 +1,13 @@
 #![deny(missing_debug_implementations)]
 
 use crate::graph::{EditorGraph, EditorGraphState};
+use crate::states::error_state::ErrorState;
 use crate::states::init_state::InitState;
 use crate::states::loading_state::FilesLoadingState;
 use crate::states::main_state::MainState;
 use crate::states::title_screen_state::TitleScreenState;
 use crate::states::DbeStateHolder;
+use anyhow::Error;
 use bytesize::ByteSize;
 use camino::Utf8PathBuf;
 use egui::{Align2, Id, Style, Ui, Visuals, WidgetText};
@@ -33,10 +35,17 @@ pub struct DbeArguments {
 #[derive(Debug)]
 pub enum DbeState {
     Broken,
+    Error(ErrorState),
     TitleScreen(TitleScreenState),
     Loading(FilesLoadingState),
     Initializing(InitState),
     Main(MainState),
+}
+
+impl<T: Into<Error>> From<T> for DbeState {
+    fn from(value: T) -> Self {
+        DbeState::Error(ErrorState::new(value.into()))
+    }
 }
 
 impl DbeState {
@@ -78,6 +87,7 @@ impl DbeState {
             DbeState::Loading(state) => state.update(ui),
             DbeState::Initializing(state) => state.update(ui),
             DbeState::Main(state) => state.update(ui),
+            DbeState::Error(state) => state.update(ui),
         }
     }
 }

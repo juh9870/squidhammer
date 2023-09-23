@@ -1,4 +1,5 @@
-﻿use crate::states::init_state::InitState;
+﻿use crate::states::error_state::ErrorState;
+use crate::states::init_state::InitState;
 use crate::states::title_screen_state::TitleScreenState;
 use crate::states::{DbeFileSystem, DbeFileSystemBuilder, DbeStateHolder};
 use crate::{info_window, DbeState};
@@ -13,7 +14,7 @@ use std::sync::Arc;
 use std::thread::JoinHandle;
 use std::time::Duration;
 use tracing::{error, trace, warn};
-use utils::reporter::Reporter;
+use utils::reporter::{report_pair, ReportReceiver, ReportSender, Reporter};
 
 #[derive(Debug)]
 pub struct FilesLoadingState {
@@ -33,9 +34,7 @@ impl FilesLoadingState {
 #[derive(Debug)]
 struct LoadingData {
     handle: JoinHandle<()>,
-    progress: Receiver<LoadingProgress>,
-    cancel: Arc<AtomicBool>,
-    reporter: Reporter<LoadingProgress>,
+    reporter: ReportReceiver<LoadingProgress, anyhow::Result<DbeFileSystem>>,
 }
 
 #[derive(Debug)]
@@ -50,7 +49,6 @@ enum LoadingProgress {
     LoadingDirectory(PathBuf),
     LoadingFile(PathBuf),
     Error(anyhow::Error),
-    Done(DbeFileSystem),
 }
 
 impl Display for LoadingProgress {
@@ -63,18 +61,16 @@ impl Display for LoadingProgress {
                 write!(f, "Loading file {}", path.to_string_lossy())
             }
             LoadingProgress::Error(error) => write!(f, "Error: {}", error),
-            LoadingProgress::Done(_) => write!(f, "Loading complete"),
         }
     }
 }
 
-fn load_path(
+fn load_path<T>(
     path: impl AsRef<Path>,
     fs: &mut DbeFileSystemBuilder,
-    progress: &Sender<LoadingProgress>,
-    canceled: &Arc<AtomicBool>,
+    progress: &ReportSender<LoadingProgress, T>,
 ) -> anyhow::Result<FileLoadingProgress> {
-    if canceled.load(Ordering::Relaxed) {
+    if progress.canceled() {
         return Ok(FileLoadingProgress::Canceled);
     }
     let path = path.as_ref();
@@ -95,7 +91,7 @@ fn load_path(
         return Ok(FileLoadingProgress::Skipped);
     }
     if path.is_dir() {
-        progress.send(LoadingProgress::LoadingDirectory(path.to_path_buf()))?;
+        progress.progress(LoadingProgress::LoadingDirectory(path.to_path_buf()))?;
         let mut paths = vec![];
         for entry in path.read_dir()? {
             let entry = entry?;
@@ -103,7 +99,7 @@ fn load_path(
         }
 
         for p in paths {
-            match load_path(&p, fs, progress, canceled)
+            match load_path(&p, fs, progress)
                 .with_context(|| format!("While loading path {}", p.to_string_lossy()))?
             {
                 FileLoadingProgress::Done => {
@@ -116,7 +112,7 @@ fn load_path(
             }
         }
     } else {
-        progress.send(LoadingProgress::LoadingFile(path.to_path_buf()))?;
+        progress.progress(LoadingProgress::LoadingFile(path.to_path_buf()))?;
         let Some(ext) = path
             .extension()
             .and_then(|e| e.to_str())
@@ -139,28 +135,28 @@ fn load_path(
     Ok(FileLoadingProgress::Done)
 }
 
-fn load_files(
+fn load_files<T>(
     path: PathBuf,
-    channel: &Sender<LoadingProgress>,
-    canceled: Arc<AtomicBool>,
+    channel: &ReportSender<LoadingProgress, T>,
 ) -> anyhow::Result<DbeFileSystem> {
     let mut fs = path.clone().try_into().map(DbeFileSystemBuilder::new)?;
-    load_path(path, &mut fs, channel, &canceled)?;
+    load_path(path, &mut fs, channel)?;
     fs.build()
 }
 
 fn spawn(
     path: impl AsRef<Path>,
-    channel: Sender<LoadingProgress>,
-    canceled: Arc<AtomicBool>,
+    channel: ReportSender<LoadingProgress, anyhow::Result<DbeFileSystem>>,
 ) -> JoinHandle<()> {
     let path = path.as_ref().to_path_buf();
     std::thread::spawn(move || {
-        match load_files(path, &channel, canceled) {
-            Ok(fs) => channel.send(LoadingProgress::Done(fs)),
-            Err(err) => channel.send(LoadingProgress::Error(err)),
+        let files = load_files(path, &channel);
+        if channel.canceled() {
+            return;
         }
-        .unwrap_or_else(|_| error!("Main thread has died while loading items"));
+        channel
+            .done(files)
+            .unwrap_or_else(|_| error!("Main thread has died while loading items"));
     })
 }
 
@@ -169,45 +165,44 @@ impl DbeStateHolder for FilesLoadingState {
         let FilesLoadingState { loading, path } = self;
         let mut loading = match loading {
             None => {
-                let (sender, receiver) = channel();
-                let cancel: Arc<AtomicBool> = Default::default();
-                let handle = spawn(&path, sender, cancel.clone());
+                let (sender, receiver) = report_pair(Reporter::new(
+                    LoadingProgress::LoadingDirectory(path.clone()),
+                    Duration::from_millis(100),
+                ));
+                let handle = spawn(&path, sender);
                 LoadingData {
-                    progress: receiver,
-                    cancel,
                     handle,
-                    reporter: Reporter::new(
-                        LoadingProgress::LoadingDirectory(path.clone()),
-                        Duration::from_millis(100),
-                    ),
+                    reporter: receiver,
                 }
             }
             Some(loading) => loading,
         };
 
-        if let Some(progress) = loading.progress.try_iter().last() {
-            if let LoadingProgress::Done(fs) = progress {
-                loading
-                    .handle
-                    .join()
-                    .expect("Expect loading thread to terminate successfully");
-                return InitState::new(fs).into();
-            }
-            loading.reporter.push(progress);
+        if let Some(progress) = loading.reporter.done() {
+            return match progress {
+                Ok(fs) => {
+                    loading
+                        .handle
+                        .join()
+                        .expect("Expect loading thread to terminate successfully");
+                    InitState::new(fs).into()
+                }
+                Err(err) => err.into(),
+            };
         }
 
         info_window(ui, "Loading", |ui| {
-            ui.label(loading.reporter.read().to_string());
+            ui.label(loading.reporter.progress().to_string());
             ui.vertical_centered_justified(|ui| {
                 if ui.button("Cancel").clicked() {
-                    loading.cancel.swap(true, Ordering::Relaxed);
+                    loading.reporter.cancel();
                 }
             });
         });
 
         ui.ctx().request_repaint_after(Duration::from_millis(100));
 
-        if loading.cancel.load(Ordering::Relaxed) {
+        if loading.reporter.canceled() {
             return TitleScreenState::new().into();
         }
 
