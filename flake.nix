@@ -39,6 +39,8 @@
           pkgs.rust-analyzer-unwrapped
           pkgs.cargo-watch
           pkgs.cargo-sort
+          pkgs.cargo-machete
+          pkgs.cargo-depgraph
           pkgs.pre-commit
         ];
 

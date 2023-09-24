@@ -11,5 +11,4 @@ clap = { version = "4.4.3", features = ["derive", "env"] }
 dbe = { path = "../dbe", features = ["f32"] }
 eframe = "0.22.0"
 egui = "0.22.0"
-tracing = "0.1.37"
 tracing-subscriber = "0.3"

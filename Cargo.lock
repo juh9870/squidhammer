@@ -868,7 +868,6 @@ dependencies = [
  "camino",
  "circular-buffer",
  "derivative",
- "duplicate",
  "egui",
  "egui-modal",
  "egui-toast",
@@ -886,12 +885,10 @@ dependencies = [
  "ordered-float",
  "paste",
  "pluralizer",
- "polonius-the-crab",
  "rstest",
  "rust-i18n",
  "rustc-hash",
  "serde",
- "serde_derive",
  "serde_json",
  "serde_json5",
  "smallvec",
@@ -900,7 +897,6 @@ dependencies = [
  "thiserror",
  "toml 0.8.0",
  "tracing",
- "trees",
  "undo",
  "ustr",
  "utils",
@@ -1017,7 +1013,6 @@ dependencies = [
  "dbe",
  "eframe",
  "egui",
- "tracing",
  "tracing-subscriber",
 ]
 
@@ -2430,12 +2425,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "polonius-the-crab"
-version = "0.3.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b0119ad75060c93b2017796396280ab9c1870738bf3b66a8cb20deb3c9075426"
-
-[[package]]
 name = "ppv-lite86"
 version = "0.2.17"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3304,12 +3293,6 @@ dependencies = [
  "tracing-core",
  "tracing-log",
 ]
-
-[[package]]
-name = "trees"
-version = "0.4.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0de5f738ceab88e2491a94ddc33c3feeadfa95fedc60363ef110845df12f3878"
 
 [[package]]
 name = "ttf-parser"
