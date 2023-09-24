@@ -1,3 +1,5 @@
+use std::fmt::Display;
+
 use indent::indent_by;
 use itertools::Itertools;
 
@@ -16,10 +18,31 @@ pub fn display_error(error: impl Into<anyhow::Error>) -> String {
         .enumerate()
         .map(|(i, e)| format!("{}. {}", i + 1, indent_by(3, e)))
         .join("\n");
-    #[cfg(target_os="windows")] {
+    #[cfg(target_os = "windows")]
+    {
         main_error = main_error.replace(r"\\?\", "");
     }
     main_error
+}
+
+pub trait ContextLike {
+    type Context: Display + Send + Sync + 'static;
+    fn get_context(self) -> Self::Context;
+}
+
+impl ContextLike for &'static str {
+    type Context = Self;
+    #[inline(always)]
+    fn get_context(self) -> Self {
+        self
+    }
+}
+
+impl<C: Display + Send + Sync + 'static, F: FnOnce() -> C> ContextLike for F {
+    type Context = C;
+    fn get_context(self) -> C {
+        (self)()
+    }
 }
 
 #[macro_export]

@@ -70,7 +70,7 @@ impl ETypesRegistry {
                 let id = ETypetId::from_path(&path, &root).with_context(|| {
                     format!("While generating type identifier for file `{path}`")
                 })?;
-                anyhow::Result::<(Ustr, RegistryItem)>::Ok((*id.raw(), RegistryItem::Raw(v)))
+                Result::<(Ustr, RegistryItem), anyhow::Error>::Ok((*id.raw(), RegistryItem::Raw(v)))
             })
             .try_collect()?;
 
@@ -132,10 +132,10 @@ impl ETypesRegistry {
         self.root.as_path()
     }
 
-    fn register_raw_json_object(&mut self, id: ETypetId, data: JsonValue) -> EDataType {
-        self.types.insert(*id.raw(), RegistryItem::Raw(data));
-        EDataType::Object { ident: id }
-    }
+    // fn register_raw_json_object(&mut self, id: ETypetId, data: JsonValue) -> EDataType {
+    //     self.types.insert(*id.raw(), RegistryItem::Raw(data));
+    //     EDataType::Object { ident: id }
+    // }
 
     fn fetch_or_deserialize(&mut self, id: ETypetId) -> anyhow::Result<&EObjectType> {
         let data = self

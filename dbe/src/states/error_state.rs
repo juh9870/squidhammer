@@ -30,9 +30,3 @@ impl DbeStateHolder for ErrorState {
         self.into()
     }
 }
-
-impl From<ErrorState> for DbeState {
-    fn from(value: ErrorState) -> Self {
-        DbeState::Error(value)
-    }
-}

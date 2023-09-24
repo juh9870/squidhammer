@@ -93,9 +93,3 @@ impl DbeStateHolder for InitState {
         }
     }
 }
-
-impl From<InitState> for DbeState {
-    fn from(value: InitState) -> Self {
-        DbeState::Initializing(value)
-    }
-}

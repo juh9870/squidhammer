@@ -5,7 +5,7 @@ use itertools::Itertools;
 use list_edit::list_editor;
 
 pub(super) fn show_mesh_test(
-    _state: &mut TabHandler,
+    _state: &TabHandler,
     ui: &mut Ui,
     points: &mut Vec<(Pos2, Color32)>,
     indices: &mut Vec<u32>,
@@ -53,7 +53,7 @@ pub(super) fn show_mesh_test(
                 Rect::from_min_size(Pos2::ZERO, response.rect.square_proportions()),
                 response.rect,
             );
-            let from_screen = to_screen.inverse();
+            // let from_screen = to_screen.inverse();
 
             // let vert = |color: Color32| {
             //     move |x: f32, y: f32| Vertex {

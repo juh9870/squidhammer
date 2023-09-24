@@ -6,3 +6,20 @@ light_mode="Toggle Dark/Light Mode"
 [dbe.title]
 open_database="Please select a folder to start working"
 open_folder="Select folder"
+
+[dbe.main]
+file_tree="Project structure"
+new_file="Create file"
+new_folder="Create folder"
+input_new_item_name="Input file name"
+input_new_folder_name="Input folder name"
+
+[dbe.main.toolbar]
+file="File"
+misc="Misc"
+save="Save"
+
+[dbe.generic]
+ok="Ok"
+cancel="Cancel"
+search="Search"

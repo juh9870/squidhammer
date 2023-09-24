@@ -1,6 +1,9 @@
-use camino::{Utf8Path, Utf8PathBuf};
 use std::path::StripPrefixError;
+
+use camino::{Utf8Path, Utf8PathBuf};
 use thiserror::Error;
+
+use crate::vfs::VfsError::ParentAccess;
 
 /// Root of the virtual file system
 ///
@@ -75,6 +78,16 @@ impl VfsRoot {
                 .to_string(),
             VfsEntryType::File(path.to_path_buf()),
         )
+    }
+
+    pub fn delete(&mut self, file: impl AsRef<Utf8Path>) -> Result<VfsEntry, VfsError> {
+        let path = file.as_ref();
+        let Some(dir) = path.parent() else {
+            return Err(ParentAccess);
+        };
+        let dir = self.lookup_mut(dir)?.as_directory_mut()?;
+        let name = path.file_name().unwrap_or("");
+        dir.delete(name)
     }
 
     pub fn root(&self) -> &VfsEntry {
@@ -190,6 +203,32 @@ impl VfsEntry {
     pub fn name(&self) -> &str {
         &self.name
     }
+
+    pub fn iter(&self) -> impl Iterator<Item = &Self> {
+        VfsIterator {
+            entries: vec![self],
+        }
+    }
+}
+
+pub struct VfsIterator<'a> {
+    entries: Vec<&'a VfsEntry>,
+}
+
+impl<'a> Iterator for VfsIterator<'a> {
+    type Item = &'a VfsEntry;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        let entry = self.entries.pop()?;
+
+        if let VfsEntryType::Directory(dir) = &entry.ty {
+            self.entries.reserve(dir.children.len());
+            for child in &dir.children {
+                self.entries.push(child)
+            }
+        }
+        Some(entry)
+    }
 }
 
 #[derive(Debug, Clone)]
@@ -253,7 +292,17 @@ impl VfsDirectory {
         self.children.push(entry);
         Ok(self.children.last_mut().expect("Should have children"))
     }
-    
+
+    pub fn delete(&mut self, name: &str) -> Result<VfsEntry, VfsError> {
+        for (i, x) in self.children.iter().enumerate() {
+            if x.name != name {
+                continue;
+            }
+            return Ok(self.children.remove(i));
+        }
+        Err(VfsError::NotFound(self.path.clone(), name.to_string()))
+    }
+
     pub fn path(&self) -> &Utf8Path {
         &self.path
     }

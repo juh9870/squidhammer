@@ -134,7 +134,7 @@ impl EEnumVariant {
                 return Ok(Self::vec2());
             }
             EDataType::String => {
-                return Ok(Self::vec2());
+                return Ok(Self::string());
             }
             EDataType::Const { value } => {
                 return Ok(Self::econst(value));

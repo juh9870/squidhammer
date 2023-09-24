@@ -868,6 +868,7 @@ dependencies = [
  "camino",
  "circular-buffer",
  "derivative",
+ "duplicate",
  "egui",
  "egui-modal",
  "egui-toast",
@@ -885,6 +886,7 @@ dependencies = [
  "ordered-float",
  "paste",
  "pluralizer",
+ "polonius-the-crab",
  "rstest",
  "rust-i18n",
  "rustc-hash",
@@ -898,6 +900,8 @@ dependencies = [
  "thiserror",
  "toml 0.8.0",
  "tracing",
+ "trees",
+ "undo",
  "ustr",
  "utils",
 ]
@@ -2426,6 +2430,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "polonius-the-crab"
+version = "0.3.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b0119ad75060c93b2017796396280ab9c1870738bf3b66a8cb20deb3c9075426"
+
+[[package]]
 name = "ppv-lite86"
 version = "0.2.17"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3296,6 +3306,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "trees"
+version = "0.4.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0de5f738ceab88e2491a94ddc33c3feeadfa95fedc60363ef110845df12f3878"
+
+[[package]]
 name = "ttf-parser"
 version = "0.19.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3321,6 +3337,15 @@ checksum = "ce65604324d3cce9b966701489fbd0cf318cb1f7bd9dd07ac9a4ee6fb791930d"
 dependencies = [
  "tempfile",
  "winapi",
+]
+
+[[package]]
+name = "undo"
+version = "0.50.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c820362dc7e07488dcc2f55315b92e9068bda96c25707def02a3b74128266e60"
+dependencies = [
+ "serde",
 ]
 
 [[package]]
@@ -3394,6 +3419,7 @@ name = "utils"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "egui",
  "indent",
  "itertools 0.11.0",
 ]

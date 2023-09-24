@@ -1,12 +1,19 @@
-use crate::states::main_state::{TabCommand, TabHandler};
-use crate::vfs::{VfsEntry, VfsEntryType};
 use camino::Utf8Path;
-use egui::{Label, Sense, Ui};
+use egui::{CollapsingHeader, Label, RichText, Sense, Ui, WidgetText};
 use egui_toast::{Toast, ToastKind, ToastOptions};
 use rust_i18n::t;
 
+use crate::states::main_state::{TabCommand, TabHandler};
+use crate::vfs::{VfsEntry, VfsEntryType};
+
 pub(super) fn show_file_tree(state: &mut TabHandler, ui: &mut Ui) {
-    let selected_path = show_subtree(ui, state.0.fs.fs.root(), state.1);
+    let types_root = state.0.state.registry.root_path();
+    let selected_path = show_subtree(
+        ui,
+        state.0.state.fs.fs.root(),
+        &|e| e.path().starts_with(types_root),
+        state.1,
+    );
     if let Some(path) = selected_path {
         state.1.push(TabCommand::ShowToast(Toast {
             kind: ToastKind::Info,
@@ -21,12 +28,14 @@ pub(super) fn show_file_tree(state: &mut TabHandler, ui: &mut Ui) {
 fn show_subtree<'a>(
     ui: &mut Ui,
     fs: &'a VfsEntry,
+    disabled: &impl Fn(&'a VfsEntry) -> bool,
     commands: &mut Vec<TabCommand>,
 ) -> Option<&'a Utf8Path> {
+    let is_enabled = !disabled(fs);
     match fs.ty() {
         VfsEntryType::File(path) => {
             if ui
-                .add(Label::new(fs.name()).sense(Sense::click()))
+                .add_enabled(is_enabled, Label::new(fs.name()).sense(Sense::click()))
                 .double_clicked()
             {
                 return Some(path);
@@ -34,20 +43,28 @@ fn show_subtree<'a>(
             None
         }
         VfsEntryType::Directory(dir) => {
-            let response = ui.collapsing(fs.name(), |ui| {
-                let mut selected = None;
-                for entry in dir.children() {
-                    let response = show_subtree(ui, entry, commands);
-                    if response.is_some() {
-                        selected = response;
+            let mut header = RichText::new(fs.name());
+            if !is_enabled {
+                header = header.color(ui.style().visuals.widgets.noninteractive.text_color())
+            }
+            let response = CollapsingHeader::new(header)
+                // .enabled(is_enabled)
+                .show(ui, |ui| {
+                    let mut selected = None;
+                    for entry in dir.children() {
+                        let response = show_subtree(ui, entry, disabled, commands);
+                        if response.is_some() {
+                            selected = response;
+                        }
                     }
-                }
-                selected
-            });
+                    selected
+                });
 
-            response
-                .header_response
-                .context_menu(|ui| folder_context_menu(ui, fs.path(), commands));
+            if is_enabled {
+                response
+                    .header_response
+                    .context_menu(|ui| folder_context_menu(ui, fs.path(), commands));
+            }
 
             response.body_returned.flatten()
         }

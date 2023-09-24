@@ -38,6 +38,8 @@
           pkgs.cargo-unused-features
           pkgs.rust-analyzer-unwrapped
           pkgs.cargo-watch
+          pkgs.cargo-sort
+          pkgs.pre-commit
         ];
 
         RUST_SRC_PATH = "${toolchain}/lib/rustlib/src/rust/library";

@@ -207,9 +207,3 @@ impl DbeStateHolder for FilesLoadingState {
         .into()
     }
 }
-
-impl From<FilesLoadingState> for DbeState {
-    fn from(value: FilesLoadingState) -> Self {
-        DbeState::Loading(value)
-    }
-}

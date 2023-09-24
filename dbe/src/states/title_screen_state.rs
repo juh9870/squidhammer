@@ -40,9 +40,3 @@ impl DbeStateHolder for TitleScreenState {
         })
     }
 }
-
-impl From<TitleScreenState> for DbeState {
-    fn from(value: TitleScreenState) -> Self {
-        DbeState::TitleScreen(value)
-    }
-}
