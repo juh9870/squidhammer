@@ -4,13 +4,13 @@ repos:
       - id: fmt
         name: fmt
         description: Format files with cargo fmt.
-        entry: cargo fmt --all  -- --check --color always
+        entry: cargo fmt --all -- --check --color always
         language: system
         types: [ rust ]
       - id: cargo-check
         name: cargo check
         description: Check the package for errors.
-        entry: cargo check
+        entry: cargo check --workspace
         language: system
         types: [rust]
         pass_filenames: false
@@ -24,7 +24,7 @@ repos:
       - id: sort
         name: cargo sort
         description: Check if all files follow the rustfmt style
-        entry: cargo sort -w
+        entry: cargo sort -c -w
         language: system
-        types: [rust]
+        types: [toml]
         pass_filenames: false
