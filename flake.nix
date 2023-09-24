@@ -42,6 +42,10 @@
           pkgs.pre-commit
         ];
 
+        shellHook = ''
+          pre-commit install
+        '';
+
         RUST_SRC_PATH = "${toolchain}/lib/rustlib/src/rust/library";
         NIX_LD = pkgs.runCommand "ld.so" { } ''
           ln -s "$(cat '${pkgs.stdenv.cc}/nix-support/dynamic-linker')" $out

@@ -1,0 +1,30 @@
+repos:
+  - repo: local
+    hooks:
+      - id: fmt
+        name: fmt
+        description: Format files with cargo fmt.
+        entry: cargo fmt --all  -- --check --color always
+        language: system
+        types: [ rust ]
+      - id: cargo-check
+        name: cargo check
+        description: Check the package for errors.
+        entry: cargo check
+        language: system
+        types: [rust]
+        pass_filenames: false
+      - id: clippy
+        name: clippy
+        description: Lint rust sources
+        entry: cargo clippy
+        language: system
+        types: [rust]
+        pass_filenames: false
+      - id: sort
+        name: cargo sort
+        description: Check if all files follow the rustfmt style
+        entry: cargo sort -w
+        language: system
+        types: [rust]
+        pass_filenames: false
