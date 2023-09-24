@@ -28,3 +28,10 @@ repos:
         language: system
         types: [toml]
         pass_filenames: false
+      - id: machete
+        name: cargo machete
+        description: Check for unused dependencies
+        entry: cargo machete
+        language: system
+        types_or: [toml, rust]
+        pass_filenames: false
