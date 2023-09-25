@@ -1,6 +1,6 @@
 use std::collections::{BTreeMap, BTreeSet};
 
-use anyhow::{bail, Context, Error};
+use anyhow::{anyhow, bail, Context, Error};
 use camino::{Utf8Path, Utf8PathBuf};
 use duplicate::duplicate_item;
 use rustc_hash::FxHashMap;
@@ -136,6 +136,10 @@ impl DbeFileSystem {
     pub fn save_to_disc(&mut self) -> Result<(), Vec<Error>> {
         let mut failures = vec![];
         for (path, data) in self.fs.iter() {
+            if !path.starts_with(&self.root) {
+                failures.push(anyhow!("File {path} is outside of DBE root directory"));
+                continue;
+            }
             let is_dirty = self.dirty.remove(path);
             if !is_dirty || data.is_empty() {
                 continue;
@@ -157,6 +161,10 @@ impl DbeFileSystem {
             }
         }
         for path in &self.dirty {
+            if !path.starts_with(&self.root) {
+                failures.push(anyhow!("File {path} is outside of DBE root directory"));
+                continue;
+            }
             if !path.is_file() {
                 failures.push(anyhow::anyhow!(
                     "Entry at `{path}` is not a file (but staged for deletion)"
