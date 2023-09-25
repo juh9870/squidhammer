@@ -1,12 +1,10 @@
 ﻿use std::time::Instant;
 
 use bytesize::ByteSize;
-use camino::{Utf8Path, Utf8PathBuf};
 use circular_buffer::CircularBuffer;
 use egui::{Response, Ui, Visuals};
 use pluralizer::pluralize;
 use rust_i18n::t;
-use rustc_hash::FxHashMap;
 use tracing::warn;
 
 use utils::mem_temp;
@@ -17,7 +15,6 @@ use crate::states::init_state::InitState;
 use crate::states::loading_state::FilesLoadingState;
 use crate::states::main_state::MainState;
 use crate::states::title_screen_state::TitleScreenState;
-use crate::vfs::VfsRoot;
 use crate::{scale_ui_style, DbeArguments, APP_SCALE_ID};
 
 pub mod broken_state;
@@ -26,6 +23,7 @@ pub mod init_state;
 pub mod loading_state;
 pub mod main_state;
 pub mod project_config;
+mod state;
 pub mod title_screen_state;
 
 #[enum_dispatch::enum_dispatch]
@@ -134,56 +132,5 @@ impl DbeState {
         } else {
             Self::TitleScreen(TitleScreenState::default())
         }
-    }
-}
-
-#[derive(Debug)]
-pub struct DbeFileSystem {
-    root: Utf8PathBuf,
-    raw_files: FxHashMap<Utf8PathBuf, Vec<u8>>,
-    fs: VfsRoot,
-}
-
-impl DbeFileSystem {
-    pub fn root(&self) -> &Utf8Path {
-        &self.root
-    }
-
-    pub fn fs(&self) -> &VfsRoot {
-        &self.fs
-    }
-
-    pub fn fs_mut(&mut self) -> &mut VfsRoot {
-        &mut self.fs
-    }
-
-    pub fn content(&self, path: &Utf8Path) -> Option<&Vec<u8>> {
-        self.raw_files.get(path)
-    }
-}
-
-#[derive(Debug)]
-pub struct DbeFileSystemBuilder {
-    pub root: Utf8PathBuf,
-    pub raw_files: FxHashMap<Utf8PathBuf, Vec<u8>>,
-}
-
-impl DbeFileSystemBuilder {
-    pub fn new(root: Utf8PathBuf) -> Self {
-        Self {
-            root,
-            raw_files: Default::default(),
-        }
-    }
-    pub fn build(self) -> anyhow::Result<DbeFileSystem> {
-        let mut fs = VfsRoot::new(self.root.clone());
-        for path in self.raw_files.keys() {
-            fs.create(path.clone())?;
-        }
-        Ok(DbeFileSystem {
-            root: self.root,
-            raw_files: self.raw_files,
-            fs,
-        })
     }
 }

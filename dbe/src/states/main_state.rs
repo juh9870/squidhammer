@@ -1,85 +1,38 @@
-﻿use std::collections::{BTreeMap, BTreeSet, VecDeque};
+﻿use std::collections::VecDeque;
+use std::time::Duration;
 
-use anyhow::{Context, Error};
+use anyhow::Context;
 use camino::{Utf8Path, Utf8PathBuf};
 use derivative::Derivative;
 use egui::{menu, Align2, Color32, Id, Pos2, Ui, WidgetText};
 use egui_dock::{DockState, Style};
 use egui_modal::Modal;
-use egui_toast::{Toast, Toasts};
+use egui_toast::{Toast, ToastKind, ToastOptions, Toasts};
 use rust_i18n::t;
 use tracing::error;
 use undo::History;
 
+use state::EditorData;
 use utils::egui::with_temp;
 use utils::errors::{display_error, ContextLike};
-use utils::{mem_clear, mem_temp, somehow};
+use utils::{mem_clear, mem_temp};
 
+use crate::dbe_files::DbeFileSystem;
 use crate::states::main_state::edit::MainStateEdit;
 use crate::states::main_state::file_tree::show_file_tree;
 use crate::states::main_state::mesh_test::show_mesh_test;
-use crate::states::{default_info_panels, DbeFileSystem, DbeStateHolder};
+use crate::states::{default_info_panels, DbeStateHolder};
 use crate::value::etype::registry::{ETypesRegistry, ETypetId};
-use crate::value::EValue;
-use crate::vfs::VfsEntry;
 use crate::{global_app_scale, scale_ui_style, DbeState};
 
 mod edit;
 mod file_tree;
 mod mesh_test;
-
-#[derive(Debug)]
-struct EditorState {
-    fs: DbeFileSystem,
-    registry: ETypesRegistry,
-    editable_items: BTreeMap<Utf8PathBuf, EValue>,
-    dirty: BTreeSet<Utf8PathBuf>,
-}
-
-impl EditorState {
-    #[inline(always)]
-    pub fn set_dirty(&mut self, path: Utf8PathBuf) {
-        self.dirty.insert(path);
-    }
-    pub fn new_item(&mut self, ident: &ETypetId, path: &Utf8Path) -> anyhow::Result<()> {
-        somehow!({
-            let ty = (self
-                .registry
-                .get_struct(ident)
-                .with_context(|| format!("Failed to get a struct of type `{ident}`")))?;
-            // Create a file (mutable operation) as the last source of errors,
-            // to avoid doing cleanup
-            let entry = (self.fs.fs.create(path))?.path().to_path_buf();
-            let value = ty.default_value(&self.registry);
-            self.set_dirty(entry.to_path_buf());
-            self.editable_items.insert(entry.to_path_buf(), value);
-        })
-        .with_context(|| format!("While creating file `{path}` of type `{ident}`"))
-    }
-
-    pub fn delete_file(&mut self, path: &Utf8Path) -> Result<VfsEntry, Error> {
-        somehow!({
-            let entry = self.fs.fs.delete(path)?;
-
-            self.dirty
-                .extend(entry.iter().map(|e| e.path().to_path_buf()));
-
-            entry
-        })
-        .with_context(|| format!("While deleting entry at `{path}`"))
-    }
-
-    pub fn new_folder(&mut self, path: &Utf8Path) -> anyhow::Result<()> {
-        somehow!({
-            self.fs.fs.mkdir(path)?;
-        })
-        .with_context(|| format!("While creating folder at `{path}`"))
-    }
-}
+mod state;
 
 #[derive(Debug)]
 pub struct MainState {
-    state: EditorState,
+    state: EditorData,
     dock_state: Option<DockState<TabData>>,
     commands_queue: VecDeque<QueuedCommand>,
     edit_history: History<MainStateEdit>,
@@ -88,12 +41,7 @@ pub struct MainState {
 impl MainState {
     pub fn new(fs: DbeFileSystem, registry: ETypesRegistry) -> Self {
         Self {
-            state: EditorState {
-                fs,
-                registry,
-                editable_items: Default::default(),
-                dirty: Default::default(),
-            },
+            state: EditorData::new(fs, registry),
             dock_state: Some(DockState::new(vec![
                 TabData::FileTree,
                 TabData::MeshTest {
@@ -106,9 +54,15 @@ impl MainState {
         }
     }
 
-    fn with_reporting<T, CP: ContextLike>(
-        &mut self,
-        task: impl FnOnce(&mut Self) -> anyhow::Result<T>,
+    #[allow(clippy::needless_arbitrary_self_type)]
+    #[duplicate::duplicate_item(
+    method                  reference(type);
+    [with_reporting]        [& type];
+    [with_reporting_mut]    [&mut type];
+    )]
+    fn method<T, CP: ContextLike>(
+        self: reference([Self]),
+        task: impl FnOnce(reference([Self])) -> anyhow::Result<T>,
         context: CP,
     ) -> Option<T> {
         match task(self).with_context(|| context.get_context()) {
@@ -150,11 +104,15 @@ impl DbeStateHolder for MainState {
                 TabCommand::CreateNewFile { parent_folder } => self
                     .commands_queue
                     .push_back(QueuedCommand::CreateNewFile { parent_folder }),
-                TabCommand::CreateNewFolder { parent_folder } => self
-                    .commands_queue
-                    .push_back(QueuedCommand::CreateNewFolder { parent_folder }),
                 TabCommand::ShowToast(toast) => {
                     toasts.add(toast);
+                }
+                TabCommand::OpenFile { path } => {
+                    toasts.add(Toast {
+                        kind: ToastKind::Info,
+                        text: format!("File at `{path}` got selected").into(),
+                        options: ToastOptions::default().duration(Duration::from_secs_f64(5.0)),
+                    });
                 }
             }
         }
@@ -163,9 +121,6 @@ impl DbeStateHolder for MainState {
             let done = match &cmd {
                 QueuedCommand::CreateNewFile { parent_folder } => {
                     create_new_file_modal(ui, &self, parent_folder, &mut edits)
-                }
-                QueuedCommand::CreateNewFolder { parent_folder } => {
-                    create_new_folder_modal(ui, &self, parent_folder, &mut edits)
                 }
             };
 
@@ -245,14 +200,13 @@ impl<'a> egui_dock::TabViewer for TabHandler<'a> {
 #[derivative(Debug)]
 enum TabCommand {
     CreateNewFile { parent_folder: Utf8PathBuf },
-    CreateNewFolder { parent_folder: Utf8PathBuf },
     ShowToast(#[derivative(Debug = "ignore")] Toast),
+    OpenFile { path: Utf8PathBuf },
 }
 
 #[derive(Clone, Debug)]
 enum QueuedCommand {
     CreateNewFile { parent_folder: Utf8PathBuf },
-    CreateNewFolder { parent_folder: Utf8PathBuf },
 }
 
 fn create_new_file_modal(
@@ -278,10 +232,22 @@ fn create_new_file_modal(
                         ui.text_edit_singleline(&mut name);
                     });
                     if modal.button(ui, t!("dbe.generic.ok")).clicked() {
-                        edits.push(MainStateEdit::CreateFile(
-                            ident,
-                            parent_folder.join(format!("{name}.json5")),
-                        ));
+                        if let Some(value) = page.with_reporting(
+                            |page| {
+                                let ty = page
+                                    .state
+                                    .registry
+                                    .get_struct(&ident)
+                                    .context("Unknown struct type")?;
+                                Ok(ty.default_value(&page.state.registry))
+                            },
+                            || format!("While creating struct of type `{ident}`"),
+                        ) {
+                            edits.push(MainStateEdit::CreateFile(
+                                value,
+                                parent_folder.join(format!("{name}.json5")),
+                            ));
+                        }
                         done = true;
                         None
                     } else {
@@ -342,49 +308,5 @@ fn create_new_file_modal(
         mem_clear!(ui, name_id, String);
     }
 
-    done
-}
-
-fn create_new_folder_modal(
-    ui: &mut Ui,
-    _page: &MainState,
-    parent_folder: &Utf8Path,
-    edits: &mut Vec<MainStateEdit>,
-) -> bool {
-    let id = Id::from("new_folder_modal");
-    let modal = Modal::new(ui.ctx(), "new_folder_modal");
-    let mut done = false;
-
-    let name_id = id.with("_selected_name");
-    modal.show(|ui| {
-        scale_ui_style(ui);
-        with_temp::<String>(ui, name_id, |ui, name| {
-            let mut name = name.unwrap_or_default();
-            ui.vertical(|ui| {
-                modal.frame(ui, |ui| {
-                    ui.vertical_centered_justified(|ui| {
-                        ui.label(t!("dbe.main.input_new_folder_name"));
-                        ui.text_edit_singleline(&mut name);
-                    });
-                });
-
-                if modal.button(ui, t!("dbe.generic.ok")).clicked() {
-                    edits.push(MainStateEdit::CreateFolder(parent_folder.join(name)));
-                    done = true;
-                    None
-                } else {
-                    Some(name)
-                }
-            })
-            .inner
-        });
-    });
-    modal.open();
-    if modal.was_outside_clicked() {
-        done = true;
-    }
-    if done {
-        mem_clear!(ui, name_id, String)
-    }
     done
 }

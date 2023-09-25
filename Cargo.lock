@@ -868,6 +868,7 @@ dependencies = [
  "camino",
  "circular-buffer",
  "derivative",
+ "duplicate",
  "egui",
  "egui-modal",
  "egui-toast",

@@ -13,10 +13,10 @@ use crate::graph::{EditorGraph, EditorGraphState};
 use crate::states::broken_state::BrokenState;
 use crate::states::DbeStateHolder;
 
+mod dbe_files;
 mod graph;
 mod states;
 mod value;
-mod vfs;
 
 i18n!();
 

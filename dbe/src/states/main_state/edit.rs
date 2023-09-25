@@ -1,8 +1,8 @@
 use camino::Utf8PathBuf;
 use undo::{Edit, Merged};
 
-use crate::states::main_state::EditorState;
-use crate::value::etype::registry::ETypetId;
+use crate::states::main_state::state::EditorData;
+use crate::value::EValue;
 
 /// DBE edit history
 ///
@@ -11,18 +11,18 @@ use crate::value::etype::registry::ETypetId;
 #[derive(Debug)]
 pub(super) enum MainStateEdit {
     DeleteLastEdit,
-    CreateFile(ETypetId, Utf8PathBuf),
-    CreateFolder(Utf8PathBuf),
+    CreateFile(EValue, Utf8PathBuf),
 }
 
 impl Edit for MainStateEdit {
-    type Target = EditorState;
+    type Target = EditorData;
     type Output = anyhow::Result<()>;
 
     fn edit(&mut self, target: &mut Self::Target) -> Self::Output {
         match self {
-            MainStateEdit::CreateFile(type_id, path) => target.new_item(type_id, path),
-            MainStateEdit::CreateFolder(path) => target.new_folder(path),
+            MainStateEdit::CreateFile(value, path) => {
+                target.fs.new_item(value.clone().into(), path)
+            }
             MainStateEdit::DeleteLastEdit => Ok(()),
         }
     }
@@ -30,8 +30,8 @@ impl Edit for MainStateEdit {
     fn undo(&mut self, target: &mut Self::Target) -> Self::Output {
         match self {
             MainStateEdit::DeleteLastEdit => Ok(()),
-            MainStateEdit::CreateFile(_, path) | MainStateEdit::CreateFolder(path) => {
-                target.delete_file(path)?;
+            MainStateEdit::CreateFile(_, path) => {
+                target.fs.delete_entry(path);
                 Ok(())
             }
         }
