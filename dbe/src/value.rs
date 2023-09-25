@@ -6,6 +6,7 @@ use crate::value::etype::registry::ETypetId;
 use crate::EditorGraphState;
 use egui_node_graph::{NodeId, WidgetValueTrait};
 use itertools::Itertools;
+use serde::{Deserialize, Serialize};
 use smallvec::{Array, SmallVec};
 use std::fmt::{Display, Formatter};
 use ustr::UstrMap;
@@ -34,7 +35,7 @@ pub type EVector2 = glam::f64::Vec2;
 /// this library makes no attempt to check this consistency. For instance, it is
 /// up to the user code in this example to make sure no parameter is created
 /// with a DataType of Scalar and a ValueType of Vec2.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum EValue {
     Unknown {
         value: JsonValue,

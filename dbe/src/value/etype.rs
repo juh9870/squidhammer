@@ -1,12 +1,18 @@
-use crate::value::etype::registry::{ETypesRegistry, ETypetId};
-use crate::value::{ENumber, EValue};
-use crate::EditorGraphState;
-use egui_node_graph::DataTypeTrait;
-use rust_i18n::t;
 use std::borrow::Cow;
 use std::fmt::{Display, Formatter};
 use std::hash::Hash;
+
+use ordered_float::OrderedFloat;
+use rust_i18n::t;
+use serde::de::{Error, Visitor};
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use ustr::Ustr;
+
+use egui_node_graph::DataTypeTrait;
+
+use crate::value::etype::registry::{ETypesRegistry, ETypetId};
+use crate::value::{ENumber, EValue};
+use crate::EditorGraphState;
 
 pub mod registry;
 
@@ -87,11 +93,12 @@ impl DataTypeTrait<EditorGraphState> for EDataType {
     }
 }
 
-#[derive(Debug, Copy, Clone, Eq, PartialEq, Hash)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Hash, Deserialize)]
+#[serde(untagged)]
 pub enum ETypeConst {
-    Boolean(bool),
-    Scalar(ordered_float::OrderedFloat<ENumber>),
     String(Ustr),
+    Scalar(OrderedFloat<ENumber>),
+    Boolean(bool),
 }
 
 impl ETypeConst {
@@ -110,6 +117,24 @@ impl Display for ETypeConst {
             ETypeConst::Boolean(value) => write!(f, "{value}"),
             ETypeConst::Scalar(value) => write!(f, "{value}"),
             ETypeConst::String(value) => write!(f, "'{value}'"),
+        }
+    }
+}
+
+impl Serialize for ETypeConst {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        match self {
+            ETypeConst::Boolean(bool) => serializer.serialize_bool(*bool),
+            ETypeConst::Scalar(num) => {
+                #[cfg(not(feature = "f64"))]
+                return serializer.serialize_f32(num.0);
+                #[cfg(feature = "f64")]
+                return serializer.serialize_f64(num.0);
+            }
+            ETypeConst::String(data) => data.serialize(serializer),
         }
     }
 }

@@ -208,6 +208,7 @@ pub fn path_errors(namespace: &str) -> Option<(usize, char)> {
 }
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
+#[serde(transparent)]
 pub struct ETypetId(Ustr);
 
 impl ETypetId {

@@ -4,7 +4,6 @@ use anyhow::{anyhow, bail, Context, Error};
 use camino::{Utf8Path, Utf8PathBuf};
 use duplicate::duplicate_item;
 use rustc_hash::FxHashMap;
-use serde::Serializer;
 
 use utils::somehow;
 
@@ -147,13 +146,12 @@ impl DbeFileSystem {
 
             if let Err(err) = somehow!({
                 std::fs::create_dir_all(path.parent().expect("Unexpected root path"))?;
-                let serialized = match data {
-                    EditorItem::Raw(data) => data,
+                match data {
+                    EditorItem::Raw(data) => std::fs::write(path, data)?,
                     EditorItem::Empty => unreachable!(),
-                    EditorItem::Type(..) => todo!(),
-                    EditorItem::Value(..) => todo!(),
+                    EditorItem::Type(..) => bail!("Serialization of Thing files is not supported"),
+                    EditorItem::Value(data) => std::fs::write(path, &serde_json::to_vec(data)?)?,
                 };
-                std::fs::write(path, serialized)?;
             })
             .with_context(|| format!("While saving file at `{path}`"))
             {

@@ -25,7 +25,7 @@ lazy_static = "1.4.0"
 list_edit = { path = "../list_edit" }
 logos = "0.13.0"
 node_macro = { path = "../node_macro" }
-ordered-float = "3.9.1"
+ordered-float = { version = "3.9.1", features = ["serde"] }
 paste = "1.0.14"
 pluralizer = "0.4.0"
 rust-i18n = "2.0.0"

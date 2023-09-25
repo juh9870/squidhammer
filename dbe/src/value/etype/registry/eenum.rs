@@ -4,11 +4,12 @@ use crate::value::etype::{EDataType, ETypeConst};
 use crate::value::{EValue, JsonValue};
 use anyhow::{anyhow, bail, Context};
 use itertools::Itertools;
+use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::fmt::{Display, Formatter};
 use ustr::Ustr;
 
-#[derive(Debug, Copy, Clone, Eq, PartialEq, Hash)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Hash, Serialize, Deserialize)]
 enum EnumPattern {
     StructField(Ustr, ETypeConst),
     Boolean,
@@ -44,10 +45,10 @@ impl Display for EnumPattern {
         match self {
             EnumPattern::StructField(field, ty) => write!(f, "{{\"{field}\": \"{ty}\"}}"),
             EnumPattern::Boolean => write!(f, "{{boolean}}"),
-            EnumPattern::Scalar => write!(f, "\"number\""),
-            EnumPattern::Vec2 => write!(f, "\"vec2\""),
-            EnumPattern::String => write!(f, "\"string\""),
-            EnumPattern::Const(ty) => write!(f, "\"{ty}\""),
+            EnumPattern::Scalar => write!(f, "{{number}}"),
+            EnumPattern::Vec2 => write!(f, "{{vec2}}"),
+            EnumPattern::String => write!(f, "{{string}}"),
+            EnumPattern::Const(ty) => write!(f, "{{{ty}}}"),
         }
     }
 }
@@ -236,7 +237,7 @@ impl EEnumData {
     }
 }
 
-#[derive(Debug, Copy, Clone, Eq, PartialEq)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Serialize, Deserialize)]
 pub struct EEnumVariantId {
     ident: ETypetId,
     // Data types are currently unique
