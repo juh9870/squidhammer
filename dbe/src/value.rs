@@ -36,6 +36,7 @@ pub type EVector2 = glam::f64::Vec2;
 /// up to the user code in this example to make sure no parameter is created
 /// with a DataType of Scalar and a ValueType of Vec2.
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(tag = "type")]
 pub enum EValue {
     Unknown {
         value: JsonValue,
@@ -65,7 +66,7 @@ pub enum EValue {
         value: Option<ETypetId>,
     },
     Enum {
-        ident: EEnumVariantId,
+        variant: EEnumVariantId,
         data: Box<EValue>,
     },
 }
@@ -202,7 +203,10 @@ impl Display for EValue {
                         .join(", ")
                 )
             }
-            EValue::Enum { ident, data } => {
+            EValue::Enum {
+                variant: ident,
+                data,
+            } => {
                 write!(f, "{ident}({data})")
             }
             EValue::Unknown { value } => write!(f, "JSON({value})"),

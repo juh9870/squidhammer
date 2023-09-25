@@ -1,7 +1,7 @@
 ﻿use std::collections::VecDeque;
 use std::time::Duration;
 
-use anyhow::Context;
+use anyhow::{anyhow, Context, Error};
 use camino::{Utf8Path, Utf8PathBuf};
 use derivative::Derivative;
 use egui::{menu, Align2, Color32, Id, Pos2, Ui, WidgetText};
@@ -75,12 +75,18 @@ impl MainState {
         }
     }
 
-    fn report(&mut self, err: anyhow::Error) {
+    fn report(&mut self, err: Error) {
         let err = display_error(err);
         error!(err);
     }
 
-    pub fn save(&mut self) {}
+    pub fn save(&mut self) {
+        if let Err(errs) = self.state.fs.save_to_disk() {
+            for x in errs {
+                self.report(x);
+            }
+        }
+    }
 }
 
 impl DbeStateHolder for MainState {

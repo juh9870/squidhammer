@@ -93,7 +93,7 @@ impl DataTypeTrait<EditorGraphState> for EDataType {
     }
 }
 
-#[derive(Debug, Copy, Clone, Eq, PartialEq, Hash, Deserialize)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Hash, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum ETypeConst {
     String(Ustr),
@@ -117,24 +117,6 @@ impl Display for ETypeConst {
             ETypeConst::Boolean(value) => write!(f, "{value}"),
             ETypeConst::Scalar(value) => write!(f, "{value}"),
             ETypeConst::String(value) => write!(f, "'{value}'"),
-        }
-    }
-}
-
-impl Serialize for ETypeConst {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        match self {
-            ETypeConst::Boolean(bool) => serializer.serialize_bool(*bool),
-            ETypeConst::Scalar(num) => {
-                #[cfg(not(feature = "f64"))]
-                return serializer.serialize_f32(num.0);
-                #[cfg(feature = "f64")]
-                return serializer.serialize_f64(num.0);
-            }
-            ETypeConst::String(data) => data.serialize(serializer),
         }
     }
 }

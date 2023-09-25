@@ -132,7 +132,7 @@ impl DbeFileSystem {
         deleted
     }
 
-    pub fn save_to_disc(&mut self) -> Result<(), Vec<Error>> {
+    pub fn save_to_disk(&mut self) -> Result<(), Vec<Error>> {
         let mut failures = vec![];
         for (path, data) in self.fs.iter() {
             if !path.starts_with(&self.root) {

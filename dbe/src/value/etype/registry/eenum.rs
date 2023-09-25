@@ -190,7 +190,7 @@ impl EEnumData {
     pub fn default_value(&self, registry: &ETypesRegistry) -> EValue {
         let default_variant = self.variants.first().expect("Expect enum to not be empty");
         EValue::Enum {
-            ident: EEnumVariantId {
+            variant: EEnumVariantId {
                 ident: self.ident,
                 variant: default_variant.pat,
             },
