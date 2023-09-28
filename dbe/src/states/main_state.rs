@@ -1,7 +1,7 @@
 ﻿use std::collections::VecDeque;
 use std::time::Duration;
 
-use anyhow::{anyhow, Context, Error};
+use anyhow::{Context, Error};
 use camino::{Utf8Path, Utf8PathBuf};
 use derivative::Derivative;
 use egui::{menu, Align2, Color32, Id, Pos2, Ui, WidgetText};
@@ -17,15 +17,18 @@ use utils::egui::with_temp;
 use utils::errors::{display_error, ContextLike};
 use utils::{mem_clear, mem_temp};
 
-use crate::dbe_files::DbeFileSystem;
+use crate::dbe_files::{DbeFileSystem, EditorItem};
 use crate::states::main_state::edit::MainStateEdit;
+use crate::states::main_state::file_edit::show_file_edit;
 use crate::states::main_state::file_tree::show_file_tree;
 use crate::states::main_state::mesh_test::show_mesh_test;
 use crate::states::{default_info_panels, DbeStateHolder};
 use crate::value::etype::registry::{ETypesRegistry, ETypetId};
+use crate::value::EValue;
 use crate::{global_app_scale, scale_ui_style, DbeState};
 
 mod edit;
+mod file_edit;
 mod file_tree;
 mod mesh_test;
 mod state;
@@ -103,7 +106,6 @@ impl DbeStateHolder for MainState {
         egui_dock::DockArea::new(&mut state)
             .style(style)
             .show_inside(ui, &mut TabHandler(&self, &mut commands));
-        self.dock_state = Some(state);
 
         for cmd in commands {
             match cmd {
@@ -114,14 +116,22 @@ impl DbeStateHolder for MainState {
                     toasts.add(toast);
                 }
                 TabCommand::OpenFile { path } => {
-                    toasts.add(Toast {
-                        kind: ToastKind::Info,
-                        text: format!("File at `{path}` got selected").into(),
-                        options: ToastOptions::default().duration(Duration::from_secs_f64(5.0)),
-                    });
+                    if let Some(EditorItem::Value(value)) = self.state.fs.fs().get(&path) {
+                        state.push_to_focused_leaf(TabData::FileEdit {
+                            path,
+                            edited_value: value.clone(),
+                        });
+                    } else {
+                        toasts.add(Toast {
+                            kind: ToastKind::Info,
+                            text: format!("File at `{path}` is not editable").into(),
+                            options: ToastOptions::default().duration(Duration::from_secs_f64(5.0)),
+                        });
+                    }
                 }
             }
         }
+        self.dock_state = Some(state);
 
         if let Some(cmd) = self.commands_queue.pop_front() {
             let done = match &cmd {
@@ -174,6 +184,10 @@ pub enum TabData {
         points: Vec<(Pos2, Color32)>,
         indices: Vec<u32>,
     },
+    FileEdit {
+        path: Utf8PathBuf,
+        edited_value: EValue,
+    },
 }
 
 #[derive(Debug)]
@@ -186,6 +200,9 @@ impl<'a> egui_dock::TabViewer for TabHandler<'a> {
         match tab {
             TabData::FileTree => t!("dbe.main.file_tree").into(),
             TabData::MeshTest { .. } => t!("dbe.main.mesh_test").into(),
+            TabData::FileEdit { path, .. } => {
+                path.file_name().unwrap_or_else(|| path.as_str()).into()
+            }
         }
     }
 
@@ -194,6 +211,9 @@ impl<'a> egui_dock::TabViewer for TabHandler<'a> {
         match tab {
             TabData::FileTree => show_file_tree(self, ui),
             TabData::MeshTest { indices, points } => show_mesh_test(self, ui, points, indices),
+            TabData::FileEdit { path, edited_value } => {
+                show_file_edit(self, ui, path, edited_value)
+            }
         }
     }
 

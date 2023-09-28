@@ -15,8 +15,8 @@ pub enum EditorItem {
     #[default]
     Empty,
     Raw(Vec<u8>),
-    Type(ETypetId),
     Value(EValue),
+    Type(ETypetId),
 }
 
 #[duplicate_item(

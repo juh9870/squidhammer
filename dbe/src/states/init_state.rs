@@ -9,8 +9,8 @@ use crate::dbe_files::DbeFileSystem;
 use crate::states::main_state::MainState;
 use crate::states::project_config::ProjectConfig;
 use crate::states::DbeStateHolder;
-use crate::value::etype::registry::ETypesRegistry;
-use crate::value::JsonValue;
+use crate::value::etype::registry::{ETypesRegistry, ETypetId};
+use crate::value::{EValue, JsonValue};
 use crate::{info_window, DbeState};
 
 #[derive(Debug)]
@@ -54,7 +54,7 @@ fn init_editor(fs: &mut DbeFileSystem) -> anyhow::Result<ETypesRegistry> {
         "`types_folder` option point to path outside of project root directory"
     );
 
-    for (path, data) in fs.fs().iter() {
+    for (path, data) in fs.fs_mut().iter_mut() {
         let Some(ext) = path.extension().map(|e| e.to_ascii_lowercase()) else {
             continue;
         };
@@ -64,13 +64,23 @@ fn init_editor(fs: &mut DbeFileSystem) -> anyhow::Result<ETypesRegistry> {
 
         match ext.as_ref() {
             "thing" => {
+                let id = ETypetId::from_path(&path, &config.types.root).with_context(|| {
+                    format!("While generating type identifier for file `{path}`")
+                })?;
                 let value: JsonValue = serde_json5::from_slice(raw_data.as_slice())
-                    .with_context(|| format!("While parsing file at \"{path}\""))?;
-                registry_items.push((path.clone(), value));
+                    .with_context(|| format!("While parsing file at `{path}`"))?;
+                registry_items.push((id, value));
 
-                trace!("Deserialized thing at {path}");
+                *data = id.into();
+                trace!("Deserialized thing at `{path}`");
             }
-            "json" => {}
+            "json5" => {
+                let value = serde_json5::from_slice::<EValue>(raw_data.as_slice())
+                    .with_context(|| format!("While parsing file at `{path}`"))?;
+
+                *data = value.into();
+                trace!("Deserialized value at `{path}`");
+            }
             _ => {}
         }
     }

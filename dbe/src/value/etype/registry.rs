@@ -61,15 +61,12 @@ pub struct ETypesRegistry {
 impl ETypesRegistry {
     pub fn from_raws(
         root: Utf8PathBuf,
-        data: impl IntoIterator<Item = (Utf8PathBuf, JsonValue)>,
+        data: impl IntoIterator<Item = (ETypetId, JsonValue)>,
     ) -> anyhow::Result<Self> {
         let iter = data.into_iter();
 
         let types: UstrMap<RegistryItem> = iter
-            .map(|(path, v)| {
-                let id = ETypetId::from_path(&path, &root).with_context(|| {
-                    format!("While generating type identifier for file `{path}`")
-                })?;
+            .map(|(id, v)| {
                 Result::<(Ustr, RegistryItem), anyhow::Error>::Ok((*id.raw(), RegistryItem::Raw(v)))
             })
             .try_collect()?;
