@@ -1,0 +1,45 @@
+struct {
+    const "ItemType" default=11
+
+    enum "Type" id="eh:enums/component_stats_type"
+
+    number "ArmorPoints" min=-1000000 max=1000000
+    number "ArmorRepairRate" min=-1000000 max=1000000
+    number "ArmorRepairCooldownModifier" min=-1 max=1
+
+    number "EnergyPoints" min=-1000000 max=1000000
+    number "EnergyRechargeRate" min=-1000000 max=1000000
+    number "EnergyRechargeCooldownModifier" min=-1 max=1
+
+    number "ShieldPoints" min=-1000000 max=1000000
+    number "ShieldRechargeRate" min=-1000000 max=1000000
+    number "ShieldRechargeCooldownModifier" min=-1 max=1
+
+    number "Weight" min=-1000000 max=1000000
+
+    number "RammingDamage" min=-1000000 max=1000000
+    number "EnergyAbsorption" min=-1000000 max=1000000
+
+    number "KineticResistance" min=-1000000 max=1000000
+    number "EnergyResistance" min=-1000000 max=1000000
+    number "ThermalResistance" min=-1000000 max=1000000
+
+    number "EnginePower" min=0 max=2000
+    number "TurnRate" min=0 max=2000
+
+    bool "Autopilot"
+
+    number "DroneDamageModifier" min=-50 max=50
+    number "DroneDefenseModifier" min=-50 max=50
+    number "DroneSpeedModifier" min=-50 max=50
+
+    number "DronesBuiltPerSecond" min=0 max=100
+    number "DroneBuildTimeModifier" min=0 max=100
+
+    number "WeaponFireRateModifier" min=-100 max=100
+    number "WeaponDamageModifier" min=-100 max=100
+    number "WeaponRangeModifier" min=-100 max=100
+    number "WeaponEnergyCostModifier" min=-100 max=100
+
+    enum "AlterWeaponPlatform" id="eh:enums/platform_type"
+}

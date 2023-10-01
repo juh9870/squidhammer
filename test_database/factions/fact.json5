@@ -1,0 +1,34 @@
+{
+  "type": "Struct",
+  "ident": "eh:objects/faction",
+  "fields": {
+    "Hidden": {
+      "type": "Boolean",
+      "value": false
+    },
+    "HomeStarDistance": {
+      "type": "Scalar",
+      "value": 0.0
+    },
+    "ItemType": {
+      "type": "Scalar",
+      "value": 14.0
+    },
+    "WanderingShipsDistance": {
+      "type": "Scalar",
+      "value": 0.0
+    },
+    "Color": {
+      "type": "String",
+      "value": ""
+    },
+    "Name": {
+      "type": "String",
+      "value": ""
+    },
+    "Hostile": {
+      "type": "Boolean",
+      "value": false
+    }
+  }
+}

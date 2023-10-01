@@ -6,4 +6,4 @@ edition = "2021"
 
 [dependencies]
 egui = "0.22.0"
-egui_dnd = "0.5.0"
+egui_dnd = "0.5.1"

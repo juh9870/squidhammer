@@ -10,7 +10,7 @@ use crate::states::main_state::MainState;
 use crate::states::project_config::ProjectConfig;
 use crate::states::DbeStateHolder;
 use crate::value::etype::registry::{ETypesRegistry, ETypetId};
-use crate::value::{EValue, JsonValue};
+use crate::value::EValue;
 use crate::{info_window, DbeState};
 
 #[derive(Debug)]
@@ -67,8 +67,9 @@ fn init_editor(fs: &mut DbeFileSystem) -> anyhow::Result<ETypesRegistry> {
                 let id = ETypetId::from_path(&path, &config.types.root).with_context(|| {
                     format!("While generating type identifier for file `{path}`")
                 })?;
-                let value: JsonValue = serde_json5::from_slice(raw_data.as_slice())
-                    .with_context(|| format!("While parsing file at `{path}`"))?;
+                let value: String = String::from_utf8(raw_data.clone()).with_context(
+                    ||format!("While parsing content of a file `{path}`. Are you sure it's UTF-8 encoded?"),
+                )?;
                 registry_items.push((id, value));
 
                 *data = id.into();

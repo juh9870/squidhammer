@@ -8,6 +8,7 @@ use camino::{Utf8Path, Utf8PathBuf};
 use itertools::Itertools;
 use serde_json::Value;
 use std::fmt::{Display, Formatter};
+use std::str::FromStr;
 use ustr::{Ustr, UstrMap};
 
 pub mod eenum;
@@ -37,7 +38,7 @@ impl EObjectType {
 
 #[derive(Debug, Clone)]
 enum RegistryItem {
-    Raw(Value),
+    Raw(String),
     DeserializationInProgress,
     Ready(EObjectType),
 }
@@ -61,7 +62,7 @@ pub struct ETypesRegistry {
 impl ETypesRegistry {
     pub fn from_raws(
         root: Utf8PathBuf,
-        data: impl IntoIterator<Item = (ETypetId, JsonValue)>,
+        data: impl IntoIterator<Item = (ETypetId, String)>,
     ) -> anyhow::Result<Self> {
         let iter = data.into_iter();
 
@@ -75,10 +76,6 @@ impl ETypesRegistry {
 
         reg.deserialize_all()
     }
-
-    // pub fn types(&self) -> &UstrMap<EObjectType> {
-    //     &self.types
-    // }
 
     pub fn all_objects(&self) -> impl Iterator<Item = &EObjectType> {
         self.types.values().map(|e| e.expect_ready())
@@ -286,6 +283,14 @@ impl ETypetId {
     #[inline(always)]
     pub fn raw(&self) -> &Ustr {
         &self.0
+    }
+}
+
+impl FromStr for ETypetId {
+    type Err = anyhow::Error;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        ETypetId::parse(s)
     }
 }
 

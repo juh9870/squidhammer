@@ -31,11 +31,11 @@ impl<T, NewItem: Fn(usize) -> T, CanDelete: Fn(usize, T) -> bool, IdSource: Hash
         let id = self.id.id();
 
         // TODO: re-enable once https://github.com/lucasmerlin/hello_egui/issues/14 is fixed
-        ui.style_mut().animation_time = 0.0;
+        // ui.style_mut().animation_time = 0.0;
         ui.vertical(|ui| {
             let mut delete_id = None;
             let mut last_item_width = 0.0;
-            let response = dnd(ui, id).show(
+            let response = dnd(ui, id).with_return_animation_time(0.0).show(
                 items
                     .iter_mut()
                     .enumerate()

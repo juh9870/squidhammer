@@ -1,6 +1,5 @@
 use crate::graph::nodes::data::EditorNodeData;
 use crate::graph::EditorGraphResponse;
-use crate::value::draw::draw_evalue;
 use crate::value::etype::registry::eenum::EEnumVariantId;
 use crate::value::etype::registry::ETypetId;
 use crate::EditorGraphState;
@@ -35,7 +34,7 @@ pub type EVector2 = glam::f64::Vec2;
 /// this library makes no attempt to check this consistency. For instance, it is
 /// up to the user code in this example to make sure no parameter is created
 /// with a DataType of Scalar and a ValueType of Vec2.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 #[serde(tag = "type")]
 pub enum EValue {
     Unknown {
@@ -172,17 +171,18 @@ impl WidgetValueTrait for EValue {
     type NodeData = EditorNodeData;
     fn value_widget(
         &mut self,
-        param_name: &str,
+        _param_name: &str,
         _node_id: NodeId,
-        ui: &mut egui::Ui,
-        user_state: &mut EditorGraphState,
+        _ui: &mut egui::Ui,
+        _user_state: &mut EditorGraphState,
         _node_data: &EditorNodeData,
     ) -> Vec<EditorGraphResponse> {
         // This trait is used to tell the library which UI to display for the
         // inline parameter widgets.
-        draw_evalue(self, ui, param_name, &user_state.registry);
+        // draw_evalue(self, ui, param_name, &user_state.registry);
+        todo!();
         // This allows you to return your responses from the inline widgets.
-        Vec::new()
+        // Vec::new()
     }
 }
 

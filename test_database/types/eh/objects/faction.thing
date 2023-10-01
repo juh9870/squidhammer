@@ -1,9 +1,0 @@
-{
-  "ItemType": "14",
-  "Name": "string",
-  "Color": "string",
-  "HomeStarDistance": "number",
-  "WanderingShipsDistance": "number",
-  "Hidden": "boolean",
-  "Hostile": "boolean"
-}

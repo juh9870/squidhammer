@@ -1,0 +1,4 @@
+enum {
+    struct "eh:objects/component_stats"
+    struct "eh:objects/faction"
+}
