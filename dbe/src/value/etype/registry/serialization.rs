@@ -1,10 +1,12 @@
-use anyhow::{bail, Context};
+use anyhow::{anyhow, bail, Context};
 use itertools::Itertools;
 use knuffel::ast::{Literal, TypeName};
+use knuffel::decode::Kind;
 use knuffel::errors::DecodeError;
 use knuffel::span::Spanned;
 use knuffel::traits::ErrorSpan;
 use knuffel::DecodeScalar;
+use miette::{GraphicalReportHandler, GraphicalTheme};
 use std::borrow::Cow;
 
 use super::estruct::{EStructFieldDependencies, EStructFieldType};
@@ -29,18 +31,33 @@ pub fn deserialize_thing(
     id: ETypetId,
     data: &str,
 ) -> Result<EObjectType, anyhow::Error> {
-    let thing = knuffel::parse::<ThingTop>(&id.to_string(), data)?.value;
-    Ok(match thing {
-        ThingVariant::Enum(value) => EObjectType::Enum(value.into_eenum(registry, id)?),
-        ThingVariant::Struct(value) => EObjectType::Struct(value.into_estruct(registry, id)?),
-    })
+    let thing = knuffel::parse::<Vec<ThingVariant>>(&id.to_string(), data).map_err(|err| {
+        let mut report = String::new();
+        if let Err(_) = GraphicalReportHandler::new()
+            .with_theme(GraphicalTheme::none())
+            .render_report(&mut report, &err)
+        {
+            panic!("Failed to format error");
+        }
+        anyhow!("{report}")
+    })?;
+    Ok(
+        match thing
+            .into_iter()
+            .exactly_one()
+            .context("Can't define multiple things in one file")?
+        {
+            ThingVariant::Enum(value) => EObjectType::Enum(value.into_eenum(registry, id)?),
+            ThingVariant::Struct(value) => EObjectType::Struct(value.into_estruct(registry, id)?),
+        },
+    )
 }
 
-#[derive(Debug, knuffel::Decode)]
-struct ThingTop {
-    #[knuffel(child)]
-    value: ThingVariant,
-}
+// #[derive(Debug, knuffel::Decode)]
+// struct ThingTop {
+//     #[knuffel(child)]
+//     value: ThingVariant,
+// }
 
 #[derive(Debug, knuffel::Decode)]
 enum ThingVariant {
@@ -61,8 +78,8 @@ impl ThingStruct {
         id: ETypetId,
     ) -> anyhow::Result<EStructData> {
         let mut data = EStructData::new(id);
-        for x in self.fields {
-            x.check_dependencies(registry)
+        for mut x in self.fields {
+            EStructFieldDependencies::validate(&mut x, registry)
                 .with_context(|| format!("While deserializing field \"{}\"", x.name()))?;
             data.fields.push(x);
         }
@@ -73,6 +90,7 @@ impl ThingStruct {
 
 #[derive(Debug, knuffel::Decode)]
 struct ThingEnum {
+    #[knuffel(children)]
     variants: Vec<ThingEnumVariant>,
 }
 

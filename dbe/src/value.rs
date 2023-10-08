@@ -3,6 +3,7 @@ use crate::graph::EditorGraphResponse;
 use crate::value::etype::registry::eenum::EEnumVariantId;
 use crate::value::etype::registry::ETypetId;
 use crate::EditorGraphState;
+use egui::{Color32, Rgba};
 use egui_node_graph::{NodeId, WidgetValueTrait};
 use itertools::Itertools;
 use serde::{Deserialize, Serialize};
@@ -51,6 +52,9 @@ pub enum EValue {
     },
     String {
         value: String,
+    },
+    Color {
+        value: Rgba,
     },
     Struct {
         ident: ETypetId,
@@ -193,6 +197,14 @@ impl Display for EValue {
             EValue::Scalar { value } => write!(f, "{value}"),
             EValue::Vec2 { value } => write!(f, "{value}"),
             EValue::String { value } => write!(f, "\"{value}\""),
+            EValue::Color { value } => write!(
+                f,
+                "rgba({},{},{},{})",
+                value.r(),
+                value.g(),
+                value.b(),
+                value.a()
+            ),
             EValue::Struct { ident, fields } => {
                 write!(
                     f,

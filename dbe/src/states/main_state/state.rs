@@ -1,7 +1,5 @@
 use crate::dbe_files::DbeFileSystem;
 use crate::value::etype::registry::ETypesRegistry;
-use camino::Utf8PathBuf;
-use std::collections::{BTreeMap, BTreeSet};
 
 #[derive(Debug)]
 pub(super) struct EditorData {

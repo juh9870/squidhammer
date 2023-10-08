@@ -28,6 +28,8 @@ pub enum EDataType {
     Vec2,
     /// Primitive string type
     String,
+    /// Color type, stored as RGBA
+    Color,
     /// Object ID type
     Id { ty: ETypetId },
     /// Object reference type
@@ -47,6 +49,9 @@ impl EDataType {
                 value: Default::default(),
             },
             EDataType::String => EValue::String {
+                value: Default::default(),
+            },
+            EDataType::Color => EValue::Color {
                 value: Default::default(),
             },
             EDataType::Object { ident } => reg.default_value(ident),
@@ -71,6 +76,7 @@ impl DataTypeTrait<EditorGraphState> for EDataType {
             EDataType::Scalar => egui::Color32::from_rgb(38, 109, 211),
             EDataType::Vec2 => egui::Color32::from_rgb(238, 207, 109),
             EDataType::String => egui::Color32::from_rgb(109, 207, 109),
+            EDataType::Color { .. } => todo!(),
             EDataType::Object { .. } => egui::Color32::from_rgb(255, 255, 255),
             EDataType::Const { .. } => todo!(),
             EDataType::Id { .. } => todo!(),
@@ -84,6 +90,7 @@ impl DataTypeTrait<EditorGraphState> for EDataType {
             EDataType::Scalar => Cow::Owned(t!("types.scalar")),
             EDataType::Vec2 => Cow::Owned(t!("types.vec2")),
             EDataType::String => Cow::Owned(t!("types.string")),
+            EDataType::Color => Cow::Owned(t!("types.color")),
             EDataType::Id { ty } => Cow::Owned(t!("types.id", ty = ty)),
             EDataType::Ref { ty } => Cow::Owned(t!("types.ref", ty = ty)),
             EDataType::Object { ident } => Cow::Owned(t!(ident.raw())),

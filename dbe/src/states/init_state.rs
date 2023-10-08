@@ -3,8 +3,6 @@ use egui::Ui;
 use egui_commonmark::{CommonMarkCache, CommonMarkViewer};
 use tracing::trace;
 
-use utils::errors::display_error;
-
 use crate::dbe_files::DbeFileSystem;
 use crate::states::main_state::MainState;
 use crate::states::project_config::ProjectConfig;
@@ -63,7 +61,7 @@ fn init_editor(fs: &mut DbeFileSystem) -> anyhow::Result<ETypesRegistry> {
             .expect("All files should be raw at this point");
 
         match ext.as_ref() {
-            "thing" => {
+            "kdl" => {
                 let id = ETypetId::from_path(&path, &config.types.root).with_context(|| {
                     format!("While generating type identifier for file `{path}`")
                 })?;
@@ -101,7 +99,7 @@ impl DbeStateHolder for InitState {
                 .with_context(|| format!("While loading project directory at `{}`", fs.root()))
             {
                 Ok(reg) => Self::Ready(fs, reg).into(),
-                Err(err) => Self::Error(display_error(err)).into(),
+                Err(err) => err.into(),
             },
             InitState::Ready(fs, reg) => MainState::new(fs, reg).into(),
             InitState::Error(err) => {

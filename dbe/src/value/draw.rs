@@ -5,6 +5,7 @@ use crate::value::{ENumber, EValue, EVector2, JsonValue};
 use egui::{Color32, DragValue, RichText, Ui, WidgetText};
 use rust_i18n::t;
 use serde_json::{Number, Value};
+use tracing::info;
 use ustr::{UstrMap, UstrSet};
 
 pub mod editor;
@@ -83,55 +84,60 @@ fn error(ui: &mut Ui, label: impl Into<WidgetText>, text: impl Into<RichText>) {
 
 pub fn draw_struct(
     ui: &mut Ui,
-    label: &str,
     registry: &ETypesRegistry,
     ident: &ETypetId,
     fields: &mut UstrMap<EValue>,
 ) {
     ui.vertical(|ui| match registry.get_object(ident) {
-        None => error(ui, label, t!("editor.unknown_struct", ident = ident)),
+        None => error(ui, "struct", t!("editor.unknown_struct", ident = ident)),
         Some(EObjectType::Struct(data)) => {
-            egui::CollapsingHeader::new(label).show(ui, |ui| {
-                let mut extra_fields: UstrSet = fields.keys().copied().collect();
+            let mut extra_fields: UstrSet = fields.keys().copied().collect();
 
-                for f in &data.fields {
-                    let value = fields
-                        .entry(f.name())
-                        .or_insert_with(|| f.ty().default_value(registry));
+            for f in &data.fields {
+                let value = fields
+                    .entry(f.name())
+                    .or_insert_with(|| f.ty().default_value(registry));
 
-                    extra_fields.remove(&f.name());
-                    draw_struct_field(ui, value, f);
+                extra_fields.remove(&f.name());
+                draw_struct_field(ui, registry, value, f);
+            }
+
+            if !extra_fields.is_empty() {
+                ui.colored_label(Color32::RED, t!("editor.extra_fields"));
+            }
+
+            for (field_name, _value) in fields {
+                if !extra_fields.contains(field_name) {
+                    continue;
                 }
-
-                if !extra_fields.is_empty() {
-                    ui.colored_label(Color32::RED, t!("editor.extra_fields"));
-                }
-
-                for (field_name, _value) in fields {
-                    if !extra_fields.contains(field_name) {
-                        continue;
-                    }
-                    error(ui, field_name.as_str(), format!("Unexpected field"))
-                    // draw_evalue(value, ui, field_name.as_str(), registry);
-                }
-            });
+                error(ui, field_name.as_str(), t!("editor.unexpected_field"))
+                // draw_evalue(value, ui, field_name.as_str(), registry);
+            }
         }
-        Some(_) => error(ui, label, t!("editor.not_a_struct", ident = ident)),
+        Some(_) => error(ui, "struct", t!("editor.not_a_struct", ident = ident)),
     });
 }
 
-fn draw_struct_field(ui: &mut Ui, value: &mut EValue, field: &EStructField) {
+fn draw_struct_field(
+    ui: &mut Ui,
+    registry: &ETypesRegistry,
+    value: &mut EValue,
+    field: &EStructField,
+) {
     let name = || EStructFieldType::name(field).as_str();
     ui.horizontal(|ui| {
         match (value, field) {
             (EValue::Scalar { value }, EStructField::Number(field)) => {
-                field.editor().edit(ui, value, field)
-            } // "a"
+                field.editor().edit(ui, registry, value, field)
+            }
             (EValue::String { value }, EStructField::String(field)) => {
-                field.editor().edit(ui, value, field)
+                field.editor().edit(ui, registry, value, field)
+            }
+            (EValue::Color { value }, EStructField::Color(field)) => {
+                field.editor().edit(ui, registry, value, field)
             }
             (EValue::Boolean { value }, EStructField::Boolean(field)) => {
-                field.editor().edit(ui, value, field)
+                field.editor().edit(ui, registry, value, field)
             }
             (value, EStructField::Const(field)) => {
                 if &field.value().default_value() != value {

@@ -7,5 +7,10 @@ edition = "2021"
 [dependencies]
 anyhow = "1"
 egui = "0.22.0"
+impl-trait-for-tuples = "0.2.2"
 indent = "0.1.1"
 itertools = "0.11.0"
+thiserror = "1.0.47"
+
+[dev-dependencies]
+rstest = "0.18.2"

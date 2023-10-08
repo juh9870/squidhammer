@@ -70,11 +70,17 @@ impl ETypesRegistry {
             .map(|(id, v)| {
                 Result::<(Ustr, RegistryItem), anyhow::Error>::Ok((*id.raw(), RegistryItem::Raw(v)))
             })
-            .try_collect()?;
+            .try_collect()
+            .context("While grouping entries")?;
 
         let reg = Self { root, types };
 
-        reg.deserialize_all()
+        dbg!(reg.deserialize_all().context("While deserializing types"))
+    }
+
+    pub fn debug_dump(&self) {
+        dbg!(&self.types);
+        dbg!(&self.root);
     }
 
     pub fn all_objects(&self) -> impl Iterator<Item = &EObjectType> {
@@ -168,7 +174,8 @@ impl ETypesRegistry {
     fn deserialize_all(mut self) -> anyhow::Result<Self> {
         let keys = self.types.keys().copied().collect_vec();
         for id in keys {
-            self.fetch_or_deserialize(ETypetId(id))?;
+            self.fetch_or_deserialize(ETypetId(id))
+                .with_context(|| format!("While deserializing `{id}`"))?;
         }
 
         debug_assert!(

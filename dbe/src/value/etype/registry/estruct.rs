@@ -1,8 +1,10 @@
+use egui::Rgba;
 use enum_dispatch::enum_dispatch;
 use ustr::Ustr;
+use utils::color_format::ColorFormat;
 
 use crate::value::draw::editor::{
-    BooleanEditorType, ScalarEditorType, ScalarType, StringEditorType,
+    BooleanEditorType, ColorEditorType, ScalarEditorType, ScalarType, StringEditorType,
 };
 use crate::value::etype::registry::{ETypesRegistry, ETypetId};
 use crate::value::etype::{EDataType, ETypeConst};
@@ -16,7 +18,7 @@ pub trait EStructFieldType {
 
 #[enum_dispatch(EStructField)]
 pub(super) trait EStructFieldDependencies {
-    fn check_dependencies(&self, _registry: &ETypesRegistry) -> anyhow::Result<()> {
+    fn validate(&mut self, _registry: &ETypesRegistry) -> anyhow::Result<()> {
         Ok(())
     }
 }
@@ -76,6 +78,53 @@ impl EStructFieldString {
 }
 
 impl EStructFieldDependencies for EStructFieldString {}
+
+#[derive(Debug, knuffel::Decode, Clone)]
+pub struct EStructFieldColor {
+    #[knuffel(argument, str)]
+    name: Ustr,
+    #[knuffel(argument, str)]
+    format: ColorFormat,
+    #[knuffel(property(name = "default"))]
+    default: Option<String>,
+    default_color: Option<Rgba>,
+    #[knuffel(property(name = "editor"), default)]
+    editor: ColorEditorType,
+}
+
+impl EStructFieldColor {
+    pub fn editor(&self) -> ColorEditorType {
+        self.editor
+    }
+    pub fn format(&self) -> ColorFormat {
+        self.format
+    }
+}
+
+impl EStructFieldDependencies for EStructFieldColor {
+    fn validate(&mut self, _registry: &ETypesRegistry) -> anyhow::Result<()> {
+        if let Some(default) = &self.default {
+            self.default_color = Some(self.format.parse(default)?);
+        }
+        Ok(())
+    }
+}
+
+impl EStructFieldType for EStructFieldColor {
+    fn name(&self) -> Ustr {
+        self.name
+    }
+
+    fn ty(&self) -> EDataType {
+        EDataType::Color
+    }
+
+    fn default_value(&self, _registry: &ETypesRegistry) -> EValue {
+        EValue::Color {
+            value: self.default_color.unwrap_or(Rgba::WHITE),
+        }
+    }
+}
 
 #[derive(Debug, knuffel::Decode, Clone)]
 pub struct EStructFieldBoolean {
@@ -170,7 +219,7 @@ impl EStructFieldType for EStructFieldStruct {
 }
 
 impl EStructFieldDependencies for EStructFieldStruct {
-    fn check_dependencies(&self, registry: &ETypesRegistry) -> anyhow::Result<()> {
+    fn validate(&mut self, registry: &ETypesRegistry) -> anyhow::Result<()> {
         registry.assert_defined(&self.id)
     }
 }
@@ -198,7 +247,7 @@ impl EStructFieldType for EStructFieldEnum {
 }
 
 impl EStructFieldDependencies for EStructFieldEnum {
-    fn check_dependencies(&self, registry: &ETypesRegistry) -> anyhow::Result<()> {
+    fn validate(&mut self, registry: &ETypesRegistry) -> anyhow::Result<()> {
         registry.assert_defined(&self.id)
     }
 }
@@ -208,6 +257,7 @@ impl EStructFieldDependencies for EStructFieldEnum {
 pub enum EStructField {
     Number(EStructFieldScalar),
     String(EStructFieldString),
+    Color(EStructFieldColor),
     Boolean(EStructFieldBoolean),
     Const(EStructFieldConst),
     Struct(EStructFieldStruct),
@@ -219,6 +269,7 @@ impl EStructFieldType for EStructField {
         match self {
             EStructField::Number(f) => f.name(),
             EStructField::String(f) => f.name(),
+            EStructField::Color(f) => f.name(),
             EStructField::Boolean(f) => f.name(),
             EStructField::Const(f) => f.name(),
             EStructField::Struct(f) => f.name(),
@@ -230,6 +281,7 @@ impl EStructFieldType for EStructField {
         match self {
             EStructField::Number(f) => f.ty(),
             EStructField::String(f) => f.ty(),
+            EStructField::Color(f) => f.ty(),
             EStructField::Boolean(f) => f.ty(),
             EStructField::Const(f) => f.ty(),
             EStructField::Struct(f) => f.ty(),
@@ -241,6 +293,7 @@ impl EStructFieldType for EStructField {
         match self {
             EStructField::Number(f) => f.default_value(registry),
             EStructField::String(f) => f.default_value(registry),
+            EStructField::Color(f) => f.default_value(registry),
             EStructField::Boolean(f) => f.default_value(registry),
             EStructField::Const(f) => f.default_value(registry),
             EStructField::Struct(f) => f.default_value(registry),
