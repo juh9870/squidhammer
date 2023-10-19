@@ -42,6 +42,8 @@ pub struct MainState {
     last_snapshot: Instant,
 }
 
+const AUTO_COMMIT_DURATION: Duration = Duration::from_secs(5);
+
 impl MainState {
     pub fn new(fs: DbeFileSystem, registry: ETypesRegistry) -> Self {
         Self {
@@ -218,7 +220,7 @@ impl DbeStateHolder for MainState {
             }
         }
 
-        if self.last_snapshot.elapsed() > Duration::from_secs(5) {
+        if self.last_snapshot.elapsed() > AUTO_COMMIT_DURATION {
             self.commit_changes();
             self.last_snapshot = Instant::now();
         }
