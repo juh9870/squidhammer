@@ -4,13 +4,14 @@ use anyhow::{anyhow, bail, Context, Error};
 use camino::{Utf8Path, Utf8PathBuf};
 use duplicate::duplicate_item;
 use rustc_hash::FxHashMap;
+use tracing::{debug, info};
 
 use utils::somehow;
 
 use crate::value::etype::registry::ETypetId;
 use crate::value::EValue;
 
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub enum EditorItem {
     #[default]
     Empty,
@@ -132,7 +133,26 @@ impl DbeFileSystem {
         deleted
     }
 
+    pub fn replace_entry(
+        &mut self,
+        path: &Utf8Path,
+        value: EditorItem,
+    ) -> anyhow::Result<EditorItem> {
+        let file = self.fs.get_mut(path);
+        match file {
+            None => {
+                bail!("File is not found")
+            }
+            Some(data) => {
+                let old = std::mem::replace(data, value);
+                self.set_dirty(path.to_path_buf());
+                Ok(old)
+            }
+        }
+    }
+
     pub fn save_to_disk(&mut self) -> Result<(), Vec<Error>> {
+        debug!("Saving is starting");
         let mut failures = vec![];
         for (path, data) in self.fs.iter() {
             if !path.starts_with(&self.root) {
@@ -143,6 +163,7 @@ impl DbeFileSystem {
             if !is_dirty || data.is_empty() {
                 continue;
             }
+            debug!("File at {path} is dirty, saving...");
 
             if let Err(err) = somehow!({
                 std::fs::create_dir_all(path.parent().expect("Unexpected root path"))?;

@@ -1,3 +1,5 @@
+use crate::dbe_files::EditorItem;
+use anyhow::{bail, Context};
 use camino::Utf8PathBuf;
 use undo::{Edit, Merged};
 
@@ -12,6 +14,11 @@ use crate::value::EValue;
 pub(super) enum MainStateEdit {
     DeleteLastEdit,
     CreateFile(EValue, Utf8PathBuf),
+    EditFile {
+        path: Utf8PathBuf,
+        old: Option<EditorItem>,
+        new: EValue,
+    },
 }
 
 impl Edit for MainStateEdit {
@@ -20,10 +27,20 @@ impl Edit for MainStateEdit {
 
     fn edit(&mut self, target: &mut Self::Target) -> Self::Output {
         match self {
-            MainStateEdit::CreateFile(value, path) => {
-                target.fs.new_item(value.clone().into(), path)
-            }
+            MainStateEdit::CreateFile(value, path) => target
+                .fs
+                .new_item(value.clone().into(), path)
+                .with_context(|| format!("While creating file at {path}")),
             MainStateEdit::DeleteLastEdit => Ok(()),
+            MainStateEdit::EditFile { new, old, path } => {
+                *old = Some(
+                    target
+                        .fs
+                        .replace_entry(path, EditorItem::Value(new.clone()))
+                        .with_context(|| format!("While editing file at {path}"))?,
+                );
+                Ok(())
+            }
         }
     }
 
@@ -32,6 +49,16 @@ impl Edit for MainStateEdit {
             MainStateEdit::DeleteLastEdit => Ok(()),
             MainStateEdit::CreateFile(_, path) => {
                 target.fs.delete_entry(path);
+                Ok(())
+            }
+            MainStateEdit::EditFile { path, old, .. } => {
+                let Some(old) = old else {
+                    bail!("Can't reverse edit because it was not yet applied")
+                };
+                target
+                    .fs
+                    .replace_entry(path, old.clone())
+                    .with_context(|| format!("While reverting edit of a file at {path}"))?;
                 Ok(())
             }
         }

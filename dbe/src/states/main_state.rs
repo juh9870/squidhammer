@@ -1,15 +1,15 @@
 ﻿use std::collections::VecDeque;
-use std::time::Duration;
+use std::time::{Duration, Instant};
 
-use anyhow::{Context, Error};
+use anyhow::{anyhow, Context, Error};
 use camino::{Utf8Path, Utf8PathBuf};
 use derivative::Derivative;
 use egui::{menu, Align2, Color32, Id, Pos2, Ui, WidgetText};
-use egui_dock::{DockState, Style};
+use egui_dock::{DockState, Node, Style};
 use egui_modal::Modal;
 use egui_toast::{Toast, ToastKind, ToastOptions, Toasts};
 use rust_i18n::t;
-use tracing::error;
+use tracing::{debug, error, error_span, info, span, trace, warn};
 use undo::History;
 
 use state::EditorData;
@@ -39,6 +39,7 @@ pub struct MainState {
     dock_state: Option<DockState<TabData>>,
     commands_queue: VecDeque<QueuedCommand>,
     edit_history: History<MainStateEdit>,
+    last_snapshot: Instant,
 }
 
 impl MainState {
@@ -54,6 +55,7 @@ impl MainState {
             ])),
             commands_queue: Default::default(),
             edit_history: Default::default(),
+            last_snapshot: Instant::now(),
         }
     }
 
@@ -83,11 +85,72 @@ impl MainState {
         error!(err);
     }
 
-    pub fn save(&mut self) {
+    pub fn save_to_disk(&mut self) {
+        let span = error_span!("saving");
+        let _guard = span.enter();
+        self.commit_changes();
         if let Err(errs) = self.state.fs.save_to_disk() {
-            for x in errs {
-                self.report(x);
+            if errs.is_empty() {
+                info!("Saved completed successfully!")
+            } else {
+                for x in errs {
+                    self.report(x);
+                }
+                warn!("There were issues during saving, please check log above for errors")
             }
+        }
+    }
+
+    /// Commits changes of all "dirty" file editor windows to the edit history
+    pub fn commit_changes(&mut self) {
+        trace!(target: "dbe", "Committing changes start");
+        let Some(state) = &self.dock_state else {
+            return;
+        };
+        let mut errs = vec![];
+        for tab in state
+            .iter_nodes()
+            .filter_map(|e| {
+                if let Node::Leaf { tabs, .. } = e {
+                    Some(tabs)
+                } else {
+                    None
+                }
+            })
+            .flatten()
+        {
+            #[allow(clippy::single_match)]
+            match tab {
+                TabData::FileEdit { edited_value, path } => {
+                    let existing = self.state.fs.content(path);
+                    let Some(EditorItem::Value(val)) = existing else {
+                        errs.push(anyhow!("File at `{path}` is not found, unable to save."));
+                        continue;
+                    };
+
+                    if val == edited_value {
+                        trace!("File at `{path}` is unchanged, skipping");
+                        continue;
+                    }
+
+                    debug!("Committing changes to {path}");
+
+                    if let Err(err) = self.edit_history.edit(
+                        &mut self.state,
+                        MainStateEdit::EditFile {
+                            old: None,
+                            path: path.clone(),
+                            new: edited_value.clone(),
+                        },
+                    ) {
+                        errs.push(err)
+                    };
+                }
+                _ => {}
+            }
+        }
+        for err in errs {
+            self.report(err)
         }
     }
 }
@@ -155,6 +218,11 @@ impl DbeStateHolder for MainState {
             }
         }
 
+        if self.last_snapshot.elapsed() > Duration::from_secs(5) {
+            self.commit_changes();
+            self.last_snapshot = Instant::now();
+        }
+
         toasts.show(ui.ctx());
 
         self.into()
@@ -165,7 +233,7 @@ impl DbeStateHolder for MainState {
             menu::bar(ui, |ui| {
                 ui.menu_button(t!("dbe.main.toolbar.file"), |ui| {
                     if ui.button(t!("dbe.main.toolbar.save")).clicked() {
-                        self.save();
+                        self.save_to_disk();
                         ui.close_menu()
                     }
                 });

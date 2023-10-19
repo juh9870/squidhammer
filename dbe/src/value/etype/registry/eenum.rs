@@ -43,6 +43,10 @@ impl EEnumVariant {
         self.data.default_value(registry)
     }
 
+    pub fn name(&self) -> &str {
+        &self.name
+    }
+
     pub(super) fn new(name: String, pat: EnumPattern, data: EDataType) -> Self {
         Self { pat, data, name }
     }
