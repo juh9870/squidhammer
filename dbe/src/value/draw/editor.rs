@@ -147,7 +147,7 @@ impl StructFieldEditor<Rgba, EStructFieldColor> for ColorEditorType {
                 } else {
                     let mut rgb = [color[0], color[1], color[2]];
                     ui.color_edit_button_rgb(&mut rgb);
-                    color = [rgb[0], rgb[1], rgb[2], 1.0];
+                    color = [rgb[0], rgb[1], rgb[2], color[3]];
                 }
                 *value = Rgba::from_rgba_unmultiplied(color[0], color[1], color[2], color[3])
             });

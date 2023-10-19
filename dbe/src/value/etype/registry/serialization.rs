@@ -1,7 +1,6 @@
 use anyhow::{anyhow, bail, Context};
 use itertools::Itertools;
 use knuffel::ast::{Literal, TypeName};
-use knuffel::decode::Kind;
 use knuffel::errors::DecodeError;
 use knuffel::span::Spanned;
 use knuffel::traits::ErrorSpan;

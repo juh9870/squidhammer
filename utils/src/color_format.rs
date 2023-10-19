@@ -114,7 +114,7 @@ impl ColorFormat {
             }
         }
 
-        Ok(Rgba::from_rgba_premultiplied(red, green, blue, alpha))
+        Ok(Rgba::from_rgba_unmultiplied(red, green, blue, alpha))
     }
 
     pub fn format(&self, color: Rgba) -> String {
@@ -122,13 +122,14 @@ impl ColorFormat {
 
         let num = |x: f32| format!("{:0>2X}", ((x * 255.0) as u8));
 
+        let rgba = color.to_rgba_unmultiplied();
         for channel in self.0 {
             match channel {
                 ColorChannel::None => break,
-                ColorChannel::Red => builder.push_str(&num(color.r())),
-                ColorChannel::Green => builder.push_str(&num(color.g())),
-                ColorChannel::Blue => builder.push_str(&num(color.b())),
-                ColorChannel::Alpha => builder.push_str(&num(color.a())),
+                ColorChannel::Red => builder.push_str(&num(rgba[0])),
+                ColorChannel::Green => builder.push_str(&num(rgba[1])),
+                ColorChannel::Blue => builder.push_str(&num(rgba[2])),
+                ColorChannel::Alpha => builder.push_str(&num(rgba[3])),
             }
         }
 
@@ -254,10 +255,10 @@ mod tests {
     }
 
     #[rstest]
-    #[case("#ffffff", "rgb", Rgba::from_rgba_premultiplied(1.0, 1.0, 1.0, 1.0))]
-    #[case("#ffffff00", "rgba", Rgba::from_rgba_premultiplied(1.0, 1.0, 1.0, 0.0))]
-    #[case("#000000", "rgba", Rgba::from_rgba_premultiplied(0.0, 0.0, 0.0, 1.0))]
-    #[case("#800000FF", "arbg", Rgba::from_rgba_premultiplied(0.0, 1.0, 0.0, 128.0 / 255.0))]
+    #[case("#ffffff", "rgb", Rgba::from_rgba_unmultiplied(1.0, 1.0, 1.0, 1.0))]
+    #[case("#ffffff00", "rgba", Rgba::from_rgba_unmultiplied(1.0, 1.0, 1.0, 0.0))]
+    #[case("#000000", "rgba", Rgba::from_rgba_unmultiplied(0.0, 0.0, 0.0, 1.0))]
+    #[case("#800000FF", "arbg", Rgba::from_rgba_unmultiplied(0.0, 1.0, 0.0, 128.0 / 255.0))]
     fn should_parse_color(#[case] raw: String, #[case] format: String, #[case] expected: Rgba) {
         let parsed = parse_color(&raw, &format).expect("Should parse color");
         assert_eq!(parsed, expected);
@@ -285,10 +286,10 @@ mod tests {
     }
 
     #[rstest]
-    #[case("rgba", Rgba::from_rgba_premultiplied(1.0, 0.0, 1.0, 1.0), "#FF00FFFF")]
-    #[case("argb", Rgba::from_rgba_premultiplied(1.0, 0.0, 1.0, 0.0), "#00FF00FF")]
-    #[case("rgb", Rgba::from_rgba_premultiplied(1.0, 0.0, 1.0, 1.0), "#FF00FF")]
-    #[case("brg", Rgba::from_rgba_premultiplied(1.0, 0.0, 1.0, 1.0), "#FFFF00")]
+    #[case("rgba", Rgba::from_rgba_unmultiplied(1.0, 0.0, 1.0, 1.0), "#FF00FFFF")]
+    #[case("argb", Rgba::from_rgba_unmultiplied(1.0, 0.0, 1.0, 128.0 / 255.0), "#80FF00FF")]
+    #[case("rgb", Rgba::from_rgba_unmultiplied(1.0, 0.0, 1.0, 1.0), "#FF00FF")]
+    #[case("brg", Rgba::from_rgba_unmultiplied(1.0, 0.0, 1.0, 1.0), "#FFFF00")]
     fn should_stringify(#[case] format: String, #[case] color: Rgba, #[case] expected: String) {
         let format = ColorFormat::from_str(&format).expect("Should parse color format");
         assert_eq!(format.format(color), expected);
