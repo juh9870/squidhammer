@@ -33,6 +33,7 @@ fn show_folder(
     }
     let response = CollapsingHeader::new(header)
         // .enabled(is_enabled)
+        .default_open(is_enabled)
         .show(ui, |ui| {
             while let Some(next) = fs.peek().map(|e| e.as_ref().to_path_buf()) {
                 let Ok(remaining) = next.strip_prefix(path) else {
