@@ -1,15 +1,17 @@
-﻿use std::collections::VecDeque;
+﻿use std::collections::hash_map::DefaultHasher;
+use std::collections::VecDeque;
+use std::hash::{Hash, Hasher};
 use std::time::{Duration, Instant};
 
 use anyhow::{anyhow, Context, Error};
 use camino::{Utf8Path, Utf8PathBuf};
 use derivative::Derivative;
-use egui::{menu, Align2, Color32, Id, Pos2, Ui, WidgetText};
+use egui::{menu, Align2, Button, Color32, Id, Pos2, Ui, WidgetText};
 use egui_dock::{DockState, Node, Style};
 use egui_modal::Modal;
 use egui_toast::{Toast, ToastKind, ToastOptions, Toasts};
 use rust_i18n::t;
-use tracing::{debug, error, error_span, info, span, trace, warn};
+use tracing::{debug, error, error_span, info, trace, warn};
 use undo::History;
 
 use state::EditorData;
@@ -39,6 +41,7 @@ pub struct MainState {
     dock_state: Option<DockState<TabData>>,
     commands_queue: VecDeque<QueuedCommand>,
     edit_history: History<MainStateEdit>,
+    last_tab_hash: u64,
     last_snapshot: Instant,
 }
 
@@ -57,6 +60,7 @@ impl MainState {
             ])),
             commands_queue: Default::default(),
             edit_history: Default::default(),
+            last_tab_hash: 0,
             last_snapshot: Instant::now(),
         }
     }
@@ -75,14 +79,13 @@ impl MainState {
         match task(self).with_context(|| context.get_context()) {
             Ok(data) => Some(data),
             Err(err) => {
-                let err = display_error(err);
-                error!(err);
+                self.report(err);
                 None
             }
         }
     }
 
-    fn report(&mut self, err: Error) {
+    fn report(&self, err: Error) {
         let err = display_error(err);
         error!(err);
     }
@@ -103,30 +106,38 @@ impl MainState {
         }
     }
 
+    fn all_tabs(&self) -> Option<impl Iterator<Item = &TabData>> {
+        let Some(state) = &self.dock_state else {
+            return None;
+        };
+        Some(
+            state
+                .iter_nodes()
+                .filter_map(|e| {
+                    if let Node::Leaf { tabs, .. } = e {
+                        Some(tabs)
+                    } else {
+                        None
+                    }
+                })
+                .flatten(),
+        )
+    }
+
     /// Commits changes of all "dirty" file editor windows to the edit history
     pub fn commit_changes(&mut self) {
         trace!(target: "dbe", "Committing changes start");
-        let Some(state) = &self.dock_state else {
+        let Some(tabs) = self.all_tabs() else {
             return;
         };
-        let mut errs = vec![];
-        for tab in state
-            .iter_nodes()
-            .filter_map(|e| {
-                if let Node::Leaf { tabs, .. } = e {
-                    Some(tabs)
-                } else {
-                    None
-                }
-            })
-            .flatten()
-        {
+        let mut edits = vec![];
+        for tab in tabs {
             #[allow(clippy::single_match)]
             match tab {
                 TabData::FileEdit { edited_value, path } => {
                     let existing = self.state.fs.content(path);
                     let Some(EditorItem::Value(val)) = existing else {
-                        errs.push(anyhow!("File at `{path}` is not found, unable to save."));
+                        self.report(anyhow!("File at `{path}` is not found, unable to save."));
                         continue;
                     };
 
@@ -137,22 +148,66 @@ impl MainState {
 
                     debug!("Committing changes to {path}");
 
-                    if let Err(err) = self.edit_history.edit(
-                        &mut self.state,
-                        MainStateEdit::EditFile {
-                            old: None,
-                            path: path.clone(),
-                            new: edited_value.clone(),
-                        },
-                    ) {
-                        errs.push(err)
-                    };
+                    edits.push(MainStateEdit::EditFile {
+                        old: None,
+                        path: path.clone(),
+                        new: edited_value.clone(),
+                    });
                 }
                 _ => {}
             }
         }
-        for err in errs {
-            self.report(err)
+        for edit in edits {
+            if let Err(err) = self.edit_history.edit(&mut self.state, edit) {
+                self.report(err)
+            }
+        }
+    }
+
+    /// Sync content of all edit windows to the current virtual file system
+    /// state, discarding all changes since the last commit
+    pub fn sync_edit_windows(&mut self) {
+        let (Some(tabs), Some(state)) = (self.all_tabs(), &self.dock_state) else {
+            return;
+        };
+
+        let mut dirty_tabs = vec![];
+
+        for tab in tabs {
+            if let TabData::FileEdit { path, edited_value } = tab {
+                let existing = self.state.fs.content(path);
+                let Some(EditorItem::Value(val)) = existing else {
+                    continue; // not our problem
+                };
+                if edited_value != val {
+                    dirty_tabs.push((tab, val.clone()));
+                }
+            }
+        }
+
+        let mut paths = vec![];
+        for (tab, data) in dirty_tabs {
+            paths.push((state.find_tab(tab).expect("Tab should exist"), data))
+        }
+
+        let Some(state) = &mut self.dock_state else {
+            panic!("Should have state at this point")
+        };
+
+        for ((surface, node, tab), data) in paths {
+            let node = &mut state[surface][node];
+            match node {
+                Node::Leaf { tabs, .. } => {
+                    let tab = &mut tabs[tab.0];
+                    match tab {
+                        TabData::FileEdit { edited_value, .. } => {
+                            *edited_value = data;
+                        }
+                        _ => panic!("Should be a file edit node"),
+                    }
+                }
+                _ => panic!("Should be a leaf node"),
+            }
         }
     }
 }
@@ -196,6 +251,16 @@ impl DbeStateHolder for MainState {
                 }
             }
         }
+
+        let cur_tab_hash = state
+            .find_active_focused()
+            .map(|(_, tab)| {
+                let mut h = DefaultHasher::new();
+                tab.hash(&mut h);
+                h.finish()
+            })
+            .unwrap_or(0);
+
         self.dock_state = Some(state);
 
         if let Some(cmd) = self.commands_queue.pop_front() {
@@ -220,8 +285,10 @@ impl DbeStateHolder for MainState {
             }
         }
 
-        if self.last_snapshot.elapsed() > AUTO_COMMIT_DURATION {
+        if self.last_tab_hash != cur_tab_hash || self.last_snapshot.elapsed() > AUTO_COMMIT_DURATION
+        {
             self.commit_changes();
+            self.last_tab_hash = cur_tab_hash;
             self.last_snapshot = Instant::now();
         }
 
@@ -237,6 +304,30 @@ impl DbeStateHolder for MainState {
                     if ui.button(t!("dbe.main.toolbar.save")).clicked() {
                         self.save_to_disk();
                         ui.close_menu()
+                    }
+                });
+                ui.menu_button(t!("dbe.main.toolbar.edit"), |ui| {
+                    if ui
+                        .add_enabled(
+                            self.edit_history.can_undo(),
+                            Button::new(t!("dbe.main.toolbar.undo")),
+                        )
+                        .clicked()
+                    {
+                        self.commit_changes();
+                        self.edit_history.undo(&mut self.state);
+                        self.sync_edit_windows();
+                    }
+                    if ui
+                        .add_enabled(
+                            self.edit_history.can_redo(),
+                            Button::new(t!("dbe.main.toolbar.redo")),
+                        )
+                        .clicked()
+                    {
+                        self.commit_changes();
+                        self.edit_history.redo(&mut self.state);
+                        self.sync_edit_windows();
                     }
                 });
                 ui.menu_button(t!("dbe.main.toolbar.misc"), |ui| {
@@ -258,6 +349,35 @@ pub enum TabData {
         path: Utf8PathBuf,
         edited_value: EValue,
     },
+}
+
+impl PartialEq for TabData {
+    fn eq(&self, other: &Self) -> bool {
+        match (self, other) {
+            (Self::FileTree, Self::FileTree) => true,
+            // Mesh test is to be removed later, ignore it for now
+            (Self::MeshTest { .. }, Self::MeshTest { .. }) => true,
+            (Self::FileEdit { path, .. }, Self::FileEdit { path: path2, .. }) => path == path2,
+            _ => false,
+        }
+    }
+}
+
+impl Hash for TabData {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        match self {
+            TabData::FileTree => {
+                0.hash(state);
+            }
+            TabData::MeshTest { .. } => {
+                1.hash(state);
+            }
+            TabData::FileEdit { path, .. } => {
+                2.hash(state);
+                path.hash(state);
+            }
+        }
+    }
 }
 
 #[derive(Debug)]
