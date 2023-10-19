@@ -75,7 +75,7 @@ impl ETypesRegistry {
 
         let reg = Self { root, types };
 
-        dbg!(reg.deserialize_all().context("While deserializing types"))
+        reg.deserialize_all().context("While deserializing types")
     }
 
     pub fn debug_dump(&self) {
