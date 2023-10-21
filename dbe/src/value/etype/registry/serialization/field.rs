@@ -150,6 +150,7 @@ pub(super) enum ThingItem {
     Const(FieldConst),
     Struct(FieldStruct),
     Enum(FieldEnum),
+    Generic(FieldGeneric),
 }
 
 impl ThingItem {
@@ -163,6 +164,7 @@ impl ThingItem {
             Self::String(_) => EnumPattern::String,
             Self::Boolean(_) => EnumPattern::Boolean,
             Self::Const(c) => EnumPattern::Const(c.value),
+            Self::Generic(_) => EnumPattern::Const(ETypeConst::Null),
             Self::Enum(_) => {
                 bail!("Enum variant can't be an enum")
             }
@@ -246,6 +248,7 @@ impl ThingStructItemTrait for ThingItem {
             ThingItem::Const(f) => f.into_item(registry, field),
             ThingItem::Struct(f) => f.into_item(registry, field),
             ThingItem::Enum(f) => f.into_item(registry, field),
+            ThingItem::Generic(f) => f.into_item(registry, field),
         }
     }
 
@@ -257,6 +260,7 @@ impl ThingStructItemTrait for ThingItem {
             ThingItem::Const(f) => f.name(),
             ThingItem::Struct(f) => f.name(),
             ThingItem::Enum(f) => f.name(),
+            ThingItem::Generic(f) => f.name(),
         }
     }
 }

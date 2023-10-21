@@ -7,6 +7,7 @@ use knuffel::traits::ErrorSpan;
 use knuffel::DecodeScalar;
 use miette::{GraphicalReportHandler, GraphicalTheme};
 use std::borrow::Cow;
+use ustr::Ustr;
 
 use crate::value::etype::registry::eenum::{EEnumData, EEnumVariant, EnumPattern};
 use crate::value::etype::registry::estruct::EStructData;
@@ -67,6 +68,8 @@ enum ThingVariant {
 
 #[derive(Debug, knuffel::Decode)]
 struct ThingStruct {
+    #[knuffel(arguments, str)]
+    pub generic_arguments: Vec<Ustr>,
     #[knuffel(children)]
     pub fields: Vec<ThingItem>,
 }
@@ -78,6 +81,7 @@ impl ThingStruct {
         id: ETypeId,
     ) -> anyhow::Result<EStructData> {
         let mut data = EStructData::new(id);
+        data.generic_arguments = self.generic_arguments;
         for x in self.fields {
             let path = format!("{id}:{}", x.name());
             data.fields.push(x.into_struct_field(registry, &path)?);
@@ -89,6 +93,8 @@ impl ThingStruct {
 
 #[derive(Debug, knuffel::Decode)]
 struct ThingEnum {
+    #[knuffel(arguments, str)]
+    pub generic_arguments: Vec<Ustr>,
     #[knuffel(children)]
     variants: Vec<ThingItem>,
 }
@@ -97,7 +103,7 @@ impl ThingEnum {
     fn into_eenum(self, registry: &mut ETypesRegistry, id: ETypeId) -> anyhow::Result<EEnumData> {
         Ok(EEnumData {
             ident: id,
-            generic_arguments: vec![],
+            generic_arguments: self.generic_arguments,
             variants: self
                 .variants
                 .into_iter()
@@ -108,30 +114,6 @@ impl ThingEnum {
                 .try_collect()?,
         })
     }
-}
-
-#[derive(Debug, knuffel::Decode)]
-enum ThingEnumVariant {
-    Number(#[knuffel(argument)] String),
-    String(#[knuffel(argument)] String),
-    Boolean(#[knuffel(argument)] String),
-    Const(
-        #[knuffel(argument)] String,     // variant name
-        #[knuffel(argument)] ETypeConst, // value
-    ),
-    Struct(
-        #[knuffel(argument)] String,                     // variant name
-        #[knuffel(argument, str)] ETypeId,               // field name
-        #[knuffel(children)] Vec<ThingEnumFieldPattern>, // pattern
-    ),
-}
-
-#[derive(Debug, knuffel::Decode)]
-struct ThingEnumFieldPattern {
-    #[knuffel(node_name)]
-    name: String,
-    #[knuffel(argument)]
-    value: ETypeConst,
 }
 
 impl<S: ErrorSpan> DecodeScalar<S> for ETypeConst {
