@@ -1,7 +1,7 @@
 struct {
     const "ItemType" 11
 
-    enum "Type" id="eh:enums/component_stats_type"
+    enum "Type" "eh:enums/component_stats_type"
 
     number "ArmorPoints" min=-1e6 max=1e6
     number "ArmorRepairRate" min=-1e6 max=1e6
@@ -41,5 +41,5 @@ struct {
     number "WeaponRangeModifier" min=-100.0 max=100.0
     number "WeaponEnergyCostModifier" min=-100.0 max=100.0
 
-    enum "AlterWeaponPlatform" id="eh:enums/platform_type"
+    enum "AlterWeaponPlatform" "eh:enums/platform_type"
 }

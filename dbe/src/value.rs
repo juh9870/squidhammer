@@ -1,7 +1,7 @@
 use crate::graph::nodes::data::EditorNodeData;
 use crate::graph::EditorGraphResponse;
 use crate::value::etype::registry::eenum::EEnumVariantId;
-use crate::value::etype::registry::ETypetId;
+use crate::value::etype::registry::ETypeId;
 use crate::EditorGraphState;
 use egui::{Color32, Rgba};
 use egui_node_graph::{NodeId, WidgetValueTrait};
@@ -35,12 +35,13 @@ pub type EVector2 = glam::f64::Vec2;
 /// this library makes no attempt to check this consistency. For instance, it is
 /// up to the user code in this example to make sure no parameter is created
 /// with a DataType of Scalar and a ValueType of Vec2.
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(tag = "type")]
 pub enum EValue {
     Unknown {
         value: JsonValue,
     },
+    Null,
     Boolean {
         value: bool,
     },
@@ -57,16 +58,16 @@ pub enum EValue {
         value: Rgba,
     },
     Struct {
-        ident: ETypetId,
+        ident: ETypeId,
         fields: UstrMap<EValue>,
     },
     Id {
-        ty: ETypetId,
-        value: Option<ETypetId>,
+        ty: ETypeId,
+        value: Option<ETypeId>,
     },
     Ref {
-        ty: ETypetId,
-        value: Option<ETypetId>,
+        ty: ETypeId,
+        value: Option<ETypeId>,
     },
     Enum {
         variant: EEnumVariantId,
@@ -154,6 +155,7 @@ try_to!(Scalar, ENumber, scalar);
 try_to!(Vec2, EVector2, vec2);
 try_to!(Boolean, bool, boolean);
 try_to!(String, String, string);
+try_to!(Color, Rgba, color);
 
 impl<'a, T: TryFrom<&'a EValue, Error = anyhow::Error>, A: Array<Item = T>>
     TryFrom<EValueInputWrapper<'a>> for SmallVec<A>
@@ -197,6 +199,7 @@ impl Display for EValue {
             EValue::Scalar { value } => write!(f, "{value}"),
             EValue::Vec2 { value } => write!(f, "{value}"),
             EValue::String { value } => write!(f, "\"{value}\""),
+            EValue::Null => write!(f, "null"),
             EValue::Color { value } => write!(
                 f,
                 "rgba({},{},{},{})",
@@ -226,14 +229,18 @@ impl Display for EValue {
                 write!(
                     f,
                     "Id<{ty}>({})",
-                    value.map(|e| e.raw().as_str()).unwrap_or("null")
+                    value
+                        .map(|e| e.to_string())
+                        .unwrap_or_else(|| "null".to_string())
                 )
             }
             EValue::Ref { ty, value } => {
                 write!(
                     f,
                     "Ref<{ty}>({})",
-                    value.map(|e| e.raw().as_str()).unwrap_or("null")
+                    value
+                        .map(|e| e.to_string())
+                        .unwrap_or_else(|| "null".to_string())
                 )
             }
         }

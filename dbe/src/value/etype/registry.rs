@@ -1,17 +1,21 @@
 use crate::value::etype::registry::eenum::EEnumData;
+use crate::value::etype::registry::eitem::{EItemType, EItemTypeTrait};
 use crate::value::etype::registry::estruct::EStructData;
 use crate::value::etype::registry::serialization::deserialize_thing;
 use crate::value::etype::EDataType;
 use crate::value::{EValue, JsonValue};
 use anyhow::{anyhow, bail, Context};
 use camino::{Utf8Path, Utf8PathBuf};
+use egui_node_graph::DataTypeTrait;
 use itertools::Itertools;
-use serde_json::Value;
+use rustc_hash::FxHashMap;
+use serde::{Deserializer, Serializer};
 use std::fmt::{Display, Formatter};
 use std::str::FromStr;
 use ustr::{Ustr, UstrMap};
 
 pub mod eenum;
+pub mod eitem;
 pub mod estruct;
 pub mod serialization;
 
@@ -56,24 +60,29 @@ impl RegistryItem {
 #[derive(Debug)]
 pub struct ETypesRegistry {
     root: Utf8PathBuf,
-    types: UstrMap<RegistryItem>,
+    types: FxHashMap<ETypeId, RegistryItem>,
+    last_id: u64,
 }
 
 impl ETypesRegistry {
     pub fn from_raws(
         root: Utf8PathBuf,
-        data: impl IntoIterator<Item = (ETypetId, String)>,
+        data: impl IntoIterator<Item = (ETypeId, String)>,
     ) -> anyhow::Result<Self> {
         let iter = data.into_iter();
 
-        let types: UstrMap<RegistryItem> = iter
+        let types: FxHashMap<ETypeId, RegistryItem> = iter
             .map(|(id, v)| {
-                Result::<(Ustr, RegistryItem), anyhow::Error>::Ok((*id.raw(), RegistryItem::Raw(v)))
+                Result::<(ETypeId, RegistryItem), anyhow::Error>::Ok((id, RegistryItem::Raw(v)))
             })
             .try_collect()
             .context("While grouping entries")?;
 
-        let reg = Self { root, types };
+        let reg = Self {
+            root,
+            types,
+            last_id: 0,
+        };
 
         reg.deserialize_all().context("While deserializing types")
     }
@@ -87,36 +96,86 @@ impl ETypesRegistry {
         self.types.values().map(|e| e.expect_ready())
     }
 
-    pub fn get_object(&self, id: &ETypetId) -> Option<&EObjectType> {
-        self.types.get(id.raw()).map(RegistryItem::expect_ready)
+    pub fn get_object(&self, id: &ETypeId) -> Option<&EObjectType> {
+        self.types.get(id).map(RegistryItem::expect_ready)
     }
 
-    pub fn get_struct(&self, id: &ETypetId) -> Option<&EStructData> {
+    pub fn get_struct(&self, id: &ETypeId) -> Option<&EStructData> {
         self.types
-            .get(id.raw())
+            .get(id)
             .and_then(|e| e.expect_ready().as_struct())
     }
 
-    pub fn get_enum(&self, id: &ETypetId) -> Option<&EEnumData> {
-        self.types
-            .get(id.raw())
-            .and_then(|e| e.expect_ready().as_enum())
+    pub fn get_enum(&self, id: &ETypeId) -> Option<&EEnumData> {
+        self.types.get(id).and_then(|e| e.expect_ready().as_enum())
     }
 
-    pub fn register_struct(&mut self, id: ETypetId, data: EStructData) -> EDataType {
+    pub fn register_struct(&mut self, id: ETypeId, data: EStructData) -> EDataType {
         self.types
-            .insert(*id.raw(), RegistryItem::Ready(EObjectType::Struct(data)));
+            .insert(id, RegistryItem::Ready(EObjectType::Struct(data)));
         EDataType::Object { ident: id }
     }
 
-    pub fn register_enum(&mut self, id: ETypetId, data: EEnumData) -> EDataType {
+    pub fn register_enum(&mut self, id: ETypeId, data: EEnumData) -> EDataType {
         self.types
-            .insert(*id.raw(), RegistryItem::Ready(EObjectType::Enum(data)));
+            .insert(id, RegistryItem::Ready(EObjectType::Enum(data)));
         EDataType::Object { ident: id }
     }
 
-    pub fn default_value(&self, ident: &ETypetId) -> EValue {
-        let Some(data) = self.types.get(ident.raw()) else {
+    pub fn make_generic(
+        &mut self,
+        id: ETypeId,
+        arguments: UstrMap<EItemType>,
+    ) -> anyhow::Result<EDataType> {
+        let long_id = {
+            let args = arguments
+                .iter()
+                .map(|e| format!("{}={}", e.0, e.1.ty().name()))
+                .sorted()
+                .join(",");
+            ETypeId::Persistent(format!("{id}<{args}>").into())
+        };
+        if self.types.contains_key(&long_id) {
+            return Ok(EDataType::Object { ident: long_id });
+        }
+
+        let obj = self
+            .get_object(&id)
+            .with_context(|| format!("Failed to find object with id {}", id))?;
+
+        let check_generics = |args: &Vec<Ustr>| {
+            if args.len() != arguments.len() {
+                bail!(
+                    "Object {id} expects {} generic arguments, but {} were provided",
+                    args.len(),
+                    arguments.len()
+                )
+            }
+
+            Ok(())
+        };
+
+        match obj {
+            EObjectType::Struct(data) => {
+                check_generics(&data.generic_arguments)?;
+                let obj = data.apply_generics(&arguments)?;
+                Ok(self.register_struct(long_id, obj))
+            }
+            EObjectType::Enum(data) => {
+                check_generics(&data.generic_arguments)?;
+                let obj = data.apply_generics(&arguments)?;
+                Ok(self.register_enum(long_id, obj))
+            }
+        }
+    }
+
+    pub fn next_temp_id(&mut self) -> ETypeId {
+        self.last_id += 1;
+        ETypeId::Temp(self.last_id)
+    }
+
+    pub fn default_value(&self, ident: &ETypeId) -> EValue {
+        let Some(data) = self.types.get(ident) else {
             return EValue::Unknown {
                 value: JsonValue::Null,
             };
@@ -133,21 +192,21 @@ impl ETypesRegistry {
     }
 
     // fn register_raw_json_object(&mut self, id: ETypetId, data: JsonValue) -> EDataType {
-    //     self.types.insert(*id.raw(), RegistryItem::Raw(data));
+    //     self.types.insert(*id, RegistryItem::Raw(data));
     //     EDataType::Object { ident: id }
     // }
 
-    fn fetch_or_deserialize(&mut self, id: ETypetId) -> anyhow::Result<&EObjectType> {
+    fn fetch_or_deserialize(&mut self, id: ETypeId) -> anyhow::Result<&EObjectType> {
         let data = self
             .types
-            .get_mut(id.raw())
+            .get_mut(&id)
             .with_context(|| format!("Type `{id}` is not defined"))?;
 
         match data {
             RegistryItem::Ready(_) => {
                 return Ok(self
                     .types
-                    .get(id.raw())
+                    .get(&id)
                     .expect("Should be present")
                     .expect_ready());
             }
@@ -163,10 +222,10 @@ impl ETypesRegistry {
             panic!("Item should be raw")
         };
         let ready = RegistryItem::Ready(deserialize_thing(self, id, &old)?);
-        self.types.insert(*id.raw(), ready);
+        self.types.insert(id, ready);
         Ok(self
             .types
-            .get(id.raw())
+            .get(&id)
             .expect("Item should be present")
             .expect_ready())
     }
@@ -174,7 +233,7 @@ impl ETypesRegistry {
     fn deserialize_all(mut self) -> anyhow::Result<Self> {
         let keys = self.types.keys().copied().collect_vec();
         for id in keys {
-            self.fetch_or_deserialize(ETypetId(id))
+            self.fetch_or_deserialize(id)
                 .with_context(|| format!("While deserializing `{id}`"))?;
         }
 
@@ -189,8 +248,8 @@ impl ETypesRegistry {
     }
 
     // MAYBE?: use https://github.com/compenguy/ngrammatic for hints
-    fn assert_defined(&self, id: &ETypetId) -> anyhow::Result<()> {
-        if !self.types.contains_key(id.raw()) {
+    fn assert_defined(&self, id: &ETypeId) -> anyhow::Result<()> {
+        if !self.types.contains_key(id) {
             bail!("Type `{id}` is not defined")
         }
         Ok(())
@@ -208,11 +267,59 @@ pub fn path_errors(namespace: &str) -> Option<(usize, char)> {
         .find_position(|c| !matches!(c, 'a'..='z' | '0'..='9' | '_' | '/'))
 }
 
-#[derive(Debug, Copy, Clone, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
-#[serde(transparent)]
-pub struct ETypetId(Ustr);
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Hash)]
+pub enum ETypeId {
+    Persistent(Ustr),
+    Temp(u64),
+}
 
-impl ETypetId {
+impl serde::Serialize for ETypeId {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        match self {
+            ETypeId::Persistent(id) => id.serialize(serializer),
+            ETypeId::Temp(id) => Err(serde::ser::Error::custom(format!(
+                "temporary ETypetId can't be serialized: {}",
+                id
+            ))),
+        }
+    }
+}
+
+struct ETypeIdVisitor;
+
+impl<'de> serde::de::Visitor<'de> for ETypeIdVisitor {
+    type Value = ETypeId;
+
+    fn expecting(&self, formatter: &mut Formatter) -> std::fmt::Result {
+        formatter.write_str("a string")
+    }
+
+    fn visit_str<E>(self, v: &str) -> Result<Self::Value, E>
+    where
+        E: serde::de::Error,
+    {
+        match ETypeId::parse(v) {
+            Ok(data) => Ok(data),
+            Err(err) => Err(serde::de::Error::custom(
+                err.to_string().to_ascii_lowercase(),
+            )),
+        }
+    }
+}
+
+impl<'de> serde::Deserialize<'de> for ETypeId {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        deserializer.deserialize_string(ETypeIdVisitor)
+    }
+}
+
+impl ETypeId {
     pub fn parse(data: &str) -> anyhow::Result<Self> {
         let (namespace, path): (&str, &str) = data
             .split(':')
@@ -238,7 +345,7 @@ impl ETypetId {
             )
         }
 
-        Ok(ETypetId(data.into()))
+        Ok(ETypeId::Persistent(data.into()))
     }
 
     pub fn from_path(path: &Utf8Path, types_root: &Utf8Path) -> anyhow::Result<Self> {
@@ -286,30 +393,32 @@ impl ETypetId {
 
         Self::parse(&format!("{namespace}:{path}"))
     }
-
-    #[inline(always)]
-    pub fn raw(&self) -> &Ustr {
-        &self.0
-    }
+    // #[inline(always)]
+    // pub fn raw(&self) -> &Ustr {
+    //     &self.0
+    // }
 }
 
-impl FromStr for ETypetId {
+impl FromStr for ETypeId {
     type Err = anyhow::Error;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        ETypetId::parse(s)
+        ETypeId::parse(s)
     }
 }
 
-impl Display for ETypetId {
+impl Display for ETypeId {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.0)
+        match self {
+            ETypeId::Persistent(id) => write!(f, "{}", id),
+            ETypeId::Temp(id) => write!(f, "$temp:{}", id),
+        }
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use super::ETypetId;
+    use super::ETypeId;
     use rstest::rstest;
 
     #[rstest]
@@ -317,38 +426,38 @@ mod tests {
     #[case("namespace_123:a1/a2/a3/4/5/6")]
     #[case("eh:objects/faction")]
     fn should_parse_type_id(#[case] id: &str) {
-        assert!(ETypetId::parse(id).is_ok())
+        assert!(ETypeId::parse(id).is_ok())
     }
 
     #[test]
     fn should_fail_empty() {
-        assert!(ETypetId::parse("").is_err())
+        assert!(ETypeId::parse("").is_err())
     }
 
     #[test]
     fn should_fail_no_colon() {
-        assert!(ETypetId::parse("some_name").is_err())
+        assert!(ETypeId::parse("some_name").is_err())
     }
 
     #[test]
     fn should_fail_empty_namespace() {
-        assert!(ETypetId::parse(":some_name").is_err())
+        assert!(ETypeId::parse(":some_name").is_err())
     }
 
     #[test]
     fn should_fail_empty_path() {
-        assert!(ETypetId::parse("some_name:").is_err())
+        assert!(ETypeId::parse("some_name:").is_err())
     }
 
     #[test]
     fn should_fail_slashes_in_namespace() {
-        assert!(ETypetId::parse("namespace/other:path").is_err())
+        assert!(ETypeId::parse("namespace/other:path").is_err())
     }
 
     #[test]
     fn should_fail_capitalized() {
-        assert!(ETypetId::parse("namespace/Path").is_err());
-        assert!(ETypetId::parse("Namespace/path").is_err());
+        assert!(ETypeId::parse("namespace/Path").is_err());
+        assert!(ETypeId::parse("Namespace/path").is_err());
     }
 
     #[rstest]
@@ -356,6 +465,6 @@ mod tests {
     #[case("namespace:path.other")]
     #[case("namespace:path-other")]
     fn should_fail_invalid_characters(#[case] id: &str) {
-        assert!(ETypetId::parse(id).is_err())
+        assert!(ETypeId::parse(id).is_err())
     }
 }

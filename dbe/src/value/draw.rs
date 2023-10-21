@@ -1,11 +1,11 @@
-use crate::value::draw::editor::{ScalarEditorType, StructFieldEditor};
-use crate::value::etype::registry::estruct::{EStructField, EStructFieldType};
-use crate::value::etype::registry::{EObjectType, ETypesRegistry, ETypetId};
+use crate::value::draw::editor::StructFieldEditor;
+use crate::value::etype::registry::eitem::{EItemType, EItemTypeTrait};
+use crate::value::etype::registry::estruct::EStructField;
+use crate::value::etype::registry::{EObjectType, ETypeId, ETypesRegistry};
 use crate::value::{ENumber, EValue, EVector2, JsonValue};
 use egui::{Color32, DragValue, RichText, Ui, WidgetText};
 use rust_i18n::t;
 use serde_json::{Number, Value};
-use tracing::info;
 use ustr::{UstrMap, UstrSet};
 
 pub mod editor;
@@ -85,7 +85,7 @@ fn error(ui: &mut Ui, label: impl Into<WidgetText>, text: impl Into<RichText>) {
 pub fn draw_struct(
     ui: &mut Ui,
     registry: &ETypesRegistry,
-    ident: &ETypetId,
+    ident: &ETypeId,
     fields: &mut UstrMap<EValue>,
 ) {
     ui.vertical(|ui| match registry.get_object(ident) {
@@ -95,10 +95,10 @@ pub fn draw_struct(
 
             for f in &data.fields {
                 let value = fields
-                    .entry(f.name())
-                    .or_insert_with(|| f.ty().default_value(registry));
+                    .entry(f.name)
+                    .or_insert_with(|| f.ty.default_value(registry));
 
-                extra_fields.remove(&f.name());
+                extra_fields.remove(&f.name);
                 draw_struct_field(ui, registry, value, f);
             }
 
@@ -118,32 +118,24 @@ pub fn draw_struct(
     });
 }
 
-fn draw_struct_field(
-    ui: &mut Ui,
-    registry: &ETypesRegistry,
-    value: &mut EValue,
-    field: &EStructField,
-) {
-    let name = || EStructFieldType::name(field).as_str();
+fn draw_struct_field(ui: &mut Ui, registry: &ETypesRegistry, value: &mut EValue, f: &EStructField) {
+    let name = || f.name.as_str();
     ui.horizontal(|ui| {
-        match (value, field) {
-            (EValue::Scalar { value }, EStructField::Number(field)) => {
-                field.editor().edit(ui, registry, value, field)
+        match (value, &f.ty) {
+            (EValue::Scalar { value }, EItemType::Number(field)) => {
+                field.editor.edit(ui, registry, value, f, field)
             }
-            (EValue::String { value }, EStructField::String(field)) => {
-                field.editor().edit(ui, registry, value, field)
+            (EValue::String { value }, EItemType::String(field)) => {
+                field.editor.edit(ui, registry, value, f, field)
             }
-            (EValue::Color { value }, EStructField::Color(field)) => {
-                field.editor().edit(ui, registry, value, field)
+            (EValue::Boolean { value }, EItemType::Boolean(field)) => {
+                field.editor.edit(ui, registry, value, f, field)
             }
-            (EValue::Boolean { value }, EStructField::Boolean(field)) => {
-                field.editor().edit(ui, registry, value, field)
-            }
-            (value, EStructField::Const(field)) => {
-                if &field.value().default_value() != value {
+            (value, EItemType::Const(field)) => {
+                if &field.value.default_value() != value {
                     error(
                         ui,
-                        EStructFieldType::name(field).as_str(),
+                        f.name.as_str(),
                         "Value type is incompatible with field type",
                     )
                 }
@@ -152,10 +144,10 @@ fn draw_struct_field(
                     ui.label(value.to_string())
                 });
             }
-            (EValue::Struct { .. }, EStructField::Struct(..)) => {
+            (EValue::Struct { .. }, EItemType::Struct(..)) => {
                 error(ui, name(), "TODO");
             }
-            (EValue::Enum { .. }, EStructField::Enum(_)) => {
+            (EValue::Enum { .. }, EItemType::Enum(_)) => {
                 error(ui, name(), "TODO");
             }
             // EStructField::Enum(_) => {}

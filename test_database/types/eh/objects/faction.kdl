@@ -1,7 +1,7 @@
 struct {
     const "ItemType" 14
     string "Name"
-    color "Color" "argb"
+    struct "Color" "color:argb"
     number "HomeStarDistance" min=0.0 max=1000.0 type="int" editor="slider"
     number "WanderingShipsDistance" min=0.0 max=1000.0 type="int" editor="slider"
     boolean "Hidden"

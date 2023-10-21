@@ -5,7 +5,7 @@ use crate::graph::nodes::scalar::{
     ScalarAdd, ScalarDiv, ScalarMake, ScalarMult, ScalarPrint, ScalarSub,
 };
 use crate::graph::nodes::traits::{IntoNodeInputPort, IntoNodeOutputPort};
-use crate::graph::nodes::vector::{Vec2Add, Vec2Make, Vec2Print, Vec2Scale, Vec2Sub};
+// use crate::graph::nodes::vector::{Vec2Add, Vec2Make, Vec2Print, Vec2Scale, Vec2Sub};
 use crate::graph::EditorGraphState;
 use crate::value::etype::EDataType;
 use crate::value::EValue;
@@ -58,13 +58,12 @@ pub enum NodeType {
     ScalarMult(ScalarMult),
     ScalarDiv(ScalarDiv),
     ScalarPrint(ScalarPrint),
-
     // Vec2
-    Vec2(Vec2Make),
-    Vec2Add(Vec2Add),
-    Vec2Sub(Vec2Sub),
-    Vec2Scale(Vec2Scale),
-    Vec2Print(Vec2Print),
+    // Vec2(Vec2Make),
+    // Vec2Add(Vec2Add),
+    // Vec2Sub(Vec2Sub),
+    // Vec2Scale(Vec2Scale),
+    // Vec2Print(Vec2Print),
 }
 
 impl NodeType {

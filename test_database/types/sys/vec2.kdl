@@ -1,0 +1,4 @@
+struct {
+    number "x"
+    number "y"
+}

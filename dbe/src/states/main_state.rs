@@ -25,7 +25,7 @@ use crate::states::main_state::file_edit::show_file_edit;
 use crate::states::main_state::file_tree::show_file_tree;
 use crate::states::main_state::mesh_test::show_mesh_test;
 use crate::states::{default_info_panels, DbeStateHolder};
-use crate::value::etype::registry::{ETypesRegistry, ETypetId};
+use crate::value::etype::registry::{ETypeId, ETypesRegistry};
 use crate::value::EValue;
 use crate::{global_app_scale, scale_ui_style, DbeState};
 
@@ -440,7 +440,7 @@ fn create_new_file_modal(
     modal.show(|ui| {
         scale_ui_style(ui);
         match mem_temp!(ui, type_id) {
-            Option::<ETypetId>::Some(ident) => with_temp::<String>(ui, name_id, |ui, name| {
+            Option::<ETypeId>::Some(ident) => with_temp::<String>(ui, name_id, |ui, name| {
                 let mut name = name.unwrap_or_default();
                 ui.vertical(|ui| {
                     ui.vertical_centered_justified(|ui| {
@@ -499,7 +499,7 @@ fn create_new_file_modal(
                                         if filter_text.is_empty() {
                                             true
                                         } else {
-                                            e.raw().contains(&filter_text)
+                                            e.to_string().contains(&filter_text)
                                         }
                                     })
                                 {
@@ -520,7 +520,7 @@ fn create_new_file_modal(
 
     if done {
         mem_clear!(ui, search_id, String);
-        mem_clear!(ui, type_id, ETypetId);
+        mem_clear!(ui, type_id, ETypeId);
         mem_clear!(ui, name_id, String);
     }
 

@@ -1,22 +1,20 @@
-use crate::value::etype::registry::estruct::{
-    EStructFieldBoolean, EStructFieldColor, EStructFieldScalar, EStructFieldString,
-    EStructFieldType,
-};
+use crate::value::etype::registry::eitem::{EItemBoolean, EItemNumber, EItemString};
+use crate::value::etype::registry::estruct::EStructField;
 use crate::value::etype::registry::ETypesRegistry;
 use crate::value::ENumber;
-use egui::{Color32, DragValue, Rgba, RichText, Slider, Ui};
+use egui::{DragValue, Rgba, Slider, Ui};
 use ordered_float::Float;
-use utils::color_format::{ColorChannel, ColorFormat};
+use utils::color_format::ColorChannel;
 
-fn labeled_field(ui: &mut Ui, field: &impl EStructFieldType, content: impl FnOnce(&mut Ui)) {
+fn labeled_field(ui: &mut Ui, field: &EStructField, content: impl FnOnce(&mut Ui)) {
     ui.horizontal(|ui| {
-        ui.label(field.name().as_str());
+        ui.label(field.name.as_str());
         content(ui)
     });
 }
 
 #[derive(Debug, knuffel::DecodeScalar, Default, Copy, Clone, Eq, PartialEq)]
-pub enum ScalarType {
+pub enum ENumberType {
     #[default]
     Decimal,
     Int,
@@ -30,40 +28,48 @@ pub enum ScalarEditorType {
 }
 
 pub trait StructFieldEditor<Data, Field> {
-    fn edit(&self, ui: &mut Ui, registry: &ETypesRegistry, value: &mut Data, field: &Field);
-}
-
-impl StructFieldEditor<ENumber, EStructFieldScalar> for ScalarEditorType {
     fn edit(
         &self,
         ui: &mut Ui,
         registry: &ETypesRegistry,
+        value: &mut Data,
+        field: &EStructField,
+        ty: &Field,
+    );
+}
+
+impl StructFieldEditor<ENumber, EItemNumber> for ScalarEditorType {
+    fn edit(
+        &self,
+        ui: &mut Ui,
+        _registry: &ETypesRegistry,
         value: &mut ENumber,
-        field: &EStructFieldScalar,
+        field: &EStructField,
+        ty: &EItemNumber,
     ) {
         labeled_field(ui, field, |ui| {
-            let range = field.min().unwrap_or(ENumber::min_value())
-                ..=field.max().unwrap_or(ENumber::max_value());
+            let range =
+                ty.min.unwrap_or(ENumber::min_value())..=ty.max.unwrap_or(ENumber::max_value());
             match self {
                 ScalarEditorType::Default => {
                     ui.add(DragValue::new(value).clamp_range(range));
                 }
                 ScalarEditorType::Slider => {
-                    let log = field
-                        .logarithmic()
+                    let log = ty
+                        .logarithmic
                         .unwrap_or_else(|| range.end() - range.start() >= 1e6);
                     ui.add(Slider::new(value, range).logarithmic(log));
                 }
             }
         });
-        if field.scalar_ty() == ScalarType::Int {
+        if ty.number_type == ENumberType::Int {
             *value = value.round();
-            if let Some(min) = field.min() {
+            if let Some(min) = ty.min {
                 if *value < min {
                     *value = min.ceil()
                 }
             }
-            if let Some(max) = field.max() {
+            if let Some(max) = ty.max {
                 if *value > max {
                     *value = max.floor()
                 }
@@ -79,13 +85,14 @@ pub enum StringEditorType {
     Multiline,
 }
 
-impl StructFieldEditor<String, EStructFieldString> for StringEditorType {
+impl StructFieldEditor<String, EItemString> for StringEditorType {
     fn edit(
         &self,
         ui: &mut Ui,
-        registry: &ETypesRegistry,
+        _registry: &ETypesRegistry,
         value: &mut String,
-        field: &EStructFieldString,
+        field: &EStructField,
+        _ty: &EItemString,
     ) {
         match self {
             StringEditorType::SingleLine => {
@@ -95,7 +102,7 @@ impl StructFieldEditor<String, EStructFieldString> for StringEditorType {
             }
             StringEditorType::Multiline => {
                 ui.vertical(|ui| {
-                    ui.label(field.name().as_str());
+                    ui.label(field.name.as_str());
                     ui.text_edit_multiline(value);
                 });
             }
@@ -103,57 +110,58 @@ impl StructFieldEditor<String, EStructFieldString> for StringEditorType {
     }
 }
 
-#[derive(Debug, knuffel::DecodeScalar, Default, Copy, Clone)]
-pub enum ColorEditorType {
-    #[default]
-    Default,
-}
-
-impl StructFieldEditor<Rgba, EStructFieldColor> for ColorEditorType {
-    fn edit(
-        &self,
-        ui: &mut Ui,
-        registry: &ETypesRegistry,
-        value: &mut Rgba,
-        field: &EStructFieldColor,
-    ) {
-        labeled_field(ui, field, |ui| {
-            ui.horizontal(|ui| {
-                let mut color = value.to_rgba_unmultiplied();
-                let format = field.format();
-                for channel in format.channels() {
-                    match channel {
-                        ColorChannel::None => {}
-                        ColorChannel::Red => {
-                            ui.label("R");
-                            ui.add(DragValue::new(&mut color[0]).clamp_range(0..=1).speed(0.01));
-                        }
-                        ColorChannel::Green => {
-                            ui.label("G");
-                            ui.add(DragValue::new(&mut color[1]).clamp_range(0..=1).speed(0.01));
-                        }
-                        ColorChannel::Blue => {
-                            ui.label("B");
-                            ui.add(DragValue::new(&mut color[2]).clamp_range(0..=1).speed(0.01));
-                        }
-                        ColorChannel::Alpha => {
-                            ui.label("A");
-                            ui.add(DragValue::new(&mut color[3]).clamp_range(0..=1).speed(0.01));
-                        }
-                    }
-                }
-                if format.with_alpha() {
-                    ui.color_edit_button_rgba_unmultiplied(&mut color);
-                } else {
-                    let mut rgb = [color[0], color[1], color[2]];
-                    ui.color_edit_button_rgb(&mut rgb);
-                    color = [rgb[0], rgb[1], rgb[2], color[3]];
-                }
-                *value = Rgba::from_rgba_unmultiplied(color[0], color[1], color[2], color[3])
-            });
-        });
-    }
-}
+// #[derive(Debug, knuffel::DecodeScalar, Default, Copy, Clone)]
+// pub enum ColorEditorType {
+//     #[default]
+//     Default,
+// }
+//
+// impl StructFieldEditor<Rgba, EItemColor> for ColorEditorType {
+//     fn edit(
+//         &self,
+//         ui: &mut Ui,
+//         _registry: &ETypesRegistry,
+//         value: &mut Rgba,
+//         field: &EStructField,
+//         ty: &EItemColor,
+//     ) {
+//         labeled_field(ui, field, |ui| {
+//             ui.horizontal(|ui| {
+//                 let mut color = value.to_rgba_unmultiplied();
+//                 let format = ty.format;
+//                 for channel in format.channels() {
+//                     match channel {
+//                         ColorChannel::None => {}
+//                         ColorChannel::Red => {
+//                             ui.label("R");
+//                             ui.add(DragValue::new(&mut color[0]).clamp_range(0..=1).speed(0.01));
+//                         }
+//                         ColorChannel::Green => {
+//                             ui.label("G");
+//                             ui.add(DragValue::new(&mut color[1]).clamp_range(0..=1).speed(0.01));
+//                         }
+//                         ColorChannel::Blue => {
+//                             ui.label("B");
+//                             ui.add(DragValue::new(&mut color[2]).clamp_range(0..=1).speed(0.01));
+//                         }
+//                         ColorChannel::Alpha => {
+//                             ui.label("A");
+//                             ui.add(DragValue::new(&mut color[3]).clamp_range(0..=1).speed(0.01));
+//                         }
+//                     }
+//                 }
+//                 if format.with_alpha() {
+//                     ui.color_edit_button_rgba_unmultiplied(&mut color);
+//                 } else {
+//                     let mut rgb = [color[0], color[1], color[2]];
+//                     ui.color_edit_button_rgb(&mut rgb);
+//                     color = [rgb[0], rgb[1], rgb[2], color[3]];
+//                 }
+//                 *value = Rgba::from_rgba_unmultiplied(color[0], color[1], color[2], color[3])
+//             });
+//         });
+//     }
+// }
 
 #[derive(Debug, knuffel::DecodeScalar, Default, Copy, Clone)]
 pub enum BooleanEditorType {
@@ -161,14 +169,15 @@ pub enum BooleanEditorType {
     Checkbox,
 }
 
-impl StructFieldEditor<bool, EStructFieldBoolean> for BooleanEditorType {
+impl StructFieldEditor<bool, EItemBoolean> for BooleanEditorType {
     fn edit(
         &self,
         ui: &mut Ui,
-        registry: &ETypesRegistry,
+        _registry: &ETypesRegistry,
         value: &mut bool,
-        field: &EStructFieldBoolean,
+        field: &EStructField,
+        _ty: &EItemBoolean,
     ) {
-        ui.checkbox(value, field.name().as_str());
+        ui.checkbox(value, field.name.as_str());
     }
 }

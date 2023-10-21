@@ -14,6 +14,7 @@ struct Args {
     pub project: Option<String>,
 }
 fn main() -> Result<(), anyhow::Error> {
+    color_backtrace::install();
     let args = Args::parse();
     tracing_subscriber::fmt::init();
     let project_path = args.project.map(Utf8PathBuf::from);

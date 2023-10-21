@@ -8,6 +8,7 @@ edition = "2021"
 anyhow = "1.0.72"
 camino = "1.1.6"
 clap = { version = "4.4.3", features = ["derive", "env"] }
+color-backtrace = "0.6.0"
 dbe = { path = "../dbe", features = ["f32"] }
 eframe = "0.22.0"
 egui = "0.22.0"

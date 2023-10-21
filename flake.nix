@@ -41,6 +41,7 @@
           pkgs.cargo-sort
           pkgs.cargo-machete
           pkgs.cargo-depgraph
+          pkgs.cargo-limit
           pkgs.pre-commit
         ];
 

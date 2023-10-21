@@ -1,0 +1,9 @@
+struct {
+    const "ItemType" 9870
+    string "Name"
+    number "Level" type="int"
+//    optional { number "Power" min=0.0 max=9001.0; }
+//    list { string "Name"; }
+//    struct "Pos" "sys:vec2"
+//    enum "AlterWeaponPlatform" "eh:enums/platform_type"
+}

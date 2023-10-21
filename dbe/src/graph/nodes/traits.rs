@@ -103,12 +103,6 @@ impl EValueTypeAdapter for ENumber {
     }
 }
 
-impl EValueTypeAdapter for EVector2 {
-    fn value_type() -> EDataType {
-        EDataType::Vec2
-    }
-}
-
 impl EValueTypeAdapter for String {
     fn value_type() -> EDataType {
         EDataType::String

@@ -8,7 +8,7 @@ use tracing::{debug, info};
 
 use utils::somehow;
 
-use crate::value::etype::registry::ETypetId;
+use crate::value::etype::registry::ETypeId;
 use crate::value::EValue;
 
 #[derive(Debug, Default, Clone)]
@@ -17,13 +17,13 @@ pub enum EditorItem {
     Empty,
     Raw(Vec<u8>),
     Value(EValue),
-    Type(ETypetId),
+    Type(ETypeId),
 }
 
 #[duplicate_item(
 method      variant     data_type;
 [ raw ]     [ Raw ]     [ Vec < u8 > ];
-[ type ]    [ Type ]    [ super::ETypetId ];
+[ type ]    [ Type ]    [ super::ETypeId ];
 [ value ]   [ Value ]   [ super::EValue ];
 )]
 mod editor_item {

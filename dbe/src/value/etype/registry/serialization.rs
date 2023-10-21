@@ -8,13 +8,14 @@ use knuffel::DecodeScalar;
 use miette::{GraphicalReportHandler, GraphicalTheme};
 use std::borrow::Cow;
 
-use super::estruct::{EStructFieldDependencies, EStructFieldType};
 use crate::value::etype::registry::eenum::{EEnumData, EEnumVariant, EnumPattern};
-use crate::value::etype::registry::estruct::{EStructData, EStructField};
-use crate::value::etype::registry::{EObjectType, ETypesRegistry, ETypetId};
+use crate::value::etype::registry::estruct::EStructData;
+use crate::value::etype::registry::serialization::field::{ThingItem, ThingStructItemTrait};
+use crate::value::etype::registry::{EObjectType, ETypeId, ETypesRegistry};
 use crate::value::etype::{EDataType, ETypeConst};
 use crate::value::ENumber;
 
+mod field;
 // pub fn parse_type(value: &Value) -> anyhow::Result<EDataType> {
 //     let value = value
 //         .as_str()
@@ -27,7 +28,7 @@ use crate::value::ENumber;
 
 pub fn deserialize_thing(
     registry: &mut ETypesRegistry,
-    id: ETypetId,
+    id: ETypeId,
     data: &str,
 ) -> Result<EObjectType, anyhow::Error> {
     let thing = knuffel::parse::<Vec<ThingVariant>>(&id.to_string(), data).map_err(|err| {
@@ -67,20 +68,19 @@ enum ThingVariant {
 #[derive(Debug, knuffel::Decode)]
 struct ThingStruct {
     #[knuffel(children)]
-    pub fields: Vec<EStructField>,
+    pub fields: Vec<ThingItem>,
 }
 
 impl ThingStruct {
     fn into_estruct(
         self,
         registry: &mut ETypesRegistry,
-        id: ETypetId,
+        id: ETypeId,
     ) -> anyhow::Result<EStructData> {
         let mut data = EStructData::new(id);
-        for mut x in self.fields {
-            EStructFieldDependencies::validate(&mut x, registry)
-                .with_context(|| format!("While deserializing field \"{}\"", x.name()))?;
-            data.fields.push(x);
+        for x in self.fields {
+            let path = format!("{id}:{}", x.name());
+            data.fields.push(x.into_struct_field(registry, &path)?);
         }
 
         Ok(data)
@@ -90,17 +90,21 @@ impl ThingStruct {
 #[derive(Debug, knuffel::Decode)]
 struct ThingEnum {
     #[knuffel(children)]
-    variants: Vec<ThingEnumVariant>,
+    variants: Vec<ThingItem>,
 }
 
 impl ThingEnum {
-    fn into_eenum(self, registry: &mut ETypesRegistry, id: ETypetId) -> anyhow::Result<EEnumData> {
+    fn into_eenum(self, registry: &mut ETypesRegistry, id: ETypeId) -> anyhow::Result<EEnumData> {
         Ok(EEnumData {
             ident: id,
+            generic_arguments: vec![],
             variants: self
                 .variants
                 .into_iter()
-                .map(|e| e.into_variant(registry))
+                .map(|e| {
+                    let path = format!("{id}:{}", e.name());
+                    e.into_enum_variant(registry, &path)
+                })
                 .try_collect()?,
         })
     }
@@ -117,7 +121,7 @@ enum ThingEnumVariant {
     ),
     Struct(
         #[knuffel(argument)] String,                     // variant name
-        #[knuffel(argument, str)] ETypetId,              // field name
+        #[knuffel(argument, str)] ETypeId,               // field name
         #[knuffel(children)] Vec<ThingEnumFieldPattern>, // pattern
     ),
 }
@@ -128,55 +132,6 @@ struct ThingEnumFieldPattern {
     name: String,
     #[knuffel(argument)]
     value: ETypeConst,
-}
-
-impl ThingEnumVariant {
-    fn into_variant(self, registry: &mut ETypesRegistry) -> anyhow::Result<EEnumVariant> {
-        match self {
-            ThingEnumVariant::Number(name) => Ok(EEnumVariant::scalar(name)),
-            ThingEnumVariant::String(name) => Ok(EEnumVariant::string(name)),
-            ThingEnumVariant::Boolean(name) => Ok(EEnumVariant::boolean(name)),
-            ThingEnumVariant::Const(name, value) => Ok(EEnumVariant::econst(name, value)),
-            ThingEnumVariant::Struct(name, target_id, patterns) => {
-                registry.assert_defined(&target_id)?;
-                let pat = if patterns.len() == 0 {
-                    let target_type = registry
-                        .fetch_or_deserialize(target_id)
-                        .context("Error during automatic pattern detection\n> If you see recursion error at the top of this log, consider specifying pattern manually")?;
-
-                    match target_type {
-                        EObjectType::Enum(_) => {
-                            bail!("Enum variant can't be an another enum")
-                        }
-                        EObjectType::Struct(data) => {
-                            let pat = data.fields.iter().filter_map(|f| {
-                                match f {
-                                    EStructField::Const(field) => {
-
-                                        Some((field.name(), field.value()))
-                                    }
-                                    _ => None,
-                                }
-                            }).exactly_one().map_err(|_| anyhow::anyhow!("Target struct `{target_id}` contains multiple constant fields. Please specify pattern manually"))?;
-
-                            EnumPattern::StructField(pat.0, pat.1)
-                        }
-                    }
-                } else if patterns.len() == 1 {
-                    let pat = &patterns[0];
-                    EnumPattern::StructField(pat.name.as_str().into(), pat.value)
-                } else {
-                    bail!("Multiple pattern fields are not supported")
-                };
-
-                Ok(EEnumVariant::new(
-                    name,
-                    pat,
-                    EDataType::Object { ident: target_id },
-                ))
-            }
-        }
-    }
 }
 
 impl<S: ErrorSpan> DecodeScalar<S> for ETypeConst {
@@ -212,12 +167,7 @@ impl<S: ErrorSpan> DecodeScalar<S> for ETypeConst {
                 }
             },
             Literal::String(str) => ETypeConst::String((**str).into()),
-            Literal::Null => {
-                return Err(DecodeError::Unsupported {
-                    span: value.span().clone(),
-                    message: Cow::Borrowed("Null constants are not supported"),
-                })
-            }
+            Literal::Null => ETypeConst::Null,
         })
     }
 }
