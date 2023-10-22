@@ -1,4 +1,5 @@
 struct {
+    id "Id"
     const "ItemType" 14
     string "Name"
     struct "Color" "color:argb"

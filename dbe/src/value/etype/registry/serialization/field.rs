@@ -2,7 +2,7 @@ use crate::value::draw::editor::{
     BooleanEditorType, ENumberType, ScalarEditorType, StringEditorType,
 };
 use crate::value::etype::registry::eenum::{EEnumVariant, EnumPattern};
-use crate::value::etype::registry::eitem::{EItemEnum, EItemStruct, EItemType};
+use crate::value::etype::registry::eitem::{EItemEnum, EItemObjectId, EItemStruct, EItemType};
 use crate::value::etype::registry::estruct::EStructField;
 use crate::value::etype::registry::{EObjectType, ETypeId, ETypesRegistry};
 use crate::value::etype::ETypeConst;
@@ -10,12 +10,13 @@ use crate::value::ENumber;
 use anyhow::{bail, Context};
 use itertools::Itertools;
 use tracing::debug;
-use ustr::{Ustr, UstrMap};
+use ustr::Ustr;
 
-pub(super) trait ThingStructItemTrait {
+pub(super) trait ThingFieldTrait {
     fn into_item(
         self,
         registry: &mut ETypesRegistry,
+        root_id: ETypeId,
         path: &str,
     ) -> anyhow::Result<(String, EItemType)>;
 
@@ -28,11 +29,12 @@ fn validate_id(id: &ETypeId, registry: &ETypesRegistry) -> anyhow::Result<()> {
 macro_rules! impl_simple {
     ($item:ty, $field_item:tt, [$($field:ident),* $(,)?] $(, [$($reference:ident),+ $(,)?])?) => {
         paste::paste! {
-            impl ThingStructItemTrait for $item {
+            impl ThingFieldTrait for $item {
                 #[allow(unused_variables)]
                 fn into_item(
                     self,
                     registry: &mut ETypesRegistry,
+                    _root_id: ETypeId,
                     _path: &str,
                 ) -> anyhow::Result<(String, EItemType)> {
                     $($(validate_id(&self.$reference, registry)?;)*)*
@@ -114,6 +116,7 @@ impl_simple!(FieldConst, Const, [value]);
 fn generics(
     registry: &mut ETypesRegistry,
     mut id: ETypeId,
+    root_id: ETypeId,
     generics: Vec<ThingItem>,
     path: &str,
 ) -> anyhow::Result<ETypeId> {
@@ -123,7 +126,7 @@ fn generics(
             .into_iter()
             .map(|e| {
                 let p = format!("{path}::{}", e.name());
-                let (name, item) = e.into_item(registry, &p)?;
+                let (name, item) = e.into_item(registry, root_id, &p)?;
                 Result::<(Ustr, EItemType), anyhow::Error>::Ok((Ustr::from(name.as_str()), item))
             })
             .try_collect()
@@ -149,13 +152,14 @@ pub(super) struct FieldStruct {
     generics: Vec<ThingItem>,
 }
 
-impl ThingStructItemTrait for FieldStruct {
+impl ThingFieldTrait for FieldStruct {
     fn into_item(
         self,
         registry: &mut ETypesRegistry,
+        root_id: ETypeId,
         path: &str,
     ) -> anyhow::Result<(String, EItemType)> {
-        let id = generics(registry, self.id, self.generics, path)?;
+        let id = generics(registry, self.id, root_id, self.generics, path)?;
 
         validate_id(&id, registry)?;
         let f = (self.name, EItemType::Struct(EItemStruct { id }));
@@ -177,13 +181,49 @@ pub(super) struct FieldEnum {
     generics: Vec<ThingItem>,
 }
 
-impl ThingStructItemTrait for FieldEnum {
+#[derive(Debug, knuffel::Decode, Clone)]
+pub(super) struct FieldObjectId {
+    #[knuffel(argument)]
+    name: String,
+}
+
+impl ThingFieldTrait for FieldObjectId {
+    fn into_item(
+        self,
+        _registry: &mut ETypesRegistry,
+        root_id: ETypeId,
+        _path: &str,
+    ) -> anyhow::Result<(String, EItemType)> {
+        let f = (
+            self.name,
+            EItemType::ObjectId(EItemObjectId { ty: root_id }),
+        );
+        Ok(f)
+    }
+
+    fn name(&self) -> &str {
+        &self.name
+    }
+}
+
+#[derive(Debug, knuffel::Decode, Clone)]
+pub(super) struct FieldObjectRef {
+    #[knuffel(argument)]
+    name: String,
+    #[knuffel(argument, str)]
+    ty: ETypeId,
+}
+
+impl_simple!(FieldObjectRef, ObjectRef, [ty], [ty]);
+
+impl ThingFieldTrait for FieldEnum {
     fn into_item(
         self,
         registry: &mut ETypesRegistry,
+        root_id: ETypeId,
         path: &str,
     ) -> anyhow::Result<(String, EItemType)> {
-        let id = generics(registry, self.id, self.generics, path)?;
+        let id = generics(registry, self.id, root_id, self.generics, path)?;
 
         validate_id(&id, registry)?;
         let f = (self.name, EItemType::Enum(EItemEnum { id }));
@@ -213,6 +253,8 @@ pub(super) enum ThingItem {
     Const(FieldConst),
     Struct(FieldStruct),
     Enum(FieldEnum),
+    Id(FieldObjectId),
+    Ref(FieldObjectRef),
     Generic(FieldGeneric),
 }
 
@@ -220,6 +262,7 @@ impl ThingItem {
     pub fn into_enum_variant(
         self,
         registry: &mut ETypesRegistry,
+        root_id: ETypeId,
         path: &str,
     ) -> anyhow::Result<EEnumVariant> {
         let pat = match &self {
@@ -230,6 +273,10 @@ impl ThingItem {
             Self::Generic(_) => EnumPattern::Const(ETypeConst::Null),
             Self::Enum(_) => {
                 bail!("Enum variant can't be an enum")
+            }
+            Self::Ref(id) => EnumPattern::Ref(id.ty),
+            Self::Id(_) => {
+                bail!("Object Id can't appear as an Enum variant")
             }
             Self::Struct(s) => {
                 registry.assert_defined(&s.id)?;
@@ -281,16 +328,17 @@ impl ThingItem {
             }
         };
 
-        let (name, item) = self.into_item(registry, path)?;
+        let (name, item) = self.into_item(registry, root_id, path)?;
         Ok(EEnumVariant::new(name, pat, item))
     }
 
     pub fn into_struct_field(
         self,
         registry: &mut ETypesRegistry,
+        root_id: ETypeId,
         path: &str,
     ) -> anyhow::Result<EStructField> {
-        let (name, item) = self.into_item(registry, path)?;
+        let (name, item) = self.into_item(registry, root_id, path)?;
         Ok(EStructField {
             name: name.into(),
             ty: item,
@@ -298,20 +346,23 @@ impl ThingItem {
     }
 }
 
-impl ThingStructItemTrait for ThingItem {
+impl ThingFieldTrait for ThingItem {
     fn into_item(
         self,
         registry: &mut ETypesRegistry,
+        root_id: ETypeId,
         field: &str,
     ) -> anyhow::Result<(String, EItemType)> {
         match self {
-            ThingItem::Number(f) => f.into_item(registry, field),
-            ThingItem::String(f) => f.into_item(registry, field),
-            ThingItem::Boolean(f) => f.into_item(registry, field),
-            ThingItem::Const(f) => f.into_item(registry, field),
-            ThingItem::Struct(f) => f.into_item(registry, field),
-            ThingItem::Enum(f) => f.into_item(registry, field),
-            ThingItem::Generic(f) => f.into_item(registry, field),
+            ThingItem::Number(f) => f.into_item(registry, root_id, field),
+            ThingItem::String(f) => f.into_item(registry, root_id, field),
+            ThingItem::Boolean(f) => f.into_item(registry, root_id, field),
+            ThingItem::Const(f) => f.into_item(registry, root_id, field),
+            ThingItem::Struct(f) => f.into_item(registry, root_id, field),
+            ThingItem::Enum(f) => f.into_item(registry, root_id, field),
+            ThingItem::Id(f) => f.into_item(registry, root_id, field),
+            ThingItem::Ref(f) => f.into_item(registry, root_id, field),
+            ThingItem::Generic(f) => f.into_item(registry, root_id, field),
         }
     }
 
@@ -323,6 +374,8 @@ impl ThingStructItemTrait for ThingItem {
             ThingItem::Const(f) => f.name(),
             ThingItem::Struct(f) => f.name(),
             ThingItem::Enum(f) => f.name(),
+            ThingItem::Id(f) => f.name(),
+            ThingItem::Ref(f) => f.name(),
             ThingItem::Generic(f) => f.name(),
         }
     }

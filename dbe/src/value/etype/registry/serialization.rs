@@ -9,11 +9,11 @@ use miette::{GraphicalReportHandler, GraphicalTheme};
 use std::borrow::Cow;
 use ustr::Ustr;
 
-use crate::value::etype::registry::eenum::{EEnumData, EEnumVariant, EnumPattern};
+use crate::value::etype::registry::eenum::EEnumData;
 use crate::value::etype::registry::estruct::EStructData;
-use crate::value::etype::registry::serialization::field::{ThingItem, ThingStructItemTrait};
+use crate::value::etype::registry::serialization::field::{ThingFieldTrait, ThingItem};
 use crate::value::etype::registry::{EObjectType, ETypeId, ETypesRegistry};
-use crate::value::etype::{EDataType, ETypeConst};
+use crate::value::etype::ETypeConst;
 use crate::value::ENumber;
 
 mod field;
@@ -84,7 +84,7 @@ impl ThingStruct {
         data.generic_arguments = self.generic_arguments;
         for x in self.fields {
             let path = format!("{id}:{}", x.name());
-            data.fields.push(x.into_struct_field(registry, &path)?);
+            data.add_field(x.into_struct_field(registry, id, &path)?)?;
         }
 
         Ok(data)
@@ -109,7 +109,7 @@ impl ThingEnum {
                 .into_iter()
                 .map(|e| {
                     let path = format!("{id}::{}", e.name());
-                    e.into_enum_variant(registry, &path)
+                    e.into_enum_variant(registry, id, &path)
                 })
                 .try_collect()?,
         })

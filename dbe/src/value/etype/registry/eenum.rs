@@ -13,6 +13,7 @@ pub enum EnumPattern {
     Boolean,
     Number,
     String,
+    Ref(ETypeId),
     Const(ETypeConst),
 }
 impl Display for EnumPattern {
@@ -23,6 +24,7 @@ impl Display for EnumPattern {
             EnumPattern::Number => write!(f, "{{number}}"),
             EnumPattern::String => write!(f, "{{string}}"),
             EnumPattern::Const(ty) => write!(f, "{{{ty}}}"),
+            EnumPattern::Ref(ty) => write!(f, "{{Ref<{ty}>}}"),
         }
     }
 }

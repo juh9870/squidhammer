@@ -1,7 +1,7 @@
 use crate::value::etype::registry::eitem::{EItemType, EItemTypeTrait};
 use crate::value::etype::registry::{ETypeId, ETypesRegistry};
 use crate::value::EValue;
-use anyhow::Context;
+use anyhow::{bail, Context};
 use ustr::{Ustr, UstrMap};
 
 #[derive(Debug, Clone)]
@@ -15,6 +15,7 @@ pub struct EStructData {
     pub generic_arguments: Vec<Ustr>,
     pub ident: ETypeId,
     pub fields: Vec<EStructField>,
+    pub id_field: Option<usize>,
 }
 
 impl EStructData {
@@ -23,6 +24,7 @@ impl EStructData {
             generic_arguments: vec![],
             fields: Default::default(),
             ident,
+            id_field: None,
         }
     }
 
@@ -56,5 +58,24 @@ impl EStructData {
         cloned.generic_arguments = vec![];
 
         Ok(cloned)
+    }
+
+    pub fn id_field(&self) -> Option<&EStructField> {
+        self.id_field.map(|i| &self.fields[i])
+    }
+
+    pub(super) fn add_field(&mut self, field: EStructField) -> anyhow::Result<()> {
+        if let EItemType::ObjectId(id) = &field.ty {
+            if self.id_field.is_some() {
+                bail!("Struct already has an ID field");
+            }
+            if id.ty != self.ident {
+                bail!("Struct can't have an ID field with different type")
+            }
+            self.id_field = Some(self.fields.len());
+        }
+        self.fields.push(field);
+
+        Ok(())
     }
 }
