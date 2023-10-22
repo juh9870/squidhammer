@@ -1,7 +1,7 @@
 use crate::graph::nodes::data::EditorNodeData;
 use crate::graph::EditorGraphResponse;
 use crate::value::etype::registry::eenum::EEnumVariantId;
-use crate::value::etype::registry::ETypeId;
+use crate::value::etype::registry::{ETypeId, EValueId};
 use crate::EditorGraphState;
 use egui::{Color32, Rgba};
 use egui_node_graph::{NodeId, WidgetValueTrait};
@@ -63,11 +63,11 @@ pub enum EValue {
     },
     Id {
         ty: ETypeId,
-        value: Option<ETypeId>,
+        value: Option<EValueId>,
     },
     Ref {
         ty: ETypeId,
-        value: Option<ETypeId>,
+        value: Option<EValueId>,
     },
     Enum {
         variant: EEnumVariantId,

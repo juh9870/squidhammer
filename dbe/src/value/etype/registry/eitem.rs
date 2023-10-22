@@ -99,6 +99,44 @@ impl EItemTypeTrait for EItemEnum {
 }
 
 #[derive(Debug, Clone)]
+pub struct EItemObjectId {
+    pub ty: ETypeId,
+}
+
+impl EItemTypeTrait for EItemObjectId {
+    fn ty(&self) -> EDataType {
+        EDataType::Id { ty: self.ty }
+    }
+
+    fn default_value(&self, registry: &ETypesRegistry) -> EValue {
+        EValue::Id {
+            ty: self.ty,
+            value: None,
+        };
+        registry.default_value(&self.ty)
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct EItemObjectRef {
+    pub ty: ETypeId,
+}
+
+impl EItemTypeTrait for EItemObjectRef {
+    fn ty(&self) -> EDataType {
+        EDataType::Ref { ty: self.ty }
+    }
+
+    fn default_value(&self, registry: &ETypesRegistry) -> EValue {
+        EValue::Ref {
+            ty: self.ty,
+            value: None,
+        };
+        registry.default_value(&self.ty)
+    }
+}
+
+#[derive(Debug, Clone)]
 pub struct EItemGeneric {
     pub argument_name: Ustr,
 }
@@ -131,6 +169,8 @@ pub enum EItemType {
     Const(EItemConst),
     Struct(EItemStruct),
     Enum(EItemEnum),
+    ObjectId(EItemObjectId),
+    ObjectRef(EItemObjectRef),
     Generic(EItemGeneric),
 }
 
@@ -144,6 +184,8 @@ impl EItemTypeTrait for EItemType {
             EItemType::Struct(f) => f.ty(),
             EItemType::Enum(f) => f.ty(),
             EItemType::Generic(f) => f.ty(),
+            EItemType::ObjectId(f) => f.ty(),
+            EItemType::ObjectRef(f) => f.ty(),
         }
     }
 
@@ -156,6 +198,8 @@ impl EItemTypeTrait for EItemType {
             EItemType::Struct(f) => f.default_value(registry),
             EItemType::Enum(f) => f.default_value(registry),
             EItemType::Generic(f) => f.default_value(registry),
+            EItemType::ObjectId(f) => f.default_value(registry),
+            EItemType::ObjectRef(f) => f.default_value(registry),
         }
     }
 }

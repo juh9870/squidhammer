@@ -4,19 +4,21 @@ use crate::value::etype::registry::estruct::EStructData;
 use crate::value::etype::registry::serialization::deserialize_thing;
 use crate::value::etype::EDataType;
 use crate::value::{EValue, JsonValue};
-use anyhow::{anyhow, bail, Context};
+use anyhow::{bail, Context};
 use camino::{Utf8Path, Utf8PathBuf};
 use egui_node_graph::DataTypeTrait;
+use id::EditorId;
 use itertools::Itertools;
 use rustc_hash::FxHashMap;
-use serde::{Deserializer, Serializer};
-use std::fmt::{Display, Formatter};
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
+use std::fmt::{Debug, Display, Formatter};
 use std::str::FromStr;
 use ustr::{Ustr, UstrMap};
 
 pub mod eenum;
 pub mod eitem;
 pub mod estruct;
+pub mod id;
 pub mod serialization;
 
 #[derive(Debug, Clone)]
@@ -68,6 +70,7 @@ impl RegistryItem {
 pub struct ETypesRegistry {
     root: Utf8PathBuf,
     types: FxHashMap<ETypeId, RegistryItem>,
+    values: FxHashMap<EValueId, ETypeId>,
     last_id: u64,
 }
 
@@ -88,6 +91,7 @@ impl ETypesRegistry {
         let reg = Self {
             root,
             types,
+            values: Default::default(),
             last_id: 0,
         };
 
@@ -109,7 +113,7 @@ impl ETypesRegistry {
             if query.is_empty() {
                 return true;
             }
-            if let ETypeId::Persistent(name) = e.id() {
+            if let Some(name) = e.id().as_raw() {
                 return name.contains(&query);
             }
             return false;
@@ -154,7 +158,7 @@ impl ETypesRegistry {
                 .map(|e| format!("{}={}", e.0, e.1.ty().name()))
                 .sorted()
                 .join(",");
-            ETypeId::Persistent(format!("{id}<{args}>${path}").into())
+            ETypeId::from_raw(format!("{id}<{args}>${path}").into())
         };
         if self.types.contains_key(&long_id) {
             return Ok(long_id);
@@ -194,7 +198,7 @@ impl ETypesRegistry {
 
     pub fn next_temp_id(&mut self) -> ETypeId {
         self.last_id += 1;
-        ETypeId::Temp(self.last_id)
+        ETypeId::temp(self.last_id)
     }
 
     pub fn default_value(&self, ident: &ETypeId) -> EValue {
@@ -279,165 +283,65 @@ impl ETypesRegistry {
     }
 }
 
-pub fn namespace_errors(namespace: &str) -> Option<(usize, char)> {
-    namespace
-        .chars()
-        .find_position(|c| !matches!(c, 'a'..='z' | '0'..='9' | '_'))
-}
-pub fn path_errors(namespace: &str) -> Option<(usize, char)> {
-    namespace
-        .chars()
-        .find_position(|c| !matches!(c, 'a'..='z' | '0'..='9' | '_' | '/'))
-}
+macro_rules! id_type {
+    ($ident:ident) => {
+        #[derive(Copy, Clone, Serialize, Deserialize, Eq, PartialEq, Hash)]
+        #[serde(transparent)]
+        pub struct $ident(EditorId);
 
-#[derive(Debug, Copy, Clone, Eq, PartialEq, Hash)]
-pub enum ETypeId {
-    Persistent(Ustr),
-    Temp(u64),
-}
+        impl $ident {
+            pub fn parse(data: &str) -> anyhow::Result<Self> {
+                Ok(Self(EditorId::parse(data)?))
+            }
 
-impl serde::Serialize for ETypeId {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        match self {
-            ETypeId::Persistent(id) => id.serialize(serializer),
-            ETypeId::Temp(id) => Err(serde::ser::Error::custom(format!(
-                "temporary ETypetId can't be serialized: {}",
-                id
-            ))),
+            fn from_raw(raw: Ustr) -> $ident {
+                Self(EditorId::Persistent(raw))
+            }
+
+            pub fn temp(id: u64) -> Self {
+                Self(EditorId::Temp(id))
+            }
+
+            pub fn as_raw(&self) -> Option<&str> {
+                if let EditorId::Persistent(raw) = self.0 {
+                    Some(raw.as_str())
+                } else {
+                    None
+                }
+            }
         }
-    }
-}
 
-struct ETypeIdVisitor;
-
-impl<'de> serde::de::Visitor<'de> for ETypeIdVisitor {
-    type Value = ETypeId;
-
-    fn expecting(&self, formatter: &mut Formatter) -> std::fmt::Result {
-        formatter.write_str("a string")
-    }
-
-    fn visit_str<E>(self, v: &str) -> Result<Self::Value, E>
-    where
-        E: serde::de::Error,
-    {
-        match ETypeId::parse(v) {
-            Ok(data) => Ok(data),
-            Err(err) => Err(serde::de::Error::custom(
-                err.to_string().to_ascii_lowercase(),
-            )),
+        impl Display for $ident {
+            fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+                write!(f, "{}", self.0)
+            }
         }
-    }
+
+        impl Debug for $ident {
+            fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+                write!(f, "{}({})", stringify!($ident), self.0)
+            }
+        }
+
+        impl FromStr for $ident {
+            type Err = anyhow::Error;
+
+            fn from_str(s: &str) -> Result<Self, Self::Err> {
+                $ident::parse(s)
+            }
+        }
+    };
 }
 
-impl<'de> serde::Deserialize<'de> for ETypeId {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-    where
-        D: Deserializer<'de>,
-    {
-        deserializer.deserialize_string(ETypeIdVisitor)
-    }
-}
+id_type!(ETypeId);
 
 impl ETypeId {
-    pub fn parse(data: &str) -> anyhow::Result<Self> {
-        let (namespace, path): (&str, &str) = data
-            .split(':')
-            .collect_tuple()
-            .ok_or_else(|| anyhow!("Type path must be in a form of `namespace:path`"))?;
-
-        if namespace.is_empty() {
-            bail!("Namespace can't be empty")
-        }
-
-        if path.is_empty() {
-            bail!("Path can't be empty")
-        }
-
-        if let Some((i, c)) = namespace_errors(namespace) {
-            bail!("Invalid symbol `{c}` in namespace, at position {i}")
-        }
-
-        if let Some((i, c)) = path_errors(path) {
-            bail!(
-                "Invalid symbol `{c}` in path, at position {}",
-                i + namespace.len() + 1
-            )
-        }
-
-        Ok(ETypeId::Persistent(data.into()))
-    }
-
     pub fn from_path(path: &Utf8Path, types_root: &Utf8Path) -> anyhow::Result<Self> {
-        let sub_path = path
-            .strip_prefix(types_root)
-            .map_err(|_| anyhow!("Thing is outside of types root folder.\nThing: `{path}`"))?
-            .components()
-            .collect_vec();
-        if sub_path.len() < 2 {
-            bail!("Things can't be placed in a root of types folder")
-        }
-
-        let mut segments = sub_path.into_iter();
-        let namespace = segments
-            .next()
-            .expect("Namespace should be present")
-            .to_string();
-
-        if let Some((i, c)) = namespace_errors(&namespace) {
-            bail!("Namespace folder contains invalid character `{c}` at position {i}")
-        }
-
-        let segments: Vec<String> = segments
-            .with_position()
-            .map(|(pos, path)| {
-                let str = if matches!(pos, itertools::Position::Last | itertools::Position::Only) {
-                    let p: &Utf8Path = path.as_ref();
-                    p.file_stem().ok_or_else(||anyhow!("Final path segment has an empty filename"))?.to_string()
-                } else {
-                    path.to_string()
-                };
-                if let Some((i, c)) = path_errors(&str) {
-                    bail!("Path folder or file contains invalid symbol `{c}` at position {i} in segment `{path}`")
-                }
-
-                Ok(str)
-            })
-            .try_collect()?;
-
-        let path = segments.join("/");
-
-        if path.is_empty() {
-            bail!("Things can't be placed in a root of types folder")
-        }
-
-        Self::parse(&format!("{namespace}:{path}"))
-    }
-    // #[inline(always)]
-    // pub fn raw(&self) -> &Ustr {
-    //     &self.0
-    // }
-}
-
-impl FromStr for ETypeId {
-    type Err = anyhow::Error;
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        ETypeId::parse(s)
+        Ok(Self(EditorId::from_path(path, types_root)?))
     }
 }
 
-impl Display for ETypeId {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        match self {
-            ETypeId::Persistent(id) => write!(f, "{}", id),
-            ETypeId::Temp(id) => write!(f, "$temp:{}", id),
-        }
-    }
-}
+id_type!(EValueId);
 
 #[cfg(test)]
 mod tests {
