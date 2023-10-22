@@ -37,7 +37,7 @@ pub struct EItemBoolean {
 
 #[duplicate::duplicate_item(
 tStruct          eType;
-[ EItemNumber ]  [ Scalar ];
+[ EItemNumber ]  [ Number ];
 [ EItemString ]  [ String ];
 [ EItemBoolean ] [ Boolean ];
 )]

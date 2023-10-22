@@ -131,7 +131,7 @@ impl<S: ErrorSpan> DecodeScalar<S> for ETypeConst {
         Ok(match l {
             Literal::Bool(bool) => ETypeConst::Boolean(*bool),
             Literal::Int(num) => match TryInto::<u64>::try_into(num) {
-                Ok(num) => ETypeConst::Scalar((num as ENumber).into()),
+                Ok(num) => ETypeConst::Number((num as ENumber).into()),
                 Err(err) => {
                     return Err(DecodeError::Conversion {
                         span: value.span().clone(),
@@ -140,7 +140,7 @@ impl<S: ErrorSpan> DecodeScalar<S> for ETypeConst {
                 }
             },
             Literal::Decimal(num) => match TryInto::<ENumber>::try_into(num) {
-                Ok(num) => ETypeConst::Scalar((num).into()),
+                Ok(num) => ETypeConst::Number((num).into()),
                 Err(err) => {
                     return Err(DecodeError::Conversion {
                         span: value.span().clone(),

@@ -22,7 +22,7 @@ pub enum EDataType {
     /// Primitive boolean type
     Boolean,
     /// Primitive numeric type
-    Scalar,
+    Number,
     /// Primitive string type
     String,
     /// Object ID type
@@ -39,7 +39,7 @@ impl EDataType {
     pub fn default_value(&self, reg: &ETypesRegistry) -> EValue {
         match self {
             EDataType::Boolean => EValue::Boolean { value: false },
-            EDataType::Scalar => EValue::Scalar { value: 0.0 },
+            EDataType::Number => EValue::Number { value: 0.0 },
             EDataType::String => EValue::String {
                 value: Default::default(),
             },
@@ -62,7 +62,7 @@ impl DataTypeTrait<EditorGraphState> for EDataType {
     fn data_type_color(&self, _user_state: &mut EditorGraphState) -> egui::Color32 {
         match self {
             EDataType::Boolean => egui::Color32::from_rgb(211, 109, 25),
-            EDataType::Scalar => egui::Color32::from_rgb(38, 109, 211),
+            EDataType::Number => egui::Color32::from_rgb(38, 109, 211),
             EDataType::String => egui::Color32::from_rgb(109, 207, 109),
             EDataType::Object { .. } => egui::Color32::from_rgb(255, 255, 255),
             EDataType::Const { .. } => todo!(),
@@ -74,7 +74,7 @@ impl DataTypeTrait<EditorGraphState> for EDataType {
     fn name(&self) -> Cow<'_, str> {
         match self {
             EDataType::Boolean => Cow::Borrowed("boolean"),
-            EDataType::Scalar => Cow::Borrowed("number"),
+            EDataType::Number => Cow::Borrowed("number"),
             EDataType::String => Cow::Borrowed("string"),
             EDataType::Id { ty } => Cow::Owned(format!("Id<{}>", ty)),
             EDataType::Ref { ty } => Cow::Owned(format!("Ref<{}>", ty)),
@@ -88,7 +88,7 @@ impl DataTypeTrait<EditorGraphState> for EDataType {
 #[serde(untagged)]
 pub enum ETypeConst {
     String(Ustr),
-    Scalar(OrderedFloat<ENumber>),
+    Number(OrderedFloat<ENumber>),
     Boolean(bool),
     Null,
 }
@@ -97,7 +97,7 @@ impl ETypeConst {
     pub fn default_value(&self) -> EValue {
         match self {
             ETypeConst::Boolean(value) => (*value).into(),
-            ETypeConst::Scalar(value) => value.0.into(),
+            ETypeConst::Number(value) => value.0.into(),
             ETypeConst::String(value) => value.to_string().into(),
             ETypeConst::Null => EValue::Null,
         }
@@ -108,7 +108,7 @@ impl Display for ETypeConst {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
             ETypeConst::Boolean(value) => write!(f, "{value}"),
-            ETypeConst::Scalar(value) => write!(f, "{value}"),
+            ETypeConst::Number(value) => write!(f, "{value}"),
             ETypeConst::String(value) => write!(f, "'{value}'"),
             ETypeConst::Null => write!(f, "null"),
         }

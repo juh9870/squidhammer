@@ -34,7 +34,7 @@ pub type EVector2 = glam::f64::Vec2;
 /// There will usually be a correspondence between DataTypes and ValueTypes. But
 /// this library makes no attempt to check this consistency. For instance, it is
 /// up to the user code in this example to make sure no parameter is created
-/// with a DataType of Scalar and a ValueType of Vec2.
+/// with a DataType of Number and a ValueType of String.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(tag = "type")]
 pub enum EValue {
@@ -45,17 +45,11 @@ pub enum EValue {
     Boolean {
         value: bool,
     },
-    Scalar {
+    Number {
         value: ENumber,
-    },
-    Vec2 {
-        value: EVector2,
     },
     String {
         value: String,
-    },
-    Color {
-        value: Rgba,
     },
     Struct {
         ident: ETypeId,
@@ -79,7 +73,7 @@ impl Default for EValue {
     fn default() -> Self {
         // NOTE: This is just a dummy `Default` implementation. The library
         // requires it to circumvent some internal borrow checker issues.
-        Self::Scalar { value: 0.0 }
+        Self::Number { value: 0.0 }
     }
 }
 
@@ -151,11 +145,9 @@ macro_rules! try_to {
     };
 }
 
-try_to!(Scalar, ENumber, scalar);
-try_to!(Vec2, EVector2, vec2);
+try_to!(Number, ENumber, number);
 try_to!(Boolean, bool, boolean);
 try_to!(String, String, string);
-try_to!(Color, Rgba, color);
 
 impl<'a, T: TryFrom<&'a EValue, Error = anyhow::Error>, A: Array<Item = T>>
     TryFrom<EValueInputWrapper<'a>> for SmallVec<A>
@@ -196,18 +188,9 @@ impl Display for EValue {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
             EValue::Boolean { value } => write!(f, "{value}"),
-            EValue::Scalar { value } => write!(f, "{value}"),
-            EValue::Vec2 { value } => write!(f, "{value}"),
+            EValue::Number { value } => write!(f, "{value}"),
             EValue::String { value } => write!(f, "\"{value}\""),
             EValue::Null => write!(f, "null"),
-            EValue::Color { value } => write!(
-                f,
-                "rgba({},{},{},{})",
-                value.r(),
-                value.g(),
-                value.b(),
-                value.a()
-            ),
             EValue::Struct { ident, fields } => {
                 write!(
                     f,

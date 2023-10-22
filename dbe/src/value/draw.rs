@@ -122,7 +122,7 @@ fn draw_struct_field(ui: &mut Ui, registry: &ETypesRegistry, value: &mut EValue,
     let name = || f.name.as_str();
     ui.horizontal(|ui| {
         match (value, &f.ty) {
-            (EValue::Scalar { value }, EItemType::Number(field)) => {
+            (EValue::Number { value }, EItemType::Number(field)) => {
                 field.editor.edit(ui, registry, value, f, field)
             }
             (EValue::String { value }, EItemType::String(field)) => {

@@ -99,7 +99,7 @@ impl<T: EValueTypeAdapter, A: Array<Item = T>> IntoNodeInputPort for SmallVec<A>
 
 impl EValueTypeAdapter for ENumber {
     fn value_type() -> EDataType {
-        EDataType::Scalar
+        EDataType::Number
     }
 }
 
