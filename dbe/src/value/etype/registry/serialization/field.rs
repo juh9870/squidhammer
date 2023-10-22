@@ -2,14 +2,15 @@ use crate::value::draw::editor::{
     BooleanEditorType, ENumberType, ScalarEditorType, StringEditorType,
 };
 use crate::value::etype::registry::eenum::{EEnumVariant, EnumPattern};
-use crate::value::etype::registry::eitem::EItemType;
+use crate::value::etype::registry::eitem::{EItemEnum, EItemStruct, EItemType};
 use crate::value::etype::registry::estruct::EStructField;
 use crate::value::etype::registry::{EObjectType, ETypeId, ETypesRegistry};
 use crate::value::etype::ETypeConst;
 use crate::value::ENumber;
 use anyhow::{bail, Context};
 use itertools::Itertools;
-use ustr::Ustr;
+use tracing::debug;
+use ustr::{Ustr, UstrMap};
 
 pub(super) trait ThingStructItemTrait {
     fn into_item(
@@ -110,6 +111,32 @@ pub(super) struct FieldConst {
 
 impl_simple!(FieldConst, Const, [value]);
 
+fn generics(
+    registry: &mut ETypesRegistry,
+    mut id: ETypeId,
+    generics: Vec<ThingItem>,
+    path: &str,
+) -> anyhow::Result<ETypeId> {
+    if !generics.is_empty() {
+        let gl = generics.len();
+        let map: Vec<(Ustr, EItemType)> = generics
+            .into_iter()
+            .map(|e| {
+                let p = format!("{path}::{}", e.name());
+                let (name, item) = e.into_item(registry, &p)?;
+                Result::<(Ustr, EItemType), anyhow::Error>::Ok((Ustr::from(name.as_str()), item))
+            })
+            .try_collect()
+            .context("While resolving generic parameters")?;
+        debug_assert_eq!(gl, map.len());
+        id = registry
+            .make_generic(id, (map.into_iter()).collect(), path)
+            .context("While applying generic parameters")?;
+        debug!("Created generic with id: {id}");
+    }
+    Ok(id)
+}
+
 #[derive(Debug, knuffel::Decode, Clone)]
 pub(super) struct FieldStruct {
     #[knuffel(argument)]
@@ -118,9 +145,27 @@ pub(super) struct FieldStruct {
     id: ETypeId,
     #[knuffel(property(name = "key"), str)]
     key: Option<String>,
+    #[knuffel(children)]
+    generics: Vec<ThingItem>,
 }
 
-impl_simple!(FieldStruct, Struct, [id], [id]);
+impl ThingStructItemTrait for FieldStruct {
+    fn into_item(
+        self,
+        registry: &mut ETypesRegistry,
+        path: &str,
+    ) -> anyhow::Result<(String, EItemType)> {
+        let id = generics(registry, self.id, self.generics, path)?;
+
+        validate_id(&id, registry)?;
+        let f = (self.name, EItemType::Struct(EItemStruct { id }));
+        Ok(f)
+    }
+
+    fn name(&self) -> &str {
+        &self.name
+    }
+}
 
 #[derive(Debug, knuffel::Decode, Clone)]
 pub(super) struct FieldEnum {
@@ -128,9 +173,27 @@ pub(super) struct FieldEnum {
     name: String,
     #[knuffel(argument, str)]
     id: ETypeId,
+    #[knuffel(children)]
+    generics: Vec<ThingItem>,
 }
 
-impl_simple!(FieldEnum, Enum, [id], [id]);
+impl ThingStructItemTrait for FieldEnum {
+    fn into_item(
+        self,
+        registry: &mut ETypesRegistry,
+        path: &str,
+    ) -> anyhow::Result<(String, EItemType)> {
+        let id = generics(registry, self.id, self.generics, path)?;
+
+        validate_id(&id, registry)?;
+        let f = (self.name, EItemType::Enum(EItemEnum { id }));
+        Ok(f)
+    }
+
+    fn name(&self) -> &str {
+        &self.name
+    }
+}
 
 #[derive(Debug, knuffel::Decode, Clone)]
 pub(super) struct FieldGeneric {

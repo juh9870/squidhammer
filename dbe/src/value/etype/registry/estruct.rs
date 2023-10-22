@@ -37,8 +37,13 @@ impl EStructData {
         }
     }
 
-    pub fn apply_generics(&self, arguments: &UstrMap<EItemType>) -> anyhow::Result<Self> {
+    pub fn apply_generics(
+        &self,
+        arguments: &UstrMap<EItemType>,
+        new_id: ETypeId,
+    ) -> anyhow::Result<Self> {
         let mut cloned = self.clone();
+        cloned.ident = new_id;
         for x in &mut cloned.fields {
             if let EItemType::Generic(g) = &x.ty {
                 let item = arguments.get(&g.argument_name).with_context(|| {
@@ -47,6 +52,8 @@ impl EStructData {
                 x.ty = item.clone();
             }
         }
+
+        cloned.generic_arguments = vec![];
 
         Ok(cloned)
     }

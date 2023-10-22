@@ -4,6 +4,7 @@ use crate::value::draw::editor::{
 use crate::value::etype::registry::{ETypeId, ETypesRegistry};
 use crate::value::etype::{EDataType, ETypeConst};
 use crate::value::{ENumber, EValue};
+use strum_macros::AsRefStr;
 use tracing::error;
 use ustr::Ustr;
 
@@ -122,7 +123,7 @@ impl EItemTypeTrait for EItemGeneric {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, AsRefStr)]
 pub enum EItemType {
     Number(EItemNumber),
     String(EItemString),

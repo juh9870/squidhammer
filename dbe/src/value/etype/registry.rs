@@ -38,6 +38,13 @@ impl EObjectType {
         }
         None
     }
+
+    pub fn id(&self) -> ETypeId {
+        match self {
+            EObjectType::Struct(s) => s.ident,
+            EObjectType::Enum(e) => e.ident,
+        }
+    }
 }
 
 #[derive(Debug, Clone)]
@@ -96,6 +103,19 @@ impl ETypesRegistry {
         self.types.values().map(|e| e.expect_ready())
     }
 
+    pub fn all_objects_filtered(&self, search: &str) -> impl Iterator<Item = &EObjectType> {
+        let query = search.to_ascii_lowercase();
+        self.all_objects().filter(move |e| {
+            if query.is_empty() {
+                return true;
+            }
+            if let ETypeId::Persistent(name) = e.id() {
+                return name.contains(&query);
+            }
+            return false;
+        })
+    }
+
     pub fn get_object(&self, id: &ETypeId) -> Option<&EObjectType> {
         self.types.get(id).map(RegistryItem::expect_ready)
     }
@@ -126,21 +146,22 @@ impl ETypesRegistry {
         &mut self,
         id: ETypeId,
         arguments: UstrMap<EItemType>,
-    ) -> anyhow::Result<EDataType> {
+        path: &str,
+    ) -> anyhow::Result<ETypeId> {
         let long_id = {
             let args = arguments
                 .iter()
                 .map(|e| format!("{}={}", e.0, e.1.ty().name()))
                 .sorted()
                 .join(",");
-            ETypeId::Persistent(format!("{id}<{args}>").into())
+            ETypeId::Persistent(format!("{id}<{args}>${path}").into())
         };
         if self.types.contains_key(&long_id) {
-            return Ok(EDataType::Object { ident: long_id });
+            return Ok(long_id);
         }
 
         let obj = self
-            .get_object(&id)
+            .fetch_or_deserialize(id)
             .with_context(|| format!("Failed to find object with id {}", id))?;
 
         let check_generics = |args: &Vec<Ustr>| {
@@ -158,13 +179,15 @@ impl ETypesRegistry {
         match obj {
             EObjectType::Struct(data) => {
                 check_generics(&data.generic_arguments)?;
-                let obj = data.apply_generics(&arguments)?;
-                Ok(self.register_struct(long_id, obj))
+                let obj = data.apply_generics(&arguments, long_id)?;
+                self.register_struct(long_id, obj);
+                Ok(long_id)
             }
             EObjectType::Enum(data) => {
                 check_generics(&data.generic_arguments)?;
-                let obj = data.apply_generics(&arguments)?;
-                Ok(self.register_enum(long_id, obj))
+                let obj = data.apply_generics(&arguments, long_id)?;
+                self.register_enum(long_id, obj);
+                Ok(long_id)
             }
         }
     }

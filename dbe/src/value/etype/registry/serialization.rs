@@ -108,7 +108,7 @@ impl ThingEnum {
                 .variants
                 .into_iter()
                 .map(|e| {
-                    let path = format!("{id}:{}", e.name());
+                    let path = format!("{id}::{}", e.name());
                     e.into_enum_variant(registry, &path)
                 })
                 .try_collect()?,

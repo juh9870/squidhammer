@@ -8,7 +8,7 @@ use std::fmt::{Display, Formatter};
 use ustr::{Ustr, UstrMap};
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Hash, Serialize, Deserialize)]
-pub(super) enum EnumPattern {
+pub enum EnumPattern {
     StructField(Ustr, ETypeConst),
     Boolean,
     Number,
@@ -29,9 +29,9 @@ impl Display for EnumPattern {
 
 #[derive(Debug, Clone)]
 pub struct EEnumVariant {
-    pat: EnumPattern,
-    data: EItemType,
-    name: String,
+    pub pat: EnumPattern,
+    pub data: EItemType,
+    pub name: String,
 }
 
 impl EEnumVariant {
@@ -77,8 +77,13 @@ impl EEnumData {
         }
     }
 
-    pub fn apply_generics(&self, arguments: &UstrMap<EItemType>) -> anyhow::Result<Self> {
+    pub fn apply_generics(
+        &self,
+        arguments: &UstrMap<EItemType>,
+        new_id: ETypeId,
+    ) -> anyhow::Result<Self> {
         let mut cloned = self.clone();
+        cloned.ident = new_id;
         for x in &mut cloned.variants {
             if let EItemType::Generic(g) = &x.data {
                 let item = arguments.get(&g.argument_name).with_context(|| {
@@ -87,6 +92,8 @@ impl EEnumData {
                 x.data = item.clone();
             }
         }
+
+        cloned.generic_arguments = vec![];
 
         Ok(cloned)
     }

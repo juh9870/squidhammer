@@ -24,6 +24,7 @@ use crate::states::main_state::edit::MainStateEdit;
 use crate::states::main_state::file_edit::show_file_edit;
 use crate::states::main_state::file_tree::show_file_tree;
 use crate::states::main_state::mesh_test::show_mesh_test;
+use crate::states::main_state::types_debug::show_types_debugger;
 use crate::states::{default_info_panels, DbeStateHolder};
 use crate::value::etype::registry::{ETypeId, ETypesRegistry};
 use crate::value::EValue;
@@ -34,6 +35,7 @@ mod file_edit;
 mod file_tree;
 mod mesh_test;
 mod state;
+mod types_debug;
 
 #[derive(Debug)]
 pub struct MainState {
@@ -53,6 +55,7 @@ impl MainState {
             state: EditorData::new(fs, registry),
             dock_state: Some(DockState::new(vec![
                 TabData::FileTree,
+                TabData::TypesDebugger,
                 TabData::MeshTest {
                     indices: vec![],
                     points: vec![],
@@ -345,6 +348,7 @@ pub enum TabData {
         points: Vec<(Pos2, Color32)>,
         indices: Vec<u32>,
     },
+    TypesDebugger,
     FileEdit {
         path: Utf8PathBuf,
         edited_value: EValue,
@@ -376,6 +380,7 @@ impl Hash for TabData {
                 2.hash(state);
                 path.hash(state);
             }
+            TabData::TypesDebugger => 3.hash(state),
         }
     }
 }
@@ -393,6 +398,7 @@ impl<'a> egui_dock::TabViewer for TabHandler<'a> {
             TabData::FileEdit { path, .. } => {
                 path.file_name().unwrap_or_else(|| path.as_str()).into()
             }
+            TabData::TypesDebugger => t!("dbe.main.types_debug").into(),
         }
     }
 
@@ -404,6 +410,7 @@ impl<'a> egui_dock::TabViewer for TabHandler<'a> {
             TabData::FileEdit { path, edited_value } => {
                 show_file_edit(self, ui, path, edited_value)
             }
+            TabData::TypesDebugger => show_types_debugger(self, ui),
         }
     }
 
