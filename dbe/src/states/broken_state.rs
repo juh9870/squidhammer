@@ -16,7 +16,7 @@ impl BrokenState {
 }
 
 impl DbeStateHolder for BrokenState {
-    fn update(mut self, ui: &mut Ui) -> DbeState {
+    fn update(self, ui: &mut Ui) -> DbeState {
         info_window(ui, t!("dbe.broken"), |ui| {
             ui.label(t!("dbe.check_logs"));
         });

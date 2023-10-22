@@ -1,6 +1,6 @@
 use crate::graph::nodes::EditorNodeData;
 use crate::value::etype::EDataType;
-use crate::value::{ENumber, EValue, EVector2};
+use crate::value::{ENumber, EValue};
 use crate::EditorGraphState;
 use egui_node_graph::{Graph, InputParamKind, NodeId};
 use smallvec::{Array, SmallVec};

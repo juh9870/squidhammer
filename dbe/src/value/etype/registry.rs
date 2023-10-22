@@ -10,7 +10,7 @@ use egui_node_graph::DataTypeTrait;
 use id::EditorId;
 use itertools::Itertools;
 use rustc_hash::FxHashMap;
-use serde::{Deserialize, Deserializer, Serialize, Serializer};
+use serde::{Deserialize, Serialize};
 use std::fmt::{Debug, Display, Formatter};
 use std::str::FromStr;
 use ustr::{Ustr, UstrMap};

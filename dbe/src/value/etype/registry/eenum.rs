@@ -1,8 +1,8 @@
 use crate::value::etype::registry::eitem::{EItemConst, EItemType, EItemTypeTrait};
 use crate::value::etype::registry::{ETypeId, ETypesRegistry};
-use crate::value::etype::{EDataType, ETypeConst};
+use crate::value::etype::ETypeConst;
 use crate::value::EValue;
-use anyhow::{bail, Context};
+use anyhow::Context;
 use serde::{Deserialize, Serialize};
 use std::fmt::{Display, Formatter};
 use ustr::{Ustr, UstrMap};

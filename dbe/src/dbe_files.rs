@@ -4,7 +4,7 @@ use anyhow::{anyhow, bail, Context, Error};
 use camino::{Utf8Path, Utf8PathBuf};
 use duplicate::duplicate_item;
 use rustc_hash::FxHashMap;
-use tracing::{debug, info};
+use tracing::debug;
 
 use utils::somehow;
 

@@ -2,9 +2,8 @@ use crate::value::etype::registry::eitem::{EItemBoolean, EItemNumber, EItemStrin
 use crate::value::etype::registry::estruct::EStructField;
 use crate::value::etype::registry::ETypesRegistry;
 use crate::value::ENumber;
-use egui::{DragValue, Rgba, Slider, Ui};
+use egui::{DragValue, Slider, Ui};
 use ordered_float::Float;
-use utils::color_format::ColorChannel;
 
 fn labeled_field(ui: &mut Ui, field: &EStructField, content: impl FnOnce(&mut Ui)) {
     ui.horizontal(|ui| {

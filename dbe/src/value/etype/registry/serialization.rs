@@ -1,4 +1,4 @@
-use anyhow::{anyhow, bail, Context};
+use anyhow::{anyhow, Context};
 use itertools::Itertools;
 use knuffel::ast::{Literal, TypeName};
 use knuffel::errors::DecodeError;
@@ -6,7 +6,7 @@ use knuffel::span::Spanned;
 use knuffel::traits::ErrorSpan;
 use knuffel::DecodeScalar;
 use miette::{GraphicalReportHandler, GraphicalTheme};
-use std::borrow::Cow;
+
 use ustr::Ustr;
 
 use crate::value::etype::registry::eenum::EEnumData;

@@ -3,7 +3,7 @@ use crate::graph::EditorGraphResponse;
 use crate::value::etype::registry::eenum::EEnumVariantId;
 use crate::value::etype::registry::{ETypeId, EValueId};
 use crate::EditorGraphState;
-use egui::{Color32, Rgba};
+
 use egui_node_graph::{NodeId, WidgetValueTrait};
 use itertools::Itertools;
 use serde::{Deserialize, Serialize};
