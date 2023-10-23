@@ -4,16 +4,20 @@ use crate::graph::nodes::data::EditorNodeData;
 use crate::graph::nodes::scalar::{
     ScalarAdd, ScalarDiv, ScalarMake, ScalarMult, ScalarPrint, ScalarSub,
 };
+use crate::graph::nodes::struct_node::StructNode;
 use crate::graph::nodes::traits::{IntoNodeInputPort, IntoNodeOutputPort};
-// use crate::graph::nodes::vector::{Vec2Add, Vec2Make, Vec2Print, Vec2Scale, Vec2Sub};
 use crate::graph::EditorGraphState;
+use crate::value::etype::registry::ETypesRegistry;
 use crate::value::etype::EDataType;
 use crate::value::EValue;
 use crate::EditorGraph;
 use egui_node_graph::{Graph, NodeId, NodeTemplateIter, NodeTemplateTrait};
 use enum_dispatch::enum_dispatch;
+use itertools::Itertools;
 use rust_i18n::t;
 use std::borrow::Cow;
+use std::cell::RefCell;
+use std::rc::Rc;
 use strum::IntoEnumIterator;
 use strum_macros::{AsRefStr, EnumIter};
 
@@ -21,6 +25,7 @@ pub mod traits;
 
 pub mod data;
 pub mod scalar;
+pub mod struct_node;
 pub mod vector;
 
 #[enum_dispatch]
@@ -43,14 +48,25 @@ pub trait EditorNode {
         commands: &mut Vec<Command>,
         node_id: NodeId,
     ) -> anyhow::Result<()>;
+
+    fn label(&self) -> Option<String> {
+        return None;
+    }
+
+    fn appear_in_search(&self) -> bool {
+        return true;
+    }
 }
 
 /// NodeTemplate is a mechanism to define node templates. It's what the graph
 /// will display in the "new node" popup. The user code needs to tell the
 /// library how to convert a NodeTemplate into a Node.
-#[derive(Debug, Clone, Copy, serde::Serialize, serde::Deserialize, AsRefStr, EnumIter)]
+#[derive(
+    Debug, Clone, Copy, serde::Serialize, serde::Deserialize, AsRefStr, EnumIter, PartialEq,
+)]
 #[enum_dispatch(EditorNode)]
 pub enum NodeType {
+    Struct(StructNode),
     // Scalar
     Scalar(ScalarMake),
     ScalarAdd(ScalarAdd),
@@ -68,7 +84,7 @@ pub enum NodeType {
 
 impl NodeType {
     pub fn label(&self) -> String {
-        t!(self.as_ref())
+        EditorNode::label(self).unwrap_or_else(|| t!(self.as_ref()))
     }
 }
 
@@ -97,7 +113,10 @@ impl NodeTemplateTrait for NodeType {
     }
 
     fn user_data(&self, _user_state: &mut Self::UserState) -> Self::NodeData {
-        EditorNodeData { template: *self }
+        EditorNodeData {
+            template: *self,
+            editors: Default::default(),
+        }
     }
 
     fn build_node(
@@ -106,16 +125,25 @@ impl NodeTemplateTrait for NodeType {
         user_state: &mut Self::UserState,
         node_id: NodeId,
     ) {
-        self.create_ports(graph, user_state, node_id);
+        EditorNode::create_ports(self, graph, user_state, node_id);
     }
 }
 
-pub struct AllEditorNodeTypes;
+pub struct AllEditorNodeTypes(pub Rc<RefCell<ETypesRegistry>>);
 impl NodeTemplateIter for AllEditorNodeTypes {
     type Item = NodeType;
 
     fn all_kinds(&self) -> Vec<Self::Item> {
-        NodeType::iter().collect()
+        let reg = self.0.borrow();
+        let structs = reg.all_objects().filter_map(|e| e.as_struct()).map(|e| {
+            NodeType::Struct(StructNode {
+                ident: Some(e.ident),
+            })
+        });
+
+        structs
+            .chain(NodeType::iter().filter(|e| EditorNode::appear_in_search(e)))
+            .collect_vec()
     }
 }
 

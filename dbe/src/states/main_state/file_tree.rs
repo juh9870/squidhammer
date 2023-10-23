@@ -8,7 +8,8 @@ use rust_i18n::t;
 use crate::states::main_state::{TabCommand, TabHandler};
 
 pub(super) fn show_file_tree(state: &mut TabHandler, ui: &mut Ui) {
-    let types_root = state.0.state.registry.root_path();
+    let reg = state.0.state.registry.borrow();
+    let types_root = reg.root_path();
     // let item = state.0.state.fs.fs().iter().peekable()
     show_folder(
         ui,

@@ -6,17 +6,17 @@ use duplicate::duplicate_item;
 use rustc_hash::FxHashMap;
 use tracing::debug;
 
+use crate::editable::EditableFile;
 use utils::somehow;
 
 use crate::value::etype::registry::ETypeId;
-use crate::value::EValue;
 
 #[derive(Debug, Default, Clone)]
 pub enum EditorItem {
     #[default]
     Empty,
     Raw(Vec<u8>),
-    Value(EValue),
+    Value(EditableFile),
     Type(ETypeId),
 }
 
@@ -24,7 +24,7 @@ pub enum EditorItem {
 method      variant     data_type;
 [ raw ]     [ Raw ]     [ Vec < u8 > ];
 [ type ]    [ Type ]    [ super::ETypeId ];
-[ value ]   [ Value ]   [ super::EValue ];
+[ value ]   [ Value ]   [ super::EditableFile ];
 )]
 mod editor_item {
     impl super::EditorItem {
@@ -76,6 +76,11 @@ impl DbeFileSystem {
 
     pub fn content(&self, path: &Utf8Path) -> Option<&EditorItem> {
         self.fs.get(path)
+    }
+
+    pub fn content_mut(&mut self, path: &Utf8Path) -> Option<&mut EditorItem> {
+        self.set_dirty(path.to_path_buf());
+        self.fs.get_mut(path)
     }
 
     #[inline(always)]

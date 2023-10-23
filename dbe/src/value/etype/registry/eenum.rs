@@ -108,6 +108,12 @@ pub struct EEnumVariantId {
     variant: EnumPattern,
 }
 
+impl EEnumVariantId {
+    pub fn enum_id(&self) -> ETypeId {
+        self.ident
+    }
+}
+
 impl Display for EEnumVariantId {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}@{}", self.ident, self.variant)

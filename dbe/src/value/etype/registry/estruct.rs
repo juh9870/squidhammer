@@ -1,4 +1,4 @@
-use crate::value::etype::registry::eitem::{EItemType, EItemTypeTrait};
+use crate::value::etype::registry::eitem::{EItemObjectId, EItemType, EItemTypeTrait};
 use crate::value::etype::registry::{ETypeId, ETypesRegistry};
 use crate::value::EValue;
 use anyhow::{bail, Context};
@@ -62,6 +62,16 @@ impl EStructData {
 
     pub fn id_field(&self) -> Option<&EStructField> {
         self.id_field.map(|i| &self.fields[i])
+    }
+
+    pub fn id_field_data(&self) -> Option<&EItemObjectId> {
+        self.id_field().map(|e| {
+            if let EItemType::ObjectId(id) = &e.ty {
+                id
+            } else {
+                panic!("Bad struct state")
+            }
+        })
     }
 
     pub(super) fn add_field(&mut self, field: EStructField) -> anyhow::Result<()> {

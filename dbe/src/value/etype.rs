@@ -3,6 +3,7 @@ use std::fmt::{Display, Formatter};
 use std::hash::Hash;
 
 use ordered_float::OrderedFloat;
+use random_color::{Luminosity, RandomColor};
 use serde::{Deserialize, Serialize};
 use ustr::Ustr;
 
@@ -17,7 +18,7 @@ pub mod registry;
 /// `DataType`s are what defines the possible range of connections when
 /// attaching two ports together. The graph UI will make sure to not allow
 /// attaching incompatible datatypes.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub enum EDataType {
     /// Primitive boolean type
     Boolean,
@@ -60,15 +61,12 @@ impl EDataType {
 // A trait for the data types, to tell the library how to display them
 impl DataTypeTrait<EditorGraphState> for EDataType {
     fn data_type_color(&self, _user_state: &mut EditorGraphState) -> egui::Color32 {
-        match self {
-            EDataType::Boolean => egui::Color32::from_rgb(211, 109, 25),
-            EDataType::Number => egui::Color32::from_rgb(38, 109, 211),
-            EDataType::String => egui::Color32::from_rgb(109, 207, 109),
-            EDataType::Object { .. } => egui::Color32::from_rgb(255, 255, 255),
-            EDataType::Const { .. } => todo!(),
-            EDataType::Id { .. } => todo!(),
-            EDataType::Ref { .. } => todo!(),
-        }
+        let c = RandomColor::new()
+            .seed(self.name().to_string())
+            .luminosity(Luminosity::Dark)
+            .alpha(1.0)
+            .to_rgb_array();
+        egui::Color32::from_rgb(c[0], c[1], c[2])
     }
 
     fn name(&self) -> Cow<'_, str> {

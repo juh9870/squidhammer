@@ -3,6 +3,7 @@ use crate::graph::EditorGraphResponse;
 use crate::value::etype::registry::eenum::EEnumVariantId;
 use crate::value::etype::registry::{ETypeId, EValueId};
 use crate::EditorGraphState;
+use std::borrow::Cow;
 
 use egui_node_graph::{NodeId, WidgetValueTrait};
 use itertools::Itertools;
@@ -11,7 +12,11 @@ use smallvec::{Array, SmallVec};
 use std::fmt::{Display, Formatter};
 use ustr::UstrMap;
 
+use crate::value::draw::editor::{EFieldEditor, EFieldEditorError};
+use crate::value::etype::registry::eitem::EItemType;
+use crate::value::etype::{EDataType, ETypeConst};
 pub use serde_json::Value as JsonValue;
+use tracing::debug;
 
 pub mod connections;
 pub mod draw;
@@ -38,9 +43,6 @@ pub type EVector2 = glam::f64::Vec2;
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(tag = "type")]
 pub enum EValue {
-    Unknown {
-        value: JsonValue,
-    },
     Null,
     Boolean {
         value: bool,
@@ -67,6 +69,25 @@ pub enum EValue {
         variant: EEnumVariantId,
         data: Box<EValue>,
     },
+}
+
+impl EValue {
+    pub fn ty(&self) -> EDataType {
+        match self {
+            EValue::Null => EDataType::Const {
+                value: ETypeConst::Null,
+            },
+            EValue::Boolean { .. } => EDataType::Boolean,
+            EValue::Number { .. } => EDataType::Number,
+            EValue::String { .. } => EDataType::String,
+            EValue::Struct { ident, .. } => EDataType::Object { ident: *ident },
+            EValue::Enum { variant, .. } => EDataType::Object {
+                ident: variant.enum_id(),
+            },
+            EValue::Id { ty, .. } => EDataType::Id { ty: *ty },
+            EValue::Ref { ty, .. } => EDataType::Ref { ty: *ty },
+        }
+    }
 }
 
 impl Default for EValue {
@@ -140,6 +161,18 @@ macro_rules! try_to {
                         )
                     }
                 }
+
+                pub fn [<try_as_ $name _mut>](&mut self) -> anyhow::Result<&mut $result> {
+                    if let EValue::$type { value } = self {
+                        Ok(value)
+                    } else {
+                        anyhow::bail!(
+                            "Invalid cast from {:?} to {}",
+                            self,
+                            rust_i18n::t!(stringify!($name))
+                        )
+                    }
+                }
             }
         }
     };
@@ -169,18 +202,36 @@ impl WidgetValueTrait for EValue {
     type NodeData = EditorNodeData;
     fn value_widget(
         &mut self,
-        _param_name: &str,
-        _node_id: NodeId,
-        _ui: &mut egui::Ui,
-        _user_state: &mut EditorGraphState,
-        _node_data: &EditorNodeData,
+        param_name: &str,
+        node_id: NodeId,
+        ui: &mut egui::Ui,
+        user_state: &mut EditorGraphState,
+        node_data: &EditorNodeData,
     ) -> Vec<EditorGraphResponse> {
-        // This trait is used to tell the library which UI to display for the
-        // inline parameter widgets.
-        // draw_evalue(self, ui, param_name, &user_state.registry);
-        todo!();
-        // This allows you to return your responses from the inline widgets.
-        // Vec::new()
+        let mut commands = vec![];
+        let reg = user_state.registry.borrow();
+        let editor = match node_data.editors.get(param_name) {
+            None => {
+                let editor = match reg.editor_for(None, EItemType::default_item_for(self)) {
+                    Ok(editor) => editor,
+                    Err(err) => Box::new(EFieldEditorError::new(err.to_string(), self.ty())),
+                };
+                commands.push(editor);
+                &commands[0]
+            }
+            Some(editor) => editor,
+        };
+
+        editor.draw(ui, &reg, param_name, self);
+
+        commands
+            .into_iter()
+            .map(|e| EditorGraphResponse::ChangeEditor {
+                node_id,
+                editor: e,
+                field: param_name.to_string(),
+            })
+            .collect_vec()
     }
 }
 
@@ -207,7 +258,6 @@ impl Display for EValue {
             } => {
                 write!(f, "{ident}({data})")
             }
-            EValue::Unknown { value } => write!(f, "JSON({value})"),
             EValue::Id { ty, value } => {
                 write!(
                     f,

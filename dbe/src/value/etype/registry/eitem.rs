@@ -1,6 +1,6 @@
-use crate::value::draw::editor::{
-    BooleanEditorType, ENumberType, ScalarEditorType, StringEditorType,
-};
+// use crate::value::draw::editor::{
+//     BooleanEditorType, ENumberType, ScalarEditorType, StringEditorType,
+// };
 use crate::value::etype::registry::{ETypeId, ETypesRegistry};
 use crate::value::etype::{EDataType, ETypeConst};
 use crate::value::{ENumber, EValue};
@@ -11,28 +11,35 @@ use ustr::Ustr;
 pub trait EItemTypeTrait {
     fn ty(&self) -> EDataType;
     fn default_value(&self, registry: &ETypesRegistry) -> EValue;
+    fn editor_name(&self) -> Option<&str>;
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, knuffel::DecodeScalar, Default, Copy, Clone, Eq, PartialEq)]
+pub enum ENumberType {
+    #[default]
+    Decimal,
+    Int,
+}
+#[derive(Debug, Clone, Default)]
 pub struct EItemNumber {
     pub default: Option<ENumber>,
     pub min: Option<ENumber>,
     pub max: Option<ENumber>,
     pub number_type: ENumberType,
     pub logarithmic: Option<bool>,
-    pub editor: ScalarEditorType,
+    pub editor: Option<String>,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct EItemString {
     pub default: Option<ENumber>,
-    pub editor: StringEditorType,
+    pub editor: Option<String>,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct EItemBoolean {
     pub default: Option<ENumber>,
-    pub editor: BooleanEditorType,
+    pub editor: Option<String>,
 }
 
 #[duplicate::duplicate_item(
@@ -51,6 +58,10 @@ impl EItemTypeTrait for tStruct {
             .map(|e| e.into())
             .unwrap_or_else(|| EDataType::eType.default_value(registry))
     }
+
+    fn editor_name(&self) -> Option<&str> {
+        self.editor.as_ref().map(|s| s.as_str())
+    }
 }
 
 #[derive(Debug, Clone)]
@@ -66,11 +77,16 @@ impl EItemTypeTrait for EItemConst {
     fn default_value(&self, _registry: &ETypesRegistry) -> EValue {
         self.value.default_value()
     }
+
+    fn editor_name(&self) -> Option<&str> {
+        None
+    }
 }
 
 #[derive(Debug, Clone)]
 pub struct EItemStruct {
     pub id: ETypeId,
+    pub editor: Option<String>,
 }
 
 impl EItemTypeTrait for EItemStruct {
@@ -81,11 +97,16 @@ impl EItemTypeTrait for EItemStruct {
     fn default_value(&self, registry: &ETypesRegistry) -> EValue {
         registry.default_value(&self.id)
     }
+
+    fn editor_name(&self) -> Option<&str> {
+        self.editor.as_ref().map(|s| s.as_str())
+    }
 }
 
 #[derive(Debug, Clone)]
 pub struct EItemEnum {
     pub id: ETypeId,
+    pub editor: Option<String>,
 }
 
 impl EItemTypeTrait for EItemEnum {
@@ -96,11 +117,16 @@ impl EItemTypeTrait for EItemEnum {
     fn default_value(&self, registry: &ETypesRegistry) -> EValue {
         registry.default_value(&self.id)
     }
+
+    fn editor_name(&self) -> Option<&str> {
+        self.editor.as_ref().map(|s| s.as_str())
+    }
 }
 
 #[derive(Debug, Clone)]
 pub struct EItemObjectId {
     pub ty: ETypeId,
+    pub editor: Option<String>,
 }
 
 impl EItemTypeTrait for EItemObjectId {
@@ -108,18 +134,22 @@ impl EItemTypeTrait for EItemObjectId {
         EDataType::Id { ty: self.ty }
     }
 
-    fn default_value(&self, registry: &ETypesRegistry) -> EValue {
+    fn default_value(&self, _registry: &ETypesRegistry) -> EValue {
         EValue::Id {
             ty: self.ty,
             value: None,
-        };
-        registry.default_value(&self.ty)
+        }
+    }
+
+    fn editor_name(&self) -> Option<&str> {
+        self.editor.as_ref().map(|s| s.as_str())
     }
 }
 
 #[derive(Debug, Clone)]
 pub struct EItemObjectRef {
     pub ty: ETypeId,
+    pub editor: Option<String>,
 }
 
 impl EItemTypeTrait for EItemObjectRef {
@@ -127,16 +157,19 @@ impl EItemTypeTrait for EItemObjectRef {
         EDataType::Ref { ty: self.ty }
     }
 
-    fn default_value(&self, registry: &ETypesRegistry) -> EValue {
+    fn default_value(&self, _registry: &ETypesRegistry) -> EValue {
         EValue::Ref {
             ty: self.ty,
             value: None,
-        };
-        registry.default_value(&self.ty)
+        }
+    }
+
+    fn editor_name(&self) -> Option<&str> {
+        self.editor.as_ref().map(|s| s.as_str())
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct EItemGeneric {
     pub argument_name: Ustr,
 }
@@ -159,6 +192,10 @@ impl EItemTypeTrait for EItemGeneric {
         );
         EValue::Null
     }
+
+    fn editor_name(&self) -> Option<&str> {
+        None
+    }
 }
 
 #[derive(Debug, Clone, AsRefStr)]
@@ -172,6 +209,35 @@ pub enum EItemType {
     ObjectId(EItemObjectId),
     ObjectRef(EItemObjectRef),
     Generic(EItemGeneric),
+}
+
+impl EItemType {
+    pub fn default_item_for(value: &EValue) -> EItemType {
+        match value {
+            EValue::Null => EItemType::Const(EItemConst {
+                value: ETypeConst::Null,
+            }),
+            EValue::Boolean { .. } => EItemType::Boolean(EItemBoolean::default()),
+            EValue::Number { .. } => EItemType::Number(EItemNumber::default()),
+            EValue::String { .. } => EItemType::String(EItemString::default()),
+            EValue::Struct { ident, .. } => EItemType::Struct(EItemStruct {
+                id: *ident,
+                editor: None,
+            }),
+            EValue::Id { ty, .. } => EItemType::ObjectId(EItemObjectId {
+                ty: *ty,
+                editor: None,
+            }),
+            EValue::Ref { ty, .. } => EItemType::ObjectRef(EItemObjectRef {
+                ty: *ty,
+                editor: None,
+            }),
+            EValue::Enum { variant, .. } => EItemType::Enum(EItemEnum {
+                id: variant.enum_id(),
+                editor: None,
+            }),
+        }
+    }
 }
 
 impl EItemTypeTrait for EItemType {
@@ -200,6 +266,20 @@ impl EItemTypeTrait for EItemType {
             EItemType::Generic(f) => f.default_value(registry),
             EItemType::ObjectId(f) => f.default_value(registry),
             EItemType::ObjectRef(f) => f.default_value(registry),
+        }
+    }
+
+    fn editor_name(&self) -> Option<&str> {
+        match self {
+            EItemType::Number(f) => f.editor_name(),
+            EItemType::String(f) => f.editor_name(),
+            EItemType::Boolean(f) => f.editor_name(),
+            EItemType::Const(f) => f.editor_name(),
+            EItemType::Struct(f) => f.editor_name(),
+            EItemType::Enum(f) => f.editor_name(),
+            EItemType::Generic(f) => f.editor_name(),
+            EItemType::ObjectId(f) => f.editor_name(),
+            EItemType::ObjectRef(f) => f.editor_name(),
         }
     }
 }

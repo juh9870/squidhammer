@@ -14,6 +14,7 @@ use crate::states::broken_state::BrokenState;
 use crate::states::DbeStateHolder;
 
 mod dbe_files;
+mod editable;
 mod graph;
 mod states;
 mod value;

@@ -1,6 +1,4 @@
-use crate::value::draw::editor::StructFieldEditor;
 use crate::value::etype::registry::eitem::{EItemType, EItemTypeTrait};
-use crate::value::etype::registry::estruct::EStructField;
 use crate::value::etype::registry::{EObjectType, ETypeId, ETypesRegistry};
 use crate::value::{ENumber, EValue, EVector2, JsonValue};
 use egui::{Color32, DragValue, RichText, Ui, WidgetText};
@@ -99,7 +97,8 @@ pub fn draw_struct(
                     .or_insert_with(|| f.ty.default_value(registry));
 
                 extra_fields.remove(&f.name);
-                draw_struct_field(ui, registry, value, f);
+                todo!()
+                // draw_default_field_editor(ui, registry, value, f);
             }
 
             if !extra_fields.is_empty() {
@@ -118,46 +117,52 @@ pub fn draw_struct(
     });
 }
 
-fn draw_struct_field(ui: &mut Ui, registry: &ETypesRegistry, value: &mut EValue, f: &EStructField) {
-    let name = || f.name.as_str();
-    ui.horizontal(|ui| {
-        match (value, &f.ty) {
-            (EValue::Number { value }, EItemType::Number(field)) => {
-                field.editor.edit(ui, registry, value, f, field)
-            }
-            (EValue::String { value }, EItemType::String(field)) => {
-                field.editor.edit(ui, registry, value, f, field)
-            }
-            (EValue::Boolean { value }, EItemType::Boolean(field)) => {
-                field.editor.edit(ui, registry, value, f, field)
-            }
-            (value, EItemType::Const(field)) => {
-                if &field.value.default_value() != value {
-                    error(
-                        ui,
-                        f.name.as_str(),
-                        "Value type is incompatible with field type",
-                    )
-                }
-                ui.horizontal(|ui| {
-                    ui.label(name());
-                    ui.label(value.to_string())
-                });
-            }
-            (EValue::Struct { .. }, EItemType::Struct(..)) => {
-                error(ui, name(), "TODO");
-            }
-            (EValue::Enum { .. }, EItemType::Enum(_)) => {
-                error(ui, name(), "TODO");
-            }
-            // EStructField::Enum(_) => {}
-            _ => error(
-                ui,
-                name(),
-                format!("Value type is incompatible with field type"),
-            ),
-        }
-    });
+fn draw_default_field_editor(
+    ui: &mut Ui,
+    registry: &ETypesRegistry,
+    value: &mut EValue,
+    name: String,
+    f: &EItemType,
+) {
+    todo!()
+    // ui.horizontal(|ui| {
+    //     match (value, &f.ty) {
+    //         (EValue::Number { value }, EItemType::Number(field)) => {
+    //             field.editor.edit(ui, registry, value, f, field)
+    //         }
+    //         (EValue::String { value }, EItemType::String(field)) => {
+    //             field.editor.edit(ui, registry, value, f, field)
+    //         }
+    //         (EValue::Boolean { value }, EItemType::Boolean(field)) => {
+    //             field.editor.edit(ui, registry, value, f, field)
+    //         }
+    //         (value, EItemType::Const(field)) => {
+    //             if &field.value.default_value() != value {
+    //                 error(
+    //                     ui,
+    //                     f.name.as_str(),
+    //                     "Value type is incompatible with field type",
+    //                 )
+    //             }
+    //             ui.horizontal(|ui| {
+    //                 ui.label(name());
+    //                 ui.label(value.to_string())
+    //             });
+    //         }
+    //         (EValue::Struct { .. }, EItemType::Struct(..)) => {
+    //             error(ui, name(), "TODO");
+    //         }
+    //         (EValue::Enum { .. }, EItemType::Enum(_)) => {
+    //             error(ui, name(), "TODO");
+    //         }
+    //         // EStructField::Enum(_) => {}
+    //         _ => error(
+    //             ui,
+    //             name(),
+    //             format!("Value type is incompatible with field type"),
+    //         ),
+    //     }
+    // });
 }
 
 // pub fn draw_evalue(value: &mut EValue, ui: &mut Ui, label: &str, registry: &ETypesRegistry) {

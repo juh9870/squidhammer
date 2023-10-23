@@ -6,6 +6,7 @@ edition = "2021"
 
 [dependencies]
 anyhow = "1.0.72"
+backtrace-on-stack-overflow = "0.3.0"
 camino = "1.1.6"
 clap = { version = "4.4.3", features = ["derive", "env"] }
 color-backtrace = "0.6.0"

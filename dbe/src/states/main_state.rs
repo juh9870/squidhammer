@@ -3,7 +3,7 @@ use std::collections::VecDeque;
 use std::hash::{Hash, Hasher};
 use std::time::{Duration, Instant};
 
-use anyhow::{anyhow, Context, Error};
+use anyhow::{Context, Error};
 use camino::{Utf8Path, Utf8PathBuf};
 use derivative::Derivative;
 use egui::{menu, Align2, Button, Color32, Id, Pos2, Ui, WidgetText};
@@ -11,7 +11,7 @@ use egui_dock::{DockState, Node, Style};
 use egui_modal::Modal;
 use egui_toast::{Toast, ToastKind, ToastOptions, Toasts};
 use rust_i18n::t;
-use tracing::{debug, error, error_span, info, trace, warn};
+use tracing::{error, error_span, info, warn};
 use undo::History;
 
 use state::EditorData;
@@ -20,6 +20,7 @@ use utils::errors::{display_error, ContextLike};
 use utils::{mem_clear, mem_temp};
 
 use crate::dbe_files::{DbeFileSystem, EditorItem};
+use crate::editable::EditableFile;
 use crate::states::main_state::edit::MainStateEdit;
 use crate::states::main_state::file_edit::show_file_edit;
 use crate::states::main_state::file_tree::show_file_tree;
@@ -27,7 +28,6 @@ use crate::states::main_state::mesh_test::show_mesh_test;
 use crate::states::main_state::types_debug::show_types_debugger;
 use crate::states::{default_info_panels, DbeStateHolder};
 use crate::value::etype::registry::{ETypeId, ETypesRegistry};
-use crate::value::EValue;
 use crate::{global_app_scale, scale_ui_style, DbeState};
 
 mod edit;
@@ -96,7 +96,7 @@ impl MainState {
     pub fn save_to_disk(&mut self) {
         let span = error_span!("saving");
         let _guard = span.enter();
-        self.commit_changes();
+        // self.commit_changes();
         if let Err(errs) = self.state.fs.save_to_disk() {
             if errs.is_empty() {
                 info!("Saved completed successfully!")
@@ -127,92 +127,92 @@ impl MainState {
         )
     }
 
-    /// Commits changes of all "dirty" file editor windows to the edit history
-    pub fn commit_changes(&mut self) {
-        trace!(target: "dbe", "Committing changes start");
-        let Some(tabs) = self.all_tabs() else {
-            return;
-        };
-        let mut edits = vec![];
-        for tab in tabs {
-            #[allow(clippy::single_match)]
-            match tab {
-                TabData::FileEdit { edited_value, path } => {
-                    let existing = self.state.fs.content(path);
-                    let Some(EditorItem::Value(val)) = existing else {
-                        self.report(anyhow!("File at `{path}` is not found, unable to save."));
-                        continue;
-                    };
+    // /// Commits changes of all "dirty" file editor windows to the edit history
+    // pub fn commit_changes(&mut self) {
+    //     trace!(target: "dbe", "Committing changes start");
+    //     let Some(tabs) = self.all_tabs() else {
+    //         return;
+    //     };
+    //     let mut edits = vec![];
+    //     for tab in tabs {
+    //         #[allow(clippy::single_match)]
+    //         match tab {
+    //             TabData::FileEdit { edited_value, path } => {
+    //                 let existing = self.state.fs.content(path);
+    //                 let Some(EditorItem::Value(val)) = existing else {
+    //                     self.report(anyhow!("File at `{path}` is not found, unable to save."));
+    //                     continue;
+    //                 };
+    //
+    //                 if val == edited_value {
+    //                     trace!("File at `{path}` is unchanged, skipping");
+    //                     continue;
+    //                 }
+    //
+    //                 debug!("Committing changes to {path}");
+    //
+    //                 edits.push(MainStateEdit::EditFile {
+    //                     old: None,
+    //                     path: path.clone(),
+    //                     new: edited_value.clone(),
+    //                 });
+    //             }
+    //             _ => {}
+    //         }
+    //     }
+    //     for edit in edits {
+    //         if let Err(err) = self.edit_history.edit(&mut self.state, edit) {
+    //             self.report(err)
+    //         }
+    //     }
+    // }
 
-                    if val == edited_value {
-                        trace!("File at `{path}` is unchanged, skipping");
-                        continue;
-                    }
-
-                    debug!("Committing changes to {path}");
-
-                    edits.push(MainStateEdit::EditFile {
-                        old: None,
-                        path: path.clone(),
-                        new: edited_value.clone(),
-                    });
-                }
-                _ => {}
-            }
-        }
-        for edit in edits {
-            if let Err(err) = self.edit_history.edit(&mut self.state, edit) {
-                self.report(err)
-            }
-        }
-    }
-
-    /// Sync content of all edit windows to the current virtual file system
-    /// state, discarding all changes since the last commit
-    pub fn sync_edit_windows(&mut self) {
-        let (Some(tabs), Some(state)) = (self.all_tabs(), &self.dock_state) else {
-            return;
-        };
-
-        let mut dirty_tabs = vec![];
-
-        for tab in tabs {
-            if let TabData::FileEdit { path, edited_value } = tab {
-                let existing = self.state.fs.content(path);
-                let Some(EditorItem::Value(val)) = existing else {
-                    continue; // not our problem
-                };
-                if edited_value != val {
-                    dirty_tabs.push((tab, val.clone()));
-                }
-            }
-        }
-
-        let mut paths = vec![];
-        for (tab, data) in dirty_tabs {
-            paths.push((state.find_tab(tab).expect("Tab should exist"), data))
-        }
-
-        let Some(state) = &mut self.dock_state else {
-            panic!("Should have state at this point")
-        };
-
-        for ((surface, node, tab), data) in paths {
-            let node = &mut state[surface][node];
-            match node {
-                Node::Leaf { tabs, .. } => {
-                    let tab = &mut tabs[tab.0];
-                    match tab {
-                        TabData::FileEdit { edited_value, .. } => {
-                            *edited_value = data;
-                        }
-                        _ => panic!("Should be a file edit node"),
-                    }
-                }
-                _ => panic!("Should be a leaf node"),
-            }
-        }
-    }
+    // /// Sync content of all edit windows to the current virtual file system
+    // /// state, discarding all changes since the last commit
+    // pub fn sync_edit_windows(&mut self) {
+    //     let (Some(tabs), Some(state)) = (self.all_tabs(), &self.dock_state) else {
+    //         return;
+    //     };
+    //
+    //     let mut dirty_tabs = vec![];
+    //
+    //     for tab in tabs {
+    //         if let TabData::FileEdit { path, edited_value } = tab {
+    //             let existing = self.state.fs.content(path);
+    //             let Some(EditorItem::Value(val)) = existing else {
+    //                 continue; // not our problem
+    //             };
+    //             if edited_value != val {
+    //                 dirty_tabs.push((tab, val.clone()));
+    //             }
+    //         }
+    //     }
+    //
+    //     let mut paths = vec![];
+    //     for (tab, data) in dirty_tabs {
+    //         paths.push((state.find_tab(tab).expect("Tab should exist"), data))
+    //     }
+    //
+    //     let Some(state) = &mut self.dock_state else {
+    //         panic!("Should have state at this point")
+    //     };
+    //
+    //     for ((surface, node, tab), data) in paths {
+    //         let node = &mut state[surface][node];
+    //         match node {
+    //             Node::Leaf { tabs, .. } => {
+    //                 let tab = &mut tabs[tab.0];
+    //                 match tab {
+    //                     TabData::FileEdit { edited_value, .. } => {
+    //                         *edited_value = data;
+    //                     }
+    //                     _ => panic!("Should be a file edit node"),
+    //                 }
+    //             }
+    //             _ => panic!("Should be a leaf node"),
+    //         }
+    //     }
+    // }
 }
 
 impl DbeStateHolder for MainState {
@@ -228,7 +228,7 @@ impl DbeStateHolder for MainState {
         style.tab_bar.height *= global_app_scale(ui);
         egui_dock::DockArea::new(&mut state)
             .style(style)
-            .show_inside(ui, &mut TabHandler(&self, &mut commands));
+            .show_inside(ui, &mut TabHandler(&mut self, &mut commands));
 
         for cmd in commands {
             match cmd {
@@ -242,7 +242,7 @@ impl DbeStateHolder for MainState {
                     if let Some(EditorItem::Value(value)) = self.state.fs.fs().get(&path) {
                         state.push_to_focused_leaf(TabData::FileEdit {
                             path,
-                            edited_value: value.clone(),
+                            // edited_value: value.clone(),
                         });
                     } else {
                         toasts.add(Toast {
@@ -290,7 +290,7 @@ impl DbeStateHolder for MainState {
 
         if self.last_tab_hash != cur_tab_hash || self.last_snapshot.elapsed() > AUTO_COMMIT_DURATION
         {
-            self.commit_changes();
+            // self.commit_changes();
             self.last_tab_hash = cur_tab_hash;
             self.last_snapshot = Instant::now();
         }
@@ -317,9 +317,9 @@ impl DbeStateHolder for MainState {
                         )
                         .clicked()
                     {
-                        self.commit_changes();
+                        // self.commit_changes();
                         self.edit_history.undo(&mut self.state);
-                        self.sync_edit_windows();
+                        // self.sync_edit_windows();
                     }
                     if ui
                         .add_enabled(
@@ -328,9 +328,9 @@ impl DbeStateHolder for MainState {
                         )
                         .clicked()
                     {
-                        self.commit_changes();
+                        // self.commit_changes();
                         self.edit_history.redo(&mut self.state);
-                        self.sync_edit_windows();
+                        // self.sync_edit_windows();
                     }
                 });
                 ui.menu_button(t!("dbe.main.toolbar.misc"), |ui| {
@@ -351,7 +351,6 @@ pub enum TabData {
     TypesDebugger,
     FileEdit {
         path: Utf8PathBuf,
-        edited_value: EValue,
     },
 }
 
@@ -386,7 +385,7 @@ impl Hash for TabData {
 }
 
 #[derive(Debug)]
-struct TabHandler<'a>(&'a MainState, &'a mut Vec<TabCommand>);
+struct TabHandler<'a>(&'a mut MainState, &'a mut Vec<TabCommand>);
 
 impl<'a> egui_dock::TabViewer for TabHandler<'a> {
     type Tab = TabData;
@@ -407,9 +406,7 @@ impl<'a> egui_dock::TabViewer for TabHandler<'a> {
         match tab {
             TabData::FileTree => show_file_tree(self, ui),
             TabData::MeshTest { indices, points } => show_mesh_test(self, ui, points, indices),
-            TabData::FileEdit { path, edited_value } => {
-                show_file_edit(self, ui, path, edited_value)
-            }
+            TabData::FileEdit { path } => show_file_edit(self, ui, path),
             TabData::TypesDebugger => show_types_debugger(self, ui),
         }
     }
@@ -457,17 +454,14 @@ fn create_new_file_modal(
                     if modal.button(ui, t!("dbe.generic.ok")).clicked() {
                         if let Some(value) = page.with_reporting(
                             |page| {
-                                let ty = page
-                                    .state
-                                    .registry
-                                    .get_struct(&ident)
-                                    .context("Unknown struct type")?;
-                                Ok(ty.default_value(&page.state.registry))
+                                let reg = page.state.registry.borrow();
+                                let ty = reg.get_struct(&ident).context("Unknown struct type")?;
+                                Ok(ty.default_value(&page.state.registry.borrow()))
                             },
                             || format!("While creating struct of type `{ident}`"),
                         ) {
                             edits.push(MainStateEdit::CreateFile(
-                                value,
+                                EditableFile::default(),
                                 parent_folder.join(format!("{name}.json5")),
                             ));
                         }
@@ -499,6 +493,7 @@ fn create_new_file_modal(
                                 for id in page
                                     .state
                                     .registry
+                                    .borrow()
                                     .all_objects()
                                     .filter_map(|e| e.as_struct())
                                     .map(|e| e.ident)

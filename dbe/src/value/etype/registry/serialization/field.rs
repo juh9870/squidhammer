@@ -1,8 +1,7 @@
-use crate::value::draw::editor::{
-    BooleanEditorType, ENumberType, ScalarEditorType, StringEditorType,
-};
 use crate::value::etype::registry::eenum::{EEnumVariant, EnumPattern};
-use crate::value::etype::registry::eitem::{EItemEnum, EItemObjectId, EItemStruct, EItemType};
+use crate::value::etype::registry::eitem::{
+    EItemEnum, EItemObjectId, EItemStruct, EItemType, ENumberType,
+};
 use crate::value::etype::registry::estruct::EStructField;
 use crate::value::etype::registry::{EObjectType, ETypeId, ETypesRegistry};
 use crate::value::etype::ETypeConst;
@@ -69,8 +68,8 @@ pub(super) struct FieldNumber {
     number_type: ENumberType,
     #[knuffel(property(name = "logarithmic"))]
     logarithmic: Option<bool>,
-    #[knuffel(property(name = "editor"), default)]
-    editor: ScalarEditorType,
+    #[knuffel(property(name = "editor"))]
+    editor: Option<String>,
 }
 
 impl_simple!(
@@ -85,8 +84,8 @@ pub(super) struct FieldString {
     name: String,
     #[knuffel(property(name = "default"))]
     default: Option<ENumber>,
-    #[knuffel(property(name = "editor"), default)]
-    editor: StringEditorType,
+    #[knuffel(property(name = "editor"))]
+    editor: Option<String>,
 }
 
 impl_simple!(FieldString, String, [default, editor]);
@@ -97,8 +96,8 @@ pub(super) struct FieldBoolean {
     name: String,
     #[knuffel(property(name = "default"))]
     default: Option<ENumber>,
-    #[knuffel(property(name = "editor"), default)]
-    editor: BooleanEditorType,
+    #[knuffel(property(name = "editor"))]
+    editor: Option<String>,
 }
 
 impl_simple!(FieldBoolean, Boolean, [default, editor]);
@@ -150,6 +149,8 @@ pub(super) struct FieldStruct {
     key: Option<String>,
     #[knuffel(children)]
     generics: Vec<ThingItem>,
+    #[knuffel(property(name = "editor"))]
+    editor: Option<String>,
 }
 
 impl ThingFieldTrait for FieldStruct {
@@ -162,7 +163,13 @@ impl ThingFieldTrait for FieldStruct {
         let id = generics(registry, self.id, root_id, self.generics, path)?;
 
         validate_id(&id, registry)?;
-        let f = (self.name, EItemType::Struct(EItemStruct { id }));
+        let f = (
+            self.name,
+            EItemType::Struct(EItemStruct {
+                id,
+                editor: self.editor,
+            }),
+        );
         Ok(f)
     }
 
@@ -172,19 +179,11 @@ impl ThingFieldTrait for FieldStruct {
 }
 
 #[derive(Debug, knuffel::Decode, Clone)]
-pub(super) struct FieldEnum {
-    #[knuffel(argument)]
-    name: String,
-    #[knuffel(argument, str)]
-    id: ETypeId,
-    #[knuffel(children)]
-    generics: Vec<ThingItem>,
-}
-
-#[derive(Debug, knuffel::Decode, Clone)]
 pub(super) struct FieldObjectId {
     #[knuffel(argument)]
     name: String,
+    #[knuffel(property(name = "editor"))]
+    editor: Option<String>,
 }
 
 impl ThingFieldTrait for FieldObjectId {
@@ -196,7 +195,10 @@ impl ThingFieldTrait for FieldObjectId {
     ) -> anyhow::Result<(String, EItemType)> {
         let f = (
             self.name,
-            EItemType::ObjectId(EItemObjectId { ty: root_id }),
+            EItemType::ObjectId(EItemObjectId {
+                ty: root_id,
+                editor: self.editor,
+            }),
         );
         Ok(f)
     }
@@ -212,10 +214,23 @@ pub(super) struct FieldObjectRef {
     name: String,
     #[knuffel(argument, str)]
     ty: ETypeId,
+    #[knuffel(property(name = "editor"))]
+    editor: Option<String>,
 }
 
-impl_simple!(FieldObjectRef, ObjectRef, [ty], [ty]);
+impl_simple!(FieldObjectRef, ObjectRef, [ty, editor], [ty]);
 
+#[derive(Debug, knuffel::Decode, Clone)]
+pub(super) struct FieldEnum {
+    #[knuffel(argument)]
+    name: String,
+    #[knuffel(argument, str)]
+    id: ETypeId,
+    #[knuffel(children)]
+    generics: Vec<ThingItem>,
+    #[knuffel(property(name = "editor"))]
+    editor: Option<String>,
+}
 impl ThingFieldTrait for FieldEnum {
     fn into_item(
         self,
@@ -226,7 +241,13 @@ impl ThingFieldTrait for FieldEnum {
         let id = generics(registry, self.id, root_id, self.generics, path)?;
 
         validate_id(&id, registry)?;
-        let f = (self.name, EItemType::Enum(EItemEnum { id }));
+        let f = (
+            self.name,
+            EItemType::Enum(EItemEnum {
+                id,
+                editor: self.editor,
+            }),
+        );
         Ok(f)
     }
 

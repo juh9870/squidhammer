@@ -1,4 +1,5 @@
 use crate::dbe_files::EditorItem;
+use crate::editable::EditableFile;
 use anyhow::{bail, Context};
 use camino::Utf8PathBuf;
 use undo::{Edit, Merged};
@@ -13,11 +14,11 @@ use crate::value::EValue;
 #[derive(Debug)]
 pub(super) enum MainStateEdit {
     DeleteLastEdit,
-    CreateFile(EValue, Utf8PathBuf),
+    CreateFile(EditableFile, Utf8PathBuf),
     EditFile {
         path: Utf8PathBuf,
         old: Option<EditorItem>,
-        new: EValue,
+        new: EditableFile,
     },
 }
 

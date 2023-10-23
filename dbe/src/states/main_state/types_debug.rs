@@ -11,7 +11,13 @@ pub(super) fn show_types_debugger(state: &TabHandler, ui: &mut Ui) {
     let mut search: String = mem_temp!(ui, search_id).unwrap_or_default();
     ui.vertical(|ui| {
         ui.text_edit_singleline(&mut search);
-        for obj in state.0.state.registry.all_objects_filtered(&search) {
+        for obj in state
+            .0
+            .state
+            .registry
+            .borrow()
+            .all_objects_filtered(&search)
+        {
             ui.push_id(obj.id().to_string(), |ui| {
                 ui.group(|ui| match obj {
                     EObjectType::Struct(s) => {

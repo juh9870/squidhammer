@@ -4,6 +4,7 @@ use egui_commonmark::{CommonMarkCache, CommonMarkViewer};
 use tracing::trace;
 
 use crate::dbe_files::DbeFileSystem;
+use crate::editable::EditableFile;
 use crate::states::main_state::MainState;
 use crate::states::project_config::ProjectConfig;
 use crate::states::DbeStateHolder;
@@ -74,7 +75,7 @@ fn init_editor(fs: &mut DbeFileSystem) -> anyhow::Result<ETypesRegistry> {
                 trace!("Deserialized thing at `{path}`");
             }
             "json5" => {
-                let value = serde_json5::from_slice::<EValue>(raw_data.as_slice())
+                let value = serde_json5::from_slice::<EditableFile>(raw_data.as_slice())
                     .with_context(|| format!("While parsing file at `{path}`"))?;
 
                 *data = value.into();

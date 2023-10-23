@@ -1,3 +1,4 @@
+use crate::value::draw::editor::{default_editors, EFieldEditor, EFieldEditorConstructor};
 use crate::value::etype::registry::eenum::EEnumData;
 use crate::value::etype::registry::eitem::{EItemType, EItemTypeTrait};
 use crate::value::etype::registry::estruct::EStructData;
@@ -71,6 +72,7 @@ pub struct ETypesRegistry {
     root: Utf8PathBuf,
     types: FxHashMap<ETypeId, RegistryItem>,
     values: FxHashMap<EValueId, ETypeId>,
+    editors: FxHashMap<String, Box<dyn EFieldEditorConstructor>>,
     last_id: u64,
 }
 
@@ -92,6 +94,7 @@ impl ETypesRegistry {
             root,
             types,
             values: Default::default(),
+            editors: default_editors().into_iter().collect(),
             last_id: 0,
         };
 
@@ -203,9 +206,7 @@ impl ETypesRegistry {
 
     pub fn default_value(&self, ident: &ETypeId) -> EValue {
         let Some(data) = self.types.get(ident) else {
-            return EValue::Unknown {
-                value: JsonValue::Null,
-            };
+            return EValue::Null;
         };
 
         match data.expect_ready() {
@@ -216,6 +217,33 @@ impl ETypesRegistry {
 
     pub fn root_path(&self) -> &Utf8Path {
         self.root.as_path()
+    }
+
+    pub fn editor_for(
+        &self,
+        name: Option<&str>,
+        ty: EItemType,
+    ) -> anyhow::Result<Box<dyn EFieldEditor>> {
+        let name = match name {
+            None => match ty {
+                EItemType::Number(_) => "number",
+                EItemType::String(_) => "string",
+                EItemType::Boolean(_) => "boolean",
+                EItemType::Const(_) => "const",
+                EItemType::Struct(_) => "struct",
+                EItemType::Enum(_) => "enum",
+                EItemType::ObjectId(_) => "id",
+                EItemType::ObjectRef(_) => "ref",
+                EItemType::Generic(_) => "generic",
+            },
+            Some(name) => name,
+        };
+        let ctor = self.editors.get(name);
+        let Some(ctor) = ctor else {
+            bail!("Editor `{name}` is not found");
+        };
+
+        ctor.make_editor(ty)
     }
 
     // fn register_raw_json_object(&mut self, id: ETypetId, data: JsonValue) -> EDataType {

@@ -160,7 +160,7 @@ fn process(attr: TokenStream, data: ItemFn) -> Result<TokenStream, Error> {
         let visibility = &data.vis;
 
         quote! {
-            #[derive(Debug, Copy, Clone, Default, serde::Serialize, serde::Deserialize)]
+            #[derive(Debug, Copy, Clone, Default, serde::Serialize, serde::Deserialize, PartialEq, Eq)]
             #visibility struct #struct_name;
 
             impl #crate_ident::graph::nodes::EditorNode for #struct_name {

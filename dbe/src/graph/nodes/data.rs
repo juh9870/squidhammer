@@ -1,16 +1,21 @@
 use crate::graph::nodes::NodeType;
 use crate::graph::{EditorGraphResponse, EditorGraphState};
+use crate::value::draw::editor::EFieldEditor;
+use crate::value::etype::registry::eitem::EItemType;
 use crate::value::etype::EDataType;
 use crate::value::EValue;
 use crate::EditorGraph;
 use egui_node_graph::{NodeDataTrait, NodeId, NodeResponse, UserResponseTrait};
+use rustc_hash::FxHashMap;
 
 /// The NodeData holds a custom data struct inside each node. It's useful to
 /// store additional information that doesn't live in parameters. For this
 /// example, the node data stores the template (i.e. the "type") of the node.
-#[derive(Debug, serde::Serialize, serde::Deserialize)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct EditorNodeData {
     pub template: NodeType,
+    #[serde(skip)]
+    pub editors: FxHashMap<String, Box<dyn EFieldEditor>>,
 }
 
 impl NodeDataTrait for EditorNodeData {

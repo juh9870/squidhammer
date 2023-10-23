@@ -1,12 +1,16 @@
 use crate::graph::evaluator::evaluate_node;
+use crate::value::draw::editor::EFieldEditor;
 use crate::value::etype::registry::ETypesRegistry;
 use crate::value::etype::EDataType;
 use crate::value::EValue;
 use commands::Command;
-use egui_node_graph::{Graph, GraphEditorState, UserResponseTrait};
+use egui_node_graph::{Graph, GraphEditorState, NodeId, UserResponseTrait};
 use nodes::data::EditorNodeData;
 use nodes::EditorNode;
 use nodes::NodeType;
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
+use std::cell::RefCell;
+use std::rc::Rc;
 
 mod commands;
 mod evaluator;
@@ -16,15 +20,51 @@ pub mod nodes;
 /// node in the graph. Most side-effects (creating new nodes, deleting existing
 /// nodes, handling connections...) are already handled by the library, but this
 /// mechanism allows creating additional side effects from user code.
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub enum EditorGraphResponse {}
+#[derive(Clone, Debug)]
+pub enum EditorGraphResponse {
+    ChangeEditor {
+        node_id: NodeId,
+        field: String,
+        editor: Box<dyn EFieldEditor>,
+    },
+}
 
 /// The graph 'global' state. This state struct is passed around to the node and
 /// parameter drawing callbacks. The contents of this struct are entirely up to
 /// the user. For this example, we use it to keep track of the 'active' node.
 #[derive(Debug)]
 pub struct EditorGraphState {
-    pub registry: ETypesRegistry,
+    pub registry: Rc<RefCell<ETypesRegistry>>,
+}
+
+impl Clone for EditorGraphState {
+    fn clone(&self) -> Self {
+        panic!("Not supported")
+    }
+}
+
+impl Serialize for EditorGraphState {
+    fn serialize<S>(&self, _serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        panic!("Not supported")
+    }
+}
+
+impl PartialEq for EditorGraphState {
+    fn eq(&self, _other: &Self) -> bool {
+        panic!("Not supported")
+    }
+}
+
+impl<'de> Deserialize<'de> for EditorGraphState {
+    fn deserialize<D>(_deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        panic!("Not supported")
+    }
 }
 
 impl UserResponseTrait for EditorGraphResponse {}
