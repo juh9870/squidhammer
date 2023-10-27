@@ -7,7 +7,7 @@ use random_color::{Luminosity, RandomColor};
 use serde::{Deserialize, Serialize};
 use ustr::Ustr;
 
-use egui_node_graph::DataTypeTrait;
+use egui_node_graph::{DataTypeMatcherMarker, DataTypeTrait};
 
 use crate::value::etype::registry::{ETypeId, ETypesRegistry};
 use crate::value::{ENumber, EValue};
@@ -57,6 +57,8 @@ impl EDataType {
         }
     }
 }
+
+impl DataTypeMatcherMarker for EDataType {}
 
 // A trait for the data types, to tell the library how to display them
 impl DataTypeTrait<EditorGraphState> for EDataType {

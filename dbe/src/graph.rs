@@ -1,10 +1,9 @@
 use crate::graph::evaluator::evaluate_node;
-use crate::value::draw::editor::EFieldEditor;
 use crate::value::etype::registry::ETypesRegistry;
 use crate::value::etype::EDataType;
 use crate::value::EValue;
 use commands::Command;
-use egui_node_graph::{Graph, GraphEditorState, NodeId, UserResponseTrait};
+use egui_node_graph::{Graph, GraphEditorState};
 use nodes::data::EditorNodeData;
 use nodes::EditorNode;
 use nodes::NodeType;
@@ -14,20 +13,8 @@ use std::rc::Rc;
 
 mod commands;
 mod evaluator;
+pub mod event;
 pub mod nodes;
-
-/// The response type is used to encode side-effects produced when drawing a
-/// node in the graph. Most side-effects (creating new nodes, deleting existing
-/// nodes, handling connections...) are already handled by the library, but this
-/// mechanism allows creating additional side effects from user code.
-#[derive(Clone, Debug)]
-pub enum EditorGraphResponse {
-    ChangeEditor {
-        node_id: NodeId,
-        field: String,
-        editor: Box<dyn EFieldEditor>,
-    },
-}
 
 /// The graph 'global' state. This state struct is passed around to the node and
 /// parameter drawing callbacks. The contents of this struct are entirely up to
@@ -66,8 +53,6 @@ impl<'de> Deserialize<'de> for EditorGraphState {
         panic!("Not supported")
     }
 }
-
-impl UserResponseTrait for EditorGraphResponse {}
 
 pub type EditorGraph = Graph<EditorNodeData, EDataType, EValue>;
 pub type EditorState =

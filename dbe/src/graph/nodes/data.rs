@@ -1,7 +1,7 @@
+use crate::graph::event::EditorGraphResponse;
 use crate::graph::nodes::NodeType;
-use crate::graph::{EditorGraphResponse, EditorGraphState};
+use crate::graph::EditorGraphState;
 use crate::value::draw::editor::EFieldEditor;
-use crate::value::etype::registry::eitem::EItemType;
 use crate::value::etype::EDataType;
 use crate::value::EValue;
 use crate::EditorGraph;

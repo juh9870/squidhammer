@@ -1,9 +1,7 @@
 use crate::graph::nodes::data::EditorNodeData;
-use crate::graph::EditorGraphResponse;
 use crate::value::etype::registry::eenum::EEnumVariantId;
 use crate::value::etype::registry::{ETypeId, EValueId};
 use crate::EditorGraphState;
-use std::borrow::Cow;
 
 use egui_node_graph::{NodeId, WidgetValueTrait};
 use itertools::Itertools;
@@ -12,11 +10,12 @@ use smallvec::{Array, SmallVec};
 use std::fmt::{Display, Formatter};
 use ustr::UstrMap;
 
-use crate::value::draw::editor::{EFieldEditor, EFieldEditorError};
+use crate::graph::event::EditorGraphResponse;
+use crate::value::draw::editor::EFieldEditorError;
 use crate::value::etype::registry::eitem::EItemType;
 use crate::value::etype::{EDataType, ETypeConst};
 pub use serde_json::Value as JsonValue;
-use tracing::debug;
+use tracing::{debug, trace};
 
 pub mod connections;
 pub mod draw;
@@ -216,6 +215,7 @@ impl WidgetValueTrait for EValue {
                     Ok(editor) => editor,
                     Err(err) => Box::new(EFieldEditorError::new(err.to_string(), self.ty())),
                 };
+                trace!(?node_id, param_name, ?editor, "New editor is requested");
                 commands.push(editor);
                 &commands[0]
             }

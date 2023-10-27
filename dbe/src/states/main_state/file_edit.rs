@@ -16,16 +16,8 @@ pub(super) fn show_file_edit(state: &mut TabHandler, ui: &mut Ui, path: &Utf8Pat
         ui.label(format!("Item at {path} is not editable"));
         return;
     };
-    let reg = &state.0.state.registry;
 
-    let mut user_state = EditorGraphState {
-        registry: reg.clone(),
-    };
-
-    let _ =
-        file.graph
-            .draw_graph_editor(ui, AllEditorNodeTypes(reg.clone()), &mut user_state, vec![]);
-    // TODO: handle commands
+    file.draw(ui, &state.0.state.registry);
 
     // match edited_value {
     //     EValue::Struct { ident, fields } => draw_struct(ui, &state.0.state.registry, ident, fields),
