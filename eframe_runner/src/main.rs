@@ -14,7 +14,10 @@ struct Args {
     pub project: Option<String>,
 }
 fn main() -> Result<(), anyhow::Error> {
-    unsafe { backtrace_on_stack_overflow::enable() };
+    #[cfg(feature = "debug")]
+    unsafe {
+        backtrace_on_stack_overflow::enable()
+    };
     color_backtrace::install();
     let args = Args::parse();
     tracing_subscriber::fmt::init();

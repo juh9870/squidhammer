@@ -6,7 +6,7 @@ edition = "2021"
 
 [dependencies]
 anyhow = "1.0.72"
-backtrace-on-stack-overflow = "0.3.0"
+backtrace-on-stack-overflow = { version = "0.3.0", optional = true }
 camino = "1.1.6"
 clap = { version = "4.4.3", features = ["derive", "env"] }
 color-backtrace = "0.6.0"
@@ -14,3 +14,6 @@ dbe = { path = "../dbe", features = ["f32"] }
 eframe = "0.22.0"
 egui = "0.22.0"
 tracing-subscriber = "0.3"
+
+[features]
+debug = ["dep:backtrace-on-stack-overflow"]
