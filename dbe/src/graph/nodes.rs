@@ -56,6 +56,10 @@ pub trait EditorNode {
     fn appear_in_search(&self) -> bool {
         return true;
     }
+
+    fn user_data(&self, _user_state: &mut EditorGraphState) -> Option<EditorNodeData> {
+        None
+    }
 }
 
 /// NodeTemplate is a mechanism to define node templates. It's what the graph
@@ -112,10 +116,14 @@ impl NodeTemplateTrait for NodeType {
         self.node_finder_label(user_state).into()
     }
 
-    fn user_data(&self, _user_state: &mut Self::UserState) -> Self::NodeData {
-        EditorNodeData {
-            template: *self,
-            editors: Default::default(),
+    fn user_data(&self, user_state: &mut Self::UserState) -> Self::NodeData {
+        if let Some(data) = EditorNode::user_data(self, user_state) {
+            data
+        } else {
+            EditorNodeData {
+                template: *self,
+                editors: Default::default(),
+            }
         }
     }
 

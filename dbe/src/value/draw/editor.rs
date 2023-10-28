@@ -22,7 +22,7 @@ pub trait EFieldEditor: Debug + Send + DynClone {
 dyn_clone::clone_trait_object!(EFieldEditor);
 
 pub trait EFieldEditorConstructor: Debug {
-    fn make_editor(&self, item: EItemType) -> anyhow::Result<Box<dyn EFieldEditor>>;
+    fn make_editor(&self, item: &EItemType) -> anyhow::Result<Box<dyn EFieldEditor>>;
 }
 
 pub fn default_editors() -> impl Iterator<Item = (String, Box<dyn EFieldEditorConstructor>)> {
@@ -124,7 +124,7 @@ struct NumberEditorConstructor {
 }
 
 impl EFieldEditorConstructor for NumberEditorConstructor {
-    fn make_editor(&self, item: EItemType) -> anyhow::Result<Box<dyn EFieldEditor>> {
+    fn make_editor(&self, item: &EItemType) -> anyhow::Result<Box<dyn EFieldEditor>> {
         let EItemType::Number(ty) = item else {
             bail!("Unsupported item")
         };
@@ -163,7 +163,7 @@ impl EFieldEditor for StringEditor {
 }
 
 impl EFieldEditorConstructor for StringEditor {
-    fn make_editor(&self, item: EItemType) -> anyhow::Result<Box<dyn EFieldEditor>> {
+    fn make_editor(&self, item: &EItemType) -> anyhow::Result<Box<dyn EFieldEditor>> {
         let EItemType::String(_) = item else {
             bail!("Unsupported item")
         };
@@ -190,7 +190,7 @@ impl EFieldEditor for BooleanEditor {
 }
 
 impl EFieldEditorConstructor for BooleanEditor {
-    fn make_editor(&self, item: EItemType) -> anyhow::Result<Box<dyn EFieldEditor>> {
+    fn make_editor(&self, item: &EItemType) -> anyhow::Result<Box<dyn EFieldEditor>> {
         let EItemType::Boolean(_) = item else {
             bail!("Unsupported item")
         };

@@ -65,6 +65,7 @@ pub struct EEnumData {
     pub generic_arguments: Vec<Ustr>,
     pub ident: ETypeId,
     pub variants: Vec<EEnumVariant>,
+    pub default_editor: Option<String>,
 }
 
 impl EEnumData {

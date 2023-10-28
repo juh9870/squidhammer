@@ -1,18 +1,33 @@
+use serde::{Deserialize, Serialize};
+
+use egui_node_graph::{Graph, InputParamKind, NodeId};
+
 use crate::graph::commands::Command;
 use crate::graph::evaluator::OutputsCache;
 use crate::graph::nodes::data::EditorNodeData;
-use crate::graph::nodes::EditorNode;
+use crate::graph::nodes::{EditorNode, NodeType};
 use crate::graph::{EditorGraph, EditorGraphState};
 use crate::value::etype::registry::eitem::EItemTypeTrait;
-use crate::value::etype::registry::ETypeId;
+use crate::value::etype::registry::estruct::EStructData;
+use crate::value::etype::registry::{ETypeId, ETypesRegistry};
 use crate::value::etype::EDataType;
 use crate::value::EValue;
-use egui_node_graph::{Graph, InputParamKind, NodeId};
-use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Copy, Clone, Default, Serialize, Deserialize, PartialEq)]
 pub struct StructNode {
     pub ident: Option<ETypeId>,
+}
+
+impl StructNode {
+    fn get_data<'a>(&self, reg: &'a ETypesRegistry) -> Option<(&'a EStructData, ETypeId)> {
+        let Some(id) = self.ident else {
+            return None;
+        };
+        let Some(data) = reg.get_struct(&id) else {
+            return None;
+        };
+        Some((data, id))
+    }
 }
 
 impl EditorNode for StructNode {
@@ -22,11 +37,8 @@ impl EditorNode for StructNode {
         user_state: &mut EditorGraphState,
         node_id: NodeId,
     ) {
-        let Some(id) = self.ident else {
-            return;
-        };
         let reg = user_state.registry.borrow();
-        let Some(data) = reg.get_struct(&id) else {
+        let Some((data, id)) = self.get_data(&reg) else {
             return;
         };
 
@@ -67,5 +79,29 @@ impl EditorNode for StructNode {
 
     fn label(&self) -> Option<String> {
         self.ident.map(|e| e.to_string())
+    }
+
+    fn user_data(&self, user_state: &mut EditorGraphState) -> Option<EditorNodeData> {
+        let reg = user_state.registry.borrow();
+        let Some((data, ..)) = self.get_data(&reg) else {
+            return None;
+        };
+
+        let editors = data
+            .fields
+            .iter()
+            .filter_map(|e| {
+                reg.editor_for(e.ty.editor_name(), &e.ty)
+                    .map(|name| (e.name.to_string(), name))
+                    .ok()
+            })
+            .collect();
+
+        let data = EditorNodeData {
+            template: NodeType::Struct(*self),
+            editors,
+        };
+
+        Some(data)
     }
 }

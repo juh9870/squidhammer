@@ -1,6 +1,6 @@
 use crate::value::draw::editor::{default_editors, EFieldEditor, EFieldEditorConstructor};
 use crate::value::etype::registry::eenum::EEnumData;
-use crate::value::etype::registry::eitem::{EItemType, EItemTypeTrait};
+use crate::value::etype::registry::eitem::{EItemEnum, EItemStruct, EItemType, EItemTypeTrait};
 use crate::value::etype::registry::estruct::EStructData;
 use crate::value::etype::registry::serialization::deserialize_thing;
 use crate::value::etype::EDataType;
@@ -46,6 +46,13 @@ impl EObjectType {
         match self {
             EObjectType::Struct(s) => s.ident,
             EObjectType::Enum(e) => e.ident,
+        }
+    }
+
+    pub fn default_editor(&self) -> Option<&str> {
+        match self {
+            EObjectType::Struct(s) => s.default_editor.as_ref().map(|e| e.as_str()),
+            EObjectType::Enum(e) => e.default_editor.as_ref().map(|e| e.as_str()),
         }
     }
 }
@@ -222,7 +229,7 @@ impl ETypesRegistry {
     pub fn editor_for(
         &self,
         name: Option<&str>,
-        ty: EItemType,
+        ty: &EItemType,
     ) -> anyhow::Result<Box<dyn EFieldEditor>> {
         let name = match name {
             None => match ty {
@@ -230,11 +237,17 @@ impl ETypesRegistry {
                 EItemType::String(_) => "string",
                 EItemType::Boolean(_) => "boolean",
                 EItemType::Const(_) => "const",
-                EItemType::Struct(_) => "struct",
-                EItemType::Enum(_) => "enum",
                 EItemType::ObjectId(_) => "id",
                 EItemType::ObjectRef(_) => "ref",
                 EItemType::Generic(_) => "generic",
+                EItemType::Struct(EItemStruct { id, .. }) => self
+                    .get_object(id)
+                    .and_then(|e| e.default_editor())
+                    .unwrap_or("struct"),
+                EItemType::Enum(EItemEnum { id, .. }) => self
+                    .get_object(id)
+                    .and_then(|e| e.default_editor())
+                    .unwrap_or("enum"),
             },
             Some(name) => name,
         };

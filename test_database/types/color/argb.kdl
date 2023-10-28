@@ -1,4 +1,4 @@
-struct {
+struct editor="rgba" {
     number "r"
     number "g"
     number "b"

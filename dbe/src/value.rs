@@ -211,7 +211,7 @@ impl WidgetValueTrait for EValue {
         let reg = user_state.registry.borrow();
         let editor = match node_data.editors.get(param_name) {
             None => {
-                let editor = match reg.editor_for(None, EItemType::default_item_for(self)) {
+                let editor = match reg.editor_for(None, &EItemType::default_item_for(self)) {
                     Ok(editor) => editor,
                     Err(err) => Box::new(EFieldEditorError::new(err.to_string(), self.ty())),
                 };

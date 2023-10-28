@@ -16,6 +16,7 @@ pub struct EStructData {
     pub ident: ETypeId,
     pub fields: Vec<EStructField>,
     pub id_field: Option<usize>,
+    pub default_editor: Option<String>,
 }
 
 impl EStructData {
@@ -25,6 +26,7 @@ impl EStructData {
             fields: Default::default(),
             ident,
             id_field: None,
+            default_editor: None,
         }
     }
 

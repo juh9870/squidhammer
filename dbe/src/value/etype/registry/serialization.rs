@@ -70,6 +70,8 @@ enum ThingVariant {
 struct ThingStruct {
     #[knuffel(arguments, str)]
     pub generic_arguments: Vec<Ustr>,
+    #[knuffel(property(name = "editor"))]
+    pub editor: Option<String>,
     #[knuffel(children)]
     pub fields: Vec<ThingItem>,
 }
@@ -82,6 +84,7 @@ impl ThingStruct {
     ) -> anyhow::Result<EStructData> {
         let mut data = EStructData::new(id);
         data.generic_arguments = self.generic_arguments;
+        data.default_editor = self.editor;
         for x in self.fields {
             let path = format!("{id}:{}", x.name());
             data.add_field(x.into_struct_field(registry, id, &path)?)?;
@@ -95,6 +98,8 @@ impl ThingStruct {
 struct ThingEnum {
     #[knuffel(arguments, str)]
     pub generic_arguments: Vec<Ustr>,
+    #[knuffel(property(name = "editor"))]
+    pub editor: Option<String>,
     #[knuffel(children)]
     variants: Vec<ThingItem>,
 }
@@ -112,6 +117,7 @@ impl ThingEnum {
                     e.into_enum_variant(registry, id, &path)
                 })
                 .try_collect()?,
+            default_editor: self.editor,
         })
     }
 }
