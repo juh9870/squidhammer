@@ -1,5 +1,5 @@
 use anyhow::{anyhow, bail};
-use egui::Rgba;
+use egui::{Color32, Rgba};
 use std::fmt::{Display, Formatter};
 use std::str::FromStr;
 
@@ -190,10 +190,23 @@ impl FromStr for ColorFormat {
     }
 }
 
+pub fn parse_rgb32(color: &str) -> anyhow::Result<Color32> {
+    ColorFormat::rgb().parse(color).map(|e| {
+        let rgba = e.to_rgba_unmultiplied();
+        Color32::from_rgba_unmultiplied(
+            (rgba[0] * 255.0) as u8,
+            (rgba[1] * 255.0) as u8,
+            (rgba[2] * 255.0) as u8,
+            (rgba[3] * 255.0) as u8,
+        )
+    })
+}
+
 #[cfg(test)]
 mod tests {
     use super::{ColorChannel, ColorFormat};
-    use egui::Rgba;
+    use crate::color_format::parse_rgb32;
+    use egui::{Color32, Rgba};
     use rstest::rstest;
     use std::str::FromStr;
 
@@ -293,5 +306,16 @@ mod tests {
     fn should_stringify(#[case] format: String, #[case] color: Rgba, #[case] expected: String) {
         let format = ColorFormat::from_str(&format).expect("Should parse color format");
         assert_eq!(format.format(color), expected);
+    }
+
+    #[rstest]
+    #[case("#ffffff", Color32::from_rgb(255, 255, 255))]
+    #[case("#c7c729", Color32::from_rgb(199, 199, 41))]
+    #[case("#cca6d6", Color32::from_rgb(204, 166, 214))]
+    fn should_parse_srgb(#[case] raw: String, #[case] expected: Color32) {
+        let parsed = parse_rgb32(&raw).expect("Should parse color");
+        assert_eq!(parsed, expected);
+        let parsed = parse_rgb32(&raw[1..]).expect("Should parse color without #");
+        assert_eq!(parsed, expected, "Without #");
     }
 }

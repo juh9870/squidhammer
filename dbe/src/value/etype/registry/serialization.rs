@@ -8,6 +8,7 @@ use knuffel::DecodeScalar;
 use miette::{GraphicalReportHandler, GraphicalTheme};
 
 use ustr::Ustr;
+use utils::color_format::{parse_rgb32, ColorFormat};
 
 use crate::value::etype::registry::eenum::EEnumData;
 use crate::value::etype::registry::estruct::EStructData;
@@ -72,6 +73,8 @@ struct ThingStruct {
     pub generic_arguments: Vec<Ustr>,
     #[knuffel(property(name = "editor"))]
     pub editor: Option<String>,
+    #[knuffel(property(name = "color"))]
+    pub color: Option<String>,
     #[knuffel(children)]
     pub fields: Vec<ThingItem>,
 }
@@ -82,9 +85,8 @@ impl ThingStruct {
         registry: &mut ETypesRegistry,
         id: ETypeId,
     ) -> anyhow::Result<EStructData> {
-        let mut data = EStructData::new(id);
-        data.generic_arguments = self.generic_arguments;
-        data.default_editor = self.editor;
+        let color = self.color.map(|c| parse_rgb32(&c)).transpose()?;
+        let mut data = EStructData::new(id, self.generic_arguments, self.editor, color);
         for x in self.fields {
             let path = format!("{id}:{}", x.name());
             data.add_field(x.into_struct_field(registry, id, &path)?)?;
@@ -100,12 +102,15 @@ struct ThingEnum {
     pub generic_arguments: Vec<Ustr>,
     #[knuffel(property(name = "editor"))]
     pub editor: Option<String>,
+    #[knuffel(property(name = "color"))]
+    pub color: Option<String>,
     #[knuffel(children)]
     variants: Vec<ThingItem>,
 }
 
 impl ThingEnum {
     fn into_eenum(self, registry: &mut ETypesRegistry, id: ETypeId) -> anyhow::Result<EEnumData> {
+        let color = self.color.map(|c| parse_rgb32(&c)).transpose()?;
         Ok(EEnumData {
             ident: id,
             generic_arguments: self.generic_arguments,
@@ -118,6 +123,7 @@ impl ThingEnum {
                 })
                 .try_collect()?,
             default_editor: self.editor,
+            color,
         })
     }
 }

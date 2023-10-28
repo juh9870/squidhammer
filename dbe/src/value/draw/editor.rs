@@ -44,7 +44,7 @@ pub fn default_editors() -> impl Iterator<Item = (String, Box<dyn EFieldEditorCo
         ),
         (
             "multiline".to_string(),
-            Box::new(StringEditor { multiline: false }),
+            Box::new(StringEditor { multiline: true }),
         ),
         ("boolean".to_string(), Box::new(BooleanEditor)),
         ("rgb".to_string(), Box::new(RgbEditorConstructor::rgb())),

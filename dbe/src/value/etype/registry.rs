@@ -7,6 +7,7 @@ use crate::value::etype::EDataType;
 use crate::value::EValue;
 use anyhow::{bail, Context};
 use camino::{Utf8Path, Utf8PathBuf};
+use egui::Color32;
 use egui_node_graph::DataTypeTrait;
 use id::EditorId;
 use itertools::Itertools;
@@ -53,6 +54,13 @@ impl EObjectType {
         match self {
             EObjectType::Struct(s) => s.default_editor.as_ref().map(|e| e.as_str()),
             EObjectType::Enum(e) => e.default_editor.as_ref().map(|e| e.as_str()),
+        }
+    }
+
+    pub fn color(&self) -> Option<Color32> {
+        match self {
+            EObjectType::Struct(s) => s.color,
+            EObjectType::Enum(e) => e.color,
         }
     }
 }

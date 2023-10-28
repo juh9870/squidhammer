@@ -9,7 +9,6 @@ use serde::{Deserialize, Serialize};
 use ustr::Ustr;
 
 use egui_node_graph::{DataTypeMatcherMarker, DataTypeTrait};
-use utils::color_format::ColorFormat;
 
 use crate::value::etype::registry::{ETypeId, ETypesRegistry};
 use crate::value::{ENumber, EValue};
@@ -64,7 +63,7 @@ impl DataTypeMatcherMarker for EDataType {}
 
 // A trait for the data types, to tell the library how to display them
 impl DataTypeTrait<EditorGraphState> for EDataType {
-    fn data_type_color(&self, _user_state: &mut EditorGraphState) -> egui::Color32 {
+    fn data_type_color(&self, user_state: &mut EditorGraphState) -> Color32 {
         const NUMBER_COLOR: Color32 = Color32::from_rgb(161, 161, 161);
         const BOOLEAN_COLOR: Color32 = Color32::from_rgb(204, 166, 214);
         const STRING_COLOR: Color32 = Color32::from_rgb(112, 178, 255);
@@ -79,13 +78,21 @@ impl DataTypeTrait<EditorGraphState> for EDataType {
                 ETypeConst::Boolean(_) => BOOLEAN_COLOR,
                 ETypeConst::Null => NULL_COLOR,
             },
-            _ => {
-                let c = RandomColor::new()
-                    .seed(self.name().to_string())
-                    .luminosity(Luminosity::Dark)
-                    .alpha(1.0)
-                    .to_rgb_array();
-                egui::Color32::from_rgb(c[0], c[1], c[2])
+            EDataType::Object { ident }
+            | EDataType::Id { ty: ident }
+            | EDataType::Ref { ty: ident } => {
+                // TODO: different colors for objects/ids/refs
+                let reg = user_state.registry.borrow();
+                reg.get_object(ident)
+                    .and_then(|e| e.color())
+                    .unwrap_or_else(|| {
+                        let c = RandomColor::new()
+                            .seed(ident.to_string())
+                            .luminosity(Luminosity::Dark)
+                            .alpha(1.0)
+                            .to_rgb_array();
+                        Color32::from_rgb(c[0], c[1], c[2])
+                    })
             }
         }
     }

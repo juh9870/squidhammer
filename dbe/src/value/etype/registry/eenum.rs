@@ -3,6 +3,7 @@ use crate::value::etype::registry::{ETypeId, ETypesRegistry};
 use crate::value::etype::ETypeConst;
 use crate::value::EValue;
 use anyhow::Context;
+use egui::Color32;
 use serde::{Deserialize, Serialize};
 use std::fmt::{Display, Formatter};
 use ustr::{Ustr, UstrMap};
@@ -66,6 +67,7 @@ pub struct EEnumData {
     pub ident: ETypeId,
     pub variants: Vec<EEnumVariant>,
     pub default_editor: Option<String>,
+    pub color: Option<Color32>,
 }
 
 impl EEnumData {

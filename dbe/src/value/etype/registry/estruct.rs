@@ -2,6 +2,7 @@ use crate::value::etype::registry::eitem::{EItemObjectId, EItemType, EItemTypeTr
 use crate::value::etype::registry::{ETypeId, ETypesRegistry};
 use crate::value::EValue;
 use anyhow::{bail, Context};
+use egui::Color32;
 use ustr::{Ustr, UstrMap};
 
 #[derive(Debug, Clone)]
@@ -17,16 +18,23 @@ pub struct EStructData {
     pub fields: Vec<EStructField>,
     pub id_field: Option<usize>,
     pub default_editor: Option<String>,
+    pub color: Option<Color32>,
 }
 
 impl EStructData {
-    pub fn new(ident: ETypeId) -> EStructData {
+    pub fn new(
+        ident: ETypeId,
+        generic_arguments: Vec<Ustr>,
+        default_editor: Option<String>,
+        color: Option<Color32>,
+    ) -> EStructData {
         Self {
-            generic_arguments: vec![],
+            generic_arguments,
             fields: Default::default(),
             ident,
             id_field: None,
-            default_editor: None,
+            default_editor,
+            color,
         }
     }
 
