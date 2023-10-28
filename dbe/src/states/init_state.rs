@@ -9,7 +9,7 @@ use crate::states::main_state::MainState;
 use crate::states::project_config::ProjectConfig;
 use crate::states::DbeStateHolder;
 use crate::value::etype::registry::{ETypeId, ETypesRegistry};
-use crate::value::EValue;
+
 use crate::{info_window, DbeState};
 
 #[derive(Debug)]

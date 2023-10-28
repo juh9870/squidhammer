@@ -4,7 +4,7 @@ use crate::value::etype::registry::eitem::{EItemType, EItemTypeTrait};
 use crate::value::etype::registry::estruct::EStructData;
 use crate::value::etype::registry::serialization::deserialize_thing;
 use crate::value::etype::EDataType;
-use crate::value::{EValue, JsonValue};
+use crate::value::EValue;
 use anyhow::{bail, Context};
 use camino::{Utf8Path, Utf8PathBuf};
 use egui_node_graph::DataTypeTrait;

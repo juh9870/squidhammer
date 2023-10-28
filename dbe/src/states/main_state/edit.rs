@@ -5,7 +5,6 @@ use camino::Utf8PathBuf;
 use undo::{Edit, Merged};
 
 use crate::states::main_state::state::EditorData;
-use crate::value::EValue;
 
 /// DBE edit history
 ///

@@ -15,7 +15,7 @@ use crate::value::draw::editor::EFieldEditorError;
 use crate::value::etype::registry::eitem::EItemType;
 use crate::value::etype::{EDataType, ETypeConst};
 pub use serde_json::Value as JsonValue;
-use tracing::{debug, trace};
+use tracing::trace;
 
 pub mod connections;
 pub mod draw;

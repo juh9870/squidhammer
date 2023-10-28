@@ -239,7 +239,7 @@ impl DbeStateHolder for MainState {
                     toasts.add(toast);
                 }
                 TabCommand::OpenFile { path } => {
-                    if let Some(EditorItem::Value(value)) = self.state.fs.fs().get(&path) {
+                    if let Some(EditorItem::Value(_value)) = self.state.fs.fs().get(&path) {
                         state.push_to_focused_leaf(TabData::FileEdit {
                             path,
                             // edited_value: value.clone(),
@@ -452,7 +452,7 @@ fn create_new_file_modal(
                         ui.text_edit_singleline(&mut name);
                     });
                     if modal.button(ui, t!("dbe.generic.ok")).clicked() {
-                        if let Some(value) = page.with_reporting(
+                        if let Some(_value) = page.with_reporting(
                             |page| {
                                 let reg = page.state.registry.borrow();
                                 let ty = reg.get_struct(&ident).context("Unknown struct type")?;

@@ -92,7 +92,7 @@ pub fn draw_struct(
             let mut extra_fields: UstrSet = fields.keys().copied().collect();
 
             for f in &data.fields {
-                let value = fields
+                let _value = fields
                     .entry(f.name)
                     .or_insert_with(|| f.ty.default_value(registry));
 
@@ -118,11 +118,11 @@ pub fn draw_struct(
 }
 
 fn draw_default_field_editor(
-    ui: &mut Ui,
-    registry: &ETypesRegistry,
-    value: &mut EValue,
-    name: String,
-    f: &EItemType,
+    _ui: &mut Ui,
+    _registry: &ETypesRegistry,
+    _value: &mut EValue,
+    _name: String,
+    _f: &EItemType,
 ) {
     todo!()
     // ui.horizontal(|ui| {
