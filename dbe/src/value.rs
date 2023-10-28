@@ -119,6 +119,22 @@ macro_rules! try_to {
                 }
             }
 
+            impl <'a> TryFrom<&'a EValue> for &'a $result {
+                type Error = anyhow::Error;
+
+                fn try_from(value: &'a EValue) -> Result<Self, Self::Error> {
+                    value.[<try_as_ $name>]()
+                }
+            }
+
+            impl <'a> TryFrom<&'a mut EValue> for &'a mut $result {
+                type Error = anyhow::Error;
+
+                fn try_from(value: &'a mut EValue) -> Result<Self, Self::Error> {
+                    value.[<try_as_ $name _mut>]()
+                }
+            }
+
             impl<'a> TryFrom<EValueInputWrapper<'a>> for $result {
                 type Error = anyhow::Error;
 
