@@ -1,7 +1,7 @@
 use crate::editable::EditableFile;
 use crate::value::draw::editor::{EFieldEditor, FieldPath};
 use crate::value::etype::registry::ETypesRegistry;
-use egui_node_graph::{NodeId, UserResponseTrait};
+use egui_node_graph::UserResponseTrait;
 use std::cell::RefCell;
 use std::rc::Rc;
 

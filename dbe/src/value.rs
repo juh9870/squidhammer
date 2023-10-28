@@ -11,11 +11,10 @@ use std::fmt::{Display, Formatter};
 use ustr::UstrMap;
 
 use crate::graph::event::EditorGraphResponse;
-use crate::value::draw::editor::{value_widget, EFieldEditorError, FieldPath};
-use crate::value::etype::registry::eitem::EItemType;
+use crate::value::draw::editor::{value_widget, FieldPath};
+
 use crate::value::etype::{EDataType, ETypeConst};
 pub use serde_json::Value as JsonValue;
-use tracing::trace;
 
 pub mod connections;
 pub mod draw;

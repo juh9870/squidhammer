@@ -8,7 +8,7 @@ use knuffel::DecodeScalar;
 use miette::{GraphicalReportHandler, GraphicalTheme};
 
 use ustr::Ustr;
-use utils::color_format::{parse_rgb32, ColorFormat};
+use utils::color_format::parse_rgb32;
 
 use crate::value::etype::registry::eenum::EEnumData;
 use crate::value::etype::registry::estruct::EStructData;

@@ -1,7 +1,7 @@
 use std::fmt::{Debug, Display};
 use std::ops::RangeInclusive;
 
-use anyhow::{anyhow, bail, Context, Error};
+use anyhow::{anyhow, bail, Context};
 use camino::Utf8PathBuf;
 use dyn_clone::DynClone;
 use egui::collapsing_header::CollapsingState;
@@ -17,7 +17,7 @@ use egui_node_graph::NodeId;
 use utils::{mem_clear, mem_temp};
 
 use crate::graph::event::EditorGraphResponse;
-use crate::value::etype::registry::eenum::EEnumData;
+
 use crate::value::etype::registry::eitem::EItemType;
 use crate::value::etype::registry::{ETypeId, ETypesRegistry};
 use crate::value::etype::EDataType;
