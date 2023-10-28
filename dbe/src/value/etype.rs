@@ -1,3 +1,4 @@
+use egui::Color32;
 use std::borrow::Cow;
 use std::fmt::{Display, Formatter};
 use std::hash::Hash;
@@ -8,6 +9,7 @@ use serde::{Deserialize, Serialize};
 use ustr::Ustr;
 
 use egui_node_graph::{DataTypeMatcherMarker, DataTypeTrait};
+use utils::color_format::ColorFormat;
 
 use crate::value::etype::registry::{ETypeId, ETypesRegistry};
 use crate::value::{ENumber, EValue};
@@ -63,12 +65,29 @@ impl DataTypeMatcherMarker for EDataType {}
 // A trait for the data types, to tell the library how to display them
 impl DataTypeTrait<EditorGraphState> for EDataType {
     fn data_type_color(&self, _user_state: &mut EditorGraphState) -> egui::Color32 {
-        let c = RandomColor::new()
-            .seed(self.name().to_string())
-            .luminosity(Luminosity::Dark)
-            .alpha(1.0)
-            .to_rgb_array();
-        egui::Color32::from_rgb(c[0], c[1], c[2])
+        const NUMBER_COLOR: Color32 = Color32::from_rgb(161, 161, 161);
+        const BOOLEAN_COLOR: Color32 = Color32::from_rgb(204, 166, 214);
+        const STRING_COLOR: Color32 = Color32::from_rgb(112, 178, 255);
+        const NULL_COLOR: Color32 = Color32::from_rgb(0, 0, 0);
+        match self {
+            EDataType::Number => NUMBER_COLOR,
+            EDataType::Boolean => BOOLEAN_COLOR,
+            EDataType::String => STRING_COLOR,
+            EDataType::Const { value } => match value {
+                ETypeConst::String(_) => STRING_COLOR,
+                ETypeConst::Number(_) => NUMBER_COLOR,
+                ETypeConst::Boolean(_) => BOOLEAN_COLOR,
+                ETypeConst::Null => NULL_COLOR,
+            },
+            _ => {
+                let c = RandomColor::new()
+                    .seed(self.name().to_string())
+                    .luminosity(Luminosity::Dark)
+                    .alpha(1.0)
+                    .to_rgb_array();
+                egui::Color32::from_rgb(c[0], c[1], c[2])
+            }
+        }
     }
 
     fn name(&self) -> Cow<'_, str> {
