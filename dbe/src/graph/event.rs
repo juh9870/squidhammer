@@ -1,5 +1,5 @@
 use crate::editable::EditableFile;
-use crate::value::draw::editor::EFieldEditor;
+use crate::value::draw::editor::{EFieldEditor, FieldPath};
 use crate::value::etype::registry::ETypesRegistry;
 use egui_node_graph::{NodeId, UserResponseTrait};
 use std::cell::RefCell;
@@ -12,8 +12,7 @@ use std::rc::Rc;
 #[derive(Clone, Debug)]
 pub enum EditorGraphResponse {
     ChangeEditor {
-        node_id: NodeId,
-        field: String,
+        path: FieldPath,
         editor: Box<dyn EFieldEditor>,
     },
 }
@@ -23,15 +22,11 @@ impl UserResponseTrait for EditorGraphResponse {}
 impl EditorGraphResponse {
     pub fn apply(self, state: &mut EditableFile, _registry: &Rc<RefCell<ETypesRegistry>>) {
         match self {
-            EditorGraphResponse::ChangeEditor {
-                editor,
-                node_id,
-                field,
-            } => {
-                let Some(node) = state.graph.graph.nodes.get_mut(node_id) else {
+            EditorGraphResponse::ChangeEditor { editor, path } => {
+                let Some(node) = state.graph.graph.nodes.get_mut(path.node) else {
                     return;
                 };
-                node.user_data.editors.insert(field, editor);
+                node.user_data.editors.insert(path.path, editor);
             }
         }
     }

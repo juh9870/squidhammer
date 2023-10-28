@@ -1,3 +1,4 @@
+use camino::Utf8PathBuf;
 use serde::{Deserialize, Serialize};
 
 use egui_node_graph::{Graph, InputParamKind, NodeId};
@@ -78,7 +79,7 @@ impl EditorNode for StructNode {
     }
 
     fn label(&self) -> Option<String> {
-        self.ident.map(|e| e.to_string())
+        self.ident.map(|ty| ty.to_string())
     }
 
     fn user_data(&self, user_state: &mut EditorGraphState) -> Option<EditorNodeData> {
@@ -90,9 +91,9 @@ impl EditorNode for StructNode {
         let editors = data
             .fields
             .iter()
-            .filter_map(|e| {
-                reg.editor_for(e.ty.editor_name(), &e.ty)
-                    .map(|name| (e.name.to_string(), name))
+            .filter_map(|field| {
+                reg.editor_for(field.ty.editor_name(), &field.ty)
+                    .map(|name| (Utf8PathBuf::from(field.name.as_str()), name))
                     .ok()
             })
             .collect();

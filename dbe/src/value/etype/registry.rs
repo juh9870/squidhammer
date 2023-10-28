@@ -1,4 +1,6 @@
-use crate::value::draw::editor::{default_editors, EFieldEditor, EFieldEditorConstructor};
+use crate::value::draw::editor::{
+    default_editors, EFieldEditor, EFieldEditorConstructor, EFieldEditorError,
+};
 use crate::value::etype::registry::eenum::EEnumData;
 use crate::value::etype::registry::eitem::{EItemEnum, EItemStruct, EItemType, EItemTypeTrait};
 use crate::value::etype::registry::estruct::EStructData;
@@ -265,6 +267,13 @@ impl ETypesRegistry {
         };
 
         ctor.make_editor(ty)
+    }
+
+    pub fn editor_for_or_err(&self, name: Option<&str>, ty: &EItemType) -> Box<dyn EFieldEditor> {
+        match self.editor_for(None, ty) {
+            Ok(editor) => editor,
+            Err(err) => Box::new(EFieldEditorError::new(err.to_string(), ty.ty())),
+        }
     }
 
     // fn register_raw_json_object(&mut self, id: ETypetId, data: JsonValue) -> EDataType {

@@ -4,6 +4,7 @@ use crate::value::etype::registry::eitem::EItemType;
 use crate::value::etype::registry::estruct::EStructData;
 use crate::value::etype::registry::EObjectType;
 use egui::Ui;
+use ustr::Ustr;
 use utils::mem_temp;
 
 pub(super) fn show_types_debugger(state: &TabHandler, ui: &mut Ui) {
@@ -33,17 +34,21 @@ pub(super) fn show_types_debugger(state: &TabHandler, ui: &mut Ui) {
     mem_temp!(ui, search_id, search);
 }
 
+fn show_generics(ui: &mut Ui, args: &Vec<Ustr>) {
+    if !args.is_empty() {
+        ui.horizontal(|ui| {
+            ui.label("Generics: ");
+            for name in args {
+                ui.monospace(name.as_str());
+            }
+        });
+    }
+}
+
 fn show_struct(ui: &mut Ui, s: &EStructData) {
     ui.vertical(|ui| {
         ui.heading(s.ident.to_string());
-        if !s.generic_arguments.is_empty() {
-            ui.horizontal(|ui| {
-                ui.label("Generics: ");
-                for name in &s.generic_arguments {
-                    ui.monospace(name.as_str());
-                }
-            });
-        }
+        show_generics(ui, &s.generic_arguments);
         egui::Grid::new(ui.id().with("field"))
             .num_columns(3)
             .show(ui, |ui| {
@@ -59,18 +64,11 @@ fn show_struct(ui: &mut Ui, s: &EStructData) {
 fn show_enum(ui: &mut Ui, e: &EEnumData) {
     ui.vertical(|ui| {
         ui.heading(e.ident.to_string());
-        if !e.generic_arguments.is_empty() {
-            ui.horizontal(|ui| {
-                ui.label("Generics: ");
-                for name in &e.generic_arguments {
-                    ui.monospace(name.as_str());
-                }
-            });
-        }
+        show_generics(ui, &e.generic_arguments);
         egui::Grid::new(ui.id().with("field"))
             .num_columns(4)
             .show(ui, |ui| {
-                for variant in &e.variants {
+                for variant in e.variants() {
                     ui.label(&variant.name);
                     show_item(ui, &variant.data);
                     ui.label(variant.pat.to_string());

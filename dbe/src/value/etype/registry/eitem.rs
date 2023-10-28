@@ -178,7 +178,7 @@ impl EItemTypeTrait for EItemGeneric {
     fn ty(&self) -> EDataType {
         error!(
             name = self.argument_name.as_str(),
-            "Generic field was instantiated directly",
+            "Generic field type was instantiated directly",
         );
         EDataType::Const {
             value: ETypeConst::Null,
@@ -188,7 +188,7 @@ impl EItemTypeTrait for EItemGeneric {
     fn default_value(&self, _registry: &ETypesRegistry) -> EValue {
         error!(
             name = self.argument_name.as_str(),
-            "Generic field was instantiated directly"
+            "Generic field value was instantiated directly"
         );
         EValue::Null
     }

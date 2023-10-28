@@ -1,12 +1,14 @@
+use std::fmt::{Display, Formatter};
+
+use anyhow::Context;
+use egui::Color32;
+use serde::{Deserialize, Serialize};
+use ustr::{Ustr, UstrMap};
+
 use crate::value::etype::registry::eitem::{EItemConst, EItemType, EItemTypeTrait};
 use crate::value::etype::registry::{ETypeId, ETypesRegistry};
 use crate::value::etype::ETypeConst;
 use crate::value::EValue;
-use anyhow::Context;
-use egui::Color32;
-use serde::{Deserialize, Serialize};
-use std::fmt::{Display, Formatter};
-use ustr::{Ustr, UstrMap};
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Hash, Serialize, Deserialize)]
 pub enum EnumPattern {
@@ -65,12 +67,28 @@ impl EEnumVariant {
 pub struct EEnumData {
     pub generic_arguments: Vec<Ustr>,
     pub ident: ETypeId,
-    pub variants: Vec<EEnumVariant>,
+    variants: Vec<EEnumVariant>,
+    variant_ids: Vec<EEnumVariantId>,
     pub default_editor: Option<String>,
     pub color: Option<Color32>,
 }
 
 impl EEnumData {
+    pub fn new(
+        ident: ETypeId,
+        generic_arguments: Vec<Ustr>,
+        default_editor: Option<String>,
+        color: Option<Color32>,
+    ) -> Self {
+        Self {
+            generic_arguments,
+            ident,
+            variants: Default::default(),
+            variant_ids: Default::default(),
+            default_editor,
+            color,
+        }
+    }
     pub fn default_value(&self, registry: &ETypesRegistry) -> EValue {
         let default_variant = self.variants.first().expect("Expect enum to not be empty");
         EValue::Enum {
@@ -82,13 +100,21 @@ impl EEnumData {
         }
     }
 
+    pub fn clone_with_ident(&self, ident: ETypeId) -> EEnumData {
+        let mut clone = self.clone();
+        clone.ident = ident;
+        for variant in &mut clone.variant_ids {
+            variant.ident = ident
+        }
+        clone
+    }
+
     pub fn apply_generics(
         &self,
         arguments: &UstrMap<EItemType>,
         new_id: ETypeId,
     ) -> anyhow::Result<Self> {
-        let mut cloned = self.clone();
-        cloned.ident = new_id;
+        let mut cloned = self.clone_with_ident(new_id);
         for x in &mut cloned.variants {
             if let EItemType::Generic(g) = &x.data {
                 let item = arguments.get(&g.argument_name).with_context(|| {
@@ -102,6 +128,26 @@ impl EEnumData {
 
         Ok(cloned)
     }
+
+    pub(super) fn add_variant(&mut self, variant: EEnumVariant) {
+        self.variant_ids.push(EEnumVariantId {
+            ident: self.ident,
+            variant: variant.pat,
+        });
+        self.variants.push(variant);
+    }
+
+    pub fn variants(&self) -> &Vec<EEnumVariant> {
+        &self.variants
+    }
+
+    pub fn variant_ids(&self) -> &Vec<EEnumVariantId> {
+        &self.variant_ids
+    }
+
+    pub fn variants_with_ids(&self) -> impl Iterator<Item = (&EEnumVariant, &EEnumVariantId)> {
+        self.variants.iter().zip(self.variant_ids.iter())
+    }
 }
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Serialize, Deserialize)]
@@ -114,6 +160,29 @@ pub struct EEnumVariantId {
 impl EEnumVariantId {
     pub fn enum_id(&self) -> ETypeId {
         self.ident
+    }
+    pub fn matches(&self, variant: &EEnumVariant) -> bool {
+        return self.variant == variant.pat;
+    }
+    pub fn pattern(&self) -> EnumPattern {
+        self.variant
+    }
+
+    pub fn enum_variant<'a>(
+        &self,
+        registry: &'a ETypesRegistry,
+    ) -> Option<(&'a EEnumData, &'a EEnumVariant)> {
+        let eenum = registry.get_enum(&self.ident)?;
+        let variant = eenum.variants.iter().find(|v| v.pat == self.variant)?;
+        Some((eenum, variant))
+    }
+
+    pub fn variant<'a>(&self, registry: &'a ETypesRegistry) -> Option<&'a EEnumVariant> {
+        self.enum_variant(registry).map(|e| e.1)
+    }
+
+    pub fn default_value(&self, registry: &ETypesRegistry) -> Option<EValue> {
+        self.variant(registry).map(|e| e.default_value(registry))
     }
 }
 

@@ -5,6 +5,7 @@ use crate::value::draw::editor::EFieldEditor;
 use crate::value::etype::EDataType;
 use crate::value::EValue;
 use crate::EditorGraph;
+use camino::Utf8PathBuf;
 use egui_node_graph::{NodeDataTrait, NodeId, NodeResponse, UserResponseTrait};
 use rustc_hash::FxHashMap;
 
@@ -15,7 +16,7 @@ use rustc_hash::FxHashMap;
 pub struct EditorNodeData {
     pub template: NodeType,
     #[serde(skip)]
-    pub editors: FxHashMap<String, Box<dyn EFieldEditor>>,
+    pub editors: FxHashMap<Utf8PathBuf, Box<dyn EFieldEditor>>,
 }
 
 impl NodeDataTrait for EditorNodeData {

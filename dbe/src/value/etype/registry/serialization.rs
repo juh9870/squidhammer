@@ -111,20 +111,13 @@ struct ThingEnum {
 impl ThingEnum {
     fn into_eenum(self, registry: &mut ETypesRegistry, id: ETypeId) -> anyhow::Result<EEnumData> {
         let color = self.color.map(|c| parse_rgb32(&c)).transpose()?;
-        Ok(EEnumData {
-            ident: id,
-            generic_arguments: self.generic_arguments,
-            variants: self
-                .variants
-                .into_iter()
-                .map(|e| {
-                    let path = format!("{id}::{}", e.name());
-                    e.into_enum_variant(registry, id, &path)
-                })
-                .try_collect()?,
-            default_editor: self.editor,
-            color,
-        })
+        let mut data = EEnumData::new(id, self.generic_arguments, self.editor, color);
+        for e in self.variants {
+            let path = format!("{id}::{}", e.name());
+            let variant = e.into_enum_variant(registry, id, &path)?;
+            data.add_variant(variant);
+        }
+        Ok(data)
     }
 }
 

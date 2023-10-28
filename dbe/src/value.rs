@@ -11,7 +11,7 @@ use std::fmt::{Display, Formatter};
 use ustr::UstrMap;
 
 use crate::graph::event::EditorGraphResponse;
-use crate::value::draw::editor::EFieldEditorError;
+use crate::value::draw::editor::{value_widget, EFieldEditorError, FieldPath};
 use crate::value::etype::registry::eitem::EItemType;
 use crate::value::etype::{EDataType, ETypeConst};
 pub use serde_json::Value as JsonValue;
@@ -223,31 +223,18 @@ impl WidgetValueTrait for EValue {
         user_state: &mut EditorGraphState,
         node_data: &EditorNodeData,
     ) -> Vec<EditorGraphResponse> {
-        let mut commands = vec![];
         let reg = user_state.registry.borrow();
-        let editor = match node_data.editors.get(param_name) {
-            None => {
-                let editor = match reg.editor_for(None, &EItemType::default_item_for(self)) {
-                    Ok(editor) => editor,
-                    Err(err) => Box::new(EFieldEditorError::new(err.to_string(), self.ty())),
-                };
-                trace!(?node_id, param_name, ?editor, "New editor is requested");
-                commands.push(editor);
-                &commands[0]
-            }
-            Some(editor) => editor,
-        };
-
-        editor.draw(ui, &reg, param_name, self);
-
+        let mut commands = vec![];
+        value_widget(
+            ui,
+            self,
+            &FieldPath::new(node_id).with(param_name),
+            param_name,
+            &reg,
+            &node_data.editors,
+            &mut commands,
+        );
         commands
-            .into_iter()
-            .map(|e| EditorGraphResponse::ChangeEditor {
-                node_id,
-                editor: e,
-                field: param_name.to_string(),
-            })
-            .collect_vec()
     }
 }
 
