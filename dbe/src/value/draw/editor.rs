@@ -185,7 +185,9 @@ impl EFieldEditor for BooleanEditor {
             unsupported(ui, field_name);
             return;
         };
-        ui.checkbox(value, field_name);
+        labeled_field(ui, field_name, |ui| {
+            ui.toggle_value(value, if *value { "⏹ True" } else { "☐ False" });
+        });
     }
 }
 
