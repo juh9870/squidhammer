@@ -15,6 +15,13 @@ repos:
         language: system
         types: [rust]
         pass_filenames: false
+      - id: cargo-fix
+        name: cargo fix
+        description: Checks for applicable `cargo fix` changes
+        entry: cargo fix --allow-dirty --allow-staged -q
+        language: system
+        types: [rust]
+        pass_filenames: false
       - id: clippy
         name: clippy
         description: Lint rust sources
