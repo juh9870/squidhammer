@@ -1,4 +1,5 @@
 struct {
+    id "Id"
     const "ItemType" 9870
     string "Name"
     number "Level" type="int"

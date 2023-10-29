@@ -1,4 +1,4 @@
-use egui::Color32;
+use egui::{Color32, Rect, Ui};
 use std::borrow::Cow;
 use std::fmt::{Display, Formatter};
 use std::hash::Hash;
@@ -8,6 +8,7 @@ use random_color::{Luminosity, RandomColor};
 use serde::{Deserialize, Serialize};
 use ustr::Ustr;
 
+use egui_node_graph::port_shapes::{draw_circle_port, draw_rhombus_port};
 use egui_node_graph::{DataTypeMatcherMarker, DataTypeTrait};
 
 use crate::value::etype::registry::{ETypeId, ETypesRegistry};
@@ -88,12 +89,34 @@ impl DataTypeTrait<EditorGraphState> for EDataType {
                     .unwrap_or_else(|| {
                         let c = RandomColor::new()
                             .seed(ident.to_string())
-                            .luminosity(Luminosity::Dark)
+                            .luminosity(Luminosity::Light)
                             .alpha(1.0)
                             .to_rgb_array();
                         Color32::from_rgb(c[0], c[1], c[2])
                     })
             }
+        }
+    }
+
+    fn draw_port(
+        &self,
+        ui: &mut Ui,
+        _user_state: &mut EditorGraphState,
+        wide_port: bool,
+        port_rect: Rect,
+        zoom: f32,
+        port_color: Color32,
+    ) {
+        match self {
+            // EDataType::Boolean => {}
+            // EDataType::Number => {}
+            // EDataType::String => {}
+            EDataType::Id { .. } | EDataType::Ref { .. } => {
+                draw_rhombus_port(ui, wide_port, port_rect, zoom, port_color)
+            }
+            // EDataType::Object { .. } => {}
+            // EDataType::Const { .. } => {}
+            _ => draw_circle_port(ui, wide_port, port_rect, zoom, port_color),
         }
     }
 
