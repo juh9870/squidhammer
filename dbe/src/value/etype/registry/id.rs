@@ -51,12 +51,7 @@ impl<'de> serde::de::Visitor<'de> for EditorIdVisitor {
     where
         E: serde::de::Error,
     {
-        match EditorId::parse(v) {
-            Ok(data) => Ok(data),
-            Err(err) => Err(serde::de::Error::custom(
-                err.to_string().to_ascii_lowercase(),
-            )),
-        }
+        Ok(EditorId::Persistent(v.into()))
     }
 }
 

@@ -1,4 +1,4 @@
-use crate::graph::nodes::AllEditorNodeTypes;
+use crate::graph::nodes::{sync_all_nodes_data, sync_node_data, AllEditorNodeTypes};
 use crate::graph::{EditorGraphState, EditorState};
 use crate::value::etype::registry::ETypesRegistry;
 use egui::Ui;
@@ -12,6 +12,8 @@ use tracing::debug;
 pub struct EditableFile {
     pub graph: EditorState,
     pub full_screen: Option<NodeId>,
+    #[serde(skip)]
+    pub synced: bool,
 }
 
 impl EditableFile {
@@ -19,6 +21,12 @@ impl EditableFile {
         let mut user_state = EditorGraphState {
             registry: registry.clone(),
         };
+
+        if !self.synced {
+            sync_all_nodes_data(&mut self.graph.graph, &mut user_state);
+            self.synced = true;
+        }
+
         let res = self.graph.draw_graph_editor(
             ui,
             AllEditorNodeTypes(registry.clone()),
@@ -29,6 +37,9 @@ impl EditableFile {
         for res in res.node_responses {
             match res {
                 NodeResponse::User(event) => event.apply(self, registry),
+                NodeResponse::CreatedNode(id) => {
+                    sync_node_data(id, &mut self.graph.graph, &mut user_state)
+                }
                 NodeResponse::ConnectEventEnded {
                     input,
                     output,

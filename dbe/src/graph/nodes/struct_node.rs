@@ -1,13 +1,19 @@
 use camino::Utf8PathBuf;
+use itertools::Itertools;
+
 use serde::{Deserialize, Serialize};
 
-use egui_node_graph::{Graph, InputParamKind, NodeId};
+use std::borrow::Cow;
+use std::num::NonZeroU32;
+
+use egui_node_graph::{Graph, InputParam, InputParamKind, NodeId, OutputParam};
 
 use crate::graph::commands::Command;
 use crate::graph::evaluator::OutputsCache;
 use crate::graph::nodes::data::EditorNodeData;
-use crate::graph::nodes::{EditorNode, NodeType};
+use crate::graph::nodes::{EditorNode, NodeSyncData};
 use crate::graph::{EditorGraph, EditorGraphState};
+
 use crate::value::etype::registry::eitem::{EItemType, EItemTypeTrait};
 use crate::value::etype::registry::estruct::EStructData;
 use crate::value::etype::registry::{ETypeId, ETypesRegistry};
@@ -34,35 +40,10 @@ impl StructNode {
 impl EditorNode for StructNode {
     fn create_ports(
         &self,
-        graph: &mut Graph<EditorNodeData, EDataType, EValue>,
-        user_state: &mut EditorGraphState,
-        node_id: NodeId,
+        _graph: &mut Graph<EditorNodeData, EDataType, EValue>,
+        _user_state: &mut EditorGraphState,
+        _node_id: NodeId,
     ) {
-        let reg = user_state.registry.borrow();
-        let Some((data, id)) = self.get_data(&reg) else {
-            return;
-        };
-
-        for field in &data.fields {
-            let is_const = matches!(field.ty, EItemType::Const(_));
-            graph.add_input_param(
-                node_id,
-                field.name.to_string(),
-                field.ty.ty(),
-                field.ty.default_value(&reg),
-                if is_const {
-                    InputParamKind::ConstantOnly
-                } else {
-                    InputParamKind::ConnectionOrConstant
-                },
-                true,
-            );
-        }
-
-        graph.add_output_param(node_id, "data".to_string(), EDataType::Object { ident: id });
-        if let Some(f) = data.id_field_data() {
-            graph.add_output_param(node_id, "id".to_string(), EDataType::Ref { ty: f.ty });
-        }
     }
 
     fn categories(&self) -> Vec<&'static str> {
@@ -87,11 +68,55 @@ impl EditorNode for StructNode {
         self.ident.map(|ty| ty.to_string())
     }
 
-    fn user_data(&self, user_state: &mut EditorGraphState) -> Option<EditorNodeData> {
+    fn sync_graph_data(&mut self, user_state: &mut EditorGraphState) -> Option<NodeSyncData> {
         let reg = user_state.registry.borrow();
-        let Some((data, ..)) = self.get_data(&reg) else {
+        let Some((data, id)) = self.get_data(&reg) else {
             return None;
         };
+        let input_parameters = data
+            .fields
+            .iter()
+            .map(|field| {
+                let is_const = matches!(field.ty, EItemType::Const(_));
+                let p = InputParam {
+                    id: Default::default(),
+                    node: Default::default(),
+                    max_connections: NonZeroU32::new(1),
+                    value: field.ty.default_value(&reg),
+                    typ: field.ty.ty(),
+
+                    kind: if is_const {
+                        InputParamKind::ConstantOnly
+                    } else {
+                        InputParamKind::ConnectionOrConstant
+                    },
+                    shown_inline: true,
+                };
+                (Cow::Borrowed(field.name.as_str()), p)
+            })
+            .collect_vec();
+
+        let mut output_parameters = vec![];
+
+        if let Some(f) = data.id_field_data() {
+            output_parameters.push((
+                Cow::Borrowed("id"),
+                OutputParam {
+                    id: Default::default(),
+                    node: Default::default(),
+                    typ: EDataType::Ref { ty: f.ty },
+                },
+            ));
+        } else {
+            output_parameters.push((
+                Cow::Borrowed("id"),
+                OutputParam {
+                    id: Default::default(),
+                    node: Default::default(),
+                    typ: EDataType::Object { ident: id },
+                },
+            ));
+        }
 
         let editors = data
             .fields
@@ -103,11 +128,10 @@ impl EditorNode for StructNode {
             })
             .collect();
 
-        let data = EditorNodeData {
-            template: NodeType::Struct(*self),
+        Some(NodeSyncData::new(
+            input_parameters,
+            output_parameters,
             editors,
-        };
-
-        Some(data)
+        ))
     }
 }
