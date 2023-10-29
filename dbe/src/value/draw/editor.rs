@@ -5,7 +5,7 @@ use anyhow::{anyhow, bail, Context};
 use camino::Utf8PathBuf;
 use dyn_clone::DynClone;
 use egui::collapsing_header::CollapsingState;
-use egui::{DragValue, Id, RichText, Slider, Ui, WidgetText};
+use egui::{Align, Direction, DragValue, Id, RichText, Slider, Ui, WidgetText};
 use itertools::Itertools;
 use ordered_float::Float;
 use rust_i18n::t;
@@ -14,20 +14,53 @@ use tracing::{error, trace};
 use ustr::{Ustr, UstrMap};
 
 use egui_node_graph::NodeId;
-use utils::{mem_clear, mem_temp};
 
 use crate::graph::event::EditorGraphResponse;
 
+use crate::value::etype::registry::eenum::{
+    EEnumData, EEnumVariant, EEnumVariantId, EEnumVariantWithId, EnumPattern,
+};
 use crate::value::etype::registry::eitem::EItemType;
 use crate::value::etype::registry::{ETypeId, ETypesRegistry};
 use crate::value::etype::EDataType;
 use crate::value::{ENumber, EValue};
+
+/// Upper bound size guarantees of different editors
+///
+/// Editor may take up less space than what is specified by this enum, but
+/// promise to not take any more than specified
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Ord, PartialOrd)]
+pub enum EditorSize {
+    /// Editors with this size promise to take up no space in UI
+    None,
+    /// Editors with this size promise to reasonably fit as a part of a single
+    /// line, along with other content
+    Inline,
+    /// Editors with this size may occupy up to a whole line
+    SingleLine,
+    /// Editors with this size may occupy more than one line
+    Block,
+}
+
+impl EditorSize {
+    pub fn is_inline(&self) -> bool {
+        matches!(self, EditorSize::Inline)
+    }
+
+    pub fn is_single_line(&self) -> bool {
+        matches!(self, EditorSize::SingleLine)
+    }
+    pub fn is_block(&self) -> bool {
+        matches!(self, EditorSize::Block)
+    }
+}
 
 pub trait EFieldEditor: Debug + Send + DynClone {
     fn inputs(&self) -> Vec<(String, EItemType)> {
         vec![]
     }
     fn output(&self) -> EDataType;
+    fn size(&self) -> EditorSize;
     fn draw(
         &self,
         ui: &mut Ui,
@@ -60,11 +93,23 @@ pub fn default_editors() -> impl Iterator<Item = (String, Box<dyn EFieldEditorCo
             Box::new(StringEditor { multiline: false }),
         ),
         (
-            "multiline".to_string(),
+            "string:multiline".to_string(),
             Box::new(StringEditor { multiline: true }),
         ),
         ("boolean".to_string(), Box::new(BooleanEditor)),
-        ("enum".to_string(), Box::new(EnumEditorConstructor)),
+        // Enums
+        (
+            "enum".to_string(),
+            Box::new(EnumEditorConstructor::from(EnumEditorType::Auto)),
+        ),
+        (
+            "enum:toggle".to_string(),
+            Box::new(EnumEditorConstructor::from(EnumEditorType::Toggle)),
+        ),
+        (
+            "enum:full".to_string(),
+            Box::new(EnumEditorConstructor::from(EnumEditorType::Full)),
+        ),
         // other
         ("rgb".to_string(), Box::new(RgbEditorConstructor::rgb())),
         ("rgba".to_string(), Box::new(RgbEditorConstructor::rgba())),
@@ -78,11 +123,19 @@ fn inline_error(ui: &mut Ui, err: impl Into<anyhow::Error>) {
     ui.label(RichText::new(err.into().to_string()).color(ui.style().visuals.error_fg_color));
 }
 
-fn labeled_field(ui: &mut Ui, label: impl Into<WidgetText>, content: impl FnOnce(&mut Ui)) {
+fn labeled_field<T>(
+    ui: &mut Ui,
+    label: impl Into<WidgetText>,
+    content: impl FnOnce(&mut Ui) -> T,
+) -> T {
     ui.horizontal(|ui| {
-        ui.label(label);
+        let text = label.into();
+        if !text.is_empty() {
+            ui.label(text);
+        }
         content(ui)
-    });
+    })
+    .inner
 }
 
 fn labeled_error(ui: &mut Ui, label: impl Into<WidgetText>, err: impl Into<anyhow::Error>) {
@@ -235,6 +288,10 @@ impl EFieldEditor for EFieldEditorError {
         self.output
     }
 
+    fn size(&self) -> EditorSize {
+        EditorSize::Inline
+    }
+
     fn draw(
         &self,
         ui: &mut Ui,
@@ -263,6 +320,10 @@ struct NumberEditor {
 impl EFieldEditor for NumberEditor {
     fn output(&self) -> EDataType {
         EDataType::Number
+    }
+
+    fn size(&self) -> EditorSize {
+        EditorSize::Inline
     }
 
     fn draw(
@@ -324,6 +385,15 @@ impl EFieldEditor for StringEditor {
     fn output(&self) -> EDataType {
         EDataType::String
     }
+
+    fn size(&self) -> EditorSize {
+        if self.multiline {
+            EditorSize::Block
+        } else {
+            EditorSize::Inline
+        }
+    }
+
     fn draw(
         &self,
         ui: &mut Ui,
@@ -369,6 +439,10 @@ impl EFieldEditor for BooleanEditor {
         EDataType::Boolean
     }
 
+    fn size(&self) -> EditorSize {
+        EditorSize::Inline
+    }
+
     fn draw(
         &self,
         ui: &mut Ui,
@@ -410,6 +484,10 @@ struct RgbEditor {
 impl EFieldEditor for RgbEditor {
     fn output(&self) -> EDataType {
         EDataType::Object { ident: self.ident }
+    }
+
+    fn size(&self) -> EditorSize {
+        EditorSize::Block
     }
 
     fn draw(
@@ -505,14 +583,213 @@ impl EFieldEditorConstructor for RgbEditorConstructor {
 
 // region Enum
 
+struct EnumEditorData<'a> {
+    registry: &'a ETypesRegistry,
+    path: &'a FieldPath,
+    field_name: &'a str,
+    variant: &'a mut EEnumVariantId,
+    value: &'a mut EValue,
+    editors: &'a FxHashMap<Utf8PathBuf, Box<dyn EFieldEditor>>,
+    responses: &'a mut Vec<EditorGraphResponse>,
+
+    content_path: FieldPath,
+    skip_draw_body: bool,
+    content_editor_size: EditorSize,
+    enum_data: &'a EEnumData,
+    selected_variant: &'a EEnumVariant,
+
+    new_value: Option<EValue>,
+}
+
+impl<'a> EnumEditorData<'a> {
+    pub fn init(
+        ui: &mut Ui,
+        registry: &'a ETypesRegistry,
+        path: &'a FieldPath,
+        field_name: &'a str,
+        variant: &'a mut EEnumVariantId,
+        value: &'a mut EValue,
+        editors: &'a FxHashMap<Utf8PathBuf, Box<dyn EFieldEditor>>,
+        responses: &'a mut Vec<EditorGraphResponse>,
+    ) -> Option<Self> {
+        let Some((enum_data, selected_variant)) = variant.enum_variant(registry) else {
+            labeled_error(ui, field_name, anyhow!("Failed to find enum variant"));
+            return None;
+        };
+
+        let content_path = path.with("content");
+        let mut skip_draw_body = false;
+        let content_editor_size = if let Some(editor) = editors.get(&content_path.path) {
+            editor.size()
+        } else {
+            let editor = registry.editor_for_or_err(None, &selected_variant.data);
+            let size = editor.size();
+            responses.push(EditorGraphResponse::ChangeEditor {
+                editor,
+                path: content_path.clone(),
+            });
+            // Skip drawing body to avoid issues with a default editor
+            skip_draw_body = true;
+            size
+        };
+
+        Some(Self {
+            registry,
+            path,
+            field_name,
+            variant,
+            value,
+            editors,
+            responses,
+            content_path,
+            skip_draw_body,
+            content_editor_size,
+            enum_data,
+            selected_variant,
+            new_value: None,
+        })
+    }
+
+    fn hide_const_body(&mut self) {
+        if matches!(self.selected_variant.pat, EnumPattern::Const(_)) {
+            self.skip_draw_body = true;
+        }
+    }
+
+    fn body_size(&self) -> EditorSize {
+        if self.skip_draw_body {
+            EditorSize::None
+        } else {
+            self.content_editor_size
+        }
+    }
+
+    fn can_be_toggle(&self) -> bool {
+        self.enum_data.variants().len() == 2
+    }
+
+    fn change_variant(&mut self, new_variant: EEnumVariantId) {
+        *self.variant = new_variant;
+        match new_variant.variant(self.registry) {
+            None => {
+                error!(id=?new_variant, path=?self.path, "Failed to obtain enum variant for ID")
+            }
+            Some(variant) => {
+                let editor = self.registry.editor_for_or_err(None, &variant.data);
+                self.responses.push(EditorGraphResponse::ChangeEditor {
+                    editor,
+                    path: self.content_path.clone(),
+                });
+                self.new_value = Some(variant.default_value(self.registry));
+            }
+        }
+    }
+
+    fn picker(&mut self, ui: &mut Ui) {
+        let mut selected = *self.variant;
+        egui::ComboBox::from_id_source(self.field_name)
+            .selected_text(&self.selected_variant.name)
+            .width(ui.available_width())
+            .show_ui(ui, |ui| {
+                for (variant, id) in self.enum_data.variants_with_ids() {
+                    ui.selectable_value(&mut selected, *id, &variant.name);
+                }
+            });
+        if &selected != self.variant {
+            self.change_variant(selected)
+        }
+    }
+
+    fn toggle_data(&self) -> anyhow::Result<(EEnumVariantWithId, EEnumVariantWithId)> {
+        let mut iter = self.enum_data.variants_with_ids();
+        let first = iter
+            .next()
+            .context("Toggle enum editor requires exactly two enum variants, got zero")?;
+        let second = iter
+            .next()
+            .context("Toggle enum editor requires exactly two enum variants, got one")?;
+        let count = iter.count();
+        if count > 0 {
+            bail!(
+                "Toggle enum editor requires exactly two enum variants, got {}",
+                count + 2
+            )
+        }
+        Ok((first, second))
+    }
+
+    fn toggle_editor(&mut self, ui: &mut Ui) {
+        self.toggle_editor_custom(ui, |ui, checked, first, second| {
+            ui.toggle_value(
+                checked,
+                if *checked {
+                    &first.0.name
+                } else {
+                    &second.0.name
+                },
+            );
+        })
+    }
+
+    fn toggle_editor_custom(
+        &mut self,
+        ui: &mut Ui,
+        checkbox: impl FnOnce(&mut Ui, &mut bool, EEnumVariantWithId, EEnumVariantWithId),
+    ) {
+        let (first, second) = match self.toggle_data() {
+            Ok(data) => data,
+            Err(err) => {
+                inline_error(ui, err);
+                return;
+            }
+        };
+
+        let checked = self.variant == first.1;
+
+        let mut after_check = checked;
+        checkbox(ui, &mut after_check, first, second);
+        if after_check != checked {
+            self.change_variant(if after_check { *first.1 } else { *second.1 })
+        }
+    }
+
+    fn body(self, ui: &mut Ui) {
+        if !self.skip_draw_body {
+            value_widget(
+                ui,
+                self.value,
+                &self.content_path,
+                "",
+                self.registry,
+                self.editors,
+                self.responses,
+            );
+        }
+        if let Some(value) = self.new_value {
+            *self.value = value
+        }
+    }
+}
+
+#[derive(Debug, Copy, Clone, Eq, PartialEq)]
+enum EnumEditorType {
+    Auto,
+    Full,
+    Toggle,
+}
+
 #[derive(Debug, Clone)]
 struct EnumEditor {
     ident: ETypeId,
+    ty: EnumEditorType,
 }
-
 impl EFieldEditor for EnumEditor {
     fn output(&self) -> EDataType {
         EDataType::Object { ident: self.ident }
+    }
+
+    fn size(&self) -> EditorSize {
+        EditorSize::Block
     }
 
     fn draw(
@@ -533,76 +810,63 @@ impl EFieldEditor for EnumEditor {
             unsupported!(ui, field_name, value, self);
         };
 
-        let Some((enum_data, selected_variant)) = variant.enum_variant(registry) else {
-            labeled_error(ui, field_name, anyhow!("Failed to find enum variant"));
+        let Some(mut editor) = EnumEditorData::init(
+            ui, registry, path, field_name, variant, value, editors, responses,
+        ) else {
             return;
         };
-        ui.label(variant.enum_id().to_string());
+        editor.hide_const_body();
 
-        let content_path = path.with("content");
+        match self.ty {
+            EnumEditorType::Toggle | EnumEditorType::Auto if editor.can_be_toggle() => {
+                if editor.body_size().is_block() {
+                    CollapsingState::load_with_default_open(ui.ctx(), Id::new(field_name), true)
+                        .show_header(ui, |ui| {
+                            labeled_field(ui, field_name, |ui| editor.toggle_editor(ui))
+                        })
+                        .body(|ui| editor.body(ui));
+                } else {
+                    let dir = if editor.body_size() <= EditorSize::Inline {
+                        Direction::LeftToRight
+                    } else {
+                        Direction::TopDown
+                    };
 
-        let mut skip_draw_body = false;
-
-        if !editors.contains_key(&content_path.path) {
-            let editor = registry.editor_for_or_err(None, &selected_variant.data);
-            responses.push(EditorGraphResponse::ChangeEditor {
-                editor,
-                path: content_path.clone(),
-            });
-            skip_draw_body = true;
+                    ui.with_layout(
+                        egui::Layout::from_main_dir_and_cross_align(dir, Align::Min),
+                        |ui| {
+                            labeled_field(ui, field_name, |ui| editor.toggle_editor(ui));
+                            editor.body(ui);
+                        },
+                    );
+                }
+            }
+            _ => {
+                if editor.body_size().is_block() {
+                    CollapsingState::load_with_default_open(ui.ctx(), Id::new(field_name), true)
+                        .show_header(ui, |ui| {
+                            labeled_field(ui, field_name, |ui| editor.picker(ui))
+                        })
+                        .body(|ui| editor.body(ui));
+                } else {
+                    labeled_field(ui, field_name, |ui| editor.picker(ui));
+                    editor.body(ui);
+                }
+            }
         }
-
-        CollapsingState::load_with_default_open(ui.ctx(), Id::new(field_name), true)
-            .show_header(ui, |ui| {
-                let mut selected = *variant;
-                let search_id = ui.id().with("search");
-                labeled_field(ui, field_name, |ui| {
-                    egui::ComboBox::from_id_source(field_name)
-                        .selected_text(&selected_variant.name)
-                        .width(ui.available_width())
-                        .show_ui(ui, |ui| {
-                            let mut search: String = mem_temp!(ui, search_id).unwrap_or_default();
-                            labeled_field(ui, "🔍", |ui| {
-                                ui.text_edit_singleline(&mut search);
-                            });
-                            for (variant, id) in enum_data.variants_with_ids() {
-                                ui.selectable_value(&mut selected, *id, &variant.name);
-                            }
-                            mem_temp!(ui, search_id, search);
-                        });
-                });
-                if &selected != variant {
-                    *variant = selected;
-                    match selected.variant(registry) {
-                        None => {
-                            error!(id=?selected, ?path, "Failed to obtain enum variant for ID")
-                        }
-                        Some(variant) => {
-                            let editor = registry.editor_for_or_err(None, &variant.data);
-                            responses.push(EditorGraphResponse::ChangeEditor {
-                                editor,
-                                path: content_path.clone(),
-                            });
-                            *value = Box::new(variant.default_value(registry));
-                            // Skip drawing body to avoid issues with an old editor
-                            skip_draw_body = true;
-                        }
-                    }
-                    mem_clear!(ui, search_id, String);
-                }
-            })
-            .body(|ui| {
-                if skip_draw_body {
-                    return;
-                }
-
-                value_widget(ui, value, &content_path, "", registry, editors, responses);
-            });
     }
 }
 
 #[derive(Debug, Clone)]
-struct EnumEditorConstructor;
+struct EnumEditorConstructor {
+    ty: EnumEditorType,
+}
+
+impl From<EnumEditorType> for EnumEditorConstructor {
+    fn from(value: EnumEditorType) -> Self {
+        EnumEditorConstructor { ty: value }
+    }
+}
 
 impl EFieldEditorConstructor for EnumEditorConstructor {
     fn make_editor(&self, item: &EItemType) -> anyhow::Result<Box<dyn EFieldEditor>> {
@@ -610,7 +874,10 @@ impl EFieldEditorConstructor for EnumEditorConstructor {
             bail!("Unsupported item")
         };
 
-        return Ok(Box::new(EnumEditor { ident: e.id }));
+        return Ok(Box::new(EnumEditor {
+            ident: e.id,
+            ty: self.ty,
+        }));
     }
 }
 

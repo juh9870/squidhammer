@@ -1,4 +1,4 @@
-enum "Item" {
-    generic "item" "Item"
-    const "null" null
+enum "Item" editor="enum:toggle" {
+    generic "some" "Item"
+    const "none" null
 }

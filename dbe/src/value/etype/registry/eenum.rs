@@ -132,6 +132,8 @@ impl EEnumVariant {
     }
 }
 
+pub type EEnumVariantWithId<'a> = (&'a EEnumVariant, &'a EEnumVariantId);
+
 #[derive(Debug, Clone)]
 pub struct EEnumData {
     pub generic_arguments: Vec<Ustr>,
@@ -222,7 +224,7 @@ impl EEnumData {
         &self.variant_ids
     }
 
-    pub fn variants_with_ids(&self) -> impl Iterator<Item = (&EEnumVariant, &EEnumVariantId)> {
+    pub fn variants_with_ids(&self) -> impl Iterator<Item = EEnumVariantWithId> {
         self.variants.iter().zip(self.variant_ids.iter())
     }
 }
