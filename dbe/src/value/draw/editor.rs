@@ -5,7 +5,9 @@ use anyhow::{anyhow, bail, Context};
 use camino::Utf8PathBuf;
 use dyn_clone::DynClone;
 use egui::collapsing_header::CollapsingState;
-use egui::{Align, Direction, DragValue, RichText, Slider, Ui, WidgetText};
+use egui::{
+    Align, Direction, DragValue, InnerResponse, RichText, Slider, TextEdit, Ui, Widget, WidgetText,
+};
 use itertools::Itertools;
 use ordered_float::Float;
 use rust_i18n::t;
@@ -15,13 +17,16 @@ use ustr::{Ustr, UstrMap};
 
 use egui_node_graph::NodeId;
 
+use utils::mem_temp;
+
 use crate::graph::event::EditorGraphResponse;
 
 use crate::value::etype::registry::eenum::{
     EEnumData, EEnumVariant, EEnumVariantId, EEnumVariantWithId, EnumPattern,
 };
 use crate::value::etype::registry::eitem::EItemType;
-use crate::value::etype::registry::{ETypeId, ETypesRegistry};
+
+use crate::value::etype::registry::{ETypeId, ETypesRegistry, EValueId};
 use crate::value::etype::{EDataType, ETypeConst};
 use crate::value::{ENumber, EValue};
 
@@ -111,6 +116,7 @@ pub fn default_editors() -> impl Iterator<Item = (String, Box<dyn EFieldEditorCo
             Box::new(EnumEditorConstructor::from(EnumEditorType::Full)),
         ),
         ("const".to_string(), Box::new(ConstEditorConstructor)),
+        ("id".to_string(), Box::new(ObjectIdEditorConstructor)),
         // other
         ("rgb".to_string(), Box::new(RgbEditorConstructor::rgb())),
         ("rgba".to_string(), Box::new(RgbEditorConstructor::rgba())),
@@ -128,7 +134,7 @@ fn labeled_field<T>(
     ui: &mut Ui,
     label: impl Into<WidgetText>,
     content: impl FnOnce(&mut Ui) -> T,
-) -> T {
+) -> InnerResponse<T> {
     ui.horizontal(|ui| {
         let text = label.into();
         if !text.is_empty() {
@@ -136,7 +142,6 @@ fn labeled_field<T>(
         }
         content(ui)
     })
-    .inner
 }
 
 fn labeled_error(ui: &mut Ui, label: impl Into<WidgetText>, err: impl Into<anyhow::Error>) {
@@ -941,6 +946,97 @@ impl EFieldEditorConstructor for ConstEditorConstructor {
         };
 
         Ok(Box::new(ConstEditor { item: c.value }))
+    }
+}
+
+// endregion
+
+// region object ID
+
+#[derive(Debug, Clone)]
+struct ObjectIdEditor {
+    ty: ETypeId,
+}
+
+impl EFieldEditor for ObjectIdEditor {
+    fn output(&self) -> EDataType {
+        EDataType::Id { ty: self.ty }
+    }
+
+    fn size(&self) -> EditorSize {
+        EditorSize::Inline
+    }
+
+    fn draw(
+        &self,
+        ui: &mut Ui,
+        _registry: &ETypesRegistry,
+        _path: &FieldPath,
+        field_name: &str,
+        value: &mut EValue,
+        _editors: &FxHashMap<Utf8PathBuf, Box<dyn EFieldEditor>>,
+        _responses: &mut Vec<EditorGraphResponse>,
+    ) {
+        let EValue::Id { value, .. } = value else {
+            unsupported!(ui, field_name, value, self);
+        };
+
+        let text_store = ui.id().with("editor storage");
+
+        let mut fresh = false;
+
+        let (mut text, mut err): (String, Option<String>) = match mem_temp!(ui, text_store) {
+            Some(data) => data,
+            None => {
+                fresh = true;
+                (value.map(|e| e.to_string()).unwrap_or_default(), None)
+            }
+        };
+
+        let res = labeled_field(ui, field_name, |ui| {
+            let color = if err.is_none() {
+                ui.style().visuals.text_color()
+            } else {
+                ui.style().visuals.error_fg_color
+            };
+            if err.is_some() {
+                ui.label(RichText::new("⚠").color(color));
+            } else {
+                ui.label("✅");
+            }
+            let res = TextEdit::singleline(&mut text)
+                .hint_text("mod_id:item_id")
+                .text_color(color)
+                .ui(ui);
+            if res.changed() || fresh {
+                text.retain(|c| matches!(c, 'a'..='z' | '0'..='9' | '_' | '/' | ':'));
+                match EValueId::parse(&text) {
+                    Ok(id) => {
+                        *value = Some(id);
+                        err = None
+                    }
+                    Err(error) => err = Some(error.to_string()),
+                }
+            }
+        });
+
+        if let Some(err) = &err {
+            res.response.on_hover_text(err);
+        }
+
+        mem_temp!(ui, text_store, (text, err))
+    }
+}
+
+#[derive(Debug, Copy, Clone)]
+struct ObjectIdEditorConstructor;
+impl EFieldEditorConstructor for ObjectIdEditorConstructor {
+    fn make_editor(&self, item: &EItemType) -> anyhow::Result<Box<dyn EFieldEditor>> {
+        let EItemType::ObjectId(id) = item else {
+            bail!("Unsupported item")
+        };
+
+        Ok(Box::new(ObjectIdEditor { ty: id.ty }))
     }
 }
 

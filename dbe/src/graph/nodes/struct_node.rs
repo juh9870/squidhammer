@@ -100,7 +100,7 @@ impl EditorNode for StructNode {
 
         if let Some(f) = data.id_field_data() {
             output_parameters.push((
-                Cow::Borrowed("id"),
+                Cow::Borrowed("Id"),
                 OutputParam {
                     id: Default::default(),
                     node: Default::default(),
@@ -109,7 +109,7 @@ impl EditorNode for StructNode {
             ));
         } else {
             output_parameters.push((
-                Cow::Borrowed("id"),
+                Cow::Borrowed("Data"),
                 OutputParam {
                     id: Default::default(),
                     node: Default::default(),

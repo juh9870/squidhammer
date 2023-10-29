@@ -3,8 +3,8 @@ struct {
     const "ItemType" 14
     string "Name"
     struct "Color" "color:argb"
-    number "HomeStarDistance" min=0.0 max=1000.0 type="int" editor="slider"
-    number "WanderingShipsDistance" min=0.0 max=1000.0 type="int" editor="slider"
+    number "HomeStarDistance" min=0.0 max=1000.0 type="int"
+    number "WanderingShipsDistance" min=0.0 max=1000.0 type="int"
     boolean "Hidden"
     boolean "Hostile"
 }

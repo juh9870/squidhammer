@@ -6,15 +6,21 @@ use std::fmt::{Display, Formatter};
 use std::str::FromStr;
 use ustr::Ustr;
 
+#[inline(always)]
+pub fn bad_namespace_char(c: char) -> bool {
+    !matches!(c, 'a'..='z' | '0'..='9' | '_')
+}
+
+#[inline(always)]
+pub fn bad_path_char(c: char) -> bool {
+    !matches!(c, 'a'..='z' | '0'..='9' | '_' | '/')
+}
+
 pub fn namespace_errors(namespace: &str) -> Option<(usize, char)> {
-    namespace
-        .chars()
-        .find_position(|c| !matches!(c, 'a'..='z' | '0'..='9' | '_'))
+    namespace.chars().find_position(|c| bad_namespace_char(*c))
 }
 pub fn path_errors(namespace: &str) -> Option<(usize, char)> {
-    namespace
-        .chars()
-        .find_position(|c| !matches!(c, 'a'..='z' | '0'..='9' | '_' | '/'))
+    namespace.chars().find_position(|c| bad_path_char(*c))
 }
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Hash)]
