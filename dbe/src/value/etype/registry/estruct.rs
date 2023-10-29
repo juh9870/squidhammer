@@ -1,8 +1,10 @@
+use crate::graph::port_shapes::PortShape;
 use crate::value::etype::registry::eitem::{EItemObjectId, EItemType, EItemTypeTrait};
 use crate::value::etype::registry::{ETypeId, ETypesRegistry};
 use crate::value::EValue;
 use anyhow::{bail, Context};
 use egui::Color32;
+use itertools::Itertools;
 use ustr::{Ustr, UstrMap};
 
 #[derive(Debug, Clone)]
@@ -19,6 +21,7 @@ pub struct EStructData {
     pub id_field: Option<usize>,
     pub default_editor: Option<String>,
     pub color: Option<Color32>,
+    pub port_shape: Option<PortShape>,
 }
 
 impl EStructData {
@@ -27,6 +30,7 @@ impl EStructData {
         generic_arguments: Vec<Ustr>,
         default_editor: Option<String>,
         color: Option<Color32>,
+        port_shape: Option<PortShape>,
     ) -> EStructData {
         Self {
             generic_arguments,
@@ -35,6 +39,7 @@ impl EStructData {
             id_field: None,
             default_editor,
             color,
+            port_shape,
         }
     }
 
@@ -53,6 +58,7 @@ impl EStructData {
         mut self,
         arguments: &UstrMap<EItemType>,
         new_id: ETypeId,
+        registry: &mut ETypesRegistry,
     ) -> anyhow::Result<Self> {
         self.ident = new_id;
         for x in &mut self.fields {
@@ -61,6 +67,12 @@ impl EStructData {
                     format!("Generic argument `{}` is not provided", g.argument_name)
                 })?;
                 x.ty = item.clone();
+            }
+        }
+
+        if let Ok((_, item)) = arguments.iter().exactly_one() {
+            if self.color.is_none() {
+                self.color = Some(item.ty().color(registry));
             }
         }
 

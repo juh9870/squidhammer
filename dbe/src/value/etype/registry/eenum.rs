@@ -1,5 +1,6 @@
 use std::fmt::{Display, Formatter};
 
+use crate::graph::port_shapes::PortShape;
 use anyhow::{bail, Context};
 use egui::Color32;
 use itertools::Itertools;
@@ -142,6 +143,7 @@ pub struct EEnumData {
     variant_ids: Vec<EEnumVariantId>,
     pub default_editor: Option<String>,
     pub color: Option<Color32>,
+    pub port_shape: Option<PortShape>,
 }
 
 impl EEnumData {
@@ -150,6 +152,7 @@ impl EEnumData {
         generic_arguments: Vec<Ustr>,
         default_editor: Option<String>,
         color: Option<Color32>,
+        port_shape: Option<PortShape>,
     ) -> Self {
         Self {
             generic_arguments,
@@ -158,6 +161,7 @@ impl EEnumData {
             variant_ids: Default::default(),
             default_editor,
             color,
+            port_shape,
         }
     }
 
@@ -192,6 +196,12 @@ impl EEnumData {
             }
         }
         self.recalculate_variants();
+
+        if let Ok((_, item)) = arguments.iter().exactly_one() {
+            if self.color.is_none() {
+                self.color = Some(item.ty().color(registry));
+            }
+        }
 
         self.generic_arguments = vec![];
 

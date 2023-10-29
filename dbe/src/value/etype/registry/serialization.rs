@@ -7,6 +7,7 @@ use knuffel::traits::ErrorSpan;
 use knuffel::DecodeScalar;
 use miette::{GraphicalReportHandler, GraphicalTheme};
 
+use crate::graph::port_shapes::PortShape;
 use ustr::Ustr;
 use utils::color_format::parse_rgb32;
 
@@ -75,6 +76,8 @@ struct ThingStruct {
     pub editor: Option<String>,
     #[knuffel(property(name = "color"))]
     pub color: Option<String>,
+    #[knuffel(property(name = "port"))]
+    pub port: Option<PortShape>,
     #[knuffel(children)]
     pub fields: Vec<ThingItem>,
 }
@@ -86,7 +89,7 @@ impl ThingStruct {
         id: ETypeId,
     ) -> anyhow::Result<EStructData> {
         let color = self.color.map(|c| parse_rgb32(&c)).transpose()?;
-        let mut data = EStructData::new(id, self.generic_arguments, self.editor, color);
+        let mut data = EStructData::new(id, self.generic_arguments, self.editor, color, self.port);
         for x in self.fields {
             let path = format!("{id}:{}", x.name());
             data.add_field(x.into_struct_field(registry, id, &path)?)?;
@@ -104,6 +107,8 @@ struct ThingEnum {
     pub editor: Option<String>,
     #[knuffel(property(name = "color"))]
     pub color: Option<String>,
+    #[knuffel(property(name = "port"))]
+    pub port: Option<PortShape>,
     #[knuffel(children)]
     variants: Vec<ThingItem>,
 }
@@ -111,7 +116,7 @@ struct ThingEnum {
 impl ThingEnum {
     fn into_eenum(self, registry: &mut ETypesRegistry, id: ETypeId) -> anyhow::Result<EEnumData> {
         let color = self.color.map(|c| parse_rgb32(&c)).transpose()?;
-        let mut data = EEnumData::new(id, self.generic_arguments, self.editor, color);
+        let mut data = EEnumData::new(id, self.generic_arguments, self.editor, color, self.port);
         for e in self.variants {
             let path = format!("{id}::{}", e.name());
             let variant = e.into_enum_variant(registry, id, &path)?;

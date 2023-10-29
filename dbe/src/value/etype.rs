@@ -8,9 +8,9 @@ use random_color::{Luminosity, RandomColor};
 use serde::{Deserialize, Serialize};
 use ustr::Ustr;
 
-use egui_node_graph::port_shapes::{draw_circle_port, draw_rhombus_port};
 use egui_node_graph::{DataTypeMatcherMarker, DataTypeTrait};
 
+use crate::graph::port_shapes::PortShape;
 use crate::value::etype::registry::{ETypeId, ETypesRegistry};
 use crate::value::{ENumber, EValue};
 use crate::EditorGraphState;
@@ -58,13 +58,8 @@ impl EDataType {
             },
         }
     }
-}
 
-impl DataTypeMatcherMarker for EDataType {}
-
-// A trait for the data types, to tell the library how to display them
-impl DataTypeTrait<EditorGraphState> for EDataType {
-    fn data_type_color(&self, user_state: &mut EditorGraphState) -> Color32 {
+    pub fn color(&self, registry: &ETypesRegistry) -> Color32 {
         const NUMBER_COLOR: Color32 = Color32::from_rgb(161, 161, 161);
         const BOOLEAN_COLOR: Color32 = Color32::from_rgb(204, 166, 214);
         const STRING_COLOR: Color32 = Color32::from_rgb(112, 178, 255);
@@ -81,43 +76,51 @@ impl DataTypeTrait<EditorGraphState> for EDataType {
             },
             EDataType::Object { ident }
             | EDataType::Id { ty: ident }
-            | EDataType::Ref { ty: ident } => {
-                // TODO: different colors for objects/ids/refs
-                let reg = user_state.registry.borrow();
-                reg.get_object(ident)
-                    .and_then(|e| e.color())
-                    .unwrap_or_else(|| {
-                        let c = RandomColor::new()
-                            .seed(ident.to_string())
-                            .luminosity(Luminosity::Light)
-                            .alpha(1.0)
-                            .to_rgb_array();
-                        Color32::from_rgb(c[0], c[1], c[2])
-                    })
-            }
+            | EDataType::Ref { ty: ident } => registry
+                .get_object(ident)
+                .and_then(|e| e.color())
+                .unwrap_or_else(|| {
+                    let c = RandomColor::new()
+                        .seed(ident.to_string())
+                        .luminosity(Luminosity::Light)
+                        .alpha(1.0)
+                        .to_rgb_array();
+                    Color32::from_rgb(c[0], c[1], c[2])
+                }),
         }
+    }
+}
+
+impl DataTypeMatcherMarker for EDataType {}
+
+// A trait for the data types, to tell the library how to display them
+impl DataTypeTrait<EditorGraphState> for EDataType {
+    fn data_type_color(&self, user_state: &mut EditorGraphState) -> Color32 {
+        let reg = user_state.registry.borrow();
+        self.color(&reg)
     }
 
     fn draw_port(
         &self,
         ui: &mut Ui,
-        _user_state: &mut EditorGraphState,
+        user_state: &mut EditorGraphState,
         wide_port: bool,
         port_rect: Rect,
         zoom: f32,
         port_color: Color32,
     ) {
-        match self {
-            // EDataType::Boolean => {}
-            // EDataType::Number => {}
-            // EDataType::String => {}
-            EDataType::Id { .. } | EDataType::Ref { .. } => {
-                draw_rhombus_port(ui, wide_port, port_rect, zoom, port_color)
+        let shape = match self {
+            EDataType::Id { .. } | EDataType::Ref { .. } => PortShape::Diamond,
+            EDataType::Object { ident } => {
+                let reg = user_state.registry.borrow();
+                reg.get_object(ident)
+                    .and_then(|e| e.port_shape())
+                    .unwrap_or(PortShape::Circle)
             }
-            // EDataType::Object { .. } => {}
-            // EDataType::Const { .. } => {}
-            _ => draw_circle_port(ui, wide_port, port_rect, zoom, port_color),
-        }
+            _ => PortShape::Circle,
+        };
+
+        shape.draw_port(ui, wide_port, port_rect, zoom, port_color);
     }
 
     fn name(&self) -> Cow<'_, str> {

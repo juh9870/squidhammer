@@ -15,6 +15,7 @@ mod commands;
 mod evaluator;
 pub mod event;
 pub mod nodes;
+pub mod port_shapes;
 
 /// The graph 'global' state. This state struct is passed around to the node and
 /// parameter drawing callbacks. The contents of this struct are entirely up to

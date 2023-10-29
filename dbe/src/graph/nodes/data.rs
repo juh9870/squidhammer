@@ -6,7 +6,8 @@ use crate::value::etype::EDataType;
 use crate::value::EValue;
 use crate::EditorGraph;
 use camino::Utf8PathBuf;
-use egui_node_graph::{NodeDataTrait, NodeId, NodeResponse, UserResponseTrait};
+use egui::{Align, Direction, Layout, Ui};
+use egui_node_graph::{Graph, NodeDataTrait, NodeId, NodeResponse, UserResponseTrait};
 use rustc_hash::FxHashMap;
 
 /// The NodeData holds a custom data struct inside each node. It's useful to
@@ -40,6 +41,28 @@ impl NodeDataTrait for EditorNodeData {
     where
         EditorGraphResponse: UserResponseTrait,
     {
-        vec![]
+        Default::default()
+    }
+
+    fn output_ui(
+        &self,
+        ui: &mut Ui,
+        _node_id: NodeId,
+        _graph: &Graph<Self, Self::DataType, Self::ValueType>,
+        _user_state: &mut Self::UserState,
+        param_name: &str,
+    ) -> Vec<NodeResponse<Self::Response, Self>>
+    where
+        Self::Response: UserResponseTrait,
+    {
+        ui.set_max_width(0.0);
+        ui.with_layout(
+            Layout::from_main_dir_and_cross_align(Direction::RightToLeft, Align::Min),
+            |ui| {
+                ui.label(param_name);
+            },
+        );
+
+        Default::default()
     }
 }

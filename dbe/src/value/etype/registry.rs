@@ -1,3 +1,4 @@
+use crate::graph::port_shapes::PortShape;
 use crate::value::draw::editor::{
     default_editors, EFieldEditor, EFieldEditorConstructor, EFieldEditorError,
 };
@@ -63,6 +64,13 @@ impl EObjectType {
         match self {
             EObjectType::Struct(s) => s.color,
             EObjectType::Enum(e) => e.color,
+        }
+    }
+
+    pub fn port_shape(&self) -> Option<PortShape> {
+        match self {
+            EObjectType::Struct(s) => s.port_shape,
+            EObjectType::Enum(e) => e.port_shape,
         }
     }
 }
@@ -203,7 +211,7 @@ impl ETypesRegistry {
         match obj.clone() {
             EObjectType::Struct(data) => {
                 check_generics(&data.generic_arguments)?;
-                let obj = data.apply_generics(&arguments, long_id)?;
+                let obj = data.apply_generics(&arguments, long_id, self)?;
                 self.register_struct(long_id, obj);
                 Ok(long_id)
             }
