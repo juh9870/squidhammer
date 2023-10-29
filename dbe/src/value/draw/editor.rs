@@ -5,7 +5,7 @@ use anyhow::{anyhow, bail, Context};
 use camino::Utf8PathBuf;
 use dyn_clone::DynClone;
 use egui::collapsing_header::CollapsingState;
-use egui::{Align, Direction, DragValue, Id, RichText, Slider, Ui, WidgetText};
+use egui::{Align, Direction, DragValue, RichText, Slider, Ui, WidgetText};
 use itertools::Itertools;
 use ordered_float::Float;
 use rust_i18n::t;
@@ -22,7 +22,7 @@ use crate::value::etype::registry::eenum::{
 };
 use crate::value::etype::registry::eitem::EItemType;
 use crate::value::etype::registry::{ETypeId, ETypesRegistry};
-use crate::value::etype::EDataType;
+use crate::value::etype::{EDataType, ETypeConst};
 use crate::value::{ENumber, EValue};
 
 /// Upper bound size guarantees of different editors
@@ -110,6 +110,7 @@ pub fn default_editors() -> impl Iterator<Item = (String, Box<dyn EFieldEditorCo
             "enum:full".to_string(),
             Box::new(EnumEditorConstructor::from(EnumEditorType::Full)),
         ),
+        ("const".to_string(), Box::new(ConstEditorConstructor)),
         // other
         ("rgb".to_string(), Box::new(RgbEditorConstructor::rgb())),
         ("rgba".to_string(), Box::new(RgbEditorConstructor::rgba())),
@@ -151,8 +152,12 @@ fn unsupported(ui: &mut Ui, label: impl Into<WidgetText>) {
 
 macro_rules! unsupported {
     ($ui:expr, $label:expr, $value:expr, $editor:expr) => {
-        tracing::warn!(value=?$value, editor=?$editor, "Unsupported value for editor");
-        labeled_error($ui, $label, anyhow!("{}", t!("dbe.editor.unsupported_value")));
+        // tracing::warn!(value=?$value, editor=?$editor, "Unsupported value for editor");
+        labeled_error(
+            $ui,
+            $label,
+            anyhow!("{}", t!("dbe.editor.unsupported_value")),
+        );
         return
     };
 }
@@ -505,7 +510,7 @@ impl EFieldEditor for RgbEditor {
             unsupported!(ui, field_name, value, self);
         };
 
-        CollapsingState::load_with_default_open(ui.ctx(), Id::new(field_name), false)
+        CollapsingState::load_with_default_open(ui.ctx(), ui.id().with(field_name), false)
             .show_header(ui, |ui| {
                 labeled_field(ui, field_name, |ui| {
                     if self.with_alpha {
@@ -581,7 +586,7 @@ impl EFieldEditorConstructor for RgbEditorConstructor {
 
 // endregion
 
-// region Enum
+// region enum
 
 struct EnumEditorData<'a> {
     registry: &'a ETypesRegistry,
@@ -820,11 +825,15 @@ impl EFieldEditor for EnumEditor {
         match self.ty {
             EnumEditorType::Toggle | EnumEditorType::Auto if editor.can_be_toggle() => {
                 if editor.body_size().is_block() {
-                    CollapsingState::load_with_default_open(ui.ctx(), Id::new(field_name), true)
-                        .show_header(ui, |ui| {
-                            labeled_field(ui, field_name, |ui| editor.toggle_editor(ui))
-                        })
-                        .body(|ui| editor.body(ui));
+                    CollapsingState::load_with_default_open(
+                        ui.ctx(),
+                        ui.id().with(field_name),
+                        true,
+                    )
+                    .show_header(ui, |ui| {
+                        labeled_field(ui, field_name, |ui| editor.toggle_editor(ui))
+                    })
+                    .body(|ui| editor.body(ui));
                 } else {
                     let dir = if editor.body_size() <= EditorSize::Inline {
                         Direction::LeftToRight
@@ -843,11 +852,15 @@ impl EFieldEditor for EnumEditor {
             }
             _ => {
                 if editor.body_size().is_block() {
-                    CollapsingState::load_with_default_open(ui.ctx(), Id::new(field_name), true)
-                        .show_header(ui, |ui| {
-                            labeled_field(ui, field_name, |ui| editor.picker(ui))
-                        })
-                        .body(|ui| editor.body(ui));
+                    CollapsingState::load_with_default_open(
+                        ui.ctx(),
+                        ui.id().with(field_name),
+                        true,
+                    )
+                    .show_header(ui, |ui| {
+                        labeled_field(ui, field_name, |ui| editor.picker(ui))
+                    })
+                    .body(|ui| editor.body(ui));
                 } else {
                     labeled_field(ui, field_name, |ui| editor.picker(ui));
                     editor.body(ui);
@@ -878,6 +891,56 @@ impl EFieldEditorConstructor for EnumEditorConstructor {
             ident: e.id,
             ty: self.ty,
         }));
+    }
+}
+
+// endregion
+
+// region const
+
+#[derive(Debug, Clone)]
+struct ConstEditor {
+    item: ETypeConst,
+}
+
+impl EFieldEditor for ConstEditor {
+    fn output(&self) -> EDataType {
+        EDataType::Const { value: self.item }
+    }
+
+    fn size(&self) -> EditorSize {
+        EditorSize::Inline
+    }
+
+    fn draw(
+        &self,
+        ui: &mut Ui,
+        _registry: &ETypesRegistry,
+        _path: &FieldPath,
+        field_name: &str,
+        value: &mut EValue,
+        _editors: &FxHashMap<Utf8PathBuf, Box<dyn EFieldEditor>>,
+        _responses: &mut Vec<EditorGraphResponse>,
+    ) {
+        let const_value = self.item.default_value();
+        if value != &const_value {
+            labeled_error(ui, field_name, anyhow!("{}", t!("dbe.editor.bad_const")))
+        }
+
+        labeled_field(ui, field_name, |ui| ui.label(value.to_string()));
+    }
+}
+
+#[derive(Debug, Clone)]
+struct ConstEditorConstructor;
+
+impl EFieldEditorConstructor for ConstEditorConstructor {
+    fn make_editor(&self, item: &EItemType) -> anyhow::Result<Box<dyn EFieldEditor>> {
+        let EItemType::Const(c) = item else {
+            bail!("Unsupported item")
+        };
+
+        Ok(Box::new(ConstEditor { item: c.value }))
     }
 }
 
@@ -914,20 +977,22 @@ pub fn value_widget(
     editors: &FxHashMap<Utf8PathBuf, Box<dyn EFieldEditor>>,
     responses: &mut Vec<EditorGraphResponse>,
 ) {
-    match editors.get(&field_path.path) {
-        None => {
-            let editor = registry.editor_for_or_err(None, &EItemType::default_item_for(value));
-            trace!(?field_path, label, ?editor, "New editor is requested");
-            // We use clone because drawing an editor might in turn request
-            // another editor, and we don't want to override that
-            responses.push(EditorGraphResponse::ChangeEditor {
-                editor: editor.clone(),
-                path: field_path.clone(),
-            });
-            editor.draw(ui, registry, &field_path, label, value, editors, responses);
-        }
-        Some(editor) => {
-            editor.draw(ui, registry, &field_path, label, value, editors, responses);
-        }
-    };
+    ui.push_id(field_path, |ui| {
+        match editors.get(&field_path.path) {
+            None => {
+                let editor = registry.editor_for_or_err(None, &EItemType::default_item_for(value));
+                trace!(?field_path, label, ?editor, "New editor is requested");
+                // We use clone because drawing an editor might in turn request
+                // another editor, and we don't want to override that
+                responses.push(EditorGraphResponse::ChangeEditor {
+                    editor: editor.clone(),
+                    path: field_path.clone(),
+                });
+                editor.draw(ui, registry, &field_path, label, value, editors, responses);
+            }
+            Some(editor) => {
+                editor.draw(ui, registry, &field_path, label, value, editors, responses);
+            }
+        };
+    });
 }

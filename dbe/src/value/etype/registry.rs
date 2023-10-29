@@ -269,8 +269,8 @@ impl ETypesRegistry {
         ctor.make_editor(ty)
     }
 
-    pub fn editor_for_or_err(&self, _name: Option<&str>, ty: &EItemType) -> Box<dyn EFieldEditor> {
-        match self.editor_for(None, ty) {
+    pub fn editor_for_or_err(&self, name: Option<&str>, ty: &EItemType) -> Box<dyn EFieldEditor> {
+        match self.editor_for(name, ty) {
             Ok(editor) => editor,
             Err(err) => Box::new(EFieldEditorError::new(err.to_string(), ty.ty())),
         }

@@ -8,7 +8,7 @@ use crate::graph::evaluator::OutputsCache;
 use crate::graph::nodes::data::EditorNodeData;
 use crate::graph::nodes::{EditorNode, NodeType};
 use crate::graph::{EditorGraph, EditorGraphState};
-use crate::value::etype::registry::eitem::EItemTypeTrait;
+use crate::value::etype::registry::eitem::{EItemType, EItemTypeTrait};
 use crate::value::etype::registry::estruct::EStructData;
 use crate::value::etype::registry::{ETypeId, ETypesRegistry};
 use crate::value::etype::EDataType;
@@ -44,12 +44,17 @@ impl EditorNode for StructNode {
         };
 
         for field in &data.fields {
+            let is_const = matches!(field.ty, EItemType::Const(_));
             graph.add_input_param(
                 node_id,
                 field.name.to_string(),
                 field.ty.ty(),
                 field.ty.default_value(&reg),
-                InputParamKind::ConnectionOrConstant,
+                if is_const {
+                    InputParamKind::ConstantOnly
+                } else {
+                    InputParamKind::ConnectionOrConstant
+                },
                 true,
             );
         }
@@ -91,10 +96,10 @@ impl EditorNode for StructNode {
         let editors = data
             .fields
             .iter()
-            .filter_map(|field| {
-                reg.editor_for(field.ty.editor_name(), &field.ty)
-                    .map(|name| (Utf8PathBuf::from(field.name.as_str()), name))
-                    .ok()
+            .map(|field| {
+                let field_name = field.name.as_str();
+                let editor = reg.editor_for_or_err(field.ty.editor_name(), &field.ty);
+                (Utf8PathBuf::from("/").join(field_name), editor)
             })
             .collect();
 
