@@ -1,12 +1,13 @@
 use std::fmt::{Display, Formatter};
 
-use anyhow::Context;
+use anyhow::{bail, Context};
 use egui::Color32;
+use itertools::Itertools;
 use serde::{Deserialize, Serialize};
 use ustr::{Ustr, UstrMap};
 
 use crate::value::etype::registry::eitem::{EItemConst, EItemType, EItemTypeTrait};
-use crate::value::etype::registry::{ETypeId, ETypesRegistry};
+use crate::value::etype::registry::{EObjectType, ETypeId, ETypesRegistry};
 use crate::value::etype::ETypeConst;
 use crate::value::EValue;
 
@@ -61,6 +62,74 @@ impl EEnumVariant {
     pub(super) fn new(name: String, pat: EnumPattern, data: EItemType) -> Self {
         Self { pat, data, name }
     }
+
+    pub(super) fn from_eitem(
+        item: EItemType,
+        name: String,
+        registry: &mut ETypesRegistry,
+    ) -> anyhow::Result<EEnumVariant> {
+        let pat = match &item {
+            EItemType::Number(_) => EnumPattern::Number,
+            EItemType::String(_) => EnumPattern::String,
+            EItemType::Boolean(_) => EnumPattern::Boolean,
+            EItemType::Const(c) => EnumPattern::Const(c.value),
+            EItemType::Generic(_) => EnumPattern::Const(ETypeConst::Null),
+            EItemType::Enum(_) => {
+                bail!("Enum variant can't be an enum")
+            }
+            EItemType::ObjectRef(id) => EnumPattern::Ref(id.ty),
+            EItemType::ObjectId(_) => {
+                bail!("Object Id can't appear as an Enum variant")
+            }
+            EItemType::Struct(s) => {
+                registry.assert_defined(&s.id)?;
+                let target_type = registry
+                    .fetch_or_deserialize(s.id)
+                    .context("Error during automatic pattern key detection\n> If you see recursion error at the top of this log, consider specifying `key` parameter manually")?;
+
+                let data = match target_type {
+                    EObjectType::Enum(_) => bail!("Enum variant can't be an another enum"),
+                    EObjectType::Struct(data) => data,
+                };
+                let pat = if s.key.is_none() {
+                    let pat = data.fields.iter().filter_map(|f| {
+                        match &f.ty {
+                            EItemType::Const(c) => {
+                                Some((f.name, c.value))
+                            }
+                            _ => None,
+                        }
+                    }).exactly_one().map_err(|_| anyhow::anyhow!("Target struct `{}` contains multiple constant fields. Please specify pattern manually", s.id))?;
+
+                    EnumPattern::StructField(pat.0.into(), pat.1)
+                } else if let Some(key) = &s.key {
+                    let field = data
+                        .fields
+                        .iter()
+                        .find(|e| e.name == name)
+                        .with_context(|| {
+                            format!("Target struct `{}` doesn't contain a field `{}`", s.id, key,)
+                        })?;
+
+                    let EItemType::Const(c) = &field.ty else {
+                        bail!(
+                            "Target struct `{}` contains a field `{}` but it's not a constant",
+                            s.id,
+                            key,
+                        )
+                    };
+
+                    EnumPattern::StructField(key.as_str().into(), c.value)
+                } else {
+                    bail!("Multiple pattern fields are not supported")
+                };
+
+                pat
+            }
+        };
+
+        Ok(EEnumVariant::new(name, pat, item))
+    }
 }
 
 #[derive(Debug, Clone)]
@@ -89,6 +158,7 @@ impl EEnumData {
             color,
         }
     }
+
     pub fn default_value(&self, registry: &ETypesRegistry) -> EValue {
         let default_variant = self.variants.first().expect("Expect enum to not be empty");
         EValue::Enum {
@@ -100,33 +170,30 @@ impl EEnumData {
         }
     }
 
-    pub fn clone_with_ident(&self, ident: ETypeId) -> EEnumData {
-        let mut clone = self.clone();
-        clone.ident = ident;
-        for variant in &mut clone.variant_ids {
-            variant.ident = ident
-        }
-        clone
-    }
-
     pub fn apply_generics(
-        &self,
+        mut self,
         arguments: &UstrMap<EItemType>,
         new_id: ETypeId,
+        registry: &mut ETypesRegistry,
     ) -> anyhow::Result<Self> {
-        let mut cloned = self.clone_with_ident(new_id);
-        for x in &mut cloned.variants {
-            if let EItemType::Generic(g) = &x.data {
+        self.ident = new_id;
+        for variant in &mut self.variants {
+            if let EItemType::Generic(g) = &variant.data {
                 let item = arguments.get(&g.argument_name).with_context(|| {
                     format!("Generic argument `{}` is not provided", g.argument_name)
                 })?;
-                x.data = item.clone();
+                *variant = EEnumVariant::from_eitem(
+                    item.clone(),
+                    std::mem::take(&mut variant.name),
+                    registry,
+                )?;
             }
         }
+        self.recalculate_variants();
 
-        cloned.generic_arguments = vec![];
+        self.generic_arguments = vec![];
 
-        Ok(cloned)
+        Ok(self)
     }
 
     pub(super) fn add_variant(&mut self, variant: EEnumVariant) {
@@ -135,6 +202,16 @@ impl EEnumData {
             variant: variant.pat,
         });
         self.variants.push(variant);
+    }
+
+    fn recalculate_variants(&mut self) {
+        self.variant_ids.truncate(self.variants.len());
+        for (i, variant) in self.variants.iter().enumerate() {
+            self.variant_ids[i] = EEnumVariantId {
+                ident: self.ident,
+                variant: variant.pat,
+            }
+        }
     }
 
     pub fn variants(&self) -> &Vec<EEnumVariant> {

@@ -87,6 +87,7 @@ impl EItemTypeTrait for EItemConst {
 pub struct EItemStruct {
     pub id: ETypeId,
     pub editor: Option<String>,
+    pub key: Option<String>, // Key for manual enum pattern resolution
 }
 
 impl EItemTypeTrait for EItemStruct {
@@ -223,6 +224,7 @@ impl EItemType {
             EValue::Struct { ident, .. } => EItemType::Struct(EItemStruct {
                 id: *ident,
                 editor: None,
+                key: None,
             }),
             EValue::Id { ty, .. } => EItemType::ObjectId(EItemObjectId {
                 ty: *ty,

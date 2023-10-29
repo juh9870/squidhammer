@@ -50,13 +50,12 @@ impl EStructData {
     }
 
     pub fn apply_generics(
-        &self,
+        mut self,
         arguments: &UstrMap<EItemType>,
         new_id: ETypeId,
     ) -> anyhow::Result<Self> {
-        let mut cloned = self.clone();
-        cloned.ident = new_id;
-        for x in &mut cloned.fields {
+        self.ident = new_id;
+        for x in &mut self.fields {
             if let EItemType::Generic(g) = &x.ty {
                 let item = arguments.get(&g.argument_name).with_context(|| {
                     format!("Generic argument `{}` is not provided", g.argument_name)
@@ -65,9 +64,9 @@ impl EStructData {
             }
         }
 
-        cloned.generic_arguments = vec![];
+        self.generic_arguments = vec![];
 
-        Ok(cloned)
+        Ok(self)
     }
 
     pub fn id_field(&self) -> Option<&EStructField> {

@@ -200,7 +200,7 @@ impl ETypesRegistry {
             Ok(())
         };
 
-        match obj {
+        match obj.clone() {
             EObjectType::Struct(data) => {
                 check_generics(&data.generic_arguments)?;
                 let obj = data.apply_generics(&arguments, long_id)?;
@@ -209,7 +209,7 @@ impl ETypesRegistry {
             }
             EObjectType::Enum(data) => {
                 check_generics(&data.generic_arguments)?;
-                let obj = data.apply_generics(&arguments, long_id)?;
+                let obj = data.apply_generics(&arguments, long_id, self)?;
                 self.register_enum(long_id, obj);
                 Ok(long_id)
             }

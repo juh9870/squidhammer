@@ -1,12 +1,12 @@
-use crate::value::etype::registry::eenum::{EEnumVariant, EnumPattern};
+use crate::value::etype::registry::eenum::EEnumVariant;
 use crate::value::etype::registry::eitem::{
     EItemEnum, EItemObjectId, EItemStruct, EItemType, ENumberType,
 };
 use crate::value::etype::registry::estruct::EStructField;
-use crate::value::etype::registry::{EObjectType, ETypeId, ETypesRegistry};
+use crate::value::etype::registry::{ETypeId, ETypesRegistry};
 use crate::value::etype::ETypeConst;
 use crate::value::ENumber;
-use anyhow::{bail, Context};
+use anyhow::Context;
 use itertools::Itertools;
 use tracing::debug;
 use ustr::Ustr;
@@ -168,6 +168,7 @@ impl ThingFieldTrait for FieldStruct {
             EItemType::Struct(EItemStruct {
                 id,
                 editor: self.editor,
+                key: self.key,
             }),
         );
         Ok(f)
@@ -286,71 +287,8 @@ impl ThingItem {
         root_id: ETypeId,
         path: &str,
     ) -> anyhow::Result<EEnumVariant> {
-        let pat = match &self {
-            Self::Number(_) => EnumPattern::Number,
-            Self::String(_) => EnumPattern::String,
-            Self::Boolean(_) => EnumPattern::Boolean,
-            Self::Const(c) => EnumPattern::Const(c.value),
-            Self::Generic(_) => EnumPattern::Const(ETypeConst::Null),
-            Self::Enum(_) => {
-                bail!("Enum variant can't be an enum")
-            }
-            Self::Ref(id) => EnumPattern::Ref(id.ty),
-            Self::Id(_) => {
-                bail!("Object Id can't appear as an Enum variant")
-            }
-            Self::Struct(s) => {
-                registry.assert_defined(&s.id)?;
-                let target_type = registry
-                    .fetch_or_deserialize(s.id)
-                    .context("Error during automatic pattern key detection\n> If you see recursion error at the top of this log, consider specifying `key` parameter manually")?;
-
-                let data = match target_type {
-                    EObjectType::Enum(_) => bail!("Enum variant can't be an another enum"),
-                    EObjectType::Struct(data) => data,
-                };
-                let pat = if s.key.is_none() {
-                    let pat = data.fields.iter().filter_map(|f| {
-                                match &f.ty {
-                                    EItemType::Const(c) => {
-                                        Some((f.name, c.value))
-                                    }
-                                    _ => None,
-                                }
-                            }).exactly_one().map_err(|_| anyhow::anyhow!("Target struct `{}` contains multiple constant fields. Please specify pattern manually", s.id))?;
-
-                    EnumPattern::StructField(pat.0.into(), pat.1)
-                } else if let Some(key) = &s.key {
-                    let field =
-                        data.fields
-                            .iter()
-                            .find(|e| e.name == s.name)
-                            .with_context(|| {
-                                format!(
-                                    "Target struct `{}` doesn't contain a field `{}`",
-                                    s.id, key,
-                                )
-                            })?;
-
-                    let EItemType::Const(c) = &field.ty else {
-                        bail!(
-                            "Target struct `{}` contains a field `{}` but it's not a constant",
-                            s.id,
-                            key,
-                        )
-                    };
-
-                    EnumPattern::StructField(key.as_str().into(), c.value)
-                } else {
-                    bail!("Multiple pattern fields are not supported")
-                };
-
-                pat
-            }
-        };
-
         let (name, item) = self.into_item(registry, root_id, path)?;
-        Ok(EEnumVariant::new(name, pat, item))
+        Ok(EEnumVariant::from_eitem(item, name, registry)?)
     }
 
     pub fn into_struct_field(
