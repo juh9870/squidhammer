@@ -6,9 +6,10 @@ use crate::value::etype::EDataType;
 use crate::value::EValue;
 use crate::EditorGraph;
 use camino::Utf8PathBuf;
-use egui::{Align, Direction, Layout, Ui};
+use egui::{Align2, Pos2, TextStyle, Ui};
 use egui_node_graph::{Graph, NodeDataTrait, NodeId, NodeResponse, UserResponseTrait};
 use rustc_hash::FxHashMap;
+use utils::mem_temp;
 
 /// The NodeData holds a custom data struct inside each node. It's useful to
 /// store additional information that doesn't live in parameters. For this
@@ -33,7 +34,7 @@ impl NodeDataTrait for EditorNodeData {
     // node graph library.
     fn bottom_ui(
         &self,
-        _ui: &mut egui::Ui,
+        ui: &mut egui::Ui,
         _node_id: NodeId,
         _graph: &EditorGraph,
         _user_state: &mut Self::UserState,
@@ -41,6 +42,7 @@ impl NodeDataTrait for EditorNodeData {
     where
         EditorGraphResponse: UserResponseTrait,
     {
+        mem_temp!(ui, ui.id().with("output_sizer"), ui.min_rect().width());
         Default::default()
     }
 
@@ -55,12 +57,20 @@ impl NodeDataTrait for EditorNodeData {
     where
         Self::Response: UserResponseTrait,
     {
-        ui.set_max_width(0.0);
-        ui.with_layout(
-            Layout::from_main_dir_and_cross_align(Direction::RightToLeft, Align::Min),
-            |ui| {
-                ui.label(param_name);
-            },
+        let last_width: f32 =
+            mem_temp!(ui, ui.id().with("output_sizer")).unwrap_or(ui.min_rect().right());
+        let label_pos = ui.label("");
+
+        ui.painter().text(
+            Pos2::new(ui.min_rect().left() + last_width, label_pos.rect.top()),
+            Align2::RIGHT_TOP,
+            param_name,
+            ui.style()
+                .text_styles
+                .get(&TextStyle::Body)
+                .cloned()
+                .unwrap_or_default(),
+            ui.visuals().text_color(),
         );
 
         Default::default()
