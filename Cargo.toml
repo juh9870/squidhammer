@@ -1,11 +1,23 @@
 [workspace]
 resolver = "2"
-members = ["dbe", "eframe_runner", "egui_node_graph/egui_node_graph", "list_edit", "node_macro", "utils"]
+members = [
+    "dbe",
+    "dbe2",
+    "dbe2_runner",
+    "dbe2_ui",
+    "eframe_runner",
+    "egui_node_graph/egui_node_graph",
+    "list_edit",
+    "node_macro",
+    "utils",
+    "xtask",
+]
 
 [profile.release]
 opt-level = 3
 codegen-units = 1
 lto = true
+strip = true
 
 # Enable a small amount of optimization in debug mode
 [profile.dev]
