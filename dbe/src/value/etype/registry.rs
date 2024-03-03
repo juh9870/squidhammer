@@ -55,8 +55,8 @@ impl EObjectType {
 
     pub fn default_editor(&self) -> Option<&str> {
         match self {
-            EObjectType::Struct(s) => s.default_editor.as_ref().map(|e| e.as_str()),
-            EObjectType::Enum(e) => e.default_editor.as_ref().map(|e| e.as_str()),
+            EObjectType::Struct(s) => s.default_editor.as_deref(),
+            EObjectType::Enum(e) => e.default_editor.as_deref(),
         }
     }
 
@@ -119,7 +119,7 @@ impl ETypesRegistry {
             root,
             types,
             values: Default::default(),
-            editors: default_editors().into_iter().collect(),
+            editors: default_editors().collect(),
             last_id: 0,
         };
 
@@ -144,7 +144,7 @@ impl ETypesRegistry {
             if let Some(name) = e.id().as_raw() {
                 return name.contains(&query);
             }
-            return false;
+            false
         })
     }
 

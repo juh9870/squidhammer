@@ -55,11 +55,11 @@ pub trait EditorNode {
     ) -> anyhow::Result<()>;
 
     fn label(&self) -> Option<String> {
-        return None;
+        None
     }
 
     fn appear_in_search(&self) -> bool {
-        return true;
+        true
     }
 
     fn user_data(&self, _user_state: &mut EditorGraphState) -> Option<EditorNodeData> {
@@ -159,7 +159,7 @@ impl NodeTemplateIter for AllEditorNodeTypes {
         });
 
         structs
-            .chain(NodeType::iter().filter(|e| EditorNode::appear_in_search(e)))
+            .chain(NodeType::iter().filter(EditorNode::appear_in_search))
             .collect_vec()
     }
 }
@@ -296,6 +296,4 @@ pub fn sync_all_nodes_data(
     for x in graph.nodes.keys().collect_vec() {
         sync_node_data(x, graph, user_state)
     }
-
-    return;
 }

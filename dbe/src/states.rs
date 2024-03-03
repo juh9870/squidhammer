@@ -78,7 +78,7 @@ fn app_scale_slider(ui: &mut Ui) -> Response {
 fn bad_fps_panel(ui: &mut Ui) -> Response {
     ui.label("FPS");
     let fps_id = egui::Id::from("FPS");
-    let mut buf = mem_temp!(ui, fps_id).unwrap_or_else(CircularBuffer::<128, Instant>::new);
+    let mut buf: CircularBuffer<120, _> = mem_temp!(ui, fps_id).unwrap_or_default();
     buf.push_front(Instant::now());
     let elapsed = buf.back().unwrap().elapsed().as_millis() as f64 / 1000.0;
     let fps = buf.len() as f64 / elapsed;

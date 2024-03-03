@@ -23,7 +23,7 @@ pub(super) trait ThingFieldTrait {
 }
 
 fn validate_id(id: &ETypeId, registry: &ETypesRegistry) -> anyhow::Result<()> {
-    registry.assert_defined(&id)
+    registry.assert_defined(id)
 }
 macro_rules! impl_simple {
     ($item:ty, $field_item:tt, [$($field:ident),* $(,)?] $(, [$($reference:ident),+ $(,)?])?) => {
@@ -288,7 +288,7 @@ impl ThingItem {
         path: &str,
     ) -> anyhow::Result<EEnumVariant> {
         let (name, item) = self.into_item(registry, root_id, path)?;
-        Ok(EEnumVariant::from_eitem(item, name, registry)?)
+        EEnumVariant::from_eitem(item, name, registry)
     }
 
     pub fn into_struct_field(

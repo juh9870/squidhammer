@@ -36,9 +36,10 @@ pub fn deserialize_thing(
 ) -> Result<EObjectType, anyhow::Error> {
     let thing = knuffel::parse::<Vec<ThingVariant>>(&id.to_string(), data).map_err(|err| {
         let mut report = String::new();
-        if let Err(_) = GraphicalReportHandler::new()
+        if GraphicalReportHandler::new()
             .with_theme(GraphicalTheme::none())
             .render_report(&mut report, &err)
+            .is_err()
         {
             panic!("Failed to format error");
         }
@@ -137,7 +138,7 @@ impl<S: ErrorSpan> DecodeScalar<S> for ETypeConst {
         value: &Spanned<Literal, S>,
         _ctx: &mut knuffel::decode::Context<S>,
     ) -> Result<Self, DecodeError<S>> {
-        let l: &Literal = &value;
+        let l: &Literal = value;
         Ok(match l {
             Literal::Bool(bool) => ETypeConst::Boolean(*bool),
             Literal::Int(num) => match TryInto::<u64>::try_into(num) {

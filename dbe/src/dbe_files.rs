@@ -176,7 +176,7 @@ impl DbeFileSystem {
                     EditorItem::Raw(data) => std::fs::write(path, data)?,
                     EditorItem::Empty => unreachable!(),
                     EditorItem::Type(..) => bail!("Serialization of Thing files is not supported"),
-                    EditorItem::Value(data) => std::fs::write(path, &serde_json::to_vec(data)?)?,
+                    EditorItem::Value(data) => std::fs::write(path, serde_json::to_vec(data)?)?,
                 };
             })
             .with_context(|| format!("While saving file at `{path}`"))

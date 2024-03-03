@@ -102,7 +102,7 @@ impl EEnumVariant {
                         }
                     }).exactly_one().map_err(|_| anyhow::anyhow!("Target struct `{}` contains multiple constant fields. Please specify pattern manually", s.id))?;
 
-                    EnumPattern::StructField(pat.0.into(), pat.1)
+                    EnumPattern::StructField(pat.0, pat.1)
                 } else if let Some(key) = &s.key {
                     let field = data
                         .fields
@@ -251,7 +251,7 @@ impl EEnumVariantId {
         self.ident
     }
     pub fn matches(&self, variant: &EEnumVariant) -> bool {
-        return self.variant == variant.pat;
+        self.variant == variant.pat
     }
     pub fn pattern(&self) -> EnumPattern {
         self.variant

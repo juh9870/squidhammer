@@ -60,7 +60,7 @@ impl EItemTypeTrait for tStruct {
     }
 
     fn editor_name(&self) -> Option<&str> {
-        self.editor.as_ref().map(|s| s.as_str())
+        self.editor.as_deref()
     }
 }
 
@@ -100,7 +100,7 @@ impl EItemTypeTrait for EItemStruct {
     }
 
     fn editor_name(&self) -> Option<&str> {
-        self.editor.as_ref().map(|s| s.as_str())
+        self.editor.as_deref()
     }
 }
 
@@ -120,7 +120,7 @@ impl EItemTypeTrait for EItemEnum {
     }
 
     fn editor_name(&self) -> Option<&str> {
-        self.editor.as_ref().map(|s| s.as_str())
+        self.editor.as_deref()
     }
 }
 
@@ -143,7 +143,7 @@ impl EItemTypeTrait for EItemObjectId {
     }
 
     fn editor_name(&self) -> Option<&str> {
-        self.editor.as_ref().map(|s| s.as_str())
+        self.editor.as_deref()
     }
 }
 
@@ -166,7 +166,7 @@ impl EItemTypeTrait for EItemObjectRef {
     }
 
     fn editor_name(&self) -> Option<&str> {
-        self.editor.as_ref().map(|s| s.as_str())
+        self.editor.as_deref()
     }
 }
 

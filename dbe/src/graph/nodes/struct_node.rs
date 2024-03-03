@@ -47,7 +47,7 @@ impl EditorNode for StructNode {
     }
 
     fn categories(&self) -> Vec<&'static str> {
-        return vec!["structs"];
+        vec!["structs"]
     }
 
     fn has_side_effects(&self) -> bool {

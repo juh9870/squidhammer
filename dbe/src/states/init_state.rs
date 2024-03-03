@@ -63,7 +63,7 @@ fn init_editor(fs: &mut DbeFileSystem) -> anyhow::Result<ETypesRegistry> {
 
         match ext.as_ref() {
             "kdl" => {
-                let id = ETypeId::from_path(&path, &config.types.root).with_context(|| {
+                let id = ETypeId::from_path(path, &config.types.root).with_context(|| {
                     format!("While generating type identifier for file `{path}`")
                 })?;
                 let value: String = String::from_utf8(raw_data.clone()).with_context(

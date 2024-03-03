@@ -374,11 +374,11 @@ impl EFieldEditorConstructor for NumberEditorConstructor {
         };
 
         let range = ty.min.unwrap_or(ENumber::min_value())..=ty.max.unwrap_or(ENumber::max_value());
-        return Ok(Box::new(NumberEditor {
+        Ok(Box::new(NumberEditor {
             range,
             logarithmic: ty.logarithmic,
             slider: self.slider,
-        }));
+        }))
     }
 }
 
@@ -892,10 +892,10 @@ impl EFieldEditorConstructor for EnumEditorConstructor {
             bail!("Unsupported item")
         };
 
-        return Ok(Box::new(EnumEditor {
+        Ok(Box::new(EnumEditor {
             ident: e.id,
             ty: self.ty,
-        }));
+        }))
     }
 }
 
@@ -1084,10 +1084,10 @@ pub fn value_widget(
                     editor: editor.clone(),
                     path: field_path.clone(),
                 });
-                editor.draw(ui, registry, &field_path, label, value, editors, responses);
+                editor.draw(ui, registry, field_path, label, value, editors, responses);
             }
             Some(editor) => {
-                editor.draw(ui, registry, &field_path, label, value, editors, responses);
+                editor.draw(ui, registry, field_path, label, value, editors, responses);
             }
         };
     });
