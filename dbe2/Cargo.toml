@@ -5,3 +5,16 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+ahash = { version = "0.8.8", features = ["serde"] }
+itertools = "0.12.1"
+knuffel = "3.2.0"
+miette = "7.0.0"
+ordered-float = { version = "4.2.0", features = ["serde"] }
+paste = "1.0.14"
+serde = { version = "1.0.196", features = ["derive"] }
+strum = { version = "0.26.1", features = ["derive"] }
+tracing = "0.1.40"
+ustr = { version = "1.0.0", features = ["serde"] }
+
+[dev-dependencies]
+rstest = "0.18.2"

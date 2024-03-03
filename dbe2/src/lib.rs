@@ -1,14 +1,11 @@
-pub fn add(left: usize, right: usize) -> usize {
-    left + right
-}
+pub mod etype;
+pub mod registry;
+pub(crate) mod serialization;
+pub mod value;
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn it_works() {
-        let result = add(2, 2);
-        assert_eq!(result, 4);
-    }
+/// Helper for wrapping a code block to help with contextualizing errors
+/// Better editor support but slightly worse ergonomic than a macro
+#[inline(always)]
+pub(crate) fn m_try<T>(func: impl FnOnce() -> miette::Result<T>) -> miette::Result<T> {
+    func()
 }
