@@ -1,13 +1,13 @@
 [workspace]
 resolver = "2"
 members = [
-    "dbe",
+#    "dbe",
     "dbe2",
     "dbe2_runner",
     "dbe2_ui",
-    "eframe_runner",
-    "egui_node_graph/egui_node_graph",
-    "list_edit",
+#    "eframe_runner",
+#    "egui_node_graph/egui_node_graph",
+#    "list_edit",
     "node_macro",
     "utils",
     "xtask",
