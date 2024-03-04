@@ -29,6 +29,13 @@ macro_rules! id_type {
                     None
                 }
             }
+
+            /// Ordering for the internal usages. May change between crate versions,
+            /// and should not be relied upon for any persistent store
+            #[must_use]
+            pub(crate) fn ord(&self) -> impl Ord {
+                self.0.ord()
+            }
         }
 
         impl std::fmt::Display for $ident {

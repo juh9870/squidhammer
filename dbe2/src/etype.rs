@@ -61,8 +61,14 @@ impl EDataType {
                 ty: *ty,
                 value: None,
             },
-            EDataType::List { .. } => todo!(),
-            EDataType::Map { .. } => todo!(),
+            EDataType::List { id } => EValue::List {
+                id: *id,
+                values: vec![],
+            },
+            EDataType::Map { id } => EValue::Map {
+                id: *id,
+                values: Default::default(),
+            },
         }
     }
 

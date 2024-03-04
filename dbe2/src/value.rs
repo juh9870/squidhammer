@@ -2,19 +2,24 @@ use crate::etype::econst::ETypeConst;
 use crate::etype::eenum::variant::EEnumVariantId;
 use crate::etype::EDataType;
 use crate::value::id::{EListId, EMapId, ETypeId, EValueId};
-use ahash::AHashMap;
+use crate::value::ord::EValueOrd;
 use itertools::Itertools;
 use ordered_float::OrderedFloat;
 use serde::{Deserialize, Serialize};
+
+use std::collections::BTreeMap;
 use std::fmt::{Display, Formatter};
-use std::hash::{Hash, Hasher};
-use ustr::UstrMap;
+use std::hash::Hash;
+use strum::EnumDiscriminants;
+use ustr::Ustr;
 
 pub mod id;
+pub mod ord;
 
 pub type ENumber = OrderedFloat<f64>;
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq, Hash, EnumDiscriminants)]
+#[strum_discriminants(derive(Ord, PartialOrd), vis())]
 #[serde(tag = "type")]
 pub enum EValue {
     Null,
@@ -29,7 +34,7 @@ pub enum EValue {
     },
     Struct {
         ident: ETypeId,
-        fields: UstrMap<EValue>,
+        fields: BTreeMap<Ustr, EValue>,
     },
     Id {
         ty: ETypeId,
@@ -49,23 +54,9 @@ pub enum EValue {
     },
     Map {
         id: EMapId,
-        values: AHashMap<EValue, EValue>,
+        values: BTreeMap<EValueOrd, EValue>,
     },
 }
-
-impl PartialEq for EValue {
-    fn eq(&self, _other: &Self) -> bool {
-        todo!()
-    }
-}
-
-impl Hash for EValue {
-    fn hash<H: Hasher>(&self, _state: &mut H) {
-        todo!()
-    }
-}
-
-impl Eq for EValue {}
 
 impl EValue {
     pub fn ty(&self) -> EDataType {
@@ -229,11 +220,19 @@ impl Display for EValue {
                         .unwrap_or_else(|| "null".to_string())
                 )
             }
-            EValue::List { .. } => {
-                todo!()
+            EValue::List { id, values } => {
+                write!(
+                    f,
+                    "{id}[{}]",
+                    values.iter().map(|e| e.to_string()).join(", ")
+                )
             }
-            EValue::Map { .. } => {
-                todo!()
+            EValue::Map { id, values } => {
+                write!(
+                    f,
+                    "{id}{{{}}}",
+                    values.iter().map(|(k, v)| format!("{k}: {v}")).join(", ")
+                )
             }
         }
     }

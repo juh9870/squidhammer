@@ -1,3 +1,4 @@
+use std::cmp::Ordering;
 use std::fmt::{Display, Formatter};
 use std::path::Path;
 use std::str::FromStr;
@@ -155,6 +156,13 @@ impl EditorId {
     // pub fn raw(&self) -> &Ustr {
     //     &self.0
     // }
+
+    /// Ordering for the internal usages. May change between crate versions,
+    /// and should not be relied upon for any persistent store
+    #[must_use]
+    pub(crate) fn ord(&self) -> impl Ord {
+        EditorIdOrd(*self)
+    }
 }
 
 impl FromStr for EditorId {
@@ -170,6 +178,26 @@ impl Display for EditorId {
         match self {
             EditorId::Persistent(id) => write!(f, "{}", id),
             EditorId::Temp(id) => write!(f, "$temp:{}", id),
+        }
+    }
+}
+
+#[derive(Debug, Eq, PartialEq)]
+struct EditorIdOrd(EditorId);
+
+impl PartialOrd for EditorIdOrd {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+impl Ord for EditorIdOrd {
+    fn cmp(&self, other: &Self) -> Ordering {
+        match (self.0, other.0) {
+            (EditorId::Persistent(a), EditorId::Persistent(b)) => a.cmp(&b),
+            (EditorId::Persistent(_), EditorId::Temp(_)) => Ordering::Greater,
+            (EditorId::Temp(_), EditorId::Persistent(_)) => Ordering::Less,
+            (EditorId::Temp(a), EditorId::Temp(b)) => a.cmp(&b),
         }
     }
 }

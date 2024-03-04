@@ -9,6 +9,7 @@ use crate::value::EValue;
 use itertools::Itertools;
 use miette::{bail, miette, Context};
 use serde::{Deserialize, Serialize};
+use std::cmp::Ordering;
 use std::fmt::{Display, Formatter};
 use ustr::Ustr;
 
@@ -104,7 +105,7 @@ impl EEnumVariant {
     }
 }
 
-#[derive(Debug, Copy, Clone, Eq, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Hash, Serialize, Deserialize)]
 pub struct EEnumVariantId {
     pub(super) ident: ETypeId,
     pub(super) variant: Ustr,
@@ -137,6 +138,13 @@ impl EEnumVariantId {
     pub fn default_value(&self, registry: &ETypesRegistry) -> Option<EValue> {
         self.variant(registry).map(|e| e.default_value(registry))
     }
+
+    /// Ordering for the internal usages. May change between crate versions,
+    /// and should not be relied upon for any persistent store
+    #[must_use]
+    pub(crate) fn ord(&self) -> impl Ord {
+        EEnumVariantIdOrd(*self)
+    }
 }
 
 impl Display for EEnumVariantId {
@@ -146,3 +154,22 @@ impl Display for EEnumVariantId {
 }
 
 pub type EEnumVariantWithId<'a> = (&'a EEnumVariant, &'a EEnumVariantId);
+
+#[derive(Debug, Eq, PartialEq)]
+struct EEnumVariantIdOrd(EEnumVariantId);
+
+impl PartialOrd for EEnumVariantIdOrd {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+impl Ord for EEnumVariantIdOrd {
+    fn cmp(&self, other: &Self) -> Ordering {
+        self.0
+            .ident
+            .ord()
+            .cmp(&other.0.ident.ord())
+            .then_with(|| self.0.variant.cmp(&other.0.variant))
+    }
+}
