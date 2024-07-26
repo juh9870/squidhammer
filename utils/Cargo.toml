@@ -5,11 +5,10 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-anyhow = "1"
-egui = "0.22.0"
-indent = "0.1.1"
-itertools = "0.11.0"
+egui = "0.28.1"
+itertools = "0.13.0"
+miette = "7.2.0"
 thiserror = "1.0.47"
 
 [dev-dependencies]
-rstest = "0.18.2"
+rstest = "0.21.0"

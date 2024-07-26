@@ -25,7 +25,7 @@ pub fn path_errors(namespace: &str) -> Option<(usize, char)> {
     namespace.chars().find_position(|c| bad_path_char(*c))
 }
 
-#[derive(Debug, Copy, Clone, Eq, PartialEq, Hash)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Hash, Ord, PartialOrd)]
 pub enum EditorId {
     Persistent(Ustr),
     Temp(u64),
@@ -156,13 +156,6 @@ impl EditorId {
     // pub fn raw(&self) -> &Ustr {
     //     &self.0
     // }
-
-    /// Ordering for the internal usages. May change between crate versions,
-    /// and should not be relied upon for any persistent store
-    #[must_use]
-    pub(crate) fn ord(&self) -> impl Ord {
-        EditorIdOrd(*self)
-    }
 }
 
 impl FromStr for EditorId {

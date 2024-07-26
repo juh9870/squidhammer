@@ -2,7 +2,6 @@ use crate::etype::econst::ETypeConst;
 use crate::etype::eenum::variant::EEnumVariantId;
 use crate::etype::EDataType;
 use crate::value::id::{EListId, EMapId, ETypeId, EValueId};
-use crate::value::ord::EValueOrd;
 use itertools::Itertools;
 use ordered_float::OrderedFloat;
 use serde::{Deserialize, Serialize};
@@ -14,11 +13,12 @@ use strum::EnumDiscriminants;
 use ustr::Ustr;
 
 pub mod id;
-pub mod ord;
 
 pub type ENumber = OrderedFloat<f64>;
 
-#[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq, Hash, EnumDiscriminants)]
+#[derive(
+    Debug, Clone, Serialize, Deserialize, Eq, PartialEq, Hash, EnumDiscriminants, Ord, PartialOrd,
+)]
 #[strum_discriminants(derive(Ord, PartialOrd), vis())]
 #[serde(tag = "type")]
 pub enum EValue {
@@ -54,7 +54,7 @@ pub enum EValue {
     },
     Map {
         id: EMapId,
-        values: BTreeMap<EValueOrd, EValue>,
+        values: BTreeMap<EValue, EValue>,
     },
 }
 

@@ -1,7 +1,9 @@
-use anyhow::{anyhow, bail};
 use egui::{Color32, Rgba};
+use miette::{bail, miette};
 use std::fmt::{Display, Formatter};
 use std::str::FromStr;
+
+pub use egui::ecolor;
 
 #[derive(Debug, Copy, Clone, Default, Eq, PartialEq, Hash)]
 pub enum ColorChannel {
@@ -26,7 +28,7 @@ impl Display for ColorChannel {
 }
 
 impl TryFrom<char> for ColorChannel {
-    type Error = anyhow::Error;
+    type Error = miette::Error;
 
     fn try_from(value: char) -> Result<Self, Self::Error> {
         Ok(match value {
@@ -74,7 +76,7 @@ impl ColorFormat {
         self.0[3] != ColorChannel::None
     }
 
-    pub fn parse(&self, mut color: &str) -> anyhow::Result<Rgba> {
+    pub fn parse(&self, mut color: &str) -> miette::Result<Rgba> {
         if color.starts_with('#') {
             color = &color[1..];
         }
@@ -101,7 +103,7 @@ impl ColorFormat {
                 continue;
             }
             let value = u8::from_str_radix(raw, 16)
-                .map_err(|_| anyhow!("Failed to parse {} color component: {}", channel, raw))?
+                .map_err(|_| miette!("Failed to parse {} color component: {}", channel, raw))?
                 as f32;
             match channel {
                 ColorChannel::None => {
@@ -148,10 +150,10 @@ impl Display for ColorFormat {
 }
 
 impl FromStr for ColorFormat {
-    type Err = anyhow::Error;
+    type Err = miette::Error;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let format_error = |i| anyhow!("Color format must have 3 or 4 components, got {i}");
+        let format_error = |i| miette!("Color format must have 3 or 4 components, got {i}");
 
         let mut components = s.chars().map(TryInto::<ColorChannel>::try_into);
 
@@ -190,7 +192,7 @@ impl FromStr for ColorFormat {
     }
 }
 
-pub fn parse_rgb32(color: &str) -> anyhow::Result<Color32> {
+pub fn parse_rgb32(color: &str) -> miette::Result<Color32> {
     ColorFormat::rgb().parse(color).map(|e| {
         let rgba = e.to_rgba_unmultiplied();
         Color32::from_rgba_unmultiplied(
@@ -262,7 +264,7 @@ mod tests {
         assert!(ColorFormat::from_str(&raw).is_err())
     }
 
-    fn parse_color(raw: &str, format: &str) -> anyhow::Result<Rgba> {
+    fn parse_color(raw: &str, format: &str) -> miette::Result<Rgba> {
         let format = ColorFormat::from_str(format).expect("Should parse");
         format.parse(raw)
     }

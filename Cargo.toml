@@ -1,17 +1,23 @@
 [workspace]
 resolver = "2"
 members = [
-#    "dbe",
+    #    "dbe",
     "dbe2",
     "dbe2_runner",
     "dbe2_ui",
-#    "eframe_runner",
-#    "egui_node_graph/egui_node_graph",
-#    "list_edit",
+    #    "eframe_runner",
+    #    "egui_node_graph/egui_node_graph",
+    #    "list_edit",
     "node_macro",
     "utils",
     "xtask",
 ]
+
+[patch.'https://github.com/TheLostLambda/miette']
+miette = { git = "https://github.com/zkat/miette", rev = "bf5aa3742fd664be3c93160b9c28c145b1ed8bc9" }
+
+[patch.crates-io]
+miette = { git = "https://github.com/zkat/miette", rev = "bf5aa3742fd664be3c93160b9c28c145b1ed8bc9" }
 
 [profile.release]
 opt-level = 3
@@ -22,6 +28,8 @@ strip = true
 # Enable a small amount of optimization in debug mode
 [profile.dev]
 opt-level = 0
+#debug = 0
+#strip = "debuginfo"
 
 # Enable high optimizations for dependencies (incl. Bevy), but not for our code:
 [profile.dev.package."*"]

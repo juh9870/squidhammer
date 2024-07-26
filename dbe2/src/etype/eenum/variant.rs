@@ -9,7 +9,6 @@ use crate::value::EValue;
 use itertools::Itertools;
 use miette::{bail, miette, Context};
 use serde::{Deserialize, Serialize};
-use std::cmp::Ordering;
 use std::fmt::{Display, Formatter};
 use ustr::Ustr;
 
@@ -38,12 +37,15 @@ impl EEnumVariant {
         name: Ustr,
         registry: &mut ETypesRegistry,
     ) -> miette::Result<EEnumVariant> {
+        if item.is_generic() {
+            return Ok(EEnumVariant::new(name, EnumPattern::Never, item));
+        }
         let pat = match &item.ty() {
             EDataType::Boolean => EnumPattern::Boolean,
             EDataType::Number => EnumPattern::Number,
             EDataType::String => EnumPattern::String,
             EDataType::Id { .. } => {
-                bail!("Object Id can't appear as an Enum variant");
+                bail!("object Id can't appear as an Enum variant");
             }
             EDataType::Ref { ty } => EnumPattern::Ref(*ty),
             EDataType::Const { value } => EnumPattern::Const(*value),
@@ -52,9 +54,9 @@ impl EEnumVariant {
             EDataType::Object { ident } => {
                 registry.assert_defined(ident)?;
 
-                let target_type = registry.fetch_or_deserialize(*ident).context("Error during automatic pattern key detection\n> If you see recursion error at the top of this log, consider specifying `key` parameter manually")?;
+                let target_type = registry.fetch_or_deserialize(*ident).context("error during automatic pattern key detection\n> If you see recursion error at the top of this log, consider specifying `key` parameter manually")?;
                 let data = match target_type {
-                    EObjectType::Enum(_) => bail!("Enum variant can't be an another enum"),
+                    EObjectType::Enum(_) => bail!("enum variant can't be an another enum"),
                     EObjectType::Struct(data) => data,
                 };
 
@@ -105,7 +107,7 @@ impl EEnumVariant {
     }
 }
 
-#[derive(Debug, Copy, Clone, Eq, PartialEq, Hash, Serialize, Deserialize)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Hash, Serialize, Deserialize, Ord, PartialOrd)]
 pub struct EEnumVariantId {
     pub(super) ident: ETypeId,
     pub(super) variant: Ustr,
@@ -138,13 +140,6 @@ impl EEnumVariantId {
     pub fn default_value(&self, registry: &ETypesRegistry) -> Option<EValue> {
         self.variant(registry).map(|e| e.default_value(registry))
     }
-
-    /// Ordering for the internal usages. May change between crate versions,
-    /// and should not be relied upon for any persistent store
-    #[must_use]
-    pub(crate) fn ord(&self) -> impl Ord {
-        EEnumVariantIdOrd(*self)
-    }
 }
 
 impl Display for EEnumVariantId {
@@ -154,22 +149,3 @@ impl Display for EEnumVariantId {
 }
 
 pub type EEnumVariantWithId<'a> = (&'a EEnumVariant, &'a EEnumVariantId);
-
-#[derive(Debug, Eq, PartialEq)]
-struct EEnumVariantIdOrd(EEnumVariantId);
-
-impl PartialOrd for EEnumVariantIdOrd {
-    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        Some(self.cmp(other))
-    }
-}
-
-impl Ord for EEnumVariantIdOrd {
-    fn cmp(&self, other: &Self) -> Ordering {
-        self.0
-            .ident
-            .ord()
-            .cmp(&other.0.ident.ord())
-            .then_with(|| self.0.variant.cmp(&other.0.variant))
-    }
-}

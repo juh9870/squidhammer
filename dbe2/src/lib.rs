@@ -1,4 +1,6 @@
 pub mod etype;
+pub mod json_utils;
+pub mod project;
 pub mod registry;
 pub(crate) mod serialization;
 pub mod value;

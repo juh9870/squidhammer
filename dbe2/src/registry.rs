@@ -2,14 +2,15 @@ use crate::etype::eenum::EEnumData;
 use crate::etype::eitem::EItemType;
 use crate::etype::estruct::EStructData;
 use crate::etype::EDataType;
+use crate::json_utils::repr::JsonRepr;
+use crate::json_utils::JsonValue;
 use crate::serialization::deserialize_etype;
-use crate::value::id::{EListId, EMapId, ETypeId, EValueId};
+use crate::value::id::{EListId, EMapId, ETypeId};
 use crate::value::EValue;
-use ahash::AHashMap;
 use itertools::Itertools;
 use miette::{bail, miette, Context};
-use std::collections::hash_map::Entry;
-use std::path::{Path, PathBuf};
+use std::collections::btree_map::Entry;
+use std::collections::BTreeMap;
 use ustr::{Ustr, UstrMap};
 
 #[derive(Debug, Clone)]
@@ -42,6 +43,31 @@ impl EObjectType {
             return Some(data);
         }
         None
+    }
+
+    pub fn parse_json(
+        &self,
+        registry: &ETypesRegistry,
+        mut data: JsonValue,
+    ) -> miette::Result<EValue> {
+        if let EObjectType::Struct(EStructData {
+            repr: Some(repr), ..
+        })
+        | EObjectType::Enum(EEnumData {
+            repr: Some(repr), ..
+        }) = self
+        {
+            data = repr.from_repr(registry, data)?;
+        }
+
+        match self {
+            EObjectType::Struct(s) => s
+                .parse_json(registry, data)
+                .with_context(|| format!("in struct `{}`", s.ident)),
+            EObjectType::Enum(e) => e
+                .parse_json(registry, data)
+                .with_context(|| format!("in enum `{}`", e.ident)),
+        }
     }
 
     // pub fn default_editor(&self) -> Option<&str> {
@@ -85,23 +111,18 @@ impl RegistryItem {
 
 #[derive(Debug)]
 pub struct ETypesRegistry {
-    root: PathBuf,
-    types: AHashMap<ETypeId, RegistryItem>,
-    lists: AHashMap<EListId, ListData>,
-    maps: AHashMap<EMapId, MapData>,
-    values: AHashMap<EValueId, ETypeId>,
+    types: BTreeMap<ETypeId, RegistryItem>,
+    lists: BTreeMap<EListId, ListData>,
+    maps: BTreeMap<EMapId, MapData>,
     // editors: AHashMap<String, Box<dyn EFieldEditorConstructor>>,
     last_id: u64,
 }
 
 impl ETypesRegistry {
-    pub fn from_raws(
-        root: PathBuf,
-        data: impl IntoIterator<Item = (ETypeId, String)>,
-    ) -> miette::Result<Self> {
+    pub fn from_raws(data: impl IntoIterator<Item = (ETypeId, String)>) -> miette::Result<Self> {
         let iter = data.into_iter();
 
-        let types: AHashMap<ETypeId, RegistryItem> = iter
+        let types: BTreeMap<ETypeId, RegistryItem> = iter
             .map(|(id, v)| {
                 Result::<(ETypeId, RegistryItem), miette::Error>::Ok((id, RegistryItem::Raw(v)))
             })
@@ -109,21 +130,14 @@ impl ETypesRegistry {
             .context("While grouping entries")?;
 
         let reg = Self {
-            root,
             types,
             lists: Default::default(),
             maps: Default::default(),
-            values: Default::default(),
             // editors: default_editors().into_iter().collect(),
             last_id: 0,
         };
 
-        reg.deserialize_all().context("While deserializing types")
-    }
-
-    pub fn debug_dump(&self) {
-        dbg!(&self.types);
-        dbg!(&self.root);
+        reg.deserialize_all().context("failed to deserialize types")
     }
 
     pub fn all_objects(&self) -> impl Iterator<Item = &EObjectType> {
@@ -155,6 +169,14 @@ impl ETypesRegistry {
         self.types
             .get(id)
             .and_then(|e| e.expect_ready().as_struct())
+    }
+
+    pub fn get_list(&self, id: &EListId) -> Option<&ListData> {
+        self.lists.get(id)
+    }
+
+    pub fn get_map(&self, id: &EMapId) -> Option<&MapData> {
+        self.maps.get(id)
     }
 
     pub fn get_enum(&self, id: &ETypeId) -> Option<&EEnumData> {
@@ -220,7 +242,7 @@ impl ETypesRegistry {
 
         let obj = self
             .fetch_or_deserialize(id)
-            .with_context(|| format!("Failed to find object with id {}", id))?;
+            .with_context(|| format!("failed to find object with id {}", id))?;
 
         let check_generics = |args: &[Ustr]| {
             if args.len() != arguments.len() {
@@ -295,10 +317,6 @@ impl ETypesRegistry {
             EObjectType::Struct(data) => data.default_value(self),
             EObjectType::Enum(data) => data.default_value(self),
         }
-    }
-
-    pub fn root_path(&self) -> &Path {
-        self.root.as_path()
     }
 
     // pub fn editor_for(
@@ -384,7 +402,7 @@ impl ETypesRegistry {
         let keys = self.types.keys().copied().collect_vec();
         for id in keys {
             self.fetch_or_deserialize(id)
-                .with_context(|| format!("While deserializing `{id}`"))?;
+                .with_context(|| format!("failed to deserialize `{id}`"))?;
         }
 
         debug_assert!(

@@ -1,9 +1,11 @@
 use crate::etype::eenum::variant::{EEnumVariant, EEnumVariantId, EEnumVariantWithId};
 use crate::etype::eitem::EItemType;
+use crate::json_utils::repr::Repr;
+use crate::json_utils::JsonValue;
 use crate::registry::ETypesRegistry;
 use crate::value::id::ETypeId;
 use crate::value::EValue;
-use miette::miette;
+use miette::{bail, miette, Context};
 use ustr::{Ustr, UstrMap};
 
 pub mod pattern;
@@ -13,15 +15,17 @@ pub mod variant;
 pub struct EEnumData {
     pub generic_arguments: Vec<Ustr>,
     pub ident: ETypeId,
+    pub repr: Option<Repr>,
     variants: Vec<EEnumVariant>,
     variant_ids: Vec<EEnumVariantId>,
 }
 
 impl EEnumData {
-    pub fn new(ident: ETypeId, generic_arguments: Vec<Ustr>) -> Self {
+    pub fn new(ident: ETypeId, generic_arguments: Vec<Ustr>, repr: Option<Repr>) -> Self {
         Self {
             generic_arguments,
             ident,
+            repr,
             variants: Default::default(),
             variant_ids: Default::default(),
         }
@@ -48,7 +52,7 @@ impl EEnumData {
         for variant in &mut self.variants {
             if let EItemType::Generic(g) = &variant.data {
                 let item = arguments.get(&g.argument_name).ok_or_else(|| {
-                    miette!("Generic argument `{}` is not provided", g.argument_name)
+                    miette!("generic argument `{}` is not provided", g.argument_name)
                 })?;
                 *variant = EEnumVariant::from_eitem(
                     item.clone(),
@@ -98,5 +102,19 @@ impl EEnumData {
 
     pub fn variants_with_ids(&self) -> impl Iterator<Item = EEnumVariantWithId> {
         self.variants.iter().zip(self.variant_ids.iter())
+    }
+
+    pub fn parse_json(&self, registry: &ETypesRegistry, data: JsonValue) -> miette::Result<EValue> {
+        for variant in &self.variants {
+            if variant.pat.matches_json(&data) {
+                return variant
+                    .data
+                    .ty()
+                    .parse_json(registry, data)
+                    .with_context(|| format!("in enum variant {}", variant.name));
+            }
+        }
+
+        bail!("value did not match any of enum variants")
     }
 }

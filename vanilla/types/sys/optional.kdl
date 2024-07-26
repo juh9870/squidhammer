@@ -1,0 +1,4 @@
+enum "Item" editor="enum" port="hollow" {
+    generic "some" "Item"
+    const "none" null
+}

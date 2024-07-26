@@ -5,3 +5,20 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+camino = "1.1.7"
+dbe2 = { path = "../dbe2" }
+eframe = { version = "0.28.1", features = ["persistence"] }
+egui = "0.28.1"
+egui-toast = "0.14.0"
+egui_dock = "0.13.0"
+egui_file = "0.18.0"
+egui_tracing = { git = "https://github.com/Umatriz/egui_tracing.git", rev = "347001769583bf22ee919152f86dfc19de717f32" }
+inline_tweak = "1.1.1"
+itertools = "0.13.0"
+miette = { version = "7.2.0", features = ["fancy"] }
+num_cpus = "1.16.0"
+rayon = "1.10.0"
+serde_json5 = "0.1.0"
+strip-ansi-escapes = "0.2.0"
+tracing = "0.1.40"
+tracing-subscriber = { version = "0.3.18", features = ["env-filter", "fmt"] }

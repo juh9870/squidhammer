@@ -6,12 +6,14 @@ use crate::registry::ETypesRegistry;
 use crate::value::id::ETypeId;
 use ahash::AHashMap;
 use itertools::Itertools;
-use miette::{bail, Context};
+use miette::{bail, Context, Diagnostic};
+use std::fmt::Display;
 use strum::EnumString;
-
+use thiserror::Error;
 use ustr::{Ustr, UstrMap};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, EnumString)]
+#[strum(serialize_all = "snake_case")]
 pub enum ThingItemKind {
     Boolean,
     Number,
@@ -41,11 +43,16 @@ pub struct ThingItem {
 }
 
 impl ThingItem {
-    pub fn into_item(self, registry: &mut ETypesRegistry) -> miette::Result<(Ustr, EItemType)> {
+    pub fn into_item(
+        self,
+        registry: &mut ETypesRegistry,
+        type_id: ETypeId,
+        generic_arguments: &[Ustr],
+    ) -> miette::Result<(Ustr, EItemType)> {
         let no_args = || {
             if !self.arguments.is_empty() {
                 bail!(
-                    "Expected no arguments, but got {} arguments instead",
+                    "expected no arguments, but got {} arguments instead",
                     self.arguments.len()
                 );
             }
@@ -55,7 +62,7 @@ impl ThingItem {
         let no_generics = || {
             if generics_len > 0 {
                 bail!(
-                    "Expected no generic children, but got {} generic children instead",
+                    "expected no generic children, but got {} generic children instead",
                     generics_len
                 );
             }
@@ -68,17 +75,17 @@ impl ThingItem {
                 let (k, v) = m_try(|| {
                     if arg.extra_properties.len() > 0 {
                         bail!(
-                            "Generic arguments can't contain extra properties, but got {}",
+                            "generic arguments can't contain extra properties, but got {}",
                             arg.extra_properties
                                 .into_keys()
                                 .map(|k| format!("`{k}`"))
                                 .join(", ")
                         )
                     }
-                    arg.into_item(registry)
+                    arg.into_item(registry, type_id, generic_arguments)
                 })
                 .with_context(|| {
-                    format!("While parsing generic child at position {i} with name {name}")
+                    format!("failed to parse generic child at position {i} with name {name}")
                 })?;
                 items.insert(k, v);
             }
@@ -103,8 +110,12 @@ impl ThingItem {
                 EDataType::String
             }
             ThingItemKind::Id => {
-                let [ty] = expect_args(self.arguments)?;
-                let ty = id(ty, 0)?;
+                let ty = if self.arguments.is_empty() {
+                    type_id
+                } else {
+                    let [ty] = expect_args(self.arguments)?;
+                    id(ty, 0)?
+                };
                 registry.assert_defined(&ty)?;
                 no_generics()?;
                 EDataType::Id { ty }
@@ -124,7 +135,7 @@ impl ThingItem {
                 if !generics.is_empty() {
                     ty = registry.make_generic(ty, generics)?;
                 }
-                EDataType::Id { ty }
+                EDataType::Object { ident: ty }
             }
             ThingItemKind::Enum => {
                 let [ty] = expect_args(self.arguments)?;
@@ -134,7 +145,7 @@ impl ThingItem {
                 if !generics.is_empty() {
                     ty = registry.make_generic(ty, generics)?;
                 }
-                EDataType::Id { ty }
+                EDataType::Object { ident: ty }
             }
             ThingItemKind::Const => {
                 let [value] = expect_args(self.arguments)?;
@@ -144,7 +155,7 @@ impl ThingItem {
                 no_args()?;
                 let generics = generics(registry)?;
                 let Some(ty) = generics.get(&Ustr::from("Item")) else {
-                    bail!("Generic argument `Item` is not provided");
+                    bail!("generic argument `Item` is not provided");
                 };
 
                 registry.register_list(ty.ty())
@@ -153,22 +164,24 @@ impl ThingItem {
                 no_args()?;
                 let generics = generics(registry)?;
                 let Some(key) = generics.get(&Ustr::from("Key")) else {
-                    bail!("Generic argument `Key` is not provided");
+                    bail!("generic argument `Key` is not provided");
                 };
                 let Some(value) = generics.get(&Ustr::from("Item")) else {
-                    bail!("Generic argument `Item` is not provided");
+                    bail!("generic argument `Item` is not provided");
                 };
 
                 registry.register_map(key.ty(), value.ty())
             }
             ThingItemKind::Generic => {
+                let [arg] = expect_args(self.arguments)?;
+                let arg = generic_name(arg, 0, generic_arguments)?;
                 return Ok((
                     self.name,
                     EItemType::Generic(EItemTypeGeneric {
-                        argument_name: self.name,
+                        argument_name: arg,
                         extra_properties: self.extra_properties,
                     }),
-                ))
+                ));
             }
         };
 
@@ -185,7 +198,7 @@ impl ThingItem {
 fn expect_args<const N: usize, T>(args: Vec<T>) -> miette::Result<[T; N]> {
     if args.len() != N {
         bail!(
-            "Expected {} arguments, but got {} arguments instead",
+            "expected {} arguments, but got {} arguments instead",
             N,
             args.len()
         );
@@ -198,9 +211,36 @@ fn expect_args<const N: usize, T>(args: Vec<T>) -> miette::Result<[T; N]> {
 fn id(val: ETypeConst, pos: usize) -> miette::Result<ETypeId> {
     let ETypeConst::String(str) = val else {
         bail!(
-            "Argument at position {pos} is expected to be an item ID, but got {} instead",
+            "argument at position {pos} is expected to be an item ID, but got {} instead",
             pos
         )
     };
     ETypeId::parse(&str)
+}
+
+fn generic_name(val: ETypeConst, pos: usize, generic_arguments: &[Ustr]) -> miette::Result<Ustr> {
+    let ETypeConst::String(str) = val else {
+        bail!(
+            "argument at position {pos} is expected to be a generic type name, but got {} instead",
+            pos
+        )
+    };
+
+    if !generic_arguments.contains(&str) {
+        return Err(BadGenericArg(str, pos, generic_arguments.to_vec()).into());
+    }
+    Ok(str)
+}
+
+#[derive(Debug, Error)]
+#[error("argument at position {} has generic type `{}` which is not defined in the object's generic arguments", .1, .0)]
+struct BadGenericArg(Ustr, usize, Vec<Ustr>);
+
+impl Diagnostic for BadGenericArg {
+    fn help<'a>(&'a self) -> Option<Box<dyn Display + 'a>> {
+        Some(Box::new(format!(
+            "Expected one of the following generic arguments: {}",
+            self.2.iter().join(", ")
+        )))
+    }
 }

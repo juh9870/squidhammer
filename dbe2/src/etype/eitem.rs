@@ -32,7 +32,7 @@ impl EItemType {
             EItemType::Generic(ty) => {
                 error!(
                     name = ty.argument_name.as_str(),
-                    "Generic field type was instantiated directly",
+                    "generic field type was instantiated directly",
                 );
                 EDataType::null()
             }
@@ -45,7 +45,7 @@ impl EItemType {
             EItemType::Generic(ty) => {
                 error!(
                     name = ty.argument_name.as_str(),
-                    "Generic field value was instantiated directly"
+                    "generic field value was instantiated directly"
                 );
                 EValue::Null
             }

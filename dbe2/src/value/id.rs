@@ -1,11 +1,18 @@
+use crate::json_utils::{json_kind, JsonValue};
 use crate::value::id::editor_id::EditorId;
+use miette::bail;
+use serde::{Deserialize, Serialize};
+use serde_json::Value;
+use std::fmt::{Display, Formatter};
 use std::path::Path;
 
 pub mod editor_id;
 
 macro_rules! id_type {
     ($ident:ident) => {
-        #[derive(Copy, Clone, serde::Serialize, serde::Deserialize, Eq, PartialEq, Hash)]
+        #[derive(
+            Copy, Clone, serde::Serialize, serde::Deserialize, Eq, PartialEq, Hash, Ord, PartialOrd,
+        )]
         #[serde(transparent)]
         pub struct $ident(EditorId);
 
@@ -28,13 +35,6 @@ macro_rules! id_type {
                 } else {
                     None
                 }
-            }
-
-            /// Ordering for the internal usages. May change between crate versions,
-            /// and should not be relied upon for any persistent store
-            #[must_use]
-            pub(crate) fn ord(&self) -> impl Ord {
-                self.0.ord()
             }
         }
 
@@ -63,16 +63,63 @@ macro_rules! id_type {
 id_type!(ETypeId);
 
 impl ETypeId {
-    pub fn from_path(path: &Path, types_root: &Path) -> miette::Result<Self> {
-        Ok(Self(EditorId::from_path(path, types_root)?))
+    pub fn from_path(path: impl AsRef<Path>, types_root: impl AsRef<Path>) -> miette::Result<Self> {
+        Ok(Self(EditorId::from_path(
+            path.as_ref(),
+            types_root.as_ref(),
+        )?))
     }
 }
 
-id_type!(EValueId);
+id_type!(EValueIdStr);
 
 id_type!(EListId);
 
 id_type!(EMapId);
+
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Hash, Ord, PartialOrd, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum EValueId {
+    String(EValueIdStr),
+    Numeric(i32),
+}
+
+impl EValueId {
+    pub fn parse_json(json: JsonValue) -> miette::Result<EValueId> {
+        match json {
+            Value::Number(num) => {
+                let num = num.as_f64().unwrap();
+                if num < 0.0 {
+                    bail!("negative numeric ID: {}", num)
+                }
+                if num > i32::MAX as f64 {
+                    bail!(
+                        "numeric ID too large, must be at most {}, but got {}",
+                        i32::MAX,
+                        num
+                    )
+                }
+                Ok(EValueId::Numeric(num as i32))
+            }
+            Value::String(str) => Ok(EValueId::String(EValueIdStr::parse(&str)?)),
+            other => {
+                bail!(
+                    "invalid data type. Expected string or number but got {}",
+                    json_kind(&other)
+                )
+            }
+        }
+    }
+}
+
+impl Display for EValueId {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        match self {
+            EValueId::String(str) => str.fmt(f),
+            EValueId::Numeric(num) => num.fmt(f),
+        }
+    }
+}
 
 #[cfg(test)]
 mod tests {

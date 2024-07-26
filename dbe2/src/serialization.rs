@@ -2,6 +2,7 @@ use crate::etype::econst::ETypeConst;
 use crate::etype::eenum::variant::EEnumVariant;
 use crate::etype::eenum::EEnumData;
 use crate::etype::estruct::{EStructData, EStructField};
+use crate::json_utils::repr::Repr;
 use crate::m_try;
 use crate::registry::{EObjectType, ETypesRegistry};
 use crate::serialization::item::ThingItem;
@@ -12,7 +13,7 @@ use knuffel::ast::{Literal, TypeName};
 use knuffel::errors::DecodeError;
 use knuffel::span::Spanned;
 use knuffel::traits::ErrorSpan;
-use knuffel::DecodeScalar;
+use knuffel::{DecodeScalar, Error};
 use miette::{Context, IntoDiagnostic};
 use ustr::Ustr;
 
@@ -23,7 +24,7 @@ pub fn deserialize_etype(
     id: ETypeId,
     data: &str,
 ) -> miette::Result<EObjectType> {
-    let thing = knuffel::parse::<Vec<ThingVariant>>(&id.to_string(), data).into_diagnostic()?;
+    let thing = parse_kdl(&id.to_string(), data)?;
     Ok(
         match thing
             .into_iter()
@@ -37,6 +38,10 @@ pub fn deserialize_etype(
     )
 }
 
+fn parse_kdl(file_name: &str, data: &str) -> Result<Vec<ThingVariant>, Error> {
+    knuffel::parse::<Vec<ThingVariant>>(file_name, data)
+}
+
 #[derive(Debug, knuffel::Decode)]
 enum ThingVariant {
     Enum(ThingEnum),
@@ -47,6 +52,8 @@ enum ThingVariant {
 struct ThingStruct {
     #[knuffel(arguments, str)]
     pub generic_arguments: Vec<Ustr>,
+    #[knuffel(property, str)]
+    pub repr: Option<Repr>,
     #[knuffel(properties)]
     pub extra_properties: AHashMap<String, ETypeConst>,
     #[knuffel(children)]
@@ -57,6 +64,8 @@ struct ThingStruct {
 struct ThingEnum {
     #[knuffel(arguments, str)]
     pub generic_arguments: Vec<Ustr>,
+    #[knuffel(property, str)]
+    pub repr: Option<Repr>,
     #[knuffel(properties)]
     pub extra_properties: AHashMap<String, ETypeConst>,
     #[knuffel(children)]
@@ -69,16 +78,16 @@ impl ThingStruct {
         registry: &mut ETypesRegistry,
         id: ETypeId,
     ) -> miette::Result<EStructData> {
-        let mut data = EStructData::new(id, self.generic_arguments);
+        let mut data = EStructData::new(id, self.generic_arguments, self.repr);
         for e in self.fields {
             let field_name = e.name;
             m_try(|| {
-                let (name, item) = e.into_item(registry)?;
+                let (name, item) = e.into_item(registry, id, &data.generic_arguments)?;
                 data.add_field(EStructField { name, ty: item })?;
 
                 Ok(())
             })
-            .with_context(|| format!("While initializing field {}", field_name))?;
+            .with_context(|| format!("failed to initialize field {}", field_name))?;
         }
 
         Ok(data)
@@ -87,9 +96,9 @@ impl ThingStruct {
 
 impl ThingEnum {
     fn into_eenum(self, registry: &mut ETypesRegistry, id: ETypeId) -> miette::Result<EEnumData> {
-        let mut data = EEnumData::new(id, self.generic_arguments);
+        let mut data = EEnumData::new(id, self.generic_arguments, self.repr);
         for e in self.variants {
-            let (name, item) = e.into_item(registry)?;
+            let (name, item) = e.into_item(registry, id, &data.generic_arguments)?;
             data.add_variant(EEnumVariant::from_eitem(item, name, registry)?);
         }
         Ok(data)
@@ -115,7 +124,7 @@ impl<S: ErrorSpan> DecodeScalar<S> for ETypeConst {
                 Err(err) => {
                     return Err(DecodeError::Conversion {
                         span: value.span().clone(),
-                        source: Box::new(err),
+                        source: Err::<(), _>(err).into_diagnostic().err().unwrap().into(),
                     });
                 }
             },
@@ -124,12 +133,40 @@ impl<S: ErrorSpan> DecodeScalar<S> for ETypeConst {
                 Err(err) => {
                     return Err(DecodeError::Conversion {
                         span: value.span().clone(),
-                        source: Box::new(err),
+                        source: Err::<(), _>(err).into_diagnostic().err().unwrap().into(),
                     });
                 }
             },
             Literal::String(str) => ETypeConst::String((**str).into()),
             Literal::Null => ETypeConst::Null,
         })
+    }
+}
+
+mod tests {
+
+    #[test]
+    fn parse_test() {
+        let ty = super::parse_kdl(
+            "test.kdl",
+            r#"
+enum "Item" editor="enum" port="hollow" {
+    generic "some" "Item"
+    const "none" null
+}
+        "#,
+        );
+
+        match ty {
+            Ok(data) => {
+                let data = format!("{data:?}");
+                println!("{data}")
+            }
+            Err(err) => {
+                let err = miette::Report::from(err);
+                println!("{err:?}");
+                panic!("Fail")
+            }
+        }
     }
 }

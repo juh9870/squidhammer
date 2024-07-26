@@ -1,0 +1,12 @@
+struct {
+    const "ItemType" 14
+
+    id "Id"
+
+    string "Name"
+    struct "Color" "color:argb"
+    number "HomeStarDistance" min=0.0 max=1000.0 type="int"
+    number "WanderingShipsDistance" min=0.0 max=1000.0 type="int"
+    boolean "Hidden"
+    boolean "Hostile"
+}

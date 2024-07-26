@@ -1,0 +1,34 @@
+{
+  "ItemType": 26,
+  "Id": 9,
+  "Elements": [
+    {
+      "Type": 1,
+      "Image": "star",
+      "Size": 1.5
+    },
+    {
+      "ColorMode": 1,
+      "Size": 1.2
+    },
+    {
+      "Type": 2,
+      "Image": "wave",
+      "Size": 1.2,
+      "Lifetime": 0.5
+    },
+    {
+      "Type": 8,
+      "Image": "beam",
+      "ColorMode": 2,
+      "Color": "#0000FF",
+      "Quantity": 6,
+      "Size": 1.2,
+      "ParticleSize": 1.5
+    },
+    {
+      "Type": 5,
+      "Lifetime": 0.0
+    }
+  ]
+}

@@ -6,15 +6,25 @@ edition = "2021"
 
 [dependencies]
 ahash = { version = "0.8.8", features = ["serde"] }
-itertools = "0.12.1"
-knuffel = "3.2.0"
+camino = "1.1.7"
+fs-err = "2.11.0"
+itertools = "0.13.0"
+knuffel = { git = "https://github.com/TheLostLambda/knuffel.git", rev = "744bf56c1fc64b87f7c47d67470ff7898970dc70" }
 miette = "7.0.0"
 ordered-float = { version = "4.2.0", features = ["serde"] }
+parking_lot = "0.12.3"
 paste = "1.0.14"
 serde = { version = "1.0.196", features = ["derive"] }
+serde_json = "1.0.120"
+serde_json5 = "0.1.0"
 strum = { version = "0.26.1", features = ["derive"] }
+thiserror = "1.0.63"
+toml = "0.8.16"
 tracing = "0.1.40"
 ustr = { version = "1.0.0", features = ["serde"] }
+utils = { path = "../utils" }
+walkdir = "2.5.0"
 
 [dev-dependencies]
-rstest = "0.18.2"
+miette = { version = "7.2.0", features = ["fancy-no-syscall"] }
+rstest = "0.21.0"

@@ -16,9 +16,9 @@ fn main() -> anyhow::Result<()> {
             cmd!(sh, "cargo watch -x {check}").run()?;
         }
         XtaskCmd::Fix(_) => {
+            cmd!(sh, "cargo lfix --allow-dirty --allow-staged -q").run()?;
+            cmd!(sh, "cargo lclippy --fix --allow-dirty --allow-staged").run()?;
             cmd!(sh, "cargo fmt --all").run()?;
-            cmd!(sh, "cargo fix --allow-dirty --allow-staged -q").run()?;
-            cmd!(sh, "cargo clippy --fix --allow-dirty --allow-staged").run()?;
             cmd!(sh, "cargo sort -w").run()?;
             cmd!(sh, "cargo-machete --fix --skip-target-dir").run()?;
         }

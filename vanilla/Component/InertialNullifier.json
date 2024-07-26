@@ -1,0 +1,16 @@
+{
+  "ItemType": 1,
+  "Id": 281,
+  "Name": "$InertialNullifier",
+  "DisplayCategory": 6,
+  "Availability": 2,
+  "ComponentStatsId": 281,
+  "Faction": 6,
+  "Level": 400,
+  "Icon": "intertial_damper2",
+  "Layout": "111111111",
+  "CellType": "2",
+  "PossibleModifications": [
+    2
+  ]
+}

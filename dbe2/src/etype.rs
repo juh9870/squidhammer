@@ -1,9 +1,14 @@
 use crate::etype::econst::ETypeConst;
+use crate::json_utils::{json_expected, json_kind, JsonValue};
+use crate::m_try;
 use crate::registry::ETypesRegistry;
-use crate::value::id::{EListId, EMapId, ETypeId};
+use crate::value::id::{EListId, EMapId, ETypeId, EValueId};
 use crate::value::EValue;
+use miette::{bail, miette, Context};
+use ordered_float::OrderedFloat;
 use serde::{Deserialize, Serialize};
 use std::borrow::Cow;
+use std::collections::BTreeMap;
 use strum::EnumIs;
 
 pub mod econst;
@@ -89,6 +94,115 @@ impl EDataType {
             EDataType::Const { value } => value.to_string().into(),
             EDataType::List { id: ty } => ty.to_string().into(),
             EDataType::Map { id: ty } => ty.to_string().into(),
+        }
+    }
+
+    pub fn parse_json(&self, registry: &ETypesRegistry, data: JsonValue) -> miette::Result<EValue> {
+        match self {
+            EDataType::Boolean => json_expected(data.as_bool(), &data, "bool").map(EValue::from),
+            EDataType::Number => json_expected(data.as_number(), &data, "number")
+                .map(|num| OrderedFloat(num.as_f64().unwrap()).into()),
+            EDataType::String => {
+                json_expected(data.as_str(), &data, "string").map(|s| s.to_string().into())
+            }
+            EDataType::Id { ty } => Ok(EValue::Id {
+                ty: *ty,
+                value: Some(EValueId::parse_json(data)?),
+            }),
+            EDataType::Ref { ty } => Ok(EValue::Ref {
+                ty: *ty,
+                value: Some(EValueId::parse_json(data)?),
+            }),
+            EDataType::Object { ident } => {
+                let obj = registry.get_object(ident).ok_or_else(|| {
+                    miette!(
+                        "!!INTERNAL ERROR!! object id was not present in registry: `{}`",
+                        ident
+                    )
+                })?;
+
+                obj.parse_json(registry, data)
+            }
+            EDataType::Const { value } => {
+                let m = value.matches_json(&data);
+
+                if !m.by_type {
+                    bail!(
+                        "invalid data type. Expected {} but got {}",
+                        value,
+                        json_kind(&data)
+                    )
+                }
+
+                if !m.by_value {
+                    bail!("invalid constant. Expected {} but got {}", value, data)
+                }
+
+                Ok(value.default_value())
+            }
+            EDataType::List { id } => {
+                let list = registry.get_list(id).ok_or_else(|| {
+                    miette!(
+                        "!!INTERNAL ERROR!! list id was not present in registry: `{}`",
+                        id
+                    )
+                })?;
+
+                let JsonValue::Array(items) = data else {
+                    bail!(
+                        "invalid data type. Expected list but got {}",
+                        json_kind(&data)
+                    )
+                };
+
+                let mut list_items = vec![];
+                for (i, x) in items.into_iter().enumerate() {
+                    list_items.push(
+                        list.value_type
+                            .parse_json(registry, x)
+                            .with_context(|| format!("at index {}", i))?,
+                    )
+                }
+
+                Ok(EValue::List {
+                    id: *id,
+                    values: list_items,
+                })
+            }
+            EDataType::Map { id } => {
+                let map = registry.get_map(id).ok_or_else(|| {
+                    miette!(
+                        "!!INTERNAL ERROR!! map id was not present in registry: `{}`",
+                        id
+                    )
+                })?;
+
+                let JsonValue::Object(obj) = data else {
+                    bail!(
+                        "invalid data type. Expected map but got {}",
+                        json_kind(&data)
+                    )
+                };
+
+                let mut entries = BTreeMap::new();
+
+                for (k, v) in obj {
+                    let key_name = k.clone();
+                    let (k, v) = m_try(|| {
+                        let k = map.key_type.parse_json(registry, JsonValue::String(k))?;
+                        let v = map.value_type.parse_json(registry, v)?;
+                        Ok((k, v))
+                    })
+                    .with_context(|| format!("in entry with key `{}`", key_name))?;
+
+                    entries.insert(k, v);
+                }
+
+                Ok(EValue::Map {
+                    id: *id,
+                    values: entries,
+                })
+            }
         }
     }
 }
