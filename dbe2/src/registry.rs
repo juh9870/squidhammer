@@ -1,3 +1,4 @@
+use crate::etype::econst::ETypeConst;
 use crate::etype::eenum::EEnumData;
 use crate::etype::eitem::EItemType;
 use crate::etype::estruct::EStructData;
@@ -7,6 +8,7 @@ use crate::json_utils::JsonValue;
 use crate::serialization::deserialize_etype;
 use crate::value::id::{EListId, EMapId, ETypeId};
 use crate::value::EValue;
+use ahash::AHashMap;
 use itertools::Itertools;
 use miette::{bail, miette, Context};
 use std::collections::btree_map::Entry;
@@ -67,6 +69,13 @@ impl EObjectType {
             EObjectType::Enum(e) => e
                 .parse_json(registry, data)
                 .with_context(|| format!("in enum `{}`", e.ident)),
+        }
+    }
+
+    pub fn extra_properties(&self) -> &AHashMap<String, ETypeConst> {
+        match self {
+            EObjectType::Struct(s) => &s.extra_properties,
+            EObjectType::Enum(e) => &e.extra_properties,
         }
     }
 

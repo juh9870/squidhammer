@@ -156,9 +156,9 @@ impl Project {
 }
 
 impl Project {
-    pub fn get_value(&mut self, path: &Utf8Path) -> Option<&mut ProjectFile> {
-        self.files.get_mut(path)
-    }
+    // pub fn get_value(&mut self, path: &Utf8Path) -> Option<&mut ProjectFile> {
+    //     self.files.get_mut(path)
+    // }
 
     fn validate_config(&self) -> miette::Result<()> {
         self.registry

@@ -1,3 +1,4 @@
+use crate::etype::econst::ETypeConst;
 use crate::etype::eenum::variant::{EEnumVariant, EEnumVariantId, EEnumVariantWithId};
 use crate::etype::eitem::EItemType;
 use crate::json_utils::repr::Repr;
@@ -5,6 +6,7 @@ use crate::json_utils::JsonValue;
 use crate::registry::ETypesRegistry;
 use crate::value::id::ETypeId;
 use crate::value::EValue;
+use ahash::AHashMap;
 use miette::{bail, miette, Context};
 use ustr::{Ustr, UstrMap};
 
@@ -16,16 +18,23 @@ pub struct EEnumData {
     pub generic_arguments: Vec<Ustr>,
     pub ident: ETypeId,
     pub repr: Option<Repr>,
+    pub extra_properties: AHashMap<String, ETypeConst>,
     variants: Vec<EEnumVariant>,
     variant_ids: Vec<EEnumVariantId>,
 }
 
 impl EEnumData {
-    pub fn new(ident: ETypeId, generic_arguments: Vec<Ustr>, repr: Option<Repr>) -> Self {
+    pub fn new(
+        ident: ETypeId,
+        generic_arguments: Vec<Ustr>,
+        repr: Option<Repr>,
+        extra_properties: AHashMap<String, ETypeConst>,
+    ) -> Self {
         Self {
             generic_arguments,
             ident,
             repr,
+            extra_properties,
             variants: Default::default(),
             variant_ids: Default::default(),
         }

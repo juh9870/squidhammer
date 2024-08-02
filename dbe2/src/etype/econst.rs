@@ -24,6 +24,27 @@ impl ETypeConst {
         }
     }
 
+    pub fn as_string(&self) -> Option<Ustr> {
+        match self {
+            ETypeConst::String(str) => Some(*str),
+            _ => None,
+        }
+    }
+
+    pub fn as_number(&self) -> Option<ENumber> {
+        match self {
+            ETypeConst::Number(num) => Some(*num),
+            _ => None,
+        }
+    }
+
+    pub fn as_bool(&self) -> Option<bool> {
+        match self {
+            ETypeConst::Boolean(b) => Some(*b),
+            _ => None,
+        }
+    }
+
     /// Checks whenever the provided JSON matches the constant
     pub fn matches_json(&self, data: &JsonValue) -> ConstJsonMatchResult {
         #[inline(always)]
@@ -82,5 +103,38 @@ impl From<bool> for ETypeConst {
 impl From<Ustr> for ETypeConst {
     fn from(value: Ustr) -> Self {
         ETypeConst::String(value)
+    }
+}
+
+impl TryFrom<ETypeConst> for ENumber {
+    type Error = miette::Error;
+
+    fn try_from(value: ETypeConst) -> Result<Self, Self::Error> {
+        match value {
+            ETypeConst::Number(num) => Ok(num),
+            _ => miette::bail!("Expected a number, got {:?}", value),
+        }
+    }
+}
+
+impl TryFrom<ETypeConst> for Ustr {
+    type Error = miette::Error;
+
+    fn try_from(value: ETypeConst) -> Result<Self, Self::Error> {
+        match value {
+            ETypeConst::String(str) => Ok(str),
+            _ => miette::bail!("Expected a string, got {:?}", value),
+        }
+    }
+}
+
+impl TryFrom<ETypeConst> for bool {
+    type Error = miette::Error;
+
+    fn try_from(value: ETypeConst) -> Result<Self, Self::Error> {
+        match value {
+            ETypeConst::Boolean(b) => Ok(b),
+            _ => miette::bail!("Expected a boolean, got {:?}", value),
+        }
     }
 }

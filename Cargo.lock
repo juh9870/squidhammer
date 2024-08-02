@@ -1009,8 +1009,11 @@ version = "0.1.0"
 name = "dbe2_ui"
 version = "0.1.0"
 dependencies = [
+ "ahash",
  "camino",
  "dbe2",
+ "downcast-rs",
+ "dyn-clone",
  "eframe",
  "egui",
  "egui-toast",
@@ -1020,12 +1023,15 @@ dependencies = [
  "inline_tweak",
  "itertools",
  "miette",
+ "num-traits",
  "num_cpus",
  "rayon",
  "serde_json5",
  "strip-ansi-escapes",
  "tracing",
  "tracing-subscriber",
+ "ustr",
+ "utils",
 ]
 
 [[package]]
@@ -1120,6 +1126,12 @@ dependencies = [
  "heck 0.4.1",
  "proc-macro-error",
 ]
+
+[[package]]
+name = "dyn-clone"
+version = "1.0.17"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0d6ef0072f8a535281e4876be788938b528e9a1d43900b82c2569af7da799125"
 
 [[package]]
 name = "ecolor"
@@ -2376,9 +2388,9 @@ dependencies = [
 
 [[package]]
 name = "num-traits"
-version = "0.2.16"
+version = "0.2.19"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f30b0abd723be7e2ffca1272140fac1a2f084c77ec3e123c192b66af1ee9e6c2"
+checksum = "071dfc062690e90b734c0b2273ce72ad0ffa95f0c74596bc250dcfd960262841"
 dependencies = [
  "autocfg",
 ]

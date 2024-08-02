@@ -179,6 +179,67 @@ try_to!(Number, ENumber, number);
 try_to!(Boolean, bool, boolean);
 try_to!(String, String, string);
 
+impl From<f64> for EValue {
+    fn from(value: f64) -> Self {
+        Self::Number {
+            value: OrderedFloat(value),
+        }
+    }
+}
+impl From<&f64> for EValue {
+    fn from(value: &f64) -> Self {
+        Self::Number {
+            value: OrderedFloat(*value),
+        }
+    }
+}
+
+impl TryFrom<EValue> for f64 {
+    type Error = miette::Error;
+
+    fn try_from(value: EValue) -> Result<Self, Self::Error> {
+        value.try_as_number().copied().map(|n| n.0)
+    }
+}
+
+impl TryFrom<&EValue> for f64 {
+    type Error = miette::Error;
+
+    fn try_from(value: &EValue) -> Result<Self, Self::Error> {
+        value.try_as_number().copied().map(|n| n.0)
+    }
+}
+impl From<f32> for EValue {
+    fn from(value: f32) -> Self {
+        Self::Number {
+            value: OrderedFloat(value as f64),
+        }
+    }
+}
+impl From<&f32> for EValue {
+    fn from(value: &f32) -> Self {
+        Self::Number {
+            value: OrderedFloat(*value as f64),
+        }
+    }
+}
+
+impl TryFrom<EValue> for f32 {
+    type Error = miette::Error;
+
+    fn try_from(value: EValue) -> Result<Self, Self::Error> {
+        value.try_as_number().copied().map(|n| n.0 as f32)
+    }
+}
+
+impl TryFrom<&EValue> for f32 {
+    type Error = miette::Error;
+
+    fn try_from(value: &EValue) -> Result<Self, Self::Error> {
+        value.try_as_number().copied().map(|n| n.0 as f32)
+    }
+}
+
 impl Display for EValue {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {

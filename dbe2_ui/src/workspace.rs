@@ -1,8 +1,11 @@
+use crate::workspace::editors::editor_for_value;
 use crate::DbeApp;
 use camino::Utf8PathBuf;
 use dbe2::project::{Project, ProjectFile};
 use egui::{Color32, RichText, Ui, WidgetText};
 use egui_dock::{DockArea, TabViewer};
+
+pub mod editors;
 
 pub fn workspace(ui: &mut Ui, app: &mut DbeApp) {
     if app.project.is_none() {
@@ -36,7 +39,7 @@ impl TabViewer for WorkspaceTabViewer<'_> {
     }
 
     fn ui(&mut self, ui: &mut Ui, tab: &mut Self::Tab) {
-        let Some(data) = self.0.get_value(tab) else {
+        let Some(data) = self.0.files.get_mut(tab) else {
             ui.centered_and_justified(|ui| {
                 ui.label(format!("!!INTERNAL ERROR!! the file {} is missing", tab));
             });
@@ -45,6 +48,9 @@ impl TabViewer for WorkspaceTabViewer<'_> {
 
         match data {
             ProjectFile::Value(value) => {
+                let editor = editor_for_value(&self.0.registry, value);
+
+                editor.show(ui, &self.0.registry, "", value);
                 ui.label(format!("{:?}", value));
             }
             ProjectFile::BadValue(err) => {

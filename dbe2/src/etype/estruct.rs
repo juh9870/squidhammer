@@ -1,13 +1,15 @@
+use crate::etype::econst::ETypeConst;
 use crate::etype::eitem::EItemType;
 use crate::etype::EDataType;
+use crate::json_utils::repr::Repr;
+use crate::json_utils::{json_kind, JsonValue};
 use crate::registry::ETypesRegistry;
 use crate::value::id::ETypeId;
 use crate::value::EValue;
-use std::collections::BTreeMap;
-
-use crate::json_utils::repr::Repr;
-use crate::json_utils::{json_kind, JsonValue};
+use ahash::AHashMap;
+use itertools::Itertools;
 use miette::{bail, miette, Context};
+use std::collections::BTreeMap;
 use ustr::{Ustr, UstrMap};
 
 #[derive(Debug, Clone)]
@@ -17,6 +19,7 @@ pub struct EStructData {
     pub fields: Vec<EStructField>,
     pub id_field: Option<usize>,
     pub repr: Option<Repr>,
+    pub extra_properties: AHashMap<String, ETypeConst>,
 }
 
 #[derive(Debug, Clone)]
@@ -26,13 +29,19 @@ pub struct EStructField {
 }
 
 impl EStructData {
-    pub fn new(ident: ETypeId, generic_arguments: Vec<Ustr>, repr: Option<Repr>) -> EStructData {
+    pub fn new(
+        ident: ETypeId,
+        generic_arguments: Vec<Ustr>,
+        repr: Option<Repr>,
+        extra_properties: AHashMap<String, ETypeConst>,
+    ) -> EStructData {
         Self {
             generic_arguments,
             fields: Default::default(),
             ident,
             id_field: None,
             repr,
+            extra_properties,
         }
     }
 
@@ -128,6 +137,13 @@ impl EStructData {
             };
 
             fields.insert(field.name, value);
+        }
+
+        if !data.is_empty() {
+            bail!(
+                "struct contains unknown fields: {}",
+                data.keys().map(|k| format!("`{k}`")).join(", ")
+            )
         }
 
         Ok(EValue::Struct {

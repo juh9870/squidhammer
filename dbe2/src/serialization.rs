@@ -78,7 +78,8 @@ impl ThingStruct {
         registry: &mut ETypesRegistry,
         id: ETypeId,
     ) -> miette::Result<EStructData> {
-        let mut data = EStructData::new(id, self.generic_arguments, self.repr);
+        let mut data =
+            EStructData::new(id, self.generic_arguments, self.repr, self.extra_properties);
         for e in self.fields {
             let field_name = e.name;
             m_try(|| {
@@ -96,7 +97,7 @@ impl ThingStruct {
 
 impl ThingEnum {
     fn into_eenum(self, registry: &mut ETypesRegistry, id: ETypeId) -> miette::Result<EEnumData> {
-        let mut data = EEnumData::new(id, self.generic_arguments, self.repr);
+        let mut data = EEnumData::new(id, self.generic_arguments, self.repr, self.extra_properties);
         for e in self.variants {
             let (name, item) = e.into_item(registry, id, &data.generic_arguments)?;
             data.add_variant(EEnumVariant::from_eitem(item, name, registry)?);
