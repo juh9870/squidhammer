@@ -1,4 +1,5 @@
 use crate::etype::econst::ETypeConst;
+use crate::etype::eenum::pattern::{EnumPattern, Tagged};
 use crate::etype::eenum::variant::{EEnumVariant, EEnumVariantId, EEnumVariantWithId};
 use crate::etype::eitem::EItemType;
 use crate::json_utils::repr::Repr;
@@ -19,6 +20,7 @@ pub struct EEnumData {
     pub ident: ETypeId,
     pub repr: Option<Repr>,
     pub extra_properties: AHashMap<String, ETypeConst>,
+    tagged_repr: Option<Tagged>,
     variants: Vec<EEnumVariant>,
     variant_ids: Vec<EEnumVariantId>,
 }
@@ -28,6 +30,7 @@ impl EEnumData {
         ident: ETypeId,
         generic_arguments: Vec<Ustr>,
         repr: Option<Repr>,
+        tagged_repr: Option<Tagged>,
         extra_properties: AHashMap<String, ETypeConst>,
     ) -> Self {
         Self {
@@ -35,6 +38,7 @@ impl EEnumData {
             ident,
             repr,
             extra_properties,
+            tagged_repr,
             variants: Default::default(),
             variant_ids: Default::default(),
         }
@@ -67,6 +71,8 @@ impl EEnumData {
                     item.clone(),
                     std::mem::take(&mut variant.name),
                     registry,
+                    self.tagged_repr,
+                    variant.name,
                 )?;
             }
         }
@@ -114,13 +120,39 @@ impl EEnumData {
     }
 
     pub fn parse_json(&self, registry: &ETypesRegistry, data: JsonValue) -> miette::Result<EValue> {
-        for variant in &self.variants {
+        for (variant, id) in self.variants_with_ids() {
             if variant.pat.matches_json(&data) {
-                return variant
+                let data = if let EnumPattern::Tagged { repr, tag } = &variant.pat {
+                    let JsonValue::Object(mut data) = data else {
+                        bail!("!!INTERNAL ERROR!! tagged enum pattern matched against non-object json data")
+                    };
+                    match repr {
+                        Tagged::External => data
+                            .remove(tag.as_json_key().as_str())
+                            .ok_or_else(||miette!("!!INTERNAL ERROR!! externally tagged enum variant lacks the tag field `{tag}`, even though the pattern matched"))?,
+                        Tagged::Internal { tag_field } => {
+                            data.remove(tag_field.as_str());
+                            data.into()
+                        }
+                        Tagged::Adjacent { content_field, .. } =>
+                            data.remove(content_field.as_str())
+                                .ok_or_else(||miette!("Adjacently tagged enum variant lacks the content field `{tag}`"))?
+
+                    }
+                } else {
+                    data
+                };
+
+                let content = variant
                     .data
                     .ty()
                     .parse_json(registry, data)
-                    .with_context(|| format!("in enum variant {}", variant.name));
+                    .with_context(|| format!("in enum variant {}", variant.name))?;
+
+                return Ok(EValue::Enum {
+                    variant: *id,
+                    data: Box::new(content),
+                });
             }
         }
 

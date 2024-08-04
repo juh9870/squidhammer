@@ -45,6 +45,15 @@ impl ETypeConst {
         }
     }
 
+    pub fn as_json_key(&self) -> Ustr {
+        match self {
+            ETypeConst::String(str) => *str,
+            ETypeConst::Number(num) => num.to_string().into(),
+            ETypeConst::Boolean(bool) => bool.to_string().into(),
+            ETypeConst::Null => "null".into(),
+        }
+    }
+
     /// Checks whenever the provided JSON matches the constant
     pub fn matches_json(&self, data: &JsonValue) -> ConstJsonMatchResult {
         #[inline(always)]

@@ -1,6 +1,4 @@
 struct {
-    const "ItemType" 11
-
     id "Id"
 
     enum "Type" "eh:enums/component_stats_type"

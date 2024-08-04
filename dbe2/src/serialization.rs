@@ -1,4 +1,5 @@
 use crate::etype::econst::ETypeConst;
+use crate::etype::eenum::pattern::Tagged;
 use crate::etype::eenum::variant::EEnumVariant;
 use crate::etype::eenum::EEnumData;
 use crate::etype::estruct::{EStructData, EStructField};
@@ -14,7 +15,7 @@ use knuffel::errors::DecodeError;
 use knuffel::span::Spanned;
 use knuffel::traits::ErrorSpan;
 use knuffel::{DecodeScalar, Error};
-use miette::{Context, IntoDiagnostic};
+use miette::{bail, Context, IntoDiagnostic};
 use ustr::Ustr;
 
 mod item;
@@ -66,6 +67,12 @@ struct ThingEnum {
     pub generic_arguments: Vec<Ustr>,
     #[knuffel(property, str)]
     pub repr: Option<Repr>,
+    #[knuffel(property, str)]
+    pub tag: Option<Ustr>,
+    #[knuffel(property, str)]
+    pub content: Option<Ustr>,
+    #[knuffel(property)]
+    pub untagged: Option<bool>,
     #[knuffel(properties)]
     pub extra_properties: AHashMap<String, ETypeConst>,
     #[knuffel(children)]
@@ -97,10 +104,37 @@ impl ThingStruct {
 
 impl ThingEnum {
     fn into_eenum(self, registry: &mut ETypesRegistry, id: ETypeId) -> miette::Result<EEnumData> {
-        let mut data = EEnumData::new(id, self.generic_arguments, self.repr, self.extra_properties);
+        let repr = if self.untagged.unwrap_or(false) {
+            if self.tag.is_some() || self.content.is_some() {
+                bail!("`tag` and `content` fields can't be used on untagged enum")
+            }
+            None
+        } else if let Some(tag) = self.tag {
+            if let Some(content) = self.content {
+                Some(Tagged::Adjacent {
+                    tag_field: tag,
+                    content_field: content,
+                })
+            } else {
+                Some(Tagged::Internal { tag_field: tag })
+            }
+        } else {
+            if self.content.is_some() {
+                bail!("`content` field can't be used on externally tagged enum")
+            }
+            Some(Tagged::External)
+        };
+
+        let mut data = EEnumData::new(
+            id,
+            self.generic_arguments,
+            self.repr,
+            repr,
+            self.extra_properties,
+        );
         for e in self.variants {
             let (name, item) = e.into_item(registry, id, &data.generic_arguments)?;
-            data.add_variant(EEnumVariant::from_eitem(item, name, registry)?);
+            data.add_variant(EEnumVariant::from_eitem(item, name, registry, repr, name)?);
         }
         Ok(data)
     }

@@ -1,6 +1,4 @@
 struct {
-    const "ItemType" 14
-
     id "Id"
 
     string "Name"

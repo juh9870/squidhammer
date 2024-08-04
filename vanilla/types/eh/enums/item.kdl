@@ -1,4 +1,4 @@
-enum {
-    struct "eh:component_stats" "eh:objects/component_stats"
-    struct "eh:faction" "eh:objects/faction"
+enum tag="ItemType" {
+    struct "eh:component_stats" "eh:objects/component_stats" tag=11
+    struct "eh:faction" "eh:objects/faction" tag=14
 }

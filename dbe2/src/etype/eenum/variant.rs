@@ -1,13 +1,13 @@
 use crate::etype::econst::ETypeConst;
-use crate::etype::eenum::pattern::EnumPattern;
+use crate::etype::eenum::pattern::{EnumPattern, Tagged};
 use crate::etype::eenum::EEnumData;
 use crate::etype::eitem::EItemType;
 use crate::etype::EDataType;
-use crate::registry::{EObjectType, ETypesRegistry};
+use crate::registry::ETypesRegistry;
 use crate::value::id::ETypeId;
 use crate::value::EValue;
 use itertools::Itertools;
-use miette::{bail, miette, Context};
+use miette::bail;
 use serde::{Deserialize, Serialize};
 use std::fmt::{Display, Formatter};
 use ustr::Ustr;
@@ -35,71 +35,38 @@ impl EEnumVariant {
     pub(crate) fn from_eitem(
         item: EItemType,
         name: Ustr,
-        registry: &mut ETypesRegistry,
+        _registry: &mut ETypesRegistry,
+        tagged_repr: Option<Tagged>,
+        variant_name: Ustr,
     ) -> miette::Result<EEnumVariant> {
         if item.is_generic() {
             return Ok(EEnumVariant::new(name, EnumPattern::Never, item));
         }
-        let pat = match &item.ty() {
-            EDataType::Boolean => EnumPattern::Boolean,
-            EDataType::Number => EnumPattern::Number,
-            EDataType::String => EnumPattern::String,
-            EDataType::Id { .. } => {
-                bail!("object Id can't appear as an Enum variant");
+        let pat = if let Some(repr) = tagged_repr {
+            let tag = item
+                .extra_properties()
+                .get("tag")
+                .copied()
+                .unwrap_or(ETypeConst::String(variant_name));
+
+            if repr.is_internal() && !item.ty().is_object() {
+                bail!("internally tagged enums can only have object variants")
             }
-            EDataType::Ref { ty } => EnumPattern::Ref(*ty),
-            EDataType::Const { value } => EnumPattern::Const(*value),
-            EDataType::List { .. } => EnumPattern::List,
-            EDataType::Map { .. } => EnumPattern::Map,
-            EDataType::Object { ident } => {
-                registry.assert_defined(ident)?;
 
-                let target_type = registry.fetch_or_deserialize(*ident).context("error during automatic pattern key detection\n> If you see recursion error at the top of this log, consider specifying `key` parameter manually")?;
-                let data = match target_type {
-                    EObjectType::Enum(_) => bail!("enum variant can't be an another enum"),
-                    EObjectType::Struct(data) => data,
-                };
-
-                let pat = if !item.extra_properties().contains_key("key") {
-                    let pat = data.fields.iter().filter_map(|f| {
-                        match &f.ty.ty() {
-                            EDataType::Const{value} => {
-                                Some((f.name, *value))
-                            }
-                            _ => None,
-                        }
-                    }).exactly_one().map_err(|_| miette!("Target struct `{}` contains multiple constant fields. Please specify pattern manually", ident))?;
-
-                    EnumPattern::StructField(pat.0, pat.1)
-                } else if let Some(key) = item.extra_properties().get("key") {
-                    let ETypeConst::String(key) = key else {
-                        bail!(
-                            "Type of the `key` field must be string. Instead got {}",
-                            key
-                        );
-                    };
-                    let field = data.fields.iter().find(|e| e.name == name).ok_or_else(|| {
-                        miette!(
-                            "Target struct `{}` doesn't contain a field `{}`",
-                            ident,
-                            key,
-                        )
-                    })?;
-
-                    let EDataType::Const { value } = field.ty.ty() else {
-                        bail!(
-                            "Target struct `{}` contains a field `{}` but it's not a constant",
-                            ident,
-                            key,
-                        )
-                    };
-
-                    EnumPattern::StructField(key.as_str().into(), value)
-                } else {
-                    bail!("Multiple pattern fields are not supported")
-                };
-
-                pat
+            EnumPattern::Tagged { repr, tag }
+        } else {
+            match &item.ty() {
+                EDataType::Boolean => EnumPattern::Boolean,
+                EDataType::Number => EnumPattern::Number,
+                EDataType::String => EnumPattern::String,
+                EDataType::Id { .. } => {
+                    bail!("object Id can't appear as an Enum variant");
+                }
+                EDataType::Ref { ty } => EnumPattern::Ref(*ty),
+                EDataType::Const { value } => EnumPattern::Const(*value),
+                EDataType::List { .. } => EnumPattern::List,
+                EDataType::Map { .. } => EnumPattern::Map,
+                EDataType::Object { .. } => EnumPattern::UntaggedObject,
             }
         };
 
