@@ -8,6 +8,7 @@ use crate::registry::ETypesRegistry;
 use crate::value::id::ETypeId;
 use crate::value::EValue;
 use ahash::AHashMap;
+use itertools::Itertools;
 use miette::{bail, miette, Context};
 use ustr::{Ustr, UstrMap};
 
@@ -120,6 +121,47 @@ impl EEnumData {
     }
 
     pub fn parse_json(&self, registry: &ETypesRegistry, data: JsonValue) -> miette::Result<EValue> {
+        if let Some(repr) = self.tagged_repr {
+            let JsonValue::Object(data) = &data else {
+                bail!("!!INTERNAL ERROR!! tagged enum pattern matched against non-object json data")
+            };
+            match repr {
+                Tagged::External => {
+                    if data.len() > 1 {
+                        bail!("more than one field is detected in externally tagged field")
+                    } else if data.is_empty() {
+                        bail!("value of externally tagged enum can not be an empty object")
+                    }
+                }
+                Tagged::Internal { tag_field } => {
+                    if !data.contains_key(tag_field.as_str()) {
+                        bail!("tag field `{tag_field}` is missing in internally tagged enum")
+                    }
+                }
+                Tagged::Adjacent {
+                    tag_field,
+                    content_field,
+                } => {
+                    if !data.contains_key(tag_field.as_str()) {
+                        bail!("tag field `{tag_field}` is missing in internally tagged enum")
+                    }
+                    let mut unknown_keys = data
+                        .keys()
+                        .filter(|key| {
+                            key.as_str() != tag_field.as_str()
+                                && key.as_str() != content_field.as_str()
+                        })
+                        .peekable();
+
+                    if unknown_keys.peek().is_some() {
+                        bail!(
+                            "adjacently tagged enum contains unknown fields: {}",
+                            unknown_keys.map(|k| format!("`{k}`")).join(", ")
+                        )
+                    }
+                }
+            }
+        }
         for (variant, id) in self.variants_with_ids() {
             if variant.pat.matches_json(&data) {
                 let data = if let EnumPattern::Tagged { repr, tag } = &variant.pat {
