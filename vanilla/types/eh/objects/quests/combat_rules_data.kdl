@@ -7,13 +7,13 @@ struct {
 	object "LootCondition" "eh:enums/quests/reward_condition"
 	object "ExpCondition" "eh:enums/quests/reward_condition"
 	object "ShipSelection" "eh:enums/quests/player_ship_selection_mode"
-	boolean "DisableSkillBonuses" 
-	boolean "DisableRandomLoot" 
-	boolean "DisableAsteroids" 
-	boolean "DisablePlanet" 
+	boolean "DisableSkillBonuses"
+	boolean "DisableRandomLoot"
+	boolean "DisableAsteroids"
+	boolean "DisablePlanet"
 	boolean "NextEnemyButton" default=true
 	boolean "KillThemAllButton" description="For debug purposes"
-	list "CustomSoundtrack"  {
+	list "CustomSoundtrack" {
 		object "Item" "eh:objects/settings/sound_track"
 	}
 }

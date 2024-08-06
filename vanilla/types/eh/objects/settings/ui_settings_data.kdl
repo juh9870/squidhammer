@@ -36,5 +36,5 @@ struct singleton=true {
 	object "FuelColor" default="#00FFFF" "color:argb"
 	object "TokensColor" default="#8080FF" "color:argb"
 	string "MainMenuBackgroundImage" editor="eh:image"
-	boolean "NoCreditsText" 
+	boolean "NoCreditsText"
 }

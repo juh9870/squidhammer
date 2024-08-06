@@ -1,7 +1,9 @@
 struct {
 	object "Condition" "eh:enums/weapon/bullet_trigger_condition"
 	object "VisualEffect" "sys:optional" {
-		ref "Item" "eh:objects/weapon/visual_effect"
+		object "Item" "sys:ids/numeric_ref" {
+			const "Id" "eh:objects/weapon/visual_effect"
+		}
 	}
 	string "AudioClip" editor="eh:audioclip"
 	object "Color" "color:argb"
@@ -9,5 +11,5 @@ struct {
 	number "Size" min=0 max=100
 	number "Lifetime" min=0 max=1000
 	number "Cooldown" min=0 max=1000
-	boolean "OncePerCollision" 
+	boolean "OncePerCollision"
 }

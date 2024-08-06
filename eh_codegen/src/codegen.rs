@@ -78,7 +78,8 @@ impl Ctx {
             self.output(
                 id(&path),
                 format!(
-                    "struct {{\n\tid \"Id\"\n\tobject \"Data\" \"{}\" inline=true\n}}",
+                    "struct {{\n\tobject \"Id\" \"sys:ids/numeric\" {{\n\t\tconst \"Id\" \"{}\"\n\t}}\n\tobject \"Data\" \"{}\" inline=true\n}}",
+                    id(&path),
                     data_id,
                 ),
             );
@@ -222,17 +223,22 @@ impl Ctx {
                             .expect("Object ref member should have a typeid"),
                     );
                     if member.options.is_some_and(|opt| opt.contains("notnull")) {
-                        args.insert(0, id);
-                        "ref"
+                        args.insert(0, "\"sys:ids/numeric_ref\"".to_string());
+                        args.push(format!("typeid={}", id));
+                        generics.push(format!("const \"Id\" {}", id));
+                        "object"
                     } else {
                         args.insert(0, "\"sys:optional\"".to_string());
-                        generics.push(format!("ref \"Item\" {}", id));
+                        generics.push(format!(
+                            "object \"Item\" \"sys:ids/numeric_ref\" {{\n\tconst \"Id\" {}\n}}",
+                            id
+                        ));
                         "object"
                     }
                 }
                 SchemaStructMemberType::ObjectList => {
                     generics.push(format!(
-                        "ref \"Item\" {}",
+                        "object \"Item\" \"sys:ids/numeric_ref\" {{\n\tconst \"Id\" {}\n}}",
                         typeid_fmt(
                             member
                                 .typeid
@@ -297,11 +303,18 @@ impl Ctx {
                 }
             };
 
-            code += &format!("\n\t{} \"{}\" {}", ty, member.name, args.join(" "));
+            code += &format!("\n\t{} \"{}\"", ty, member.name);
+            if !args.is_empty() {
+                code += " ";
+                code += &args.join(" ");
+            }
             if !generics.is_empty() {
                 code += " {";
                 for generic in generics {
-                    code += &format!("\n\t\t{}", generic);
+                    code += &format!(
+                        "\n{}",
+                        generic.lines().map(|g| format!("\t\t{}", g)).join("\n")
+                    );
                 }
                 code += "\n\t}";
             }

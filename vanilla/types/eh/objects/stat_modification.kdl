@@ -1,9 +1,9 @@
 struct {
 	object "Type" "eh:enums/stat_modification_type"
-	number "Gray3" 
-	number "Gray2" 
-	number "Gray1" 
-	number "Green" 
-	number "Purple" 
-	number "Gold" 
+	number "Gray3"
+	number "Gray2"
+	number "Gray1"
+	number "Green"
+	number "Purple"
+	number "Gold"
 }

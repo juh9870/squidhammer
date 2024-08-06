@@ -1,17 +1,23 @@
 struct {
 	number "Id" min=1 max=999999 type="int"
 	object "RequiredView" "eh:enums/quests/required_view_mode"
-	string "Message" 
+	string "Message"
 	object "Enemy" "sys:optional" {
-		ref "Item" "eh:objects/quests/fleet"
+		object "Item" "sys:ids/numeric_ref" {
+			const "Id" "eh:objects/quests/fleet"
+		}
 	}
 	object "Loot" "sys:optional" {
-		ref "Item" "eh:objects/quests/loot"
+		object "Item" "sys:ids/numeric_ref" {
+			const "Id" "eh:objects/quests/loot"
+		}
 	}
 	object "Character" "sys:optional" {
-		ref "Item" "eh:objects/quests/character"
+		object "Item" "sys:ids/numeric_ref" {
+			const "Id" "eh:objects/quests/character"
+		}
 	}
-	list "Actions"  {
+	list "Actions" {
 		object "Item" "eh:objects/quests/node_action"
 	}
 }

@@ -1,6 +1,8 @@
 struct {
 	number "Id" min=1 max=999999 type="int"
 	object "Faction" "sys:optional" {
-		ref "Item" "eh:objects/faction"
+		object "Item" "sys:ids/numeric_ref" {
+			const "Id" "eh:objects/faction"
+		}
 	}
 }

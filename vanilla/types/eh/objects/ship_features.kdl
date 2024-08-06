@@ -12,8 +12,10 @@ struct {
 	number "DroneBuildSpeedBonus" min=-1 max=10
 	number "DroneAttackBonus" min=-1 max=10
 	number "DroneDefenseBonus" min=-1 max=10
-	boolean "Regeneration" 
-	list "BuiltinDevices"  {
-		ref "Item" "eh:objects/device"
+	boolean "Regeneration"
+	list "BuiltinDevices" {
+		object "Item" "sys:ids/numeric_ref" {
+			const "Id" "eh:objects/device"
+		}
 	}
 }

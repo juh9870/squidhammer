@@ -6,16 +6,20 @@ struct {
 	number "DefenseMultiplier" min=0.01 max=1000
 	number "SpeedMultiplier" min=0.01 max=1000
 	number "BuildExtraCycles" min=0 max=100 type="int"
-	boolean "ImprovedAi" 
+	boolean "ImprovedAi"
 	number "Capacity" min=1 max=1000 type="int"
 	object "ActivationType" "eh:enums/activation_type"
 	string "LaunchSound" editor="eh:audioclip"
 	string "LaunchEffectPrefab" editor="eh:prefab"
 	string "ControlButtonIcon" editor="eh:image"
 	object "DefensiveDroneAI" "sys:optional" {
-		ref "Item" "eh:objects/ai/behavior_tree"
+		object "Item" "sys:ids/numeric_ref" {
+			const "Id" "eh:objects/ai/behavior_tree"
+		}
 	}
 	object "OffensiveDroneAI" "sys:optional" {
-		ref "Item" "eh:objects/ai/behavior_tree"
+		object "Item" "sys:ids/numeric_ref" {
+			const "Id" "eh:objects/ai/behavior_tree"
+		}
 	}
 }

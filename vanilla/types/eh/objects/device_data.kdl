@@ -14,11 +14,15 @@ struct {
 	string "Sound" editor="eh:audioclip"
 	string "EffectPrefab" editor="eh:prefab"
 	object "VisualEffect" "sys:optional" {
-		ref "Item" "eh:objects/weapon/visual_effect"
+		object "Item" "sys:ids/numeric_ref" {
+			const "Id" "eh:objects/weapon/visual_effect"
+		}
 	}
 	string "ObjectPrefab" editor="eh:prefab"
 	object "Prefab" "sys:optional" {
-		ref "Item" "eh:objects/game_object_prefab"
+		object "Item" "sys:ids/numeric_ref" {
+			const "Id" "eh:objects/game_object_prefab"
+		}
 	}
 	string "ControlButtonIcon" editor="eh:image"
 }

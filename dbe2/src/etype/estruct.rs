@@ -1,6 +1,5 @@
 use crate::etype::econst::ETypeConst;
 use crate::etype::eitem::EItemType;
-use crate::etype::EDataType;
 use crate::json_utils::repr::Repr;
 use crate::json_utils::{json_kind, JsonValue};
 use crate::registry::ETypesRegistry;

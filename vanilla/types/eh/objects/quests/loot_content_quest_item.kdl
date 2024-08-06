@@ -1,5 +1,7 @@
 struct {
-	ref "ItemId" "eh:objects/quests/quest_item" alias="QuestItem"
+	object "ItemId" "sys:ids/numeric_ref" alias="QuestItem" typeid="eh:objects/quests/quest_item" {
+		const "Id" "eh:objects/quests/quest_item"
+	}
 	number "MinAmount" min=0 max=1000000000 type="int"
 	number "MaxAmount" min=0 max=1000000000 type="int"
 }

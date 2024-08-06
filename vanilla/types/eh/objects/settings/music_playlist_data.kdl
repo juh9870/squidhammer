@@ -1,14 +1,14 @@
 struct singleton=true {
-	list "MainMenuMusic"  {
+	list "MainMenuMusic" {
 		object "Item" "eh:objects/settings/sound_track"
 	}
-	list "GalaxyMapMusic"  {
+	list "GalaxyMapMusic" {
 		object "Item" "eh:objects/settings/sound_track"
 	}
-	list "CombatMusic"  {
+	list "CombatMusic" {
 		object "Item" "eh:objects/settings/sound_track"
 	}
-	list "ExplorationMusic"  {
+	list "ExplorationMusic" {
 		object "Item" "eh:objects/settings/sound_track"
 	}
 }

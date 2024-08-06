@@ -1,4 +1,5 @@
 use crate::json_utils::repr::colors::ColorStringRepr;
+use crate::json_utils::repr::ids::numeric::NumericRepr;
 use crate::json_utils::JsonValue;
 use crate::registry::ETypesRegistry;
 use miette::miette;
@@ -9,6 +10,7 @@ use std::sync::{Arc, LazyLock};
 use ustr::{Ustr, UstrMap};
 
 mod colors;
+mod ids;
 
 #[allow(clippy::wrong_self_convention)]
 pub trait JsonRepr: Send + Sync + Debug {
@@ -55,6 +57,8 @@ static REPR_REGISTRY: LazyLock<RwLock<UstrMap<Repr>>> = LazyLock::new(|| {
 
         map.insert("argb".into(), Repr(Arc::new(ColorStringRepr::ARGB)));
         map.insert("rgba".into(), Repr(Arc::new(ColorStringRepr::RGBA)));
+        map.insert("ids/numeric".into(), Repr(Arc::new(NumericRepr::ID)));
+        map.insert("ids/numeric_ref".into(), Repr(Arc::new(NumericRepr::REF)));
 
         map
     })

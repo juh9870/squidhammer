@@ -59,10 +59,6 @@ impl EEnumVariant {
                 EDataType::Boolean => EnumPattern::Boolean,
                 EDataType::Number => EnumPattern::Number,
                 EDataType::String => EnumPattern::String,
-                EDataType::Id { .. } => {
-                    bail!("object Id can't appear as an Enum variant");
-                }
-                EDataType::Ref { ty } => EnumPattern::Ref(*ty),
                 EDataType::Const { value } => EnumPattern::Const(*value),
                 EDataType::List { .. } => EnumPattern::List,
                 EDataType::Map { .. } => EnumPattern::Map,

@@ -1,7 +1,7 @@
 use crate::etype::econst::ETypeConst;
 use crate::etype::eenum::variant::EEnumVariantId;
 use crate::etype::EDataType;
-use crate::value::id::{EListId, EMapId, ETypeId, EValueId};
+use crate::value::id::{EListId, EMapId, ETypeId};
 use itertools::Itertools;
 use ordered_float::OrderedFloat;
 use serde::{Deserialize, Serialize};
@@ -36,14 +36,6 @@ pub enum EValue {
         ident: ETypeId,
         fields: BTreeMap<Ustr, EValue>,
     },
-    Id {
-        ty: ETypeId,
-        value: Option<EValueId>,
-    },
-    Ref {
-        ty: ETypeId,
-        value: Option<EValueId>,
-    },
     Enum {
         variant: EEnumVariantId,
         data: Box<EValue>,
@@ -71,8 +63,6 @@ impl EValue {
             EValue::Enum { variant, .. } => EDataType::Object {
                 ident: variant.enum_id(),
             },
-            EValue::Id { ty, .. } => EDataType::Id { ty: *ty },
-            EValue::Ref { ty, .. } => EDataType::Ref { ty: *ty },
             EValue::List { id: ty, .. } => EDataType::List { id: *ty },
             EValue::Map { id, .. } => EDataType::Map { id: *id },
         }
@@ -262,24 +252,6 @@ impl Display for EValue {
                 data,
             } => {
                 write!(f, "{ident}({data})")
-            }
-            EValue::Id { ty, value } => {
-                write!(
-                    f,
-                    "Id<{ty}>({})",
-                    value
-                        .map(|e| e.to_string())
-                        .unwrap_or_else(|| "null".to_string())
-                )
-            }
-            EValue::Ref { ty, value } => {
-                write!(
-                    f,
-                    "Ref<{ty}>({})",
-                    value
-                        .map(|e| e.to_string())
-                        .unwrap_or_else(|| "null".to_string())
-                )
             }
             EValue::List { id, values } => {
                 write!(

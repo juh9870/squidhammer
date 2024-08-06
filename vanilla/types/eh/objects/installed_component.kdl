@@ -1,7 +1,11 @@
 struct {
-	ref "ComponentId" "eh:objects/component" alias="Component"
+	object "ComponentId" "sys:ids/numeric_ref" alias="Component" typeid="eh:objects/component" {
+		const "Id" "eh:objects/component"
+	}
 	object "Modification" "sys:optional" {
-		ref "Item" "eh:objects/component_mod"
+		object "Item" "sys:ids/numeric_ref" {
+			const "Id" "eh:objects/component_mod"
+		}
 	}
 	object "Quality" "eh:enums/modification_quality"
 	number "X" min=-32768 max=32767 type="int"

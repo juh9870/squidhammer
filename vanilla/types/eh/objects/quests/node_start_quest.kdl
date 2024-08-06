@@ -2,6 +2,8 @@ struct {
 	number "Id" min=1 max=999999 type="int"
 	number "DefaultTransition" alias="Transition" min=1 max=999999 type="int"
 	object "Quest" "sys:optional" {
-		ref "Item" "eh:objects/quests/quest"
+		object "Item" "sys:ids/numeric_ref" {
+			const "Id" "eh:objects/quests/quest"
+		}
 	}
 }

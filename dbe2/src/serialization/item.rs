@@ -18,8 +18,6 @@ pub enum ThingItemKind {
     Boolean,
     Number,
     String,
-    Id,
-    Ref,
     Object,
     Const,
     List,
@@ -72,15 +70,15 @@ impl ThingItem {
             for (i, arg) in self.generics.into_iter().enumerate() {
                 let name = arg.name;
                 let (k, v) = m_try(|| {
-                    if arg.extra_properties.len() > 0 {
-                        bail!(
-                            "generic arguments can't contain extra properties, but got {}",
-                            arg.extra_properties
-                                .into_keys()
-                                .map(|k| format!("`{k}`"))
-                                .join(", ")
-                        )
-                    }
+                    // if arg.extra_properties.len() > 0 {
+                    //     bail!(
+                    //         "generic arguments can't contain extra properties, but got {}",
+                    //         arg.extra_properties
+                    //             .into_keys()
+                    //             .map(|k| format!("`{k}`"))
+                    //             .join(", ")
+                    //     )
+                    // }
                     arg.into_item(registry, type_id, generic_arguments)
                 })
                 .with_context(|| {
@@ -107,24 +105,6 @@ impl ThingItem {
                 no_args()?;
                 no_generics()?;
                 EDataType::String
-            }
-            ThingItemKind::Id => {
-                let ty = if self.arguments.is_empty() {
-                    type_id
-                } else {
-                    let [ty] = expect_args(self.arguments)?;
-                    id(ty, 0)?
-                };
-                registry.assert_defined(&ty)?;
-                no_generics()?;
-                EDataType::Id { ty }
-            }
-            ThingItemKind::Ref => {
-                let [ty] = expect_args(self.arguments)?;
-                let ty = id(ty, 0)?;
-                registry.assert_defined(&ty)?;
-                no_generics()?;
-                EDataType::Ref { ty }
             }
             ThingItemKind::Object => {
                 let [ty] = expect_args(self.arguments)?;

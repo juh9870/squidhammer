@@ -1,8 +1,10 @@
 struct {
-	ref "SatelliteId" "eh:objects/satellite" alias="Satellite"
-	boolean "NotAvailableInGame" 
+	object "SatelliteId" "sys:ids/numeric_ref" alias="Satellite" typeid="eh:objects/satellite" {
+		const "Id" "eh:objects/satellite"
+	}
+	boolean "NotAvailableInGame"
 	object "DifficultyClass" "eh:enums/difficulty_class"
-	list "Components"  {
+	list "Components" {
 		object "Item" "eh:objects/installed_component"
 	}
 }

@@ -26,7 +26,7 @@ impl JsonRepr for ColorStringRepr {
         data: &mut JsonValue,
         _ignore_extra_fields: bool,
     ) -> miette::Result<JsonValue> {
-        let str = json_expected(data.as_str(), &data, "color")?;
+        let str = json_expected(data.as_str(), data, "color")?;
 
         let color = if let Ok(color) = ColorFormat::rgb().parse(str) {
             color
@@ -45,12 +45,12 @@ impl JsonRepr for ColorStringRepr {
     }
 
     fn into_repr(&self, _registry: &ETypesRegistry, data: JsonValue) -> miette::Result<JsonValue> {
-        let str = json_expected(data.as_object(), &data, "object")?;
+        let obj = json_expected(data.as_object(), &data, "object")?;
 
-        let a = str.get("a").map(|a| a.as_f64().unwrap()).unwrap_or(1.0) as f32;
-        let r = str.get("r").map(|a| a.as_f64().unwrap()).unwrap_or(0.0) as f32;
-        let g = str.get("g").map(|a| a.as_f64().unwrap()).unwrap_or(0.0) as f32;
-        let b = str.get("b").map(|a| a.as_f64().unwrap()).unwrap_or(0.0) as f32;
+        let a = obj.get("a").map(|a| a.as_f64().unwrap()).unwrap_or(1.0) as f32;
+        let r = obj.get("r").map(|a| a.as_f64().unwrap()).unwrap_or(0.0) as f32;
+        let g = obj.get("g").map(|a| a.as_f64().unwrap()).unwrap_or(0.0) as f32;
+        let b = obj.get("b").map(|a| a.as_f64().unwrap()).unwrap_or(0.0) as f32;
 
         let str = if a == 1.0 {
             ColorFormat::rgb().format(Rgba::from_rgb(r, g, b))

@@ -10,11 +10,13 @@ struct {
 	number "HitPoints" min=0 max=1000000000 type="int"
 	object "Color" "color:argb"
 	object "BulletPrefab" "sys:optional" {
-		ref "Item" "eh:objects/weapon/bullet_perfab"
+		object "Item" "sys:ids/numeric_ref" {
+			const "Id" "eh:objects/weapon/bullet_perfab"
+		}
 	}
 	number "EnergyCost" min=0 max=1000000000
-	boolean "CanBeDisarmed" 
-	boolean "FriendlyFire" 
+	boolean "CanBeDisarmed"
+	boolean "FriendlyFire"
 	object "AiBulletBehavior" "eh:enums/weapon/ai_bullet_behavior" description="Hints for AI and auto-aim0 on usage of this weapon"
 	object "Type" "eh:enums/weapon/bullet_type_obsolete"
 }

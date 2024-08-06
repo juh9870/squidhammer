@@ -2,8 +2,8 @@ struct {
 	list "ShipSizes" editor="enum_flags" {
 		object "Item" "eh:enums/size_class"
 	}
-	boolean "NotForOrganicShips" 
-	boolean "NotForMechanicShips" 
-	string "UniqueComponentTag" 
+	boolean "NotForOrganicShips"
+	boolean "NotForMechanicShips"
+	string "UniqueComponentTag"
 	number "MaxComponentAmount" min=0 type="int"
 }

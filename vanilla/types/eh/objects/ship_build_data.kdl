@@ -1,25 +1,35 @@
 struct {
-	ref "ShipId" "eh:objects/ship" alias="Ship"
+	object "ShipId" "sys:ids/numeric_ref" alias="Ship" typeid="eh:objects/ship" {
+		const "Id" "eh:objects/ship"
+	}
 	boolean "AvailableForPlayer" default=true
 	boolean "AvailableForEnemy" default=true
 	object "DifficultyClass" "eh:enums/difficulty_class"
 	object "BuildFaction" "sys:optional" {
-		ref "Item" "eh:objects/faction"
+		object "Item" "sys:ids/numeric_ref" {
+			const "Id" "eh:objects/faction"
+		}
 	}
 	object "CustomAI" "sys:optional" {
-		ref "Item" "eh:objects/ai/behavior_tree"
+		object "Item" "sys:ids/numeric_ref" {
+			const "Id" "eh:objects/ai/behavior_tree"
+		}
 	}
-	list "Components"  {
+	list "Components" {
 		object "Item" "eh:objects/installed_component"
 	}
-	boolean "NotAvailableInGame" 
+	boolean "NotAvailableInGame"
 	object "Perks" "eh:objects/ship_build_perks"
-	boolean "ExtendedLayout" 
-	boolean "RandomColor" 
+	boolean "ExtendedLayout"
+	boolean "RandomColor"
 	object "LeftSatelliteBuild" "sys:optional" {
-		ref "Item" "eh:objects/satellite_build"
+		object "Item" "sys:ids/numeric_ref" {
+			const "Id" "eh:objects/satellite_build"
+		}
 	}
 	object "RightSatelliteBuild" "sys:optional" {
-		ref "Item" "eh:objects/satellite_build"
+		object "Item" "sys:ids/numeric_ref" {
+			const "Id" "eh:objects/satellite_build"
+		}
 	}
 }

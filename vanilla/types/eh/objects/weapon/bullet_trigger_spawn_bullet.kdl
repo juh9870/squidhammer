@@ -2,7 +2,9 @@ struct {
 	object "Condition" "eh:enums/weapon/bullet_trigger_condition"
 	string "AudioClip" editor="eh:audioclip"
 	object "Ammunition" "sys:optional" {
-		ref "Item" "eh:objects/weapon/ammunition"
+		object "Item" "sys:ids/numeric_ref" {
+			const "Id" "eh:objects/weapon/ammunition"
+		}
 	}
 	object "Color" "color:argb"
 	object "ColorMode" "eh:enums/weapon/color_mode"

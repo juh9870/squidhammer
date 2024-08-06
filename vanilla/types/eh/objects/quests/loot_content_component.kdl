@@ -1,5 +1,7 @@
 struct {
-	ref "ItemId" "eh:objects/component" alias="Component"
+	object "ItemId" "sys:ids/numeric_ref" alias="Component" typeid="eh:objects/component" {
+		const "Id" "eh:objects/component"
+	}
 	number "MinAmount" min=0 max=1000000000 type="int"
 	number "MaxAmount" min=0 max=1000000000 type="int"
 }

@@ -1,8 +1,8 @@
 struct {
 	number "Id" min=1 max=999999 type="int"
-	string "Message" 
+	string "Message"
 	number "DefaultTransition" min=0 max=999999 type="int"
-	list "Transitions"  {
+	list "Transitions" {
 		object "Item" "eh:objects/quests/node_transition"
 	}
 }

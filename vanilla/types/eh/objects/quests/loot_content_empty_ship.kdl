@@ -1,3 +1,5 @@
 struct {
-	ref "ItemId" "eh:objects/ship" alias="Ship"
+	object "ItemId" "sys:ids/numeric_ref" alias="Ship" typeid="eh:objects/ship" {
+		const "Id" "eh:objects/ship"
+	}
 }

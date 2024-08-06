@@ -126,8 +126,6 @@ fn editor_for_raw(
             EDataType::String => "string".into(),
             EDataType::Boolean => "boolean".into(),
             EDataType::Const { .. } => "const".into(),
-            EDataType::Id { .. } => "id".into(),
-            EDataType::Ref { .. } => "ref".into(),
             EDataType::Object { ident } => {
                 let data = reg
                     .get_object(ident)

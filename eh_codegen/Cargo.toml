@@ -4,14 +4,14 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+camino = "1.1.7"
 clap = { version = "4.5.13", features = ["derive", "env"] }
 codegen_schema = { git = "https://github.com/juh9870/eh_codegen.git", rev = "4cf9c64e29ce85bc935c605b79aa477a41976162" }
-miette = { version = "7.2.0", features = ["fancy"] }
-tracing = "0.1.40"
-tracing-subscriber = { version = "0.3.18", features = ["env-filter", "fmt"] }
-camino = "1.1.7"
-itertools = "0.13.0"
+color-backtrace = "0.6.1"
 convert_case = "0.6.0"
 fs-err = "2.11.0"
+itertools = "0.13.0"
+miette = { version = "7.2.0", features = ["fancy"] }
+tracing = "0.1.40"
 tracing-panic = "0.1.2"
-color-backtrace = "0.6.1"
+tracing-subscriber = { version = "0.3.18", features = ["env-filter", "fmt"] }

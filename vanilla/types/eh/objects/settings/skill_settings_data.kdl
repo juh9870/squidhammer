@@ -1,8 +1,10 @@
 struct singleton=true {
-	list "BeatAllEnemiesFactionList"  {
-		ref "Item" "eh:objects/faction"
+	list "BeatAllEnemiesFactionList" {
+		object "Item" "sys:ids/numeric_ref" {
+			const "Id" "eh:objects/faction"
+		}
 	}
-	boolean "DisableExceedTheLimits" 
+	boolean "DisableExceedTheLimits"
 	string "FuelTankCapacity" default="BaseFuelCapacity + 50*level" arguments="level" min=0 editor="eh:expression"
 	string "AttackBonus" default="0.1*level" arguments="level" min=0 editor="eh:expression"
 	string "DefenseBonus" default="0.1*level" arguments="level" min=0 editor="eh:expression"

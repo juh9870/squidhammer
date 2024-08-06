@@ -1,4 +1,4 @@
 struct {
-	number "Weight" 
+	number "Weight"
 	object "Loot" "eh:objects/quests/loot_content"
 }

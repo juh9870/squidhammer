@@ -4,7 +4,7 @@ use crate::etype::eitem::EItemType;
 use crate::etype::estruct::EStructData;
 use crate::etype::EDataType;
 use crate::json_utils::repr::JsonRepr;
-use crate::json_utils::{json_kind, JsonValue};
+use crate::json_utils::JsonValue;
 use crate::serialization::deserialize_etype;
 use crate::value::id::{EListId, EMapId, ETypeId};
 use crate::value::EValue;
@@ -50,7 +50,7 @@ impl EObjectType {
     pub fn parse_json(
         &self,
         registry: &ETypesRegistry,
-        mut data: &mut JsonValue,
+        data: &mut JsonValue,
         inline: bool,
     ) -> miette::Result<EValue> {
         let mut data_holder: Option<JsonValue> = None;

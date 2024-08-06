@@ -101,11 +101,11 @@ impl EValueId {
                 }
                 Ok(EValueId::Numeric(num as i32))
             }
-            Value::String(str) => Ok(EValueId::String(EValueIdStr::parse(&str)?)),
+            Value::String(str) => Ok(EValueId::String(EValueIdStr::parse(str)?)),
             other => {
                 bail!(
                     "invalid data type. Expected string or number but got {}",
-                    json_kind(&other)
+                    json_kind(other)
                 )
             }
         }

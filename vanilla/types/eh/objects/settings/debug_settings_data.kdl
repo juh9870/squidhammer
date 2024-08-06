@@ -1,6 +1,6 @@
 struct singleton=true {
-	list "Codes"  {
+	list "Codes" {
 		object "Item" "eh:objects/settings/debug_code"
 	}
-	boolean "EnableDebugConsole" 
+	boolean "EnableDebugConsole"
 }

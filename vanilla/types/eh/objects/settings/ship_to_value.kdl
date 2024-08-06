@@ -1,6 +1,8 @@
 struct {
 	object "Ship" "sys:optional" {
-		ref "Item" "eh:objects/ship"
+		object "Item" "sys:ids/numeric_ref" {
+			const "Id" "eh:objects/ship"
+		}
 	}
 	number "Value" min=0 type="int"
 }

@@ -12,7 +12,7 @@ struct {
 	number "ParticleSize" default=1 min=0.001 max=100
 	object "Offset" "sys:vec2"
 	number "Rotation" min=0 max=360
-	boolean "Loop" 
-	boolean "Inverse" 
-	boolean "UseRealTime" 
+	boolean "Loop"
+	boolean "Inverse"
+	boolean "UseRealTime"
 }

@@ -1,4 +1,6 @@
 struct {
-	id "Id"
+	object "Id" "sys:ids/numeric" {
+		const "Id" "eh:objects/weapon/weapon"
+	}
 	object "Data" "eh:objects/weapon/weapon_data" inline=true
 }

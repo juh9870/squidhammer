@@ -1,15 +1,23 @@
 struct singleton=true {
 	object "OutpostShip" "sys:optional" {
-		ref "Item" "eh:objects/ship"
+		object "Item" "sys:ids/numeric_ref" {
+			const "Id" "eh:objects/ship"
+		}
 	}
 	object "TurretShip" "sys:optional" {
-		ref "Item" "eh:objects/ship"
+		object "Item" "sys:ids/numeric_ref" {
+			const "Id" "eh:objects/ship"
+		}
 	}
 	object "InfectedPlanetFaction" "sys:optional" {
-		ref "Item" "eh:objects/faction"
+		object "Item" "sys:ids/numeric_ref" {
+			const "Id" "eh:objects/faction"
+		}
 	}
 	object "HiveShipBuild" "sys:optional" {
-		ref "Item" "eh:objects/ship_build"
+		object "Item" "sys:ids/numeric_ref" {
+			const "Id" "eh:objects/ship_build"
+		}
 	}
 	string "GasCloudDPS" default="MIN(level*2,500)" arguments="level" min=1 editor="eh:expression"
 }

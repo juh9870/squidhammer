@@ -1,13 +1,19 @@
 struct {
-	ref "ItemId" "eh:objects/component" alias="Component"
+	object "ItemId" "sys:ids/numeric_ref" alias="Component" typeid="eh:objects/component" {
+		const "Id" "eh:objects/component"
+	}
 	object "Faction" "sys:optional" {
-		ref "Item" "eh:objects/faction"
+		object "Item" "sys:ids/numeric_ref" {
+			const "Id" "eh:objects/faction"
+		}
 	}
 	number "Price" min=0 max=10000 type="int"
-	boolean "Hidden" 
-	boolean "Special" 
-	list "Dependencies"  {
-		ref "Item" "eh:objects/technology"
+	boolean "Hidden"
+	boolean "Special"
+	list "Dependencies" {
+		object "Item" "sys:ids/numeric_ref" {
+			const "Id" "eh:objects/technology"
+		}
 	}
 	number "CustomCraftingLevel" min=0 type="int"
 }

@@ -3,9 +3,13 @@ struct {
 	number "DefaultTransition" alias="VictoryTransition" min=1 max=999999 type="int"
 	number "FailureTransition" min=1 max=999999 type="int"
 	object "Enemy" "sys:optional" {
-		ref "Item" "eh:objects/quests/fleet"
+		object "Item" "sys:ids/numeric_ref" {
+			const "Id" "eh:objects/quests/fleet"
+		}
 	}
 	object "Loot" "sys:optional" {
-		ref "Item" "eh:objects/quests/loot"
+		object "Item" "sys:ids/numeric_ref" {
+			const "Id" "eh:objects/quests/loot"
+		}
 	}
 }

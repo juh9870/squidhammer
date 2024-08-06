@@ -1,5 +1,7 @@
 struct {
 	object "ItemId" "sys:optional" alias="Loot" {
-		ref "Item" "eh:objects/quests/loot"
+		object "Item" "sys:ids/numeric_ref" {
+			const "Id" "eh:objects/quests/loot"
+		}
 	}
 }

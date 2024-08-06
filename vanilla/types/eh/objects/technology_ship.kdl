@@ -1,10 +1,14 @@
 struct {
-	ref "ItemId" "eh:objects/ship" alias="Ship"
+	object "ItemId" "sys:ids/numeric_ref" alias="Ship" typeid="eh:objects/ship" {
+		const "Id" "eh:objects/ship"
+	}
 	number "Price" min=0 max=10000 type="int"
-	boolean "Hidden" 
-	boolean "Special" 
-	list "Dependencies"  {
-		ref "Item" "eh:objects/technology"
+	boolean "Hidden"
+	boolean "Special"
+	list "Dependencies" {
+		object "Item" "sys:ids/numeric_ref" {
+			const "Id" "eh:objects/technology"
+		}
 	}
 	number "CustomCraftingLevel" min=0 type="int"
 }

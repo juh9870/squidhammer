@@ -1,0 +1,3 @@
+struct "Id" repr="ids/numeric" editor="ids/numeric" {
+    number "id"
+}
