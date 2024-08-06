@@ -3,11 +3,11 @@ use crate::etype::eenum::pattern::{EnumPattern, Tagged};
 use crate::etype::eenum::EEnumData;
 use crate::etype::eitem::EItemType;
 use crate::etype::EDataType;
+use crate::json_utils::repr::JsonRepr;
 use crate::registry::ETypesRegistry;
 use crate::value::id::ETypeId;
 use crate::value::EValue;
-use itertools::Itertools;
-use miette::bail;
+use miette::{bail, miette};
 use serde::{Deserialize, Serialize};
 use std::fmt::{Display, Formatter};
 use ustr::Ustr;
@@ -35,7 +35,7 @@ impl EEnumVariant {
     pub(crate) fn from_eitem(
         item: EItemType,
         name: Ustr,
-        _registry: &mut ETypesRegistry,
+        registry: &mut ETypesRegistry,
         tagged_repr: Option<Tagged>,
         variant_name: Ustr,
     ) -> miette::Result<EEnumVariant> {
@@ -62,7 +62,17 @@ impl EEnumVariant {
                 EDataType::Const { value } => EnumPattern::Const(*value),
                 EDataType::List { .. } => EnumPattern::List,
                 EDataType::Map { .. } => EnumPattern::Map,
-                EDataType::Object { .. } => EnumPattern::UntaggedObject,
+                EDataType::Object { ident } => {
+                    let data = registry
+                        .get_object(ident)
+                        .ok_or_else(|| miette!("!!INTERNAL ERROR!! unknown object `{}` while deserializing enum pattern", ident))?;
+
+                    if let Some(pat) = data.repr().and_then(|repr| repr.enum_pat()) {
+                        pat
+                    } else {
+                        EnumPattern::UntaggedObject
+                    }
+                }
             }
         };
 

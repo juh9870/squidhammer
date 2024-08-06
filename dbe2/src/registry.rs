@@ -3,7 +3,7 @@ use crate::etype::eenum::EEnumData;
 use crate::etype::eitem::EItemType;
 use crate::etype::estruct::EStructData;
 use crate::etype::EDataType;
-use crate::json_utils::repr::JsonRepr;
+use crate::json_utils::repr::{JsonRepr, Repr};
 use crate::json_utils::JsonValue;
 use crate::serialization::deserialize_etype;
 use crate::value::id::{EListId, EMapId, ETypeId};
@@ -81,6 +81,13 @@ impl EObjectType {
         match self {
             EObjectType::Struct(s) => &s.extra_properties,
             EObjectType::Enum(e) => &e.extra_properties,
+        }
+    }
+
+    pub fn repr(&self) -> Option<&Repr> {
+        match self {
+            EObjectType::Struct(s) => s.repr.as_ref(),
+            EObjectType::Enum(e) => e.repr.as_ref(),
         }
     }
 

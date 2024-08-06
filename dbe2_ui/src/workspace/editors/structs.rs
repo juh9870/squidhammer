@@ -1,5 +1,8 @@
-use crate::workspace::editors::utils::{labeled_field, unsupported, EditorResultExt, EditorSize};
-use crate::workspace::editors::{editor_for_item, DynProps, Editor};
+use crate::workspace::editors::utils::{
+    labeled_field, prop, unsupported, EditorResultExt, EditorSize,
+};
+use crate::workspace::editors::{cast_props, editor_for_item, DynProps, Editor, EditorProps};
+use dbe2::etype::eitem::EItemType;
 use dbe2::registry::ETypesRegistry;
 use dbe2::value::EValue;
 use egui::Ui;
@@ -10,6 +13,14 @@ use miette::miette;
 pub struct StructEditor;
 
 impl Editor for StructEditor {
+    fn props(&self, _reg: &ETypesRegistry, item: Option<&EItemType>) -> miette::Result<DynProps> {
+        if prop(item.map(|i| i.extra_properties()), "inline", false)? {
+            Ok(StructProps { inline: true }.pack())
+        } else {
+            Ok(StructProps { inline: false }.pack())
+        }
+    }
+
     fn size(&self, _props: &DynProps) -> EditorSize {
         EditorSize::Block
     }
@@ -20,11 +31,13 @@ impl Editor for StructEditor {
         reg: &ETypesRegistry,
         field_name: &str,
         value: &mut EValue,
-        _props: &DynProps,
+        props: &DynProps,
     ) {
         let EValue::Struct { fields, ident } = value else {
             unsupported!(ui, field_name, value, self);
         };
+
+        let props = cast_props::<StructProps>(props);
 
         reg.get_struct(ident)
             .ok_or_else(|| miette!("unknown struct `{}`", ident))
@@ -53,6 +66,8 @@ impl Editor for StructEditor {
                     ui.horizontal(|ui| {
                         labeled_field(ui, field_name, draw_fields);
                     });
+                } else if props.inline {
+                    draw_fields(ui);
                 } else {
                     ui.group(|ui| {
                         ui.vertical(|ui| {
@@ -66,3 +81,10 @@ impl Editor for StructEditor {
             });
     }
 }
+
+#[derive(Debug, Clone)]
+struct StructProps {
+    inline: bool,
+}
+
+impl EditorProps for StructProps {}

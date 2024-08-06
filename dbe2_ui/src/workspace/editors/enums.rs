@@ -94,7 +94,7 @@ impl Editor for EnumEditor {
                     .show_header(ui, |ui| {
                         labeled_field(ui, field_name, |ui| editor.toggle_editor(ui))
                     })
-                    .body(|ui| editor.body(ui));
+                    .body_unindented(|ui| editor.body(ui));
                 } else {
                     let dir = if editor.body_size() <= EditorSize::Inline {
                         Direction::LeftToRight
@@ -121,7 +121,7 @@ impl Editor for EnumEditor {
                     .show_header(ui, |ui| {
                         labeled_field(ui, field_name, |ui| editor.picker(ui))
                     })
-                    .body(|ui| editor.body(ui));
+                    .body_unindented(|ui| editor.body(ui));
                 } else {
                     labeled_field(ui, field_name, |ui| editor.picker(ui));
                     editor.body(ui);

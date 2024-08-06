@@ -1,3 +1,4 @@
+use crate::etype::eenum::pattern::EnumPattern;
 use crate::json_utils::repr::JsonRepr;
 use crate::json_utils::{json_expected, JsonValue};
 use crate::registry::ETypesRegistry;
@@ -60,5 +61,9 @@ impl JsonRepr for ColorStringRepr {
         };
 
         Ok(str.into())
+    }
+
+    fn enum_pat(&self) -> Option<EnumPattern> {
+        Some(EnumPattern::String)
     }
 }
