@@ -1,6 +1,6 @@
 use crate::etype::econst::ETypeConst;
 use crate::etype::eenum::EEnumData;
-use crate::etype::eitem::EItemType;
+use crate::etype::eitem::EItemInfo;
 use crate::etype::estruct::EStructData;
 use crate::etype::EDataType;
 use crate::json_utils::repr::{JsonRepr, Repr};
@@ -246,7 +246,7 @@ impl ETypesRegistry {
     pub fn make_generic(
         &mut self,
         id: ETypeId,
-        arguments: UstrMap<EItemType>,
+        arguments: UstrMap<EItemInfo>,
     ) -> miette::Result<ETypeId> {
         let long_id = {
             let args = arguments

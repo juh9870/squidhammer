@@ -2,7 +2,7 @@ use crate::workspace::editors::utils::{
     labeled_field, prop, unsupported, EditorResultExt, EditorSize,
 };
 use crate::workspace::editors::{cast_props, editor_for_item, DynProps, Editor, EditorProps};
-use dbe2::etype::eitem::EItemType;
+use dbe2::etype::eitem::EItemInfo;
 use dbe2::registry::ETypesRegistry;
 use dbe2::value::EValue;
 use egui::Ui;
@@ -13,7 +13,7 @@ use miette::miette;
 pub struct StructEditor;
 
 impl Editor for StructEditor {
-    fn props(&self, _reg: &ETypesRegistry, item: Option<&EItemType>) -> miette::Result<DynProps> {
+    fn props(&self, _reg: &ETypesRegistry, item: Option<&EItemInfo>) -> miette::Result<DynProps> {
         if prop(item.map(|i| i.extra_properties()), "inline", false)? {
             Ok(StructProps { inline: true }.pack())
         } else {

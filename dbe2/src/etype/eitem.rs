@@ -8,28 +8,28 @@ use tracing::error;
 use ustr::Ustr;
 
 #[derive(Debug, Clone)]
-pub struct EItemTypeSpecific {
+pub struct EItemInfoSpecific {
     pub ty: EDataType,
     pub extra_properties: AHashMap<String, ETypeConst>,
 }
 
 #[derive(Debug, Clone)]
-pub struct EItemTypeGeneric {
+pub struct EItemInfoGeneric {
     pub argument_name: Ustr,
     pub extra_properties: AHashMap<String, ETypeConst>,
 }
 
 #[derive(Debug, Clone, EnumIs)]
-pub enum EItemType {
-    Specific(EItemTypeSpecific),
-    Generic(EItemTypeGeneric),
+pub enum EItemInfo {
+    Specific(EItemInfoSpecific),
+    Generic(EItemInfoGeneric),
 }
 
-impl EItemType {
+impl EItemInfo {
     pub fn ty(&self) -> EDataType {
         match self {
-            EItemType::Specific(ty) => ty.ty,
-            EItemType::Generic(ty) => {
+            EItemInfo::Specific(ty) => ty.ty,
+            EItemInfo::Generic(ty) => {
                 error!(
                     name = ty.argument_name.as_str(),
                     "generic field type was instantiated directly",
@@ -41,8 +41,8 @@ impl EItemType {
 
     pub fn default_value(&self, _registry: &ETypesRegistry) -> EValue {
         match self {
-            EItemType::Specific(ty) => ty.ty.default_value(_registry),
-            EItemType::Generic(ty) => {
+            EItemInfo::Specific(ty) => ty.ty.default_value(_registry),
+            EItemInfo::Generic(ty) => {
                 error!(
                     name = ty.argument_name.as_str(),
                     "generic field value was instantiated directly"
@@ -54,8 +54,8 @@ impl EItemType {
 
     pub fn extra_properties(&self) -> &AHashMap<String, ETypeConst> {
         match self {
-            EItemType::Specific(ty) => &ty.extra_properties,
-            EItemType::Generic(ty) => &ty.extra_properties,
+            EItemInfo::Specific(ty) => &ty.extra_properties,
+            EItemInfo::Generic(ty) => &ty.extra_properties,
         }
     }
 }

@@ -1,5 +1,5 @@
 use crate::etype::econst::ETypeConst;
-use crate::etype::eitem::{EItemType, EItemTypeGeneric, EItemTypeSpecific};
+use crate::etype::eitem::{EItemInfo, EItemInfoGeneric, EItemInfoSpecific};
 use crate::etype::EDataType;
 use crate::m_try;
 use crate::registry::ETypesRegistry;
@@ -45,7 +45,7 @@ impl ThingItem {
         registry: &mut ETypesRegistry,
         type_id: ETypeId,
         generic_arguments: &[Ustr],
-    ) -> miette::Result<(Ustr, EItemType)> {
+    ) -> miette::Result<(Ustr, EItemInfo)> {
         let no_args = || {
             if !self.arguments.is_empty() {
                 bail!(
@@ -87,7 +87,7 @@ impl ThingItem {
                 items.insert(k, v);
             }
 
-            miette::Result::<UstrMap<EItemType>>::Ok(items)
+            miette::Result::<UstrMap<EItemInfo>>::Ok(items)
         };
 
         let ty = match self.kind {
@@ -146,7 +146,7 @@ impl ThingItem {
                 let arg = generic_name(arg, 0, generic_arguments)?;
                 return Ok((
                     self.name,
-                    EItemType::Generic(EItemTypeGeneric {
+                    EItemInfo::Generic(EItemInfoGeneric {
                         argument_name: arg,
                         extra_properties: self.extra_properties,
                     }),
@@ -156,7 +156,7 @@ impl ThingItem {
 
         Ok((
             self.name,
-            EItemType::Specific(EItemTypeSpecific {
+            EItemInfo::Specific(EItemInfoSpecific {
                 ty,
                 extra_properties: self.extra_properties,
             }),

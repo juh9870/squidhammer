@@ -8,7 +8,7 @@ use dbe2::etype::econst::ETypeConst;
 use dbe2::etype::eenum::pattern::EnumPattern;
 use dbe2::etype::eenum::variant::{EEnumVariant, EEnumVariantId, EEnumVariantWithId};
 use dbe2::etype::eenum::EEnumData;
-use dbe2::etype::eitem::EItemType;
+use dbe2::etype::eitem::EItemInfo;
 use dbe2::registry::ETypesRegistry;
 use dbe2::value::EValue;
 use egui::collapsing_header::CollapsingState;
@@ -46,7 +46,7 @@ impl TryFrom<ETypeConst> for EnumEditorType {
 pub struct EnumEditor;
 
 impl Editor for EnumEditor {
-    fn props(&self, _reg: &ETypesRegistry, item: Option<&EItemType>) -> miette::Result<DynProps> {
+    fn props(&self, _reg: &ETypesRegistry, item: Option<&EItemInfo>) -> miette::Result<DynProps> {
         let kind = prop(
             item.map(|i| i.extra_properties()),
             "kind",

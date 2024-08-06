@@ -10,7 +10,7 @@ use crate::workspace::editors::structs::StructEditor;
 use crate::workspace::editors::utils::{prop_opt, EditorSize};
 use ahash::AHashMap;
 use dbe2::etype::econst::ETypeConst;
-use dbe2::etype::eitem::EItemType;
+use dbe2::etype::eitem::EItemInfo;
 use dbe2::etype::EDataType;
 use dbe2::registry::{EObjectType, ETypesRegistry};
 use dbe2::value::EValue;
@@ -91,7 +91,7 @@ fn cast_props<T: EditorProps>(props: &DynProps) -> &T {
 type DynProps = Option<Box<dyn EditorProps>>;
 
 trait Editor: std::any::Any + Send + Sync + Debug {
-    fn props(&self, _reg: &ETypesRegistry, _item: Option<&EItemType>) -> miette::Result<DynProps> {
+    fn props(&self, _reg: &ETypesRegistry, _item: Option<&EItemInfo>) -> miette::Result<DynProps> {
         Ok(None)
     }
 
@@ -122,7 +122,7 @@ pub fn editor_for_type(reg: &ETypesRegistry, ty: &EDataType) -> EditorData {
     .unwrap_or_else(|err| EditorData(&ErrorEditor, ErrorProps(err.to_string()).pack()))
 }
 
-pub fn editor_for_item(reg: &ETypesRegistry, item: &EItemType) -> EditorData {
+pub fn editor_for_item(reg: &ETypesRegistry, item: &EItemInfo) -> EditorData {
     m_try(|| {
         let name = prop_opt::<Ustr>(item.extra_properties(), "editor")?;
 

@@ -1,7 +1,7 @@
 use crate::etype::econst::ETypeConst;
 use crate::etype::eenum::pattern::{EnumPattern, Tagged};
 use crate::etype::eenum::EEnumData;
-use crate::etype::eitem::EItemType;
+use crate::etype::eitem::EItemInfo;
 use crate::etype::EDataType;
 use crate::json_utils::repr::JsonRepr;
 use crate::registry::ETypesRegistry;
@@ -15,7 +15,7 @@ use ustr::Ustr;
 #[derive(Debug, Clone)]
 pub struct EEnumVariant {
     pub pat: EnumPattern,
-    pub data: EItemType,
+    pub data: EItemInfo,
     pub name: Ustr,
 }
 
@@ -28,12 +28,12 @@ impl EEnumVariant {
         &self.name
     }
 
-    pub(crate) fn new(name: Ustr, pat: EnumPattern, data: EItemType) -> Self {
+    pub(crate) fn new(name: Ustr, pat: EnumPattern, data: EItemInfo) -> Self {
         Self { pat, data, name }
     }
 
     pub(crate) fn from_eitem(
-        item: EItemType,
+        item: EItemInfo,
         name: Ustr,
         registry: &mut ETypesRegistry,
         tagged_repr: Option<Tagged>,

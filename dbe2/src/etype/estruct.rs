@@ -1,5 +1,5 @@
 use crate::etype::econst::ETypeConst;
-use crate::etype::eitem::EItemType;
+use crate::etype::eitem::EItemInfo;
 use crate::json_utils::repr::Repr;
 use crate::json_utils::{json_kind, JsonValue};
 use crate::registry::ETypesRegistry;
@@ -24,7 +24,7 @@ pub struct EStructData {
 #[derive(Debug, Clone)]
 pub struct EStructField {
     pub name: Ustr,
-    pub ty: EItemType,
+    pub ty: EItemInfo,
 }
 
 impl EStructData {
@@ -56,13 +56,13 @@ impl EStructData {
     }
     pub fn apply_generics(
         mut self,
-        arguments: &UstrMap<EItemType>,
+        arguments: &UstrMap<EItemInfo>,
         new_id: ETypeId,
         _registry: &mut ETypesRegistry,
     ) -> miette::Result<Self> {
         self.ident = new_id;
         for x in &mut self.fields {
-            if let EItemType::Generic(g) = &x.ty {
+            if let EItemInfo::Generic(g) = &x.ty {
                 let item = arguments.get(&g.argument_name).ok_or_else(|| {
                     miette!("generic argument `{}` is not provided", g.argument_name)
                 })?;

@@ -1,7 +1,7 @@
 use crate::etype::econst::ETypeConst;
 use crate::etype::eenum::pattern::{EnumPattern, Tagged};
 use crate::etype::eenum::variant::{EEnumVariant, EEnumVariantId, EEnumVariantWithId};
-use crate::etype::eitem::EItemType;
+use crate::etype::eitem::EItemInfo;
 use crate::json_utils::repr::Repr;
 use crate::json_utils::{json_kind, JsonValue};
 use crate::registry::ETypesRegistry;
@@ -58,13 +58,13 @@ impl EEnumData {
 
     pub fn apply_generics(
         mut self,
-        arguments: &UstrMap<EItemType>,
+        arguments: &UstrMap<EItemInfo>,
         new_id: ETypeId,
         registry: &mut ETypesRegistry,
     ) -> miette::Result<Self> {
         self.ident = new_id;
         for variant in &mut self.variants {
-            if let EItemType::Generic(g) = &variant.data {
+            if let EItemInfo::Generic(g) = &variant.data {
                 let item = arguments.get(&g.argument_name).ok_or_else(|| {
                     miette!("generic argument `{}` is not provided", g.argument_name)
                 })?;
