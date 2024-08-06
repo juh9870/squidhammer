@@ -1,0 +1,5 @@
+struct {
+	list "Elements"  {
+		object "Item" "eh:objects/weapon/visual_effect_element"
+	}
+}

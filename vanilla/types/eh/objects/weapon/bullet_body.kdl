@@ -1,0 +1,20 @@
+struct {
+	number "Size" min=0 max=1000
+	number "Length" min=0 max=1000
+	number "Velocity" min=0 max=1000
+	number "ParentVelocityEffect" default=1 description="How hard is the ammunition affected by the parent velocity during spawn." min=-1000 max=1000
+	boolean "AttachedToParent" description="Specifies whenever ammunition is attached to the parent ship or ammo. Moving ammo will move in parent's coordinate space"
+	number "Range" min=0 max=1000000000
+	number "Lifetime" min=0 max=1000000000
+	number "Weight" min=0 max=1000000000
+	number "HitPoints" min=0 max=1000000000 type="int"
+	object "Color" "color:argb"
+	object "BulletPrefab" "sys:optional" {
+		ref "Item" "eh:objects/weapon/bullet_perfab"
+	}
+	number "EnergyCost" min=0 max=1000000000
+	boolean "CanBeDisarmed" 
+	boolean "FriendlyFire" 
+	object "AiBulletBehavior" "eh:enums/weapon/ai_bullet_behavior" description="Hints for AI and auto-aim0 on usage of this weapon"
+	object "Type" "eh:enums/weapon/bullet_type_obsolete"
+}

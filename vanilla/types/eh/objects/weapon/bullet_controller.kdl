@@ -1,0 +1,8 @@
+enum tag="Type" {
+	object "Projectile" "eh:objects/weapon/bullet_controller_projectile" tag=0
+	object "Homing" "eh:objects/weapon/bullet_controller_homing" tag=1
+	object "Beam" "eh:objects/weapon/bullet_controller_beam" tag=2
+	object "Parametric" "eh:objects/weapon/bullet_controller_parametric" tag=3
+	object "Harpoon" "eh:objects/weapon/bullet_controller_harpoon" tag=4
+	object "AuraEmitter" "eh:objects/weapon/bullet_controller_aura_emitter" tag=5
+}

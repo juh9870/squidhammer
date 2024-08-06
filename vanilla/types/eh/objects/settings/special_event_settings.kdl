@@ -1,0 +1,4 @@
+struct {
+	id "Id"
+	object "Data" "eh:objects/settings/special_event_settings_data" inline=true
+}

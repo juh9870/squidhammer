@@ -1,0 +1,5 @@
+enum {
+	const "CallNextEnemy" 0
+	const "DrainPlayerHp" 1
+	const "CallNextEnemyOrDraw" 2
+}

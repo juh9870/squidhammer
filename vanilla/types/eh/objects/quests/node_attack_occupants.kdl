@@ -1,0 +1,5 @@
+struct {
+	number "Id" min=1 max=999999 type="int"
+	number "DefaultTransition" alias="VictoryTransition" min=1 max=999999 type="int"
+	number "FailureTransition" min=1 max=999999 type="int"
+}

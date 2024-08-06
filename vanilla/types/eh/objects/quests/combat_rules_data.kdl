@@ -1,0 +1,19 @@
+struct {
+	string "InitialEnemyShips" default="1" arguments="level" min=1 editor="eh:expression"
+	string "MaxEnemyShips" default="12" arguments="level" min=1 editor="eh:expression"
+	number "BattleMapSize" default=200 min=50 type="int"
+	string "TimeLimit" default="MAX(40, 100 - level)" arguments="level" min=0 editor="eh:expression"
+	object "TimeOutMode" "eh:enums/quests/time_out_mode"
+	object "LootCondition" "eh:enums/quests/reward_condition"
+	object "ExpCondition" "eh:enums/quests/reward_condition"
+	object "ShipSelection" "eh:enums/quests/player_ship_selection_mode"
+	boolean "DisableSkillBonuses" 
+	boolean "DisableRandomLoot" 
+	boolean "DisableAsteroids" 
+	boolean "DisablePlanet" 
+	boolean "NextEnemyButton" default=true
+	boolean "KillThemAllButton" description="For debug purposes"
+	list "CustomSoundtrack"  {
+		object "Item" "eh:objects/settings/sound_track"
+	}
+}

@@ -1,0 +1,5 @@
+enum {
+	const "Easy" 0
+	const "Medium" 1
+	const "Hard" 2
+}

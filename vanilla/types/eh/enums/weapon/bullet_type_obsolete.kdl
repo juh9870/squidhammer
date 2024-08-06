@@ -1,0 +1,7 @@
+enum {
+	const "Projectile" 0
+	const "Homing" 1
+	const "Static" 2
+	const "Continuous" 3
+	const "Magnetic" 4
+}

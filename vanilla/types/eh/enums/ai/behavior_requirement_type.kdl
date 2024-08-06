@@ -1,0 +1,24 @@
+enum {
+	const "Empty" 0
+	const "Any" 1
+	const "All" 2
+	const "None" 3
+	const "AiLevel" 5
+	const "MinAiLevel" 6
+	const "SizeClass" 7
+	const "HasDevice" 10
+	const "HasDrones" 12
+	const "HasAnyWeapon" 11
+	const "CanRepairAllies" 13
+	const "HasHighRecoilWeapon" 14
+	const "HasChargeableWeapon" 15
+	const "HasRemotelyControlledWeapon" 16
+	const "HasLongRangeWeapon" 17
+	const "HasEngine" 18
+	const "HasHarpoon" 19
+	const "CanRechargeAllies" 20
+	const "IsDrone" 50
+	const "HasKineticResistance" 100
+	const "HasHighManeuverability" 101
+	const "HasHighRammingDamage" 102
+}

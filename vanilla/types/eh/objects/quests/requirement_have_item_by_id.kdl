@@ -1,0 +1,5 @@
+struct {
+	object "ItemId" "sys:optional" alias="Loot" {
+		ref "Item" "eh:objects/quests/loot"
+	}
+}

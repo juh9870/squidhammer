@@ -1,0 +1,3 @@
+struct {
+	object "Loot" "eh:objects/quests/loot_content"
+}

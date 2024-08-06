@@ -1,0 +1,7 @@
+struct {
+	number "MinValue" min=-100 max=100 type="int"
+	number "MaxValue" min=-100 max=100 type="int"
+	object "Character" "sys:optional" {
+		ref "Item" "eh:objects/quests/character"
+	}
+}

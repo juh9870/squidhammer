@@ -1,0 +1,9 @@
+enum {
+	const "Undefined" 0
+	const "Weapon" 1
+	const "Defense" 2
+	const "Energy" 3
+	const "Engine" 4
+	const "Drones" 5
+	const "Special" 6
+}

@@ -170,12 +170,12 @@ impl Project {
         Ok(())
     }
 
-    fn deserialize_json(&self, value: JsonValue) -> miette::Result<EValue> {
+    fn deserialize_json(&self, mut value: JsonValue) -> miette::Result<EValue> {
         let object = self
             .registry
             .get_object(&self.config.types_config.import)
             .expect("Config was validated");
 
-        object.parse_json(&self.registry, value)
+        object.parse_json(&self.registry, &mut value, false)
     }
 }

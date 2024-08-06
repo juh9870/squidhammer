@@ -1,0 +1,8 @@
+enum {
+	const "Default" 0
+	const "Cannon" "C"
+	const "Torpedo" "T"
+	const "Missile" "M"
+	const "Laser" "L"
+	const "Special" "S"
+}

@@ -1,0 +1,7 @@
+enum {
+	const "Common" 0
+	const "Drone" 1
+	const "Starbase" 2
+	const "Special" 3
+	const "Flagship" 4
+}

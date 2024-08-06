@@ -1,0 +1,8 @@
+struct {
+	ref "SatelliteId" "eh:objects/satellite" alias="Satellite"
+	boolean "NotAvailableInGame" 
+	object "DifficultyClass" "eh:enums/difficulty_class"
+	list "Components"  {
+		object "Item" "eh:objects/installed_component"
+	}
+}

@@ -1,0 +1,44 @@
+struct singleton=true {
+	object "AbandonedStarbaseFaction" "sys:optional" {
+		ref "Item" "eh:objects/faction"
+	}
+	list "StartingShipBuilds"  {
+		ref "Item" "eh:objects/ship_build"
+	}
+	object "StartingInventory" "sys:optional" {
+		ref "Item" "eh:objects/quests/loot"
+	}
+	object "SupporterPackShip" "sys:optional" {
+		ref "Item" "eh:objects/ship_build"
+	}
+	object "DefaultStarbaseBuild" "sys:optional" {
+		ref "Item" "eh:objects/ship_build"
+	}
+	number "MaxEnemyShipsLevel" default=300 min=0 max=500 type="int"
+	string "EnemyLevel" default="MIN(3*distance/5 - 5, MaxEnemyShipsLevel)" arguments="distance" min=0 max=500 editor="eh:expression"
+	string "ShipMinSpawnDistance" default="IF(size == Destroyer, 5, size == Cruiser, 15, size == Battleship, 50, size == Titan, 100, 0)" arguments="size" min=0 max=1000 editor="eh:expression"
+	object "CaptureStarbaseQuest" "sys:optional" {
+		ref "Item" "eh:objects/quests/quest"
+	}
+	object "StartingInvenory" "sys:optional" {
+		ref "Item" "eh:objects/quests/loot"
+	}
+	object "SurvivalCombatRules" "sys:optional" {
+		ref "Item" "eh:objects/quests/combat_rules"
+	}
+	object "StarbaseCombatRules" "sys:optional" {
+		ref "Item" "eh:objects/quests/combat_rules"
+	}
+	object "FlagshipCombatRules" "sys:optional" {
+		ref "Item" "eh:objects/quests/combat_rules"
+	}
+	object "ArenaCombatRules" "sys:optional" {
+		ref "Item" "eh:objects/quests/combat_rules"
+	}
+	object "ChallengeCombatRules" "sys:optional" {
+		ref "Item" "eh:objects/quests/combat_rules"
+	}
+	object "QuickCombatRules" "sys:optional" {
+		ref "Item" "eh:objects/quests/combat_rules"
+	}
+}

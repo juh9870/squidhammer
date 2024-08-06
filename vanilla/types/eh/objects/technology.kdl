@@ -1,0 +1,4 @@
+struct {
+	id "Id"
+	object "Data" "eh:objects/technology_data" inline=true
+}

@@ -1,0 +1,36 @@
+struct {
+	object "ShipType" "eh:enums/ship_type"
+	object "ShipRarity" "eh:enums/ship_rarity"
+	object "SizeClass" "eh:enums/size_class"
+	string "Name" 
+	string "Description" 
+	object "Faction" "sys:optional" {
+		ref "Item" "eh:objects/faction"
+	}
+	string "IconImage" editor="eh:image"
+	number "IconScale" min=0.1 max=100
+	string "ModelImage" editor="eh:image"
+	number "ModelScale" min=0.1 max=100
+	object "EngineColor" "color:argb"
+	list "Engines"  {
+		object "Item" "eh:objects/engine"
+	}
+	string "Layout" editor="eh:layout"
+	list "Barrels"  {
+		object "Item" "eh:objects/barrel"
+	}
+	object "Features" "eh:objects/ship_features"
+	object "CellsExpansions" "eh:enums/toggle_state"
+	number "ColliderTolerance" default=0.02 min=0 max=1
+	object "EnginePosition" "sys:vec2"
+	number "EngineSize" 
+	number "ShipCategory" type="int"
+	number "EnergyResistance" 
+	number "KineticResistance" 
+	number "HeatResistance" 
+	boolean "Regeneration" 
+	list "BuiltinDevices"  {
+		ref "Item" "eh:objects/device"
+	}
+	number "BaseWeightModifier" 
+}

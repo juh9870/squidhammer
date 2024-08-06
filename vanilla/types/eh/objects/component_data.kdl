@@ -1,0 +1,38 @@
+struct {
+	string "Name" 
+	string "Description" 
+	object "DisplayCategory" "eh:enums/component_category"
+	object "Availability" "eh:enums/availability"
+	ref "ComponentStatsId" "eh:objects/component_stats" alias="Stats"
+	object "Faction" "sys:optional" {
+		ref "Item" "eh:objects/faction"
+	}
+	number "Level" min=0 type="int"
+	string "Icon" editor="eh:image"
+	object "Color" "color:argb"
+	string "Layout" editor="eh:layout"
+	string "CellType" 
+	object "DeviceId" "sys:optional" alias="Device" {
+		ref "Item" "eh:objects/device"
+	}
+	object "WeaponId" "sys:optional" alias="Weapon" {
+		ref "Item" "eh:objects/weapon/weapon"
+	}
+	object "AmmunitionId" "sys:optional" alias="Ammunition" {
+		ref "Item" "eh:objects/weapon/ammunition"
+	}
+	object "AmmunitionId" "sys:optional" alias="AmmunitionObsolete" {
+		ref "Item" "eh:objects/ammunition_obsolete"
+	}
+	string "WeaponSlotType" 
+	object "DroneBayId" "sys:optional" alias="DroneBay" {
+		ref "Item" "eh:objects/drone_bay"
+	}
+	object "DroneId" "sys:optional" alias="Drone" {
+		ref "Item" "eh:objects/ship_build"
+	}
+	object "Restrictions" "eh:objects/component_restrictions"
+	list "PossibleModifications"  {
+		ref "Item" "eh:objects/component_mod"
+	}
+}

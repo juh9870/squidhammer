@@ -1,0 +1,11 @@
+struct {
+	object "Body" "eh:objects/weapon/bullet_body"
+	object "Controller" "eh:objects/weapon/bullet_controller"
+	list "Triggers"  {
+		object "Item" "eh:objects/weapon/bullet_trigger"
+	}
+	object "ImpactType" "eh:enums/weapon/bullet_impact_type"
+	list "Effects"  {
+		object "Item" "eh:objects/weapon/impact_effect"
+	}
+}

@@ -1,0 +1,8 @@
+enum {
+	const "Empty" "0"
+	const "Weapon" "4"
+	const "Outer" "1"
+	const "Inner" "2"
+	const "InnerOuter" "3"
+	const "Engine" "5"
+}

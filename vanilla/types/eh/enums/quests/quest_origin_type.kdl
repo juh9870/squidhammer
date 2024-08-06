@@ -1,0 +1,7 @@
+enum {
+	const "CurrentStar" 0
+	const "CurrentFactionBase" 1
+	const "RandomFactionBase" 2
+	const "HomeStar" 3
+	const "RandomStar" 4
+}

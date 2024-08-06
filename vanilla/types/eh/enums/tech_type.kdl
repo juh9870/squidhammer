@@ -1,0 +1,5 @@
+enum {
+	const "Component" 0
+	const "Ship" 1
+	const "Satellite" 2
+}

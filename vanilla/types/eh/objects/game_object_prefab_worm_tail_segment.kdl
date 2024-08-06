@@ -1,0 +1,11 @@
+struct {
+	string "Image1" alias="BodyImage" editor="eh:image"
+	string "Image2" alias="JointImage" editor="eh:image"
+	number "ImageScale" alias="JointImageScale" min=0 max=10
+	number "ImageOffset" alias="JointImageOffset" min=-1 max=1
+	number "Length" alias="BoneLength" min=0 max=1
+	number "Offset1" alias="JointOffset" min=0 max=1
+	number "Offset2" alias="HeadOffset" min=-1 max=1
+	number "Angle1" alias="MaxRotation" min=0 max=180
+	number "Angle2" alias="MaxHeadRotation" min=0 max=180
+}

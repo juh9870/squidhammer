@@ -1,0 +1,24 @@
+enum tag="Type" {
+	object "Empty" "eh:objects/ai/behavior_node_requirement_empty" tag=0
+	object "Any" "eh:objects/ai/behavior_node_requirement_any" tag=1
+	object "All" "eh:objects/ai/behavior_node_requirement_all" tag=2
+	object "None" "eh:objects/ai/behavior_node_requirement_none" tag=3
+	object "AiLevel" "eh:objects/ai/behavior_node_requirement_ai_level" tag=5
+	object "MinAiLevel" "eh:objects/ai/behavior_node_requirement_min_ai_level" tag=6
+	object "SizeClass" "eh:objects/ai/behavior_node_requirement_size_class" tag=7
+	object "HasDevice" "eh:objects/ai/behavior_node_requirement_has_device" tag=10
+	object "HasDrones" "eh:objects/ai/behavior_node_requirement_has_drones" tag=12
+	object "HasAnyWeapon" "eh:objects/ai/behavior_node_requirement_has_any_weapon" tag=11
+	object "CanRepairAllies" "eh:objects/ai/behavior_node_requirement_can_repair_allies" tag=13
+	object "HasHighRecoilWeapon" "eh:objects/ai/behavior_node_requirement_has_high_recoil_weapon" tag=14
+	object "HasChargeableWeapon" "eh:objects/ai/behavior_node_requirement_has_chargeable_weapon" tag=15
+	object "HasRemotelyControlledWeapon" "eh:objects/ai/behavior_node_requirement_has_remotely_controlled_weapon" tag=16
+	object "HasLongRangeWeapon" "eh:objects/ai/behavior_node_requirement_has_long_range_weapon" tag=17
+	object "HasEngine" "eh:objects/ai/behavior_node_requirement_has_engine" tag=18
+	object "HasHarpoon" "eh:objects/ai/behavior_node_requirement_has_harpoon" tag=19
+	object "CanRechargeAllies" "eh:objects/ai/behavior_node_requirement_can_recharge_allies" tag=20
+	object "IsDrone" "eh:objects/ai/behavior_node_requirement_is_drone" tag=50
+	object "HasKineticResistance" "eh:objects/ai/behavior_node_requirement_has_kinetic_resistance" tag=100
+	object "HasHighManeuverability" "eh:objects/ai/behavior_node_requirement_has_high_maneuverability" tag=101
+	object "HasHighRammingDamage" "eh:objects/ai/behavior_node_requirement_has_high_ramming_damage" tag=102
+}

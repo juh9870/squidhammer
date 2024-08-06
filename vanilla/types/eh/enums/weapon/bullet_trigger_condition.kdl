@@ -1,0 +1,11 @@
+enum {
+	const "Undefined" 0
+	const "Created" 1
+	const "Destroyed" 2
+	const "Hit" 3
+	const "Disarmed" 4
+	const "Expired" 5
+	const "Detonated" 6
+	const "OutOfAmmo" 7
+	const "Cooldown" 8
+}

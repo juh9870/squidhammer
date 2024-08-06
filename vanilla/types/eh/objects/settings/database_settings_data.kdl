@@ -1,0 +1,8 @@
+struct singleton=true {
+	number "DatabaseVersion" min=1 type="int"
+	number "DatabaseVersionMinor" min=0 type="int"
+	string "ModName" 
+	string "ModId" 
+	number "ModVersion" type="int"
+	boolean "UnloadOriginalDatabase" 
+}

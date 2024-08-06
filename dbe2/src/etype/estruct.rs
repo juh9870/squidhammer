@@ -17,7 +17,7 @@ pub struct EStructData {
     pub generic_arguments: Vec<Ustr>,
     pub ident: ETypeId,
     pub fields: Vec<EStructField>,
-    pub id_field: Option<usize>,
+    // pub id_field: Option<usize>,
     pub repr: Option<Repr>,
     pub extra_properties: AHashMap<String, ETypeConst>,
 }
@@ -39,7 +39,7 @@ impl EStructData {
             generic_arguments,
             fields: Default::default(),
             ident,
-            id_field: None,
+            // id_field: None,
             repr,
             extra_properties,
         }
@@ -82,30 +82,30 @@ impl EStructData {
         Ok(self)
     }
 
-    pub fn id_field(&self) -> Option<&EStructField> {
-        self.id_field.map(|i| &self.fields[i])
-    }
-
-    pub fn id_field_data(&self) -> Option<ETypeId> {
-        self.id_field().map(|e| {
-            if let EDataType::Id { ty } = &e.ty.ty() {
-                *ty
-            } else {
-                panic!("Bad struct state")
-            }
-        })
-    }
+    // pub fn id_field(&self) -> Option<&EStructField> {
+    //     self.id_field.map(|i| &self.fields[i])
+    // }
+    //
+    // pub fn id_field_data(&self) -> Option<ETypeId> {
+    //     self.id_field().map(|e| {
+    //         if let EDataType::Id { ty } = &e.ty.ty() {
+    //             *ty
+    //         } else {
+    //             panic!("Bad struct state")
+    //         }
+    //     })
+    // }
 
     pub(crate) fn add_field(&mut self, field: EStructField) -> miette::Result<()> {
-        if let EDataType::Id { ty } = &field.ty.ty() {
-            if self.id_field.is_some() {
-                bail!("struct already has an ID field");
-            }
-            if ty != &self.ident {
-                bail!("struct can't have an ID field with different type. Expected {}, but got {} instead", self.ident, ty)
-            }
-            self.id_field = Some(self.fields.len());
-        }
+        // if let EDataType::Id { ty } = &field.ty.ty() {
+        //     if self.id_field.is_some() {
+        //         bail!("struct already has an ID field");
+        //     }
+        //     if ty != &self.ident {
+        //         bail!("struct can't have an ID field with different type. Expected {}, but got {} instead", self.ident, ty)
+        //     }
+        //     self.id_field = Some(self.fields.len());
+        // }
         self.fields.push(field);
 
         Ok(())
@@ -114,36 +114,70 @@ impl EStructData {
     pub fn parse_json(
         &self,
         registry: &ETypesRegistry,
-        mut data: JsonValue,
+        json_data: &mut JsonValue,
+        inline: bool,
     ) -> miette::Result<EValue> {
-        let Some(data) = data.as_object_mut() else {
+        if !json_data.is_object() {
             bail!(
                 "invalid data type. Expected object but got `{}`",
-                json_kind(&data)
+                json_kind(json_data)
             )
         };
+        #[inline(always)]
+        fn j_fields(
+            json_data: &mut JsonValue,
+        ) -> miette::Result<&mut serde_json::map::Map<String, JsonValue>> {
+            let kind = json_kind(json_data);
+            let Some(data) = json_data.as_object_mut() else {
+                bail!(
+                    "!!INTERNAL_ERROR!! json content changed during field deserialization. Expected object but got `{}`",kind
+                )
+            };
+            Ok(data)
+        }
 
         let mut fields = BTreeMap::<Ustr, EValue>::default();
 
         for field in &self.fields {
-            let value: EValue = if let Some(json_value) = data.remove(field.name.as_str()) {
+            let data = j_fields(json_data)?;
+            let value = if field
+                .ty
+                .extra_properties()
+                .get("inline")
+                .is_some_and(|val| val == &ETypeConst::Boolean(true))
+            {
                 field
                     .ty
                     .ty()
-                    .parse_json(registry, json_value)
+                    .parse_json(registry, json_data, true)
                     .with_context(|| format!("in field `{}`", field.name))?
+            } else if let Some(mut json_value) = data.remove(field.name.as_str()) {
+                field
+                    .ty
+                    .ty()
+                    .parse_json(registry, &mut json_value, false)
+                    .with_context(|| format!("in field `{}`", field.name))?
+            } else if let Some(default) = field.ty.extra_properties().get("default") {
+                let mut json_value = default.as_json_value();
+                field
+                    .ty
+                    .ty()
+                    .parse_json(registry, &mut json_value, false)
+                    .with_context(|| format!("in default value for field `{}`", field.name))?
             } else {
                 field.ty.default_value(registry)
             };
-
             fields.insert(field.name, value);
         }
 
-        if !data.is_empty() {
-            bail!(
-                "struct contains unknown fields: {}",
-                data.keys().map(|k| format!("`{k}`")).join(", ")
-            )
+        if !inline {
+            let data = j_fields(json_data)?;
+            if !data.is_empty() {
+                bail!(
+                    "struct contains unknown fields: {}",
+                    data.keys().map(|k| format!("`{k}`")).join(", ")
+                )
+            }
         }
 
         Ok(EValue::Struct {

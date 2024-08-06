@@ -1,0 +1,4 @@
+struct {
+	id "Id"
+	object "Data" "eh:objects/ammunition_obsolete_data" inline=true
+}

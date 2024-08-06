@@ -1,0 +1,18 @@
+struct {
+	object "Condition" "eh:enums/weapon/bullet_trigger_condition"
+	string "AudioClip" editor="eh:audioclip"
+	object "Ammunition" "sys:optional" {
+		ref "Item" "eh:objects/weapon/ammunition"
+	}
+	object "Color" "color:argb"
+	object "ColorMode" "eh:enums/weapon/color_mode"
+	number "Quantity" min=0 max=1000 type="int"
+	number "Size" min=0 max=100
+	number "Cooldown" min=0 max=1000
+	number "RandomFactor" min=0 max=1
+	number "PowerMultiplier" min=0
+	number "MaxNestingLevel" min=0 max=100 type="int"
+	string "Rotation" default="IF(Quantity <= 1, 0, RANDOM(0, 360))" arguments="i" editor="eh:expression"
+	string "OffsetX" default="IF(Quantity <= 1, 0, Size / 2)" arguments="i" editor="eh:expression"
+	string "OffsetY" default="0" arguments="i" editor="eh:expression"
+}

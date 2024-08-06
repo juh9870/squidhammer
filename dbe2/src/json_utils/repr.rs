@@ -13,7 +13,12 @@ mod colors;
 #[allow(clippy::wrong_self_convention)]
 pub trait JsonRepr: Send + Sync + Debug {
     /// Converts from the serialized data representation to the consumable data
-    fn from_repr(&self, registry: &ETypesRegistry, data: JsonValue) -> miette::Result<JsonValue>;
+    fn from_repr(
+        &self,
+        registry: &ETypesRegistry,
+        data: &mut JsonValue,
+        ignore_extra_fields: bool,
+    ) -> miette::Result<JsonValue>;
     /// Converts from the consumable data to the serialized data representation
     fn into_repr(&self, registry: &ETypesRegistry, data: JsonValue) -> miette::Result<JsonValue>;
 }
@@ -22,8 +27,13 @@ pub trait JsonRepr: Send + Sync + Debug {
 pub struct Repr(Arc<dyn JsonRepr>);
 
 impl JsonRepr for Repr {
-    fn from_repr(&self, registry: &ETypesRegistry, data: JsonValue) -> miette::Result<JsonValue> {
-        self.0.from_repr(registry, data)
+    fn from_repr(
+        &self,
+        registry: &ETypesRegistry,
+        data: &mut JsonValue,
+        ignore_extra_fields: bool,
+    ) -> miette::Result<JsonValue> {
+        self.0.from_repr(registry, data, ignore_extra_fields)
     }
 
     fn into_repr(&self, registry: &ETypesRegistry, data: JsonValue) -> miette::Result<JsonValue> {

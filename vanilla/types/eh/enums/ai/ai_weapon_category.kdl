@@ -1,0 +1,7 @@
+enum {
+	const "All" 0
+	const "Repair" 1
+	const "Damage" 2
+	const "CaptureDrone" 3
+	const "Recharge" 4
+}

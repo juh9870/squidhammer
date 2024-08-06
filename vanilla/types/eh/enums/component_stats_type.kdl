@@ -1,4 +1,4 @@
 enum {
-  const "per_component" 0
-  const "per_one_cell" 1
+	const "PerComponent" 0
+	const "PerOneCell" 1
 }

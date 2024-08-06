@@ -1,0 +1,3 @@
+struct {
+	number "Value" default=1 min=0
+}

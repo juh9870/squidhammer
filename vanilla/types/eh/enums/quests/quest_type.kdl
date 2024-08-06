@@ -1,0 +1,7 @@
+enum {
+	const "Common" 0
+	const "Singleton" 1
+	const "Storyline" 2
+	const "Temporary" 3
+	const "Urgent" 4
+}

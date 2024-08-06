@@ -71,8 +71,6 @@ struct ThingEnum {
     pub tag: Option<Ustr>,
     #[knuffel(property, str)]
     pub content: Option<Ustr>,
-    #[knuffel(property)]
-    pub untagged: Option<bool>,
     #[knuffel(properties)]
     pub extra_properties: AHashMap<String, ETypeConst>,
     #[knuffel(children)]
@@ -104,13 +102,13 @@ impl ThingStruct {
 
 impl ThingEnum {
     fn into_eenum(self, registry: &mut ETypesRegistry, id: ETypeId) -> miette::Result<EEnumData> {
-        let repr = if self.untagged.unwrap_or(false) {
-            if self.tag.is_some() || self.content.is_some() {
-                bail!("`tag` and `content` fields can't be used on untagged enum")
-            }
-            None
-        } else if let Some(tag) = self.tag {
-            if let Some(content) = self.content {
+        let repr = if let Some(tag) = self.tag {
+            if tag.as_str() == "{}" {
+                if self.content.is_some() {
+                    bail!("`content` field can't be used on externally tagged enum")
+                }
+                Some(Tagged::External)
+            } else if let Some(content) = self.content {
                 Some(Tagged::Adjacent {
                     tag_field: tag,
                     content_field: content,
@@ -120,9 +118,9 @@ impl ThingEnum {
             }
         } else {
             if self.content.is_some() {
-                bail!("`content` field can't be used on externally tagged enum")
+                bail!("`content` field can't be used on untagged enum")
             }
-            Some(Tagged::External)
+            None
         };
 
         let mut data = EEnumData::new(
@@ -154,7 +152,7 @@ impl<S: ErrorSpan> DecodeScalar<S> for ETypeConst {
         let l: &Literal = value;
         Ok(match l {
             Literal::Bool(bool) => ETypeConst::Boolean(*bool),
-            Literal::Int(num) => match TryInto::<u64>::try_into(num) {
+            Literal::Int(num) => match TryInto::<i64>::try_into(num) {
                 Ok(num) => (num as f64).into(),
                 Err(err) => {
                     return Err(DecodeError::Conversion {

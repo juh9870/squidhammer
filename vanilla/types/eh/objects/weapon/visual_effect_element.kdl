@@ -1,0 +1,18 @@
+struct {
+	object "Type" "eh:enums/weapon/visual_effect_type"
+	string "Image" editor="eh:image"
+	object "ColorMode" "eh:enums/weapon/color_mode"
+	object "Color" "color:argb"
+	number "Quantity" default=1 min=1 max=100 type="int"
+	number "Size" default=1 min=0.001 max=100
+	number "GrowthRate" min=-1 max=100
+	number "TurnRate" min=-1000 max=1000
+	number "StartTime" min=0 max=1000
+	number "Lifetime" default=1 min=0 max=1000
+	number "ParticleSize" default=1 min=0.001 max=100
+	object "Offset" "sys:vec2"
+	number "Rotation" min=0 max=360
+	boolean "Loop" 
+	boolean "Inverse" 
+	boolean "UseRealTime" 
+}

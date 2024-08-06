@@ -1,0 +1,3 @@
+struct {
+	object "RootNode" "eh:objects/ai/behavior_tree_node"
+}

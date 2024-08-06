@@ -1,0 +1,4 @@
+struct singleton=true {
+	string "CorrosiveDamageText" default="$WeaponDamage"
+	string "CorrosiveDpsText" default="$WeaponDPS"
+}

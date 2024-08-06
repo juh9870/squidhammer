@@ -1,0 +1,6 @@
+enum {
+	const "Any" 0
+	const "StarSystem" 1
+	const "StarMap" 2
+	const "GalaxyMap" 3
+}

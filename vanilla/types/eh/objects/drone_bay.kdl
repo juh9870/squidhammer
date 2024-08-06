@@ -1,0 +1,4 @@
+struct {
+	id "Id"
+	object "Data" "eh:objects/drone_bay_data" inline=true
+}

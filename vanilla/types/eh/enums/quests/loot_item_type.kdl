@@ -1,0 +1,19 @@
+enum {
+	const "None" 0
+	const "SomeMoney" 1
+	const "Fuel" 2
+	const "Money" 3
+	const "Stars" 4
+	const "StarMap" 5
+	const "RandomComponents" 10
+	const "RandomItems" 20
+	const "AllItems" 21
+	const "ItemsWithChance" 22
+	const "QuestItem" 25
+	const "Ship" 30
+	const "EmptyShip" 31
+	const "Component" 35
+	const "Blueprint" 40
+	const "ResearchPoints" 41
+	const "Satellite" 45
+}

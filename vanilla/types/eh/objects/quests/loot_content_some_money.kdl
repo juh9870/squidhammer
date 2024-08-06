@@ -1,0 +1,3 @@
+struct {
+	number "ValueRatio" min=0.001 max=1000
+}

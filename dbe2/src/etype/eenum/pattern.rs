@@ -75,7 +75,7 @@ impl EnumPattern {
             EnumPattern::Boolean => value.is_boolean(),
             EnumPattern::Number => value.is_number(),
             EnumPattern::String => value.is_string(),
-            EnumPattern::Ref(_) => value.is_string(),
+            EnumPattern::Ref(_) => value.is_string() || value.is_number(),
             EnumPattern::Const(c) => c.matches_json(value).by_value,
             EnumPattern::List => value.is_array(),
             EnumPattern::Map => value.is_object(),

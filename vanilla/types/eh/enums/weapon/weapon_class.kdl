@@ -1,0 +1,8 @@
+enum {
+	const "Common" 0
+	const "Manageable" 1
+	const "Continuous" 2
+	const "MashineGun" 3
+	const "MultiShot" 4
+	const "RequiredCharging" 5
+}

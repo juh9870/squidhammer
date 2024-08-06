@@ -1,0 +1,4 @@
+struct {
+	object "Requirement" "eh:objects/ai/behavior_node_requirement" description="The node will not execute and will return FAILURE if the requirement is not met"
+	number "Cooldown" alias="TimeToCollision" default=5 min=0
+}

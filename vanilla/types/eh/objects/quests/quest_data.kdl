@@ -1,0 +1,13 @@
+struct {
+	string "Name" 
+	object "QuestType" "eh:enums/quests/quest_type"
+	object "StartCondition" "eh:enums/quests/start_condition"
+	number "Weight" min=0 max=1000
+	object "Origin" "eh:objects/quests/quest_origin"
+	object "Requirement" "eh:objects/quests/requirement"
+	number "Level" min=0 max=1000 type="int"
+	boolean "UseRandomSeed" 
+	list "Nodes"  {
+		object "Item" "eh:objects/quests/node"
+	}
+}

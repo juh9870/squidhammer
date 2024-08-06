@@ -1,0 +1,6 @@
+enum {
+	const "Default" 0
+	const "OnlyOneShip" 1
+	const "ByOrder" 2
+	const "NoRetreats" 3
+}

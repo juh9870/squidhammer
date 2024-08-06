@@ -1,0 +1,6 @@
+enum {
+	const "Impact" 0
+	const "Energy" 1
+	const "Heat" 2
+	const "Corrosive" 3
+}

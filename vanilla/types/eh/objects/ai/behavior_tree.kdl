@@ -1,0 +1,4 @@
+struct {
+	id "Id"
+	object "Data" "eh:objects/ai/behavior_tree_data" inline=true
+}

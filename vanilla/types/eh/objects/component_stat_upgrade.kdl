@@ -1,0 +1,4 @@
+struct {
+	id "Id"
+	object "Data" "eh:objects/component_stat_upgrade_data" inline=true
+}

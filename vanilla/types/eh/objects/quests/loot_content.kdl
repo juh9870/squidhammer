@@ -1,0 +1,19 @@
+enum tag="Type" {
+	object "None" "eh:objects/quests/loot_content_none" tag=0
+	object "SomeMoney" "eh:objects/quests/loot_content_some_money" tag=1
+	object "Fuel" "eh:objects/quests/loot_content_fuel" tag=2
+	object "Money" "eh:objects/quests/loot_content_money" tag=3
+	object "Stars" "eh:objects/quests/loot_content_stars" tag=4
+	object "StarMap" "eh:objects/quests/loot_content_star_map" tag=5
+	object "RandomComponents" "eh:objects/quests/loot_content_random_components" tag=10
+	object "RandomItems" "eh:objects/quests/loot_content_random_items" tag=20
+	object "AllItems" "eh:objects/quests/loot_content_all_items" tag=21
+	object "ItemsWithChance" "eh:objects/quests/loot_content_items_with_chance" tag=22
+	object "QuestItem" "eh:objects/quests/loot_content_quest_item" tag=25
+	object "Ship" "eh:objects/quests/loot_content_ship" tag=30
+	object "EmptyShip" "eh:objects/quests/loot_content_empty_ship" tag=31
+	object "Component" "eh:objects/quests/loot_content_component" tag=35
+	object "Blueprint" "eh:objects/quests/loot_content_blueprint" tag=40
+	object "ResearchPoints" "eh:objects/quests/loot_content_research_points" tag=41
+	object "Satellite" "eh:objects/quests/loot_content_satellite" tag=45
+}

@@ -1,0 +1,19 @@
+struct {
+	number "EnergyResistance" min=-100 max=100
+	number "KineticResistance" min=-100 max=100
+	number "HeatResistance" min=-100 max=100
+	number "ShipWeightBonus" min=-1 max=10
+	number "EquipmentWeightBonus" min=-1 max=10
+	number "VelocityBonus" min=-1 max=10
+	number "TurnRateBonus" min=-1 max=10
+	number "ArmorBonus" min=-1 max=10
+	number "ShieldBonus" min=-1 max=10
+	number "EnergyBonus" min=-1 max=10
+	number "DroneBuildSpeedBonus" min=-1 max=10
+	number "DroneAttackBonus" min=-1 max=10
+	number "DroneDefenseBonus" min=-1 max=10
+	boolean "Regeneration" 
+	list "BuiltinDevices"  {
+		ref "Item" "eh:objects/device"
+	}
+}

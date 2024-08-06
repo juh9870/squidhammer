@@ -1,0 +1,5 @@
+enum {
+	const "HitFirstTarget" 0
+	const "HitAllTargets" 1
+	const "DamageOverTime" 2
+}

@@ -1,0 +1,6 @@
+enum {
+	const "AllButList" 0
+	const "ListOnly" 1
+	const "StarOwnersAndList" 2
+	const "AllAvailable" 3
+}

@@ -1,0 +1,3 @@
+struct {
+	string "Audio" editor="eh:audioclip"
+}

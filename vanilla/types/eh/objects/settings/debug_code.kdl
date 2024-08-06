@@ -1,0 +1,4 @@
+struct {
+	number "Code" min=0 max=999999 type="int"
+	object "Loot" "eh:objects/quests/loot_content"
+}

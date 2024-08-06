@@ -1,0 +1,25 @@
+struct {
+	ref "ShipId" "eh:objects/ship" alias="Ship"
+	boolean "AvailableForPlayer" default=true
+	boolean "AvailableForEnemy" default=true
+	object "DifficultyClass" "eh:enums/difficulty_class"
+	object "BuildFaction" "sys:optional" {
+		ref "Item" "eh:objects/faction"
+	}
+	object "CustomAI" "sys:optional" {
+		ref "Item" "eh:objects/ai/behavior_tree"
+	}
+	list "Components"  {
+		object "Item" "eh:objects/installed_component"
+	}
+	boolean "NotAvailableInGame" 
+	object "Perks" "eh:objects/ship_build_perks"
+	boolean "ExtendedLayout" 
+	boolean "RandomColor" 
+	object "LeftSatelliteBuild" "sys:optional" {
+		ref "Item" "eh:objects/satellite_build"
+	}
+	object "RightSatelliteBuild" "sys:optional" {
+		ref "Item" "eh:objects/satellite_build"
+	}
+}

@@ -1,0 +1,8 @@
+enum {
+	const "N3" 0
+	const "N2" 1
+	const "N1" 2
+	const "P1" 3
+	const "P2" 4
+	const "P3" 5
+}

@@ -1,0 +1,14 @@
+enum {
+	const "Empty" 0
+	const "AutoTargeting" 1
+	const "HeatDefense" 2
+	const "KineticDefense" 3
+	const "EnergyDefense" 4
+	const "LightWeight" 5
+	const "Infected" 6
+	const "UnlimitedRespawn" 7
+	const "WeaponClass" 8
+	const "SatelliteSize" 9
+	const "EnergyRechargeCooldown" 10
+	const "ShieldRechargeCooldown" 11
+}

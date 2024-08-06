@@ -1,0 +1,8 @@
+enum {
+	const "None" 0
+	const "Common" 1
+	const "Rare" 2
+	const "Special" 3
+	const "Hidden" 4
+	const "LootOnly" 5
+}

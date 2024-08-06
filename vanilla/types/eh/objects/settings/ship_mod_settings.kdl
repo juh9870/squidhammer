@@ -1,0 +1,4 @@
+struct {
+	id "Id"
+	object "Data" "eh:objects/settings/ship_mod_settings_data" inline=true
+}

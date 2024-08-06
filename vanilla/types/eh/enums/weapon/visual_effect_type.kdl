@@ -1,0 +1,12 @@
+enum {
+	const "Flash" 0
+	const "FlashAdditive" 1
+	const "Shockwave" 2
+	const "Smoke" 3
+	const "SmokeAdditive" 4
+	const "Shake" 5
+	const "Spark" 6
+	const "Lightning" 7
+	const "LightningStrike" 8
+	const "Sprite" 9
+}

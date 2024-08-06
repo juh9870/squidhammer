@@ -1,0 +1,24 @@
+struct {
+	object "AmmunitionClass" "eh:enums/ammunition_class_obsolete"
+	object "DamageType" "eh:enums/weapon/damage_type"
+	number "Impulse" min=0 max=10
+	number "Recoil" min=0 max=10
+	number "Size" min=0 max=1000
+	object "InitialPosition" "sys:vec2"
+	number "AreaOfEffect" min=0 max=1000
+	number "Damage" min=0 max=1000000000
+	number "Range" min=0 max=1000
+	number "Velocity" min=0 max=1000
+	number "LifeTime" min=0 max=1000000000
+	number "HitPoints" min=0 max=1000000000 type="int"
+	boolean "IgnoresShipVelocity" 
+	number "EnergyCost" min=0 max=1000000000
+	object "CoupledAmmunitionId" "sys:optional" alias="CoupledAmmunition" {
+		ref "Item" "eh:objects/ammunition_obsolete"
+	}
+	object "Color" "color:argb"
+	string "FireSound" editor="eh:audioclip"
+	string "HitSound" editor="eh:audioclip"
+	string "HitEffectPrefab" editor="eh:prefab"
+	string "BulletPrefab" editor="eh:prefab"
+}

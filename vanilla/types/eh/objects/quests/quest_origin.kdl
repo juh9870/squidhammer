@@ -1,0 +1,8 @@
+struct {
+	object "Type" "eh:enums/quests/quest_origin_type"
+	object "Factions" "eh:objects/quests/faction_filter"
+	number "MinDistance" min=0 max=9999 type="int"
+	number "MaxDistance" min=0 max=9999 type="int"
+	number "MinRelations" min=-100 max=100 type="int"
+	number "MaxRelations" min=-100 max=100 type="int"
+}

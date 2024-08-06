@@ -1,0 +1,6 @@
+struct {
+	object "Ship" "sys:optional" {
+		ref "Item" "eh:objects/ship"
+	}
+	number "Value" min=0 type="int"
+}

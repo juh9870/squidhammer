@@ -1,0 +1,13 @@
+struct {
+	object "Condition" "eh:enums/weapon/bullet_trigger_condition"
+	object "VisualEffect" "sys:optional" {
+		ref "Item" "eh:objects/weapon/visual_effect"
+	}
+	string "AudioClip" editor="eh:audioclip"
+	object "Color" "color:argb"
+	object "ColorMode" "eh:enums/weapon/color_mode"
+	number "Size" min=0 max=100
+	number "Lifetime" min=0 max=1000
+	number "Cooldown" min=0 max=1000
+	boolean "OncePerCollision" 
+}

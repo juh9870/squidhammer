@@ -1,0 +1,14 @@
+enum {
+	const "Projectile" 0
+	const "Rocket" 1
+	const "LaserBeam" 2
+	const "LightningBolt" 3
+	const "EnergyBeam" 4
+	const "Spark" 5
+	const "Mine" 6
+	const "Wave" 7
+	const "BlackHole" 8
+	const "Harpoon" 9
+	const "CircularSaw" 10
+	const "PiercingLaser" 11
+}

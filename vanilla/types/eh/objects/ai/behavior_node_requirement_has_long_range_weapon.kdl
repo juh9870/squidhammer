@@ -1,0 +1,3 @@
+struct {
+	number "Value" alias="Range" min=0
+}

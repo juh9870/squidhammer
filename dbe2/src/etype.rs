@@ -97,7 +97,12 @@ impl EDataType {
         }
     }
 
-    pub fn parse_json(&self, registry: &ETypesRegistry, data: JsonValue) -> miette::Result<EValue> {
+    pub fn parse_json(
+        &self,
+        registry: &ETypesRegistry,
+        data: &mut JsonValue,
+        inline: bool,
+    ) -> miette::Result<EValue> {
         match self {
             EDataType::Boolean => json_expected(data.as_bool(), &data, "bool").map(EValue::from),
             EDataType::Number => json_expected(data.as_number(), &data, "number")
@@ -121,7 +126,7 @@ impl EDataType {
                     )
                 })?;
 
-                obj.parse_json(registry, data)
+                obj.parse_json(registry, data, inline)
             }
             EDataType::Const { value } => {
                 let m = value.matches_json(&data);
@@ -159,7 +164,7 @@ impl EDataType {
                 for (i, x) in items.into_iter().enumerate() {
                     list_items.push(
                         list.value_type
-                            .parse_json(registry, x)
+                            .parse_json(registry, x, false)
                             .with_context(|| format!("at index {}", i))?,
                     )
                 }
@@ -189,8 +194,12 @@ impl EDataType {
                 for (k, v) in obj {
                     let key_name = k.clone();
                     let (k, v) = m_try(|| {
-                        let k = map.key_type.parse_json(registry, JsonValue::String(k))?;
-                        let v = map.value_type.parse_json(registry, v)?;
+                        let k = map.key_type.parse_json(
+                            registry,
+                            &mut JsonValue::String(k.clone()),
+                            false,
+                        )?;
+                        let v = map.value_type.parse_json(registry, v, false)?;
                         Ok((k, v))
                     })
                     .with_context(|| format!("in entry with key `{}`", key_name))?;

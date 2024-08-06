@@ -1,0 +1,12 @@
+struct {
+	ref "ComponentId" "eh:objects/component" alias="Component"
+	object "Modification" "sys:optional" {
+		ref "Item" "eh:objects/component_mod"
+	}
+	object "Quality" "eh:enums/modification_quality"
+	number "X" min=-32768 max=32767 type="int"
+	number "Y" min=-32768 max=32767 type="int"
+	number "BarrelId" min=0 max=255 type="int"
+	number "Behaviour" min=0 max=10 type="int"
+	number "KeyBinding" min=-10 max=10 type="int"
+}

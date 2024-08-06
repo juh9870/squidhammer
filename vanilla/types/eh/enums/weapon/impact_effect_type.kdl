@@ -1,0 +1,21 @@
+enum {
+	const "Damage" 0
+	const "Push" 1
+	const "Pull" 2
+	const "DrainEnergy" 3
+	const "SiphonHitPoints" 4
+	const "SlowDown" 5
+	const "CaptureDrones" 6
+	const "Repair" 7
+	const "RestoreLifetime" 8
+	const "Devour" 9
+	const "Teleport" 10
+	const "DrainShield" 11
+	const "DriveDronesCrazy" 12
+	const "IgnoreShield" 13
+	const "RechargeShield" 14
+	const "RechargeEnergy" 15
+	const "ProgressiveDamage" 16
+	const "PushFromCenter" 17
+	const "PullToCenter" 18
+}

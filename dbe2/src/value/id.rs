@@ -85,7 +85,7 @@ pub enum EValueId {
 }
 
 impl EValueId {
-    pub fn parse_json(json: JsonValue) -> miette::Result<EValueId> {
+    pub fn parse_json(json: &mut JsonValue) -> miette::Result<EValueId> {
         match json {
             Value::Number(num) => {
                 let num = num.as_f64().unwrap();

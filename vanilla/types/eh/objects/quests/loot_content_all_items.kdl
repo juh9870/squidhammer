@@ -1,0 +1,5 @@
+struct {
+	list "Items"  {
+		object "Item" "eh:objects/quests/loot_item"
+	}
+}

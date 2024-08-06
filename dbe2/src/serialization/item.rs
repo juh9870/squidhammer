@@ -20,8 +20,7 @@ pub enum ThingItemKind {
     String,
     Id,
     Ref,
-    Enum,
-    Struct,
+    Object,
     Const,
     List,
     Map,
@@ -127,17 +126,7 @@ impl ThingItem {
                 no_generics()?;
                 EDataType::Ref { ty }
             }
-            ThingItemKind::Struct => {
-                let [ty] = expect_args(self.arguments)?;
-                let mut ty = id(ty, 0)?;
-                registry.assert_defined(&ty)?;
-                let generics = generics(registry)?;
-                if !generics.is_empty() {
-                    ty = registry.make_generic(ty, generics)?;
-                }
-                EDataType::Object { ident: ty }
-            }
-            ThingItemKind::Enum => {
+            ThingItemKind::Object => {
                 let [ty] = expect_args(self.arguments)?;
                 let mut ty = id(ty, 0)?;
                 registry.assert_defined(&ty)?;

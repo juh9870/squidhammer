@@ -1,0 +1,3 @@
+struct {
+	boolean "BoolValue" alias="AllowUnsafeStars"
+}

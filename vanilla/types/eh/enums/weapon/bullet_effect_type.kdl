@@ -1,0 +1,8 @@
+enum {
+	const "None" 0
+	const "PlaySfx" 1
+	const "SpawnBullet" 2
+	const "Detonate" 3
+	const "SpawnStaticSfx" 4
+	const "GravityField" 5
+}

@@ -1,0 +1,11 @@
+struct {
+	number "Id" min=1 max=999999 type="int"
+	number "DefaultTransition" alias="VictoryTransition" min=1 max=999999 type="int"
+	number "FailureTransition" min=1 max=999999 type="int"
+	object "Enemy" "sys:optional" {
+		ref "Item" "eh:objects/quests/fleet"
+	}
+	object "Loot" "sys:optional" {
+		ref "Item" "eh:objects/quests/loot"
+	}
+}

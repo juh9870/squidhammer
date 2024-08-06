@@ -1,0 +1,6 @@
+struct {
+	object "Type" "eh:enums/quests/faction_filter_type"
+	list "List"  {
+		ref "Item" "eh:objects/faction"
+	}
+}

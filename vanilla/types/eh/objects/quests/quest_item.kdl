@@ -1,0 +1,4 @@
+struct {
+	id "Id"
+	object "Data" "eh:objects/quests/quest_item_data" inline=true
+}

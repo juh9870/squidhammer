@@ -1,0 +1,4 @@
+struct {
+	id "Id"
+	object "Data" "eh:objects/settings/debug_settings_data" inline=true
+}

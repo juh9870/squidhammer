@@ -1,0 +1,8 @@
+enum tag="EffectType" {
+	object "None" "eh:objects/weapon/bullet_trigger_none" tag=0
+	object "PlaySfx" "eh:objects/weapon/bullet_trigger_play_sfx" tag=1
+	object "SpawnBullet" "eh:objects/weapon/bullet_trigger_spawn_bullet" tag=2
+	object "Detonate" "eh:objects/weapon/bullet_trigger_detonate" tag=3
+	object "SpawnStaticSfx" "eh:objects/weapon/bullet_trigger_spawn_static_sfx" tag=4
+	object "GravityField" "eh:objects/weapon/bullet_trigger_gravity_field" tag=5
+}

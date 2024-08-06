@@ -1,0 +1,3 @@
+struct {
+	object "SizeClass" "eh:enums/size_class"
+}

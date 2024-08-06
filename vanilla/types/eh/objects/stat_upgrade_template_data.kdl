@@ -1,0 +1,6 @@
+struct {
+	number "MaxLevel" default=20 min=0 type="int"
+	string "Stars" arguments="level" editor="eh:expression"
+	string "Credits" arguments="level" editor="eh:expression"
+	string "Resources" arguments="level" editor="eh:expression"
+}

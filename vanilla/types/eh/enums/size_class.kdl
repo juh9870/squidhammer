@@ -1,0 +1,9 @@
+enum {
+	const "Undefined" -1
+	const "Frigate" 0
+	const "Destroyer" 1
+	const "Cruiser" 2
+	const "Battleship" 3
+	const "Titan" 4
+	const "Starbase" 5
+}

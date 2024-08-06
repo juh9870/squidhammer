@@ -1,0 +1,10 @@
+enum {
+	const "Manual" 0
+	const "Beacon" 1
+	const "LocalEncounter" 2
+	const "FactionMission" 3
+	const "GameStart" 4
+	const "NewStarExplored" 5
+	const "ArrivedAtStar" 6
+	const "Daily" 7
+}

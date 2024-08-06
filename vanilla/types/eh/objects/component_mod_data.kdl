@@ -1,0 +1,6 @@
+struct {
+	string "Description" 
+	list "Modifications"  {
+		object "Item" "eh:objects/stat_modification"
+	}
+}

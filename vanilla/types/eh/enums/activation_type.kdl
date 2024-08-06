@@ -1,0 +1,5 @@
+enum {
+	const "None" 0
+	const "Manual" 1
+	const "Mixed" 2
+}

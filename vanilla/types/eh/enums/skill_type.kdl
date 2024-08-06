@@ -1,0 +1,13 @@
+enum {
+	const "Undefined" 0
+	const "ShipAttack" 1
+	const "ShipDefense" 2
+	const "StarbaseAttack" 3
+	const "StarbaseDefense" 4
+	const "QuickLearning" 5
+	const "BetterPrices" 6
+	const "BetterLoot" 7
+	const "CommandPoints" 8
+	const "SalvageDrones" 9
+	const "Engineer" 10
+}

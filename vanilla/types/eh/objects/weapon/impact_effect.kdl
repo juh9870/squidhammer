@@ -1,0 +1,6 @@
+struct {
+	object "Type" "eh:enums/weapon/impact_effect_type"
+	object "DamageType" "eh:enums/weapon/damage_type"
+	number "Power" min=0 max=1000000000
+	number "Factor" min=0 max=1000000000
+}

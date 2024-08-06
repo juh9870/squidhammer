@@ -4,7 +4,7 @@ members = [
     #    "dbe",
     "dbe2",
     "dbe2_runner",
-    "dbe2_ui",
+    "dbe2_ui", "eh_codegen",
     #    "eframe_runner",
     #    "egui_node_graph/egui_node_graph",
     #    "list_edit",

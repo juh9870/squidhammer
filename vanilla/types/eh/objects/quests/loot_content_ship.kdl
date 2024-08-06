@@ -1,0 +1,3 @@
+struct {
+	ref "ItemId" "eh:objects/ship_build" alias="ShipBuild"
+}

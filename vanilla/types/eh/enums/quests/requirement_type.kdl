@@ -1,0 +1,23 @@
+enum {
+	const "Empty" 0
+	const "Any" 1
+	const "All" 2
+	const "None" 3
+	const "PlayerPosition" 6
+	const "RandomStarSystem" 7
+	const "AggressiveOccupants" 8
+	const "QuestCompleted" 9
+	const "QuestActive" 10
+	const "CharacterRelations" 15
+	const "FactionRelations" 16
+	const "StarbaseCaptured" 17
+	const "FactionStarbasePower" 18
+	const "IsHostileFaction" 19
+	const "Faction" 20
+	const "HaveQuestItem" 25
+	const "HaveItem" 26
+	const "HaveItemById" 27
+	const "ComeToOrigin" 30
+	const "TimeSinceQuestStart" 40
+	const "TimeSinceLastCompletion" 41
+}

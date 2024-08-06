@@ -1,0 +1,10 @@
+struct {
+	ref "ItemId" "eh:objects/ship" alias="Ship"
+	number "Price" min=0 max=10000 type="int"
+	boolean "Hidden" 
+	boolean "Special" 
+	list "Dependencies"  {
+		ref "Item" "eh:objects/technology"
+	}
+	number "CustomCraftingLevel" min=0 type="int"
+}

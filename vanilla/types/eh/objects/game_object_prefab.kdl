@@ -1,0 +1,4 @@
+struct {
+	id "Id"
+	object "Data" "eh:objects/game_object_prefab_data" inline=true
+}

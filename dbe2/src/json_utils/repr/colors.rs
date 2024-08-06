@@ -20,7 +20,12 @@ impl ColorStringRepr {
 }
 
 impl JsonRepr for ColorStringRepr {
-    fn from_repr(&self, _registry: &ETypesRegistry, data: JsonValue) -> miette::Result<JsonValue> {
+    fn from_repr(
+        &self,
+        _registry: &ETypesRegistry,
+        data: &mut JsonValue,
+        _ignore_extra_fields: bool,
+    ) -> miette::Result<JsonValue> {
         let str = json_expected(data.as_str(), &data, "color")?;
 
         let color = if let Ok(color) = ColorFormat::rgb().parse(str) {

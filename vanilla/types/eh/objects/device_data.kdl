@@ -1,0 +1,24 @@
+struct {
+	object "DeviceClass" "eh:enums/device_class"
+	number "EnergyConsumption" min=0 max=1000000000
+	number "PassiveEnergyConsumption" min=0 max=1000000000
+	boolean "ScaleEnergyWithShipSize" default=true
+	number "Power" min=0 max=1000
+	number "Range" min=0 max=1000
+	number "Size" min=0 max=1000
+	number "Cooldown" min=0 max=1000
+	number "Lifetime" min=0 max=1000
+	object "Offset" "sys:vec2"
+	object "ActivationType" "eh:enums/activation_type"
+	object "Color" "color:argb"
+	string "Sound" editor="eh:audioclip"
+	string "EffectPrefab" editor="eh:prefab"
+	object "VisualEffect" "sys:optional" {
+		ref "Item" "eh:objects/weapon/visual_effect"
+	}
+	string "ObjectPrefab" editor="eh:prefab"
+	object "Prefab" "sys:optional" {
+		ref "Item" "eh:objects/game_object_prefab"
+	}
+	string "ControlButtonIcon" editor="eh:image"
+}

@@ -1,0 +1,25 @@
+enum {
+	const "Accelerator" 0
+	const "Decoy" 1
+	const "EnergyShield" 2
+	const "Ghost" 3
+	const "GravityGenerator" 4
+	const "PartialShield" 5
+	const "PointDefense" 6
+	const "RepairBot" 7
+	const "Detonator" 8
+	const "Stealth" 9
+	const "Teleporter" 10
+	const "Brake" 11
+	const "SuperStealth" 12
+	const "Fortification" 13
+	const "ToxicWaste" 14
+	const "WormTail" 15
+	const "ClonningCenter" 16
+	const "TimeMachine" 17
+	const "Jammer" 18
+	const "DroneCamouflage" 19
+	const "MissileCamouflage" 20
+	const "TeleporterV2" 21
+	const "WormTailV2" 22
+}

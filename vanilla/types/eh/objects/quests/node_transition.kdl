@@ -1,0 +1,5 @@
+struct {
+	number "TargetNode" min=1 max=1000 type="int"
+	object "Requirement" "eh:objects/quests/requirement"
+	number "Weight" min=0 max=1000
+}

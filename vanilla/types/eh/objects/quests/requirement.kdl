@@ -1,0 +1,23 @@
+enum tag="Type" {
+	object "Empty" "eh:objects/quests/requirement_empty" tag=0
+	object "Any" "eh:objects/quests/requirement_any" tag=1
+	object "All" "eh:objects/quests/requirement_all" tag=2
+	object "None" "eh:objects/quests/requirement_none" tag=3
+	object "PlayerPosition" "eh:objects/quests/requirement_player_position" tag=6
+	object "RandomStarSystem" "eh:objects/quests/requirement_random_star_system" tag=7
+	object "AggressiveOccupants" "eh:objects/quests/requirement_aggressive_occupants" tag=8
+	object "QuestCompleted" "eh:objects/quests/requirement_quest_completed" tag=9
+	object "QuestActive" "eh:objects/quests/requirement_quest_active" tag=10
+	object "CharacterRelations" "eh:objects/quests/requirement_character_relations" tag=15
+	object "FactionRelations" "eh:objects/quests/requirement_faction_relations" tag=16
+	object "StarbaseCaptured" "eh:objects/quests/requirement_starbase_captured" tag=17
+	object "FactionStarbasePower" "eh:objects/quests/requirement_faction_starbase_power" tag=18
+	object "IsHostileFaction" "eh:objects/quests/requirement_is_hostile_faction" tag=19
+	object "Faction" "eh:objects/quests/requirement_faction" tag=20
+	object "HaveQuestItem" "eh:objects/quests/requirement_have_quest_item" tag=25
+	object "HaveItem" "eh:objects/quests/requirement_have_item" tag=26
+	object "HaveItemById" "eh:objects/quests/requirement_have_item_by_id" tag=27
+	object "ComeToOrigin" "eh:objects/quests/requirement_come_to_origin" tag=30
+	object "TimeSinceQuestStart" "eh:objects/quests/requirement_time_since_quest_start" tag=40
+	object "TimeSinceLastCompletion" "eh:objects/quests/requirement_time_since_last_completion" tag=41
+}

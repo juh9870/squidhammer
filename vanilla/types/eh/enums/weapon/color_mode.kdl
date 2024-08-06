@@ -1,0 +1,6 @@
+enum {
+	const "TakeFromOwner" 0
+	const "UseMyOwn" 1
+	const "Blend" 2
+	const "Multiply" 3
+}

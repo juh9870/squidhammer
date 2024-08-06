@@ -1,0 +1,6 @@
+enum {
+	const "Undefined" 0
+	const "WormTailSegment" 1
+	const "CircularSpriteObject" 2
+	const "CircularOutlineObject" 3
+}

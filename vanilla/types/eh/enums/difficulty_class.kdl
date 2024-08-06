@@ -1,0 +1,6 @@
+enum {
+	const "Default" 0
+	const "Class1" 1
+	const "Class2" 2
+	const "Class3" 3
+}

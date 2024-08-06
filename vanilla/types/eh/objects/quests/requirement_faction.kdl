@@ -1,0 +1,5 @@
+struct {
+	object "Faction" "sys:optional" {
+		ref "Item" "eh:objects/faction"
+	}
+}

@@ -1,0 +1,8 @@
+enum {
+	const "Projectile" 0
+	const "Homing" 1
+	const "Beam" 2
+	const "AreaOfEffect" 3
+	const "Trap" 4
+	const "Harpoon" 5
+}

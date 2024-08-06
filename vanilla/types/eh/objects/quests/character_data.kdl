@@ -1,0 +1,15 @@
+struct {
+	string "Name" 
+	string "AvatarIcon" editor="eh:image"
+	object "Faction" "sys:optional" {
+		ref "Item" "eh:objects/faction"
+	}
+	object "Inventory" "sys:optional" {
+		ref "Item" "eh:objects/quests/loot"
+	}
+	object "Fleet" "sys:optional" {
+		ref "Item" "eh:objects/quests/fleet"
+	}
+	number "Relations" min=-100 max=100 type="int"
+	boolean "IsUnique" 
+}
