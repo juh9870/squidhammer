@@ -17,6 +17,7 @@ use dbe2::value::EValue;
 use downcast_rs::{impl_downcast, Downcast};
 use dyn_clone::DynClone;
 use egui::Ui;
+use list::ListEditor;
 use miette::{bail, miette};
 use std::fmt::Debug;
 use std::ops::Deref;
@@ -29,6 +30,7 @@ mod boolean;
 mod consts;
 mod enums;
 mod errors;
+mod list;
 mod number;
 mod rgb;
 mod string;
@@ -47,6 +49,7 @@ fn default_editors() -> impl Iterator<Item = (Ustr, Box<dyn Editor>)> {
         ("rgb".into(), Box::new(RgbEditor::new(false))),
         ("const".into(), Box::new(ConstEditor)),
         ("enum".into(), Box::new(EnumEditor)),
+        ("list".into(), Box::new(ListEditor)),
         // Enums
         // (
         //     "enum".to_string(),
@@ -107,10 +110,25 @@ trait Editor: std::any::Any + Send + Sync + Debug {
 pub struct EditorData(&'static dyn Editor, DynProps);
 
 pub fn editor_for_value(reg: &ETypesRegistry, value: &EValue) -> EditorData {
+    editor_for_type(reg, &value.ty())
+}
+
+pub fn editor_for_type(reg: &ETypesRegistry, ty: &EDataType) -> EditorData {
     m_try(|| {
-        let editor = editor_for_raw(reg, &value.ty(), None)?;
+        let editor = editor_for_raw(reg, ty, None)?;
 
         Ok(EditorData(editor, editor.props(reg, None)?))
+    })
+    .unwrap_or_else(|err| EditorData(&ErrorEditor, ErrorProps(err.to_string()).pack()))
+}
+
+pub fn editor_for_item(reg: &ETypesRegistry, item: &EItemType) -> EditorData {
+    m_try(|| {
+        let name = prop_opt::<Ustr>(item.extra_properties(), "editor")?;
+
+        let editor = editor_for_raw(reg, &item.ty(), name)?;
+
+        Ok(EditorData(editor, editor.props(reg, Some(item))?))
     })
     .unwrap_or_else(|err| EditorData(&ErrorEditor, ErrorProps(err.to_string()).pack()))
 }
@@ -158,21 +176,10 @@ fn editor_for_raw(
     Ok(editor.deref())
 }
 
-pub fn editor_for(reg: &ETypesRegistry, item: &EItemType) -> EditorData {
-    m_try(|| {
-        let name = prop_opt::<Ustr>(item.extra_properties(), "editor")?;
-
-        let editor = editor_for_raw(reg, &item.ty(), name)?;
-
-        Ok(EditorData(editor, editor.props(reg, Some(item))?))
-    })
-    .unwrap_or_else(|err| EditorData(&ErrorEditor, ErrorProps(err.to_string()).pack()))
-}
-
 impl EditorData {
-    pub fn show(self, ui: &mut Ui, reg: &ETypesRegistry, field_name: &str, value: &mut EValue) {
+    pub fn show(&self, ui: &mut Ui, reg: &ETypesRegistry, field_name: &str, value: &mut EValue) {
         let Self(editor, props) = self;
-        editor.edit(ui, reg, field_name, value, &props);
+        editor.edit(ui, reg, field_name, value, props);
     }
 
     pub fn size(&self) -> EditorSize {

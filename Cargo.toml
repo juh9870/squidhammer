@@ -7,11 +7,51 @@ members = [
     "dbe2_ui", "eh_codegen",
     #    "eframe_runner",
     #    "egui_node_graph/egui_node_graph",
-    #    "list_edit",
+    "list_edit",
     "node_macro",
     "utils",
     "xtask",
 ]
+
+[workspace.dependencies]
+ahash = "0.8.11"
+camino = "1.1.7"
+downcast-rs = "1.2.1"
+dyn-clone = "1.0.17"
+eframe = "0.28.1"
+egui = "0.28.1"
+egui-toast = "0.14.0"
+egui_dnd = "0.9.0"
+egui_dock = "0.13.0"
+egui_file = "0.18.0"
+egui_tracing = { git = "https://github.com/Umatriz/egui_tracing.git", rev = "347001769583bf22ee919152f86dfc19de717f32" }
+fs-err = "2.11.0"
+inline_tweak = "1.1.1"
+itertools = "0.13.0"
+knuffel = { git = "https://github.com/TheLostLambda/knuffel.git", rev = "744bf56c1fc64b87f7c47d67470ff7898970dc70" }
+miette = "7.2.0"
+num-traits = "0.2.19"
+num_cpus = "1.16.0"
+ordered-float = "4.2.0"
+parking_lot = "0.12.3"
+paste = "1.0.14"
+rayon = "1.10.0"
+rstest = "0.22.0"
+serde = "1.0.196"
+serde_json = "1.0.120"
+serde_json5 = "0.1.0"
+strip-ansi-escapes = "0.2.0"
+strum = "0.26.1"
+thiserror = "1.0.63"
+toml = "0.8.16"
+tracing = "0.1.40"
+tracing-subscriber = "0.3.18"
+ustr = "1.0.0"
+walkdir = "2.5.0"
+# Workspace crates
+dbe2 = { path = "dbe2" }
+utils = { path = "utils" }
+list_edit = { path = "list_edit" }
 
 [patch.'https://github.com/TheLostLambda/miette']
 miette = { git = "https://github.com/zkat/miette", rev = "bf5aa3742fd664be3c93160b9c28c145b1ed8bc9" }

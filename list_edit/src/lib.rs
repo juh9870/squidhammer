@@ -30,8 +30,6 @@ impl<T, NewItem: Fn(usize) -> T, CanDelete: Fn(usize, T) -> bool, IdSource: Hash
     ) {
         let id = self.id.id();
 
-        // TODO: re-enable once https://github.com/lucasmerlin/hello_egui/issues/14 is fixed
-        // ui.style_mut().animation_time = 0.0;
         ui.vertical(|ui| {
             let mut delete_id = None;
             let mut last_item_width = 0.0;
@@ -42,47 +40,57 @@ impl<T, NewItem: Fn(usize) -> T, CanDelete: Fn(usize, T) -> bool, IdSource: Hash
                     .map(|(i, e)| DragWrapper(id.with(i), e)),
                 |ui, item: DragWrapper<&mut T>, handle, state| {
                     let res = ui.horizontal_top(|ui| {
-                        let id = id.with(state.index).with("_handle_sizer");
-                        let last_item_height: Option<f32> =
-                            ui.memory_mut(|mem| mem.data.get_temp(id));
+                        ui.push_id(state.index, |ui| {
+                            let id = id.with(state.index).with("_handle_sizer");
+                            let last_item_height: Option<f32> =
+                                ui.memory_mut(|mem| mem.data.get_temp(id));
 
-                        let handle_content = |ui: &mut Ui| {
-                            let res_a = ui.separator();
-                            let res_b = ui.separator();
+                            let handle_content = |ui: &mut Ui| {
+                                let (res_a, res_b) = ui
+                                    .push_id("_handle_sizer", |ui| {
+                                        let style = ui.style_mut();
+                                        style.visuals.widgets.noninteractive.bg_stroke.color =
+                                            style.visuals.widgets.active.fg_stroke.color;
+                                        let res_a = ui.separator();
+                                        let res_b = ui.separator();
+                                        (res_a, res_b)
+                                    })
+                                    .inner;
 
-                            let rect = Rect::from_two_pos(
-                                res_a.rect.left_top(),
-                                res_b.rect.right_bottom(),
-                            );
+                                let rect = Rect::from_two_pos(
+                                    res_a.rect.left_top(),
+                                    res_b.rect.right_bottom(),
+                                );
 
-                            let res = ui.interact(
-                                rect,
-                                id.with(state.index).with("_sensor"),
-                                Sense::click(),
-                            );
-                            res.context_menu(|ui| {
-                                if ui.button("Delete").clicked() {
-                                    delete_id = Some(state.index);
-                                    ui.close_menu();
+                                let res = ui.interact(
+                                    rect,
+                                    id.with(state.index).with("_sensor"),
+                                    Sense::click(),
+                                );
+                                res.context_menu(|ui| {
+                                    if ui.button("Delete").clicked() {
+                                        delete_id = Some(state.index);
+                                        ui.close_menu();
+                                    }
+                                });
+                            };
+
+                            match last_item_height {
+                                None => handle.ui(ui, handle_content),
+                                Some(h) => handle.ui_sized(ui, Vec2::new(24.0, h), handle_content),
+                            };
+
+                            let item_res = ui.horizontal(|ui| display(ui, state, item.1));
+                            let item_height = item_res.response.rect.size().y;
+                            ui.memory_mut(|mem| mem.data.insert_temp(id, item_height));
+                            match last_item_height {
+                                None => ui.ctx().request_repaint(),
+                                Some(last_height) if last_height != item_height => {
+                                    ui.ctx().request_repaint()
                                 }
-                            });
-                        };
-
-                        match last_item_height {
-                            None => handle.ui(ui, handle_content),
-                            Some(h) => handle.ui_sized(ui, Vec2::new(24.0, h), handle_content),
-                        };
-
-                        let item_res = ui.horizontal(|ui| display(ui, state, item.1));
-                        let item_height = item_res.response.rect.size().y;
-                        ui.memory_mut(|mem| mem.data.insert_temp(id, item_height));
-                        match last_item_height {
-                            None => ui.ctx().request_repaint(),
-                            Some(last_height) if last_height != item_height => {
-                                ui.ctx().request_repaint()
-                            }
-                            _ => {}
-                        };
+                                _ => {}
+                            };
+                        });
                     });
                     last_item_width = res.response.rect.size().x;
                 },

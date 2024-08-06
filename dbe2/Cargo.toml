@@ -5,26 +5,26 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-ahash = { version = "0.8.8", features = ["serde"] }
-camino = "1.1.7"
-fs-err = "2.11.0"
-itertools = "0.13.0"
+ahash = { workspace = true, features = ["serde"] }
+camino = { workspace = true }
+fs-err = { workspace = true }
+itertools = { workspace = true }
 knuffel = { git = "https://github.com/TheLostLambda/knuffel.git", rev = "744bf56c1fc64b87f7c47d67470ff7898970dc70" }
-miette = "7.0.0"
-ordered-float = { version = "4.2.0", features = ["serde"] }
-parking_lot = "0.12.3"
-paste = "1.0.14"
-serde = { version = "1.0.196", features = ["derive"] }
-serde_json = "1.0.120"
-serde_json5 = "0.1.0"
-strum = { version = "0.26.1", features = ["derive"] }
-thiserror = "1.0.63"
-toml = "0.8.16"
-tracing = "0.1.40"
-ustr = { version = "1.0.0", features = ["serde"] }
+miette = { workspace = true }
+ordered-float = { workspace = true, features = ["serde"] }
+parking_lot = { workspace = true }
+paste = { workspace = true }
+serde = { workspace = true, features = ["derive"] }
+serde_json = { workspace = true }
+serde_json5 = { workspace = true }
+strum = { workspace = true, features = ["derive"] }
+thiserror = { workspace = true }
+toml = { workspace = true }
+tracing = { workspace = true }
+ustr = { workspace = true, features = ["serde"] }
 utils = { path = "../utils" }
-walkdir = "2.5.0"
+walkdir = { workspace = true }
 
 [dev-dependencies]
-miette = { version = "7.2.0", features = ["fancy-no-syscall"] }
-rstest = "0.21.0"
+miette = { workspace = true, features = ["fancy-no-syscall"] }
+rstest = { workspace = true }

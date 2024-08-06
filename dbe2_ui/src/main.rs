@@ -69,16 +69,12 @@ impl DbeApp {
             "fira-code".to_owned(),
             FontData::from_static(include_bytes!("../fonts/FiraCode-Light.ttf")),
         );
-        fonts.font_data.insert(
-            "fira-sans".to_owned(),
-            FontData::from_static(include_bytes!("../fonts/FiraCode-Light.ttf")),
-        );
 
         fonts
             .families
             .get_mut(&FontFamily::Proportional)
             .unwrap()
-            .insert(0, "fira-sans".to_owned());
+            .insert(0, "fira-code".to_owned());
 
         fonts
             .families

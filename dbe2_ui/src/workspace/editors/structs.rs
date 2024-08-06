@@ -1,5 +1,5 @@
 use crate::workspace::editors::utils::{labeled_field, unsupported, EditorResultExt, EditorSize};
-use crate::workspace::editors::{editor_for, DynProps, Editor};
+use crate::workspace::editors::{editor_for_item, DynProps, Editor};
 use dbe2::registry::ETypesRegistry;
 use dbe2::value::EValue;
 use egui::Ui;
@@ -32,7 +32,7 @@ impl Editor for StructEditor {
                 let items = data
                     .fields
                     .iter()
-                    .map(|f| (f, editor_for(reg, &f.ty)))
+                    .map(|f| (f, editor_for_item(reg, &f.ty)))
                     .collect_vec();
 
                 let inline =

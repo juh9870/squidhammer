@@ -2,7 +2,7 @@ use crate::workspace::editors::utils::{
     inline_error, labeled_error, labeled_field, prop, unsupported, EditorSize,
 };
 use crate::workspace::editors::{
-    cast_props, editor_for, DynProps, Editor, EditorData, EditorProps,
+    cast_props, editor_for_item, DynProps, Editor, EditorData, EditorProps,
 };
 use dbe2::etype::econst::ETypeConst;
 use dbe2::etype::eenum::pattern::EnumPattern;
@@ -164,7 +164,7 @@ impl<'a> EnumEditorData<'a> {
             return None;
         };
 
-        let editor = editor_for(registry, &selected_variant.data);
+        let editor = editor_for_item(registry, &selected_variant.data);
 
         Some(Self {
             registry,
@@ -282,8 +282,7 @@ impl<'a> EnumEditorData<'a> {
 
     fn body(self, ui: &mut Ui) {
         if !self.skip_draw_body {
-            self.editor
-                .show(ui, self.registry, self.field_name, self.value);
+            self.editor.show(ui, self.registry, "", self.value);
         }
     }
 }
