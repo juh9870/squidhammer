@@ -70,6 +70,8 @@ fn show_folder(
         // .enabled(is_enabled)
         .default_open(is_enabled)
         .show(ui, |ui| {
+            let mut files = vec![];
+            let mut folders = vec![];
             while let Some(next) = fs.peek().map(|e| e.as_ref().to_path_buf()) {
                 let Ok(remaining) = next.strip_prefix(path) else {
                     break;
@@ -80,32 +82,46 @@ fn show_folder(
                             panic!("File matches directory name: `{}`", next);
                         };
                         fs.next();
-                        if ui
-                            .add_enabled(
-                                is_enabled,
-                                Label::new(file_name.to_string())
-                                    .sense(Sense::click())
-                                    .selectable(false),
-                            )
-                            .double_clicked()
-                        {
-                            commands.push(Command::OpenFile {
-                                path: next.to_path_buf(),
-                            });
-                        }
+                        let name = file_name.to_string();
+                        files.push((next, name));
                     }
                     Err(mut iter) => {
                         let sub_path = path.join(iter.next().expect("Should not be empty"));
-                        show_folder(ui, &sub_path, fs, disabled, commands);
-                        // Drain all other items belonging to the sub folder in case they weren't consumed
+                        let mut folder_items = vec![];
                         while fs
                             .peek()
                             .map(|e| e.as_ref().starts_with(&sub_path))
                             .unwrap_or(false)
                         {
-                            fs.next();
+                            folder_items.push(fs.next().expect("Peeked item should be present"));
                         }
+                        folders.push((sub_path, folder_items));
                     }
+                }
+            }
+
+            for (sub_path, folder) in folders {
+                show_folder(
+                    ui,
+                    &sub_path,
+                    &mut folder.into_iter().peekable(),
+                    disabled,
+                    commands,
+                );
+            }
+            for (file, file_name) in files {
+                if ui
+                    .add_enabled(
+                        is_enabled,
+                        Label::new(file_name)
+                            .sense(Sense::click())
+                            .selectable(false),
+                    )
+                    .double_clicked()
+                {
+                    commands.push(Command::OpenFile {
+                        path: file.to_path_buf(),
+                    });
                 }
             }
         });
