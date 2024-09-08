@@ -1,5 +1,5 @@
 use crate::workspace::editors::utils::{labeled_field, prop_opt, unsupported, EditorSize};
-use crate::workspace::editors::{cast_props, DynProps, Editor, EditorProps};
+use crate::workspace::editors::{cast_props, DynProps, Editor, EditorProps, EditorResponse};
 use dbe2::etype::eitem::EItemInfo;
 use dbe2::registry::ETypesRegistry;
 use dbe2::value::{ENumber, EValue};
@@ -46,22 +46,26 @@ impl Editor for NumberEditor {
         field_name: &str,
         value: &mut EValue,
         props: &DynProps,
-    ) {
+    ) -> EditorResponse {
         let Ok(value) = value.try_as_number_mut() else {
             unsupported!(ui, field_name, value, self);
         };
 
         let props = cast_props::<NumericProps>(props);
 
-        labeled_field(ui, field_name, |ui| {
+        let changed = labeled_field(ui, field_name, |ui| {
             if self.slider {
                 ui.add(
                     Slider::new(&mut value.0, props.range.clone()).logarithmic(props.logarithmic),
-                );
+                )
+                .changed()
             } else {
-                ui.add(DragValue::new(&mut value.0).range(props.range.clone()));
+                ui.add(DragValue::new(&mut value.0).range(props.range.clone()))
+                    .changed()
             }
         });
+
+        EditorResponse::new(changed.inner)
     }
 }
 

@@ -189,7 +189,7 @@ macro_rules! unsupported {
             $label,
             miette::miette!("{}", ("dbe.editor.unsupported_value")),
         );
-        return
+        return $crate::workspace::editors::EditorResponse::unchanged();
     };
 }
 

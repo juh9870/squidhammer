@@ -1,5 +1,5 @@
 use crate::workspace::editors::utils::{labeled_error, labeled_field, EditorSize};
-use crate::workspace::editors::{cast_props, DynProps, Editor, EditorProps};
+use crate::workspace::editors::{cast_props, DynProps, Editor, EditorProps, EditorResponse};
 use dbe2::etype::econst::ETypeConst;
 use dbe2::etype::eitem::EItemInfo;
 use dbe2::etype::EDataType;
@@ -34,7 +34,7 @@ impl Editor for ConstEditor {
         field_name: &str,
         value: &mut EValue,
         props: &DynProps,
-    ) {
+    ) -> EditorResponse {
         let props = cast_props::<ConstEditorProps>(props);
         let const_value = props.item.default_value();
         if value != &const_value {
@@ -42,6 +42,8 @@ impl Editor for ConstEditor {
         }
 
         labeled_field(ui, field_name, |ui| ui.label(value.to_string()));
+
+        EditorResponse::unchanged()
     }
 }
 

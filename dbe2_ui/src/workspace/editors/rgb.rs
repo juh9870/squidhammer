@@ -1,7 +1,7 @@
 use crate::workspace::editors::utils::{
     ensure_field, get_values, labeled_field, set_values, unsupported, EditorResultExt, EditorSize,
 };
-use crate::workspace::editors::{DynProps, Editor};
+use crate::workspace::editors::{DynProps, Editor, EditorResponse};
 use dbe2::registry::ETypesRegistry;
 use dbe2::value::{ENumber, EValue};
 use egui::collapsing_header::CollapsingState;
@@ -30,12 +30,13 @@ impl Editor for RgbEditor {
         field_name: &str,
         value: &mut EValue,
         _props: &DynProps,
-    ) {
+    ) -> EditorResponse {
         let field_names = ["r", "g", "b", if self.with_alpha { "a" } else { "" }];
         let EValue::Struct { fields, .. } = value else {
             unsupported!(ui, field_name, value, self);
         };
 
+        let mut changed = false;
         CollapsingState::load_with_default_open(ui.ctx(), ui.id().with(field_name), false)
             .show_header(ui, |ui| {
                 labeled_field(ui, field_name, |ui| {
@@ -43,7 +44,9 @@ impl Editor for RgbEditor {
                         get_values::<f32, _, 4>(fields, ["r", "g", "b", "a"]).then_draw(
                             ui,
                             |ui, mut value| {
-                                ui.color_edit_button_rgba_unmultiplied(&mut value);
+                                if ui.color_edit_button_rgba_unmultiplied(&mut value).changed() {
+                                    changed = true;
+                                };
                                 set_values(
                                     fields,
                                     [
@@ -59,7 +62,9 @@ impl Editor for RgbEditor {
                         get_values::<f32, _, 3>(fields, ["r", "g", "b"]).then_draw(
                             ui,
                             |ui, mut value| {
-                                ui.color_edit_button_rgb(&mut value);
+                                if ui.color_edit_button_rgb(&mut value).changed() {
+                                    changed = true;
+                                };
                                 set_values(
                                     fields,
                                     [("r", value[0]), ("g", value[1]), ("b", value[2])],
@@ -74,11 +79,18 @@ impl Editor for RgbEditor {
                     for name in field_names {
                         ensure_field(ui, fields, name, |ui, value: &mut ENumber| {
                             labeled_field(ui, name, |ui| {
-                                ui.add(DragValue::new(&mut value.0).range(0..=1).speed(0.01));
+                                if ui
+                                    .add(DragValue::new(&mut value.0).range(0..=1).speed(0.01))
+                                    .changed()
+                                {
+                                    changed = true;
+                                };
                             });
                         });
                     }
                 })
             });
+
+        EditorResponse::new(changed)
     }
 }

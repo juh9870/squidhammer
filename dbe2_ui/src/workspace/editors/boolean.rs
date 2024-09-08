@@ -1,5 +1,5 @@
 use crate::workspace::editors::utils::{labeled_field, unsupported, EditorSize};
-use crate::workspace::editors::{DynProps, Editor};
+use crate::workspace::editors::{DynProps, Editor, EditorResponse};
 use dbe2::registry::ETypesRegistry;
 use dbe2::value::EValue;
 use egui::Ui;
@@ -19,12 +19,14 @@ impl Editor for BooleanEditor {
         field_name: &str,
         value: &mut EValue,
         props: &DynProps,
-    ) {
+    ) -> EditorResponse {
         let Ok(value) = value.try_as_boolean_mut() else {
             unsupported!(ui, field_name, value, self);
         };
-        labeled_field(ui, field_name, |ui| {
-            ui.toggle_value(value, if *value { "⏹ True" } else { "☐ False" });
+        let res = labeled_field(ui, field_name, |ui| {
+            ui.toggle_value(value, if *value { "⏹ True" } else { "☐ False" })
         });
+
+        EditorResponse::new(res.inner.changed())
     }
 }

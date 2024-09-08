@@ -2,7 +2,7 @@ use crate::workspace::editors::utils::{
     inline_error, labeled_error, labeled_field, prop, unsupported, EditorSize,
 };
 use crate::workspace::editors::{
-    cast_props, editor_for_item, DynProps, Editor, EditorData, EditorProps,
+    cast_props, editor_for_item, DynProps, Editor, EditorData, EditorProps, EditorResponse,
 };
 use dbe2::etype::econst::ETypeConst;
 use dbe2::etype::eenum::pattern::EnumPattern;
@@ -67,7 +67,7 @@ impl Editor for EnumEditor {
         field_name: &str,
         value: &mut EValue,
         props: &DynProps,
-    ) {
+    ) -> EditorResponse {
         let EValue::Enum {
             variant,
             data: value,
@@ -79,7 +79,7 @@ impl Editor for EnumEditor {
         let props = cast_props::<EnumEditorProps>(props);
 
         let Some(mut editor) = EnumEditorData::init(ui, reg, field_name, variant, value) else {
-            return;
+            return EditorResponse::unchanged();
         };
         editor.hide_const_body();
 
@@ -94,7 +94,10 @@ impl Editor for EnumEditor {
                     .show_header(ui, |ui| {
                         labeled_field(ui, field_name, |ui| editor.toggle_editor(ui))
                     })
-                    .body_unindented(|ui| editor.body(ui));
+                    .body_unindented(|ui| editor.body(ui))
+                    .2
+                    .map(|r| r.inner)
+                    .unwrap_or(EditorResponse::unchanged())
                 } else {
                     let dir = if editor.body_size() <= EditorSize::Inline {
                         Direction::LeftToRight
@@ -106,9 +109,10 @@ impl Editor for EnumEditor {
                         egui::Layout::from_main_dir_and_cross_align(dir, Align::Min),
                         |ui| {
                             labeled_field(ui, field_name, |ui| editor.toggle_editor(ui));
-                            editor.body(ui);
+                            editor.body(ui)
                         },
-                    );
+                    )
+                    .inner
                 }
             }
             _ => {
@@ -121,10 +125,13 @@ impl Editor for EnumEditor {
                     .show_header(ui, |ui| {
                         labeled_field(ui, field_name, |ui| editor.picker(ui))
                     })
-                    .body_unindented(|ui| editor.body(ui));
+                    .body_unindented(|ui| editor.body(ui))
+                    .2
+                    .map(|r| r.inner)
+                    .unwrap_or(EditorResponse::unchanged())
                 } else {
                     labeled_field(ui, field_name, |ui| editor.picker(ui));
-                    editor.body(ui);
+                    editor.body(ui)
                 }
             }
         }
@@ -280,9 +287,11 @@ impl<'a> EnumEditorData<'a> {
         }
     }
 
-    fn body(self, ui: &mut Ui) {
+    fn body(self, ui: &mut Ui) -> EditorResponse {
         if !self.skip_draw_body {
-            self.editor.show(ui, self.registry, "", self.value);
+            self.editor.show(ui, self.registry, "", self.value)
+        } else {
+            EditorResponse::unchanged()
         }
     }
 }

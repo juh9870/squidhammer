@@ -26,7 +26,7 @@ impl<T, NewItem: Fn(usize) -> T, CanDelete: Fn(usize, T) -> bool, IdSource: Hash
         self,
         ui: &mut Ui,
         items: &mut Vec<T>,
-        display: impl Fn(&mut Ui, ItemState, &mut T),
+        mut display: impl FnMut(&mut Ui, ItemState, &mut T),
     ) {
         let id = self.id.id();
 

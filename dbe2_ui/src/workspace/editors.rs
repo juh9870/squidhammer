@@ -104,10 +104,25 @@ trait Editor: std::any::Any + Send + Sync + Debug {
         field_name: &str,
         value: &mut EValue,
         props: &DynProps,
-    );
+    ) -> EditorResponse;
 }
 
 pub struct EditorData(&'static dyn Editor, DynProps);
+
+#[derive(Debug, Clone)]
+pub struct EditorResponse {
+    pub changed: bool,
+}
+
+impl EditorResponse {
+    pub fn new(changed: bool) -> Self {
+        Self { changed }
+    }
+
+    pub fn unchanged() -> Self {
+        Self { changed: false }
+    }
+}
 
 pub fn editor_for_value(reg: &ETypesRegistry, value: &EValue) -> EditorData {
     editor_for_type(reg, &value.ty())
@@ -177,9 +192,15 @@ fn editor_for_raw(
 }
 
 impl EditorData {
-    pub fn show(&self, ui: &mut Ui, reg: &ETypesRegistry, field_name: &str, value: &mut EValue) {
+    pub fn show(
+        &self,
+        ui: &mut Ui,
+        reg: &ETypesRegistry,
+        field_name: &str,
+        value: &mut EValue,
+    ) -> EditorResponse {
         let Self(editor, props) = self;
-        editor.edit(ui, reg, field_name, value, props);
+        editor.edit(ui, reg, field_name, value, props)
     }
 
     pub fn size(&self) -> EditorSize {

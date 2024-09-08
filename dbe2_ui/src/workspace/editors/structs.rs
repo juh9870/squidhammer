@@ -1,7 +1,9 @@
 use crate::workspace::editors::utils::{
     labeled_field, prop, unsupported, EditorResultExt, EditorSize,
 };
-use crate::workspace::editors::{cast_props, editor_for_item, DynProps, Editor, EditorProps};
+use crate::workspace::editors::{
+    cast_props, editor_for_item, DynProps, Editor, EditorProps, EditorResponse,
+};
 use dbe2::etype::eitem::EItemInfo;
 use dbe2::registry::ETypesRegistry;
 use dbe2::value::EValue;
@@ -32,13 +34,14 @@ impl Editor for StructEditor {
         field_name: &str,
         value: &mut EValue,
         props: &DynProps,
-    ) {
+    ) -> EditorResponse {
         let EValue::Struct { fields, ident } = value else {
             unsupported!(ui, field_name, value, self);
         };
 
         let props = cast_props::<StructProps>(props);
 
+        let mut changed = false;
         reg.get_struct(ident)
             .ok_or_else(|| miette!("unknown struct `{}`", ident))
             .then_draw(ui, |ui, data| {
@@ -57,7 +60,9 @@ impl Editor for StructEditor {
                             .get_mut(&field.name)
                             .ok_or_else(|| miette!("field `{}` is missing", field.name))
                             .then_draw(ui, |ui, value| {
-                                editor.show(ui, reg, field.name.as_ref(), value);
+                                if editor.show(ui, reg, field.name.as_ref(), value).changed {
+                                    changed = true;
+                                };
                             });
                     }
                 };
@@ -79,6 +84,8 @@ impl Editor for StructEditor {
                     });
                 }
             });
+
+        EditorResponse::new(changed)
     }
 }
 
