@@ -339,9 +339,11 @@ impl ETypesRegistry {
             return EValue::Null.into();
         };
 
-        if let Some(cached) = self.default_objects_cache.borrow().get(ident) {
+        let borrow = self.default_objects_cache.borrow();
+        if let Some(cached) = borrow.get(ident) {
             cached.clone().into()
         } else {
+            drop(borrow);
             let data = match data.expect_ready() {
                 EObjectType::Struct(data) => data.default_value_inner(self),
                 EObjectType::Enum(data) => data.default_value_inner(self),
