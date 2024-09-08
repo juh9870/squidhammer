@@ -41,7 +41,7 @@ impl Editor for ListEditor {
                     let ty = list_data.value_type;
                     let editor = editor_for_type(reg, &ty);
                     list_edit::list_editor::<EValue, _>(ui.id().with(field_name).with("list"))
-                        .new_item(|_| ty.default_value(reg))
+                        .new_item(|_| ty.default_value(reg).into_owned())
                         .show(ui, values, |ui, _, val| {
                             editor.show(ui, reg, "", val);
                         });

@@ -4,7 +4,8 @@ members = [
     #    "dbe",
     "dbe2",
     "dbe2_runner",
-    "dbe2_ui", "eh_codegen",
+    "dbe2_ui",
+    "diagnostic", "eh_codegen",
     #    "eframe_runner",
     #    "egui_node_graph/egui_node_graph",
     "list_edit",
@@ -15,10 +16,10 @@ members = [
 
 [workspace.dependencies]
 ahash = "0.8.11"
+atomic_refcell = "0.1.13"
 camino = "1.1.7"
 clap = "4.5.13"
 codegen_schema = { git = "https://github.com/juh9870/eh_codegen.git", rev = "4cf9c64e29ce85bc935c605b79aa477a41976162" }
-diagnostic = { git = "https://github.com/juh9870/eh_codegen.git", rev = "4cf9c64e29ce85bc935c605b79aa477a41976162" }
 color-backtrace = "0.6.1"
 convert_case = "0.6.0"
 downcast-rs = "1.2.1"
@@ -34,6 +35,7 @@ fs-err = "2.11.0"
 inline_tweak = "1.1.1"
 itertools = "0.13.0"
 knuffel = { git = "https://github.com/TheLostLambda/knuffel.git", rev = "744bf56c1fc64b87f7c47d67470ff7898970dc70" }
+lockfree-object-pool = "0.1.6"
 miette = "7.2.0"
 num-traits = "0.2.19"
 num_cpus = "1.16.0"
@@ -59,6 +61,7 @@ walkdir = "2.5.0"
 dbe2 = { path = "dbe2" }
 utils = { path = "utils" }
 list_edit = { path = "list_edit" }
+diagnostic = { path = "diagnostic" }
 
 [patch.'https://github.com/TheLostLambda/miette']
 miette = { git = "https://github.com/zkat/miette", rev = "bf5aa3742fd664be3c93160b9c28c145b1ed8bc9" }

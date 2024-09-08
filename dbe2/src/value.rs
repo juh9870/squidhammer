@@ -70,7 +70,16 @@ impl EValue {
 }
 
 macro_rules! try_to {
-    ($type:tt, $result:ty, $name:ident) => {
+    (primitive $type:tt, $result:ty, $name:tt, $field_name:ident) => {
+        impl From<$result> for EValue {
+            fn from(value: $result) -> Self {
+                Self::$type { value }
+            }
+        }
+
+        try_to!($type, $result, $name, $field_name);
+    };
+    ($type:tt, $result:ty, $name:tt, $field_name:ident) => {
         paste::item! {
             impl TryFrom<EValue> for $result {
                 type Error = miette::Error;
@@ -116,16 +125,10 @@ macro_rules! try_to {
             //     }
             // }
 
-            impl From<$result> for EValue {
-                fn from(value: $result) -> Self {
-                    Self::$type{value}
-                }
-            }
-
             impl EValue {
                 pub fn [<try_into_ $name>](self) -> miette::Result<$result> {
-                    if let EValue::$type { value } = self {
-                        Ok(value)
+                    if let EValue::$type { $field_name, .. } = self {
+                        Ok($field_name)
                     } else {
                         miette::bail!(
                             "Invalid cast from {:?} to {}",
@@ -136,8 +139,8 @@ macro_rules! try_to {
                     }
                 }
                 pub fn [<try_as_ $name>](&self) -> miette::Result<&$result> {
-                    if let EValue::$type { value } = self {
-                        Ok(&value)
+                    if let EValue::$type { $field_name, .. } = self {
+                        Ok(&$field_name)
                     } else {
                         miette::bail!(
                             "Invalid cast from {:?} to {}",
@@ -149,8 +152,8 @@ macro_rules! try_to {
                 }
 
                 pub fn [<try_as_ $name _mut>](&mut self) -> miette::Result<&mut $result> {
-                    if let EValue::$type { value } = self {
-                        Ok(value)
+                    if let EValue::$type { $field_name, .. } = self {
+                        Ok($field_name)
                     } else {
                         miette::bail!(
                             "Invalid cast from {:?} to {}",
@@ -165,9 +168,10 @@ macro_rules! try_to {
     };
 }
 
-try_to!(Number, ENumber, number);
-try_to!(Boolean, bool, boolean);
-try_to!(String, String, string);
+try_to!(primitive Number, ENumber, number, value);
+try_to!(primitive Boolean, bool, boolean, value);
+try_to!(primitive String, String, string, value);
+try_to!(Struct, BTreeMap<Ustr, EValue>, struct, fields);
 
 impl From<f64> for EValue {
     fn from(value: f64) -> Self {

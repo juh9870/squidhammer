@@ -44,13 +44,18 @@ impl EStructData {
         }
     }
 
-    pub fn default_value(&self, registry: &ETypesRegistry) -> EValue {
+    pub(crate) fn default_value_inner(&self, registry: &ETypesRegistry) -> EValue {
         EValue::Struct {
             ident: self.ident,
             fields: self
                 .fields
                 .iter()
-                .map(|f| (f.name.as_str().into(), f.ty.default_value(registry)))
+                .map(|f| {
+                    (
+                        f.name.as_str().into(),
+                        f.ty.default_value(registry).into_owned(),
+                    )
+                })
                 .collect(),
         }
     }
@@ -164,7 +169,7 @@ impl EStructData {
                     .parse_json(registry, &mut json_value, false)
                     .with_context(|| format!("in default value for field `{}`", field.name))?
             } else {
-                field.ty.default_value(registry)
+                field.ty.default_value(registry).into_owned()
             };
             fields.insert(field.name, value);
         }

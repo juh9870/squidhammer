@@ -3,6 +3,7 @@ pub mod json_utils;
 pub mod project;
 pub mod registry;
 pub(crate) mod serialization;
+pub mod validation;
 pub mod value;
 
 /// Helper for wrapping a code block to help with contextualizing errors

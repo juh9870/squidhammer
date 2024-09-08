@@ -45,14 +45,14 @@ impl EEnumData {
         }
     }
 
-    pub fn default_value(&self, registry: &ETypesRegistry) -> EValue {
+    pub(crate) fn default_value_inner(&self, registry: &ETypesRegistry) -> EValue {
         let default_variant = self.variants.first().expect("Expect enum to not be empty");
         EValue::Enum {
             variant: EEnumVariantId {
                 ident: self.ident,
                 variant: default_variant.name,
             },
-            data: Box::new(default_variant.default_value(registry)),
+            data: Box::new(default_variant.default_value(registry).into_owned()),
         }
     }
 

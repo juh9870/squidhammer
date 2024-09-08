@@ -6,7 +6,9 @@ edition = "2021"
 
 [dependencies]
 ahash = { workspace = true, features = ["serde"] }
+atomic_refcell = { workspace = true }
 camino = { workspace = true }
+diagnostic = { workspace = true }
 fs-err = { workspace = true }
 itertools = { workspace = true }
 knuffel = { git = "https://github.com/TheLostLambda/knuffel.git", rev = "744bf56c1fc64b87f7c47d67470ff7898970dc70" }

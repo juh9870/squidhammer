@@ -1,3 +1,4 @@
+use crate::etype::default::DefaultEValue;
 use crate::etype::econst::ETypeConst;
 use crate::etype::eenum::pattern::{EnumPattern, Tagged};
 use crate::etype::eenum::EEnumData;
@@ -20,7 +21,7 @@ pub struct EEnumVariant {
 }
 
 impl EEnumVariant {
-    pub fn default_value(&self, registry: &ETypesRegistry) -> EValue {
+    pub fn default_value(&self, registry: &ETypesRegistry) -> DefaultEValue {
         self.data.default_value(registry)
     }
 
@@ -93,7 +94,7 @@ impl EEnumVariantId {
     pub fn matches(&self, variant: &EEnumVariant) -> bool {
         self.variant == variant.name
     }
-    pub fn pattern(&self) -> Ustr {
+    pub fn variant_name(&self) -> Ustr {
         self.variant
     }
 
@@ -111,7 +112,8 @@ impl EEnumVariantId {
     }
 
     pub fn default_value(&self, registry: &ETypesRegistry) -> Option<EValue> {
-        self.variant(registry).map(|e| e.default_value(registry))
+        self.variant(registry)
+            .map(|e| e.default_value(registry).into_owned())
     }
 }
 

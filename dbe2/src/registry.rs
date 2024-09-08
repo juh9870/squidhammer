@@ -1,3 +1,4 @@
+use crate::etype::default::DefaultEValue;
 use crate::etype::econst::ETypeConst;
 use crate::etype::eenum::EEnumData;
 use crate::etype::eitem::EItemInfo;
@@ -9,10 +10,12 @@ use crate::serialization::deserialize_etype;
 use crate::value::id::{EListId, EMapId, ETypeId};
 use crate::value::EValue;
 use ahash::AHashMap;
+use atomic_refcell::AtomicRefCell;
 use itertools::Itertools;
 use miette::{bail, miette, Context};
 use std::collections::btree_map::Entry;
 use std::collections::BTreeMap;
+use std::sync::Arc;
 use ustr::{Ustr, UstrMap};
 
 #[derive(Debug, Clone)]
@@ -135,6 +138,7 @@ pub struct ETypesRegistry {
     types: BTreeMap<ETypeId, RegistryItem>,
     lists: BTreeMap<EListId, ListData>,
     maps: BTreeMap<EMapId, MapData>,
+    default_objects_cache: AtomicRefCell<BTreeMap<ETypeId, Arc<EValue>>>,
     // editors: AHashMap<String, Box<dyn EFieldEditorConstructor>>,
     last_id: u64,
 }
@@ -155,6 +159,7 @@ impl ETypesRegistry {
             lists: Default::default(),
             maps: Default::default(),
             // editors: default_editors().into_iter().collect(),
+            default_objects_cache: Default::default(),
             last_id: 0,
         };
 
@@ -329,14 +334,26 @@ impl ETypesRegistry {
         ETypeId::temp(self.last_id)
     }
 
-    pub fn default_value(&self, ident: &ETypeId) -> EValue {
+    pub(crate) fn default_value_inner(&self, ident: &ETypeId) -> DefaultEValue {
         let Some(data) = self.types.get(ident) else {
-            return EValue::Null;
+            return EValue::Null.into();
         };
 
-        match data.expect_ready() {
-            EObjectType::Struct(data) => data.default_value(self),
-            EObjectType::Enum(data) => data.default_value(self),
+        if let Some(cached) = self.default_objects_cache.borrow().get(ident) {
+            cached.clone().into()
+        } else {
+            let data = match data.expect_ready() {
+                EObjectType::Struct(data) => data.default_value_inner(self),
+                EObjectType::Enum(data) => data.default_value_inner(self),
+            };
+
+            let arced = Arc::new(data);
+
+            self.default_objects_cache
+                .borrow_mut()
+                .insert(*ident, arced.clone());
+
+            arced.into()
         }
     }
 

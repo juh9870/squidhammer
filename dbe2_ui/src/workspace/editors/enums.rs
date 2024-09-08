@@ -207,7 +207,7 @@ impl<'a> EnumEditorData<'a> {
                 error!(id=?new_variant, "Failed to obtain enum variant for ID")
             }
             Some(variant) => {
-                *self.value = variant.default_value(self.registry);
+                *self.value = variant.default_value(self.registry).into_owned();
             }
         }
     }

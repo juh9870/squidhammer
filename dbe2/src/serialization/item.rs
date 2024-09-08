@@ -149,6 +149,7 @@ impl ThingItem {
                     EItemInfo::Generic(EItemInfoGeneric {
                         argument_name: arg,
                         extra_properties: self.extra_properties,
+                        validators: vec![],
                     }),
                 ));
             }
@@ -159,6 +160,7 @@ impl ThingItem {
             EItemInfo::Specific(EItemInfoSpecific {
                 ty,
                 extra_properties: self.extra_properties,
+                validators: vec![],
             }),
         ))
     }

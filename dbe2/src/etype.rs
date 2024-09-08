@@ -1,3 +1,4 @@
+use crate::etype::default::DefaultEValue;
 use crate::etype::econst::ETypeConst;
 use crate::json_utils::{json_expected, json_kind, JsonValue};
 use crate::m_try;
@@ -11,6 +12,7 @@ use std::borrow::Cow;
 use std::collections::BTreeMap;
 use strum::EnumIs;
 
+pub mod default;
 pub mod econst;
 pub mod eenum;
 pub mod eitem;
@@ -41,14 +43,14 @@ pub enum EDataType {
 }
 
 impl EDataType {
-    pub fn default_value(&self, reg: &ETypesRegistry) -> EValue {
+    pub fn default_value(&self, reg: &ETypesRegistry) -> DefaultEValue {
         match self {
             EDataType::Boolean => EValue::Boolean { value: false },
             EDataType::Number => EValue::Number { value: 0.0.into() },
             EDataType::String => EValue::String {
                 value: Default::default(),
             },
-            EDataType::Object { ident } => reg.default_value(ident),
+            EDataType::Object { ident } => return reg.default_value_inner(ident),
             EDataType::Const { value } => value.default_value(),
             EDataType::List { id } => EValue::List {
                 id: *id,
@@ -59,6 +61,7 @@ impl EDataType {
                 values: Default::default(),
             },
         }
+        .into()
     }
 
     pub const fn null() -> EDataType {
