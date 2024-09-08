@@ -33,6 +33,7 @@ pub trait DataValidator: Send + Sync + Debug {
 #[derive(Debug, Clone)]
 pub struct Validator(Arc<dyn DataValidator>);
 
+/// Looks up the validator given their name
 pub fn validator_by_name(name: Ustr) -> Option<Validator> {
     VALIDATORS.borrow().get(&name).map(|x| Validator(x.clone()))
 }
@@ -53,7 +54,24 @@ impl DataValidator for Validator {
     }
 }
 
+/// Validates the provided data, writing all the userspace errors to the context
+///
+/// This function will clear all the downstream reports in the context before
+/// starting the validation process
+///
+/// This function will return Ok(()) unless an internal error happens, usually
+/// indicating a corrupt application state
 pub fn validate(
+    registry: &ETypesRegistry,
+    mut ctx: DiagnosticContextRef,
+    item: Option<&EItemInfo>,
+    data: &EValue,
+) -> miette::Result<()> {
+    ctx.clear_downstream();
+    validate_inner(registry, ctx, item, data)
+}
+
+fn validate_inner(
     registry: &ETypesRegistry,
     mut ctx: DiagnosticContextRef,
     item: Option<&EItemInfo>,
@@ -101,7 +119,7 @@ pub fn validate(
                         Some(f) => f,
                     };
 
-                    validate(
+                    validate_inner(
                         registry,
                         ctx.enter_field(field.name.as_str()),
                         Some(&field.ty),
@@ -110,7 +128,7 @@ pub fn validate(
                 }
             }
             EValue::Enum { data, variant } => {
-                validate(
+                validate_inner(
                     registry,
                     ctx.enter_variant(variant.variant_name().as_str()),
                     item,
@@ -119,12 +137,12 @@ pub fn validate(
             }
             EValue::List { values, .. } => {
                 for (idx, value) in values.iter().enumerate() {
-                    validate(registry, ctx.enter_index(idx), None, value)?;
+                    validate_inner(registry, ctx.enter_index(idx), None, value)?;
                 }
             }
             EValue::Map { values, .. } => {
                 for (idx, x) in values.values().enumerate() {
-                    validate(registry, ctx.enter_index(idx), None, x)?;
+                    validate_inner(registry, ctx.enter_index(idx), None, x)?;
                 }
             }
         }

@@ -93,6 +93,12 @@ impl<'a> DiagnosticContextRef<'a> {
     pub fn path(&self) -> &DiagnosticPath {
         self.path
     }
+
+    /// Clears all warnings originating from the current context or its children.
+    pub fn clear_downstream(&mut self) {
+        self.diagnostics
+            .retain(|path, _| !path.starts_with(self.path));
+    }
 }
 
 impl<'a> Drop for DiagnosticContextRef<'a> {

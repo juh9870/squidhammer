@@ -187,6 +187,10 @@ impl DiagnosticPath {
         self.0.append(&mut path.0);
     }
 
+    pub fn starts_with(&self, other: &DiagnosticPath) -> bool {
+        self.0.starts_with(&other.0)
+    }
+
     pub fn iter(&self) -> impl Iterator<Item = &DiagnosticPathSegment> {
         self.0.iter()
     }
