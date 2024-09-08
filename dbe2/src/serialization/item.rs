@@ -3,10 +3,11 @@ use crate::etype::eitem::{EItemInfo, EItemInfoGeneric, EItemInfoSpecific};
 use crate::etype::EDataType;
 use crate::m_try;
 use crate::registry::ETypesRegistry;
+use crate::validation::validator_by_name;
 use crate::value::id::ETypeId;
 use ahash::AHashMap;
 use itertools::Itertools;
-use miette::{bail, Context, Diagnostic};
+use miette::{bail, miette, Context, Diagnostic};
 use std::fmt::Display;
 use strum::EnumString;
 use thiserror::Error;
@@ -155,12 +156,30 @@ impl ThingItem {
             }
         };
 
+        let mut validators = vec![];
+        for (key, optional) in [("validator", false), ("editor", true)] {
+            if let Some(prop) = self.extra_properties.get(key) {
+                let editor_name = prop
+                    .as_string()
+                    .ok_or_else(|| miette!("property `{key}` is expected to be a string"))?;
+
+                let Some(validator) = validator_by_name(editor_name) else {
+                    if optional {
+                        continue;
+                    }
+                    bail!("unknown validator `{editor_name}`")
+                };
+
+                validators.push(validator);
+            }
+        }
+
         Ok((
             self.name,
             EItemInfo::Specific(EItemInfoSpecific {
                 ty,
                 extra_properties: self.extra_properties,
-                validators: vec![],
+                validators,
             }),
         ))
     }

@@ -17,6 +17,7 @@ fn default_validators() -> impl Iterator<Item = (Ustr, Arc<dyn DataValidator>)> 
     let v: Vec<(Ustr, Arc<dyn DataValidator>)> = vec![];
     v.into_iter()
 }
+
 pub trait DataValidator: Send + Sync + Debug {
     fn name(&self) -> Cow<'static, str>;
 
@@ -31,6 +32,10 @@ pub trait DataValidator: Send + Sync + Debug {
 
 #[derive(Debug, Clone)]
 pub struct Validator(Arc<dyn DataValidator>);
+
+pub fn validator_by_name(name: Ustr) -> Option<Validator> {
+    VALIDATORS.borrow().get(&name).map(|x| Validator(x.clone()))
+}
 
 impl DataValidator for Validator {
     fn name(&self) -> Cow<'static, str> {
