@@ -2,6 +2,7 @@ use crate::workspace::editors::utils::{
     ensure_field, get_values, labeled_field, set_values, unsupported, EditorResultExt, EditorSize,
 };
 use crate::workspace::editors::{DynProps, Editor, EditorResponse};
+use dbe2::diagnostic::context::DiagnosticContextRef;
 use dbe2::registry::ETypesRegistry;
 use dbe2::value::{ENumber, EValue};
 use egui::collapsing_header::CollapsingState;
@@ -26,10 +27,11 @@ impl Editor for RgbEditor {
     fn edit(
         &self,
         ui: &mut Ui,
-        _reg: &ETypesRegistry,
+        reg: &ETypesRegistry,
+        diagnostics: DiagnosticContextRef,
         field_name: &str,
         value: &mut EValue,
-        _props: &DynProps,
+        props: &DynProps,
     ) -> EditorResponse {
         let field_names = ["r", "g", "b", if self.with_alpha { "a" } else { "" }];
         let EValue::Struct { fields, .. } = value else {

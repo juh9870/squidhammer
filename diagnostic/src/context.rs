@@ -20,7 +20,16 @@ impl Default for DiagnosticContext {
 }
 
 impl DiagnosticContext {
-    pub fn enter(&mut self, ident: impl Display) -> DiagnosticContextRef<'_> {
+    pub fn enter(&mut self, ident: impl Display) -> DiagnosticContextMut<'_> {
+        let entry = self.diagnostics.entry(ident.to_string()).or_default();
+        DiagnosticContextMut {
+            diagnostics: entry,
+            path: &mut self.path,
+            pop_on_exit: false,
+        }
+    }
+
+    pub fn enter_readonly(&mut self, ident: impl Display) -> DiagnosticContextRef<'_> {
         let entry = self.diagnostics.entry(ident.to_string()).or_default();
         DiagnosticContextRef {
             diagnostics: entry,
@@ -29,7 +38,7 @@ impl DiagnosticContext {
         }
     }
 
-    pub fn enter_new(&mut self, ident: impl Display) -> DiagnosticContextRef<'_> {
+    pub fn enter_new(&mut self, ident: impl Display) -> DiagnosticContextMut<'_> {
         if self.diagnostics.contains_key(&ident.to_string()) {
             panic!("Diagnostic context already exists for {}", ident);
         }
@@ -38,13 +47,7 @@ impl DiagnosticContext {
     }
 }
 
-pub struct DiagnosticContextRef<'a> {
-    diagnostics: &'a mut BTreeMap<DiagnosticPath, Diagnostic>,
-    path: &'a mut DiagnosticPath,
-    pop_on_exit: bool,
-}
-
-impl<'a> DiagnosticContextRef<'a> {
+impl<'a> DiagnosticContextMut<'a> {
     pub fn emit(&mut self, info: miette::Report, level: DiagnosticLevel) {
         self.diagnostics
             .insert(self.path.clone(), Diagnostic { info, level });
@@ -58,33 +61,70 @@ impl<'a> DiagnosticContextRef<'a> {
         self.emit(info, DiagnosticLevel::Warning);
     }
 
-    pub fn enter(&mut self, segment: impl Into<DiagnosticPathSegment>) -> DiagnosticContextRef<'_> {
-        self.path.push(segment);
+    /// Clears all warnings originating from the current context or its children.
+    pub fn clear_downstream(&mut self) {
+        self.diagnostics
+            .retain(|path, _| !path.starts_with(self.path));
+    }
+
+    /// Returns a read-only view of this context
+    pub fn as_readonly(&mut self) -> DiagnosticContextRef<'_> {
         DiagnosticContextRef {
             diagnostics: self.diagnostics,
+            path: &mut self.path,
+            pop_on_exit: false,
+        }
+    }
+}
+
+pub type DiagnosticContextRef<'a> =
+    DiagnosticContextRefHolder<'a, &'a BTreeMap<DiagnosticPath, Diagnostic>>;
+pub type DiagnosticContextMut<'a> =
+    DiagnosticContextRefHolder<'a, &'a mut BTreeMap<DiagnosticPath, Diagnostic>>;
+
+pub struct DiagnosticContextRefHolder<'a, T: 'a + ContextLike> {
+    diagnostics: T,
+    path: &'a mut DiagnosticPath,
+    pop_on_exit: bool,
+}
+
+impl<'a, T: 'a + ContextLike> DiagnosticContextRefHolder<'a, T>
+where
+    for<'b> T::Target<'b>: ContextLike,
+{
+    pub fn enter(
+        &mut self,
+        segment: impl Into<DiagnosticPathSegment>,
+    ) -> DiagnosticContextRefHolder<'_, T::Target<'_>> {
+        self.path.push(segment);
+        DiagnosticContextRefHolder {
+            diagnostics: self.diagnostics.make_ref(),
             path: self.path,
             pop_on_exit: true,
         }
     }
 
-    pub fn enter_index(&mut self, index: usize) -> DiagnosticContextRef<'_> {
+    pub fn enter_index(&mut self, index: usize) -> DiagnosticContextRefHolder<'_, T::Target<'_>> {
         self.enter(DiagnosticPathSegment::Index(index))
     }
 
-    pub fn enter_field(&mut self, field: impl Into<Cow<'static, str>>) -> DiagnosticContextRef<'_> {
+    pub fn enter_field(
+        &mut self,
+        field: impl Into<Cow<'static, str>>,
+    ) -> DiagnosticContextRefHolder<'_, T::Target<'_>> {
         self.enter(DiagnosticPathSegment::Field(field.into()))
     }
 
     pub fn enter_variant(
         &mut self,
         variant: impl Into<Cow<'static, str>>,
-    ) -> DiagnosticContextRef<'_> {
+    ) -> DiagnosticContextRefHolder<'_, T::Target<'_>> {
         self.enter(DiagnosticPathSegment::Variant(variant.into()))
     }
 
-    pub fn enter_inline(&mut self) -> DiagnosticContextRef<'_> {
-        DiagnosticContextRef {
-            diagnostics: self.diagnostics,
+    pub fn enter_inline(&mut self) -> DiagnosticContextRefHolder<'_, T::Target<'_>> {
+        DiagnosticContextRefHolder {
+            diagnostics: self.diagnostics.make_ref(),
             path: self.path,
             pop_on_exit: false,
         }
@@ -93,18 +133,45 @@ impl<'a> DiagnosticContextRef<'a> {
     pub fn path(&self) -> &DiagnosticPath {
         self.path
     }
-
-    /// Clears all warnings originating from the current context or its children.
-    pub fn clear_downstream(&mut self) {
-        self.diagnostics
-            .retain(|path, _| !path.starts_with(self.path));
-    }
 }
 
-impl<'a> Drop for DiagnosticContextRef<'a> {
+impl<'a, T: 'a + ContextLike> Drop for DiagnosticContextRefHolder<'a, T> {
     fn drop(&mut self) {
         if self.pop_on_exit {
             self.path.pop();
         }
+    }
+}
+
+pub trait ContextLike: sealed::Sealed {
+    fn make_ref(&mut self) -> Self::Target<'_>;
+}
+
+impl<'a> ContextLike for &'a BTreeMap<DiagnosticPath, Diagnostic> {
+    fn make_ref(&mut self) -> Self::Target<'_> {
+        self
+    }
+}
+
+impl<'a> ContextLike for &'a mut BTreeMap<DiagnosticPath, Diagnostic> {
+    fn make_ref(&mut self) -> Self::Target<'_> {
+        self
+    }
+}
+
+mod sealed {
+    use crate::diagnostic::Diagnostic;
+    use crate::path::DiagnosticPath;
+    use std::collections::BTreeMap;
+
+    pub trait Sealed {
+        type Target<'b>;
+    }
+
+    impl<'a> Sealed for &'a BTreeMap<DiagnosticPath, Diagnostic> {
+        type Target<'b> = &'b BTreeMap<DiagnosticPath, Diagnostic>;
+    }
+    impl<'a> Sealed for &'a mut BTreeMap<DiagnosticPath, Diagnostic> {
+        type Target<'b> = &'b mut BTreeMap<DiagnosticPath, Diagnostic>;
     }
 }

@@ -11,6 +11,7 @@ use egui_tracing::tracing::collector::AllowedTargets;
 use egui_tracing::EventCollector;
 use itertools::{Itertools, Position};
 use std::path::{Path, PathBuf};
+use std::sync::atomic::{AtomicBool, Ordering};
 use tracing::{error, info};
 use tracing_subscriber::filter::LevelFilter;
 use tracing_subscriber::layer::SubscriberExt;
@@ -53,6 +54,35 @@ fn main() -> eframe::Result<()> {
     )
 }
 
+fn report_error(err: miette::Report) {
+    let mut msg = String::new();
+
+    for (pos, err) in err.chain().with_position() {
+        if !matches!(pos, Position::First) {
+            msg += "\n";
+        }
+
+        match pos {
+            Position::First | Position::Only => {
+                msg += "X Error: ";
+            }
+            Position::Middle => {
+                msg += "+ because: ";
+            }
+            Position::Last => {
+                msg += "+ because: ";
+            }
+        }
+        msg += &err.to_string();
+    }
+
+    let str = strip_ansi_escapes::strip_str(format!("{err:?}"));
+
+    error!("{str}");
+
+    ERROR_HAPPENED.store(true, Ordering::Release);
+}
+
 struct DbeApp {
     project: Option<Project>,
     open_file_dialog: Option<FileDialog>,
@@ -61,6 +91,8 @@ struct DbeApp {
     history: Vec<PathBuf>,
     tabs: DockState<Tab>,
 }
+
+static ERROR_HAPPENED: AtomicBool = AtomicBool::new(false);
 
 impl DbeApp {
     pub fn new(cx: &CreationContext, collector: EventCollector) -> Self {
@@ -169,7 +201,7 @@ impl DbeApp {
                 })
             }
             Err(err) => {
-                self.report_error(err);
+                report_error(err);
             }
         }
     }
@@ -181,42 +213,6 @@ impl DbeApp {
         }
 
         self.history.insert(0, path);
-    }
-
-    fn report_error(&mut self, err: miette::Report) {
-        let mut msg = String::new();
-
-        for (pos, err) in err.chain().with_position() {
-            if !matches!(pos, Position::First) {
-                msg += "\n";
-            }
-
-            match pos {
-                Position::First | Position::Only => {
-                    msg += "X Error: ";
-                }
-                Position::Middle => {
-                    msg += "+ because: ";
-                }
-                Position::Last => {
-                    msg += "+ because: ";
-                }
-            }
-            msg += &err.to_string();
-        }
-
-        let str = strip_ansi_escapes::strip_str(format!("{err:?}"));
-
-        error!("{str}");
-
-        self.toasts.push(Toast {
-            kind: ToastKind::Error,
-            text: "An error has occurred, see console for details".into(),
-            options: ToastOptions::default()
-                .duration_in_seconds(3.0)
-                .show_progress(true),
-            style: Default::default(),
-        });
     }
 }
 
@@ -277,6 +273,17 @@ impl App for DbeApp {
                     self.load_project_from_path(file)
                 }
             }
+        }
+
+        if ERROR_HAPPENED.swap(false, Ordering::Acquire) {
+            self.toasts.push(Toast {
+                kind: ToastKind::Error,
+                text: "An error has occurred, see console for details".into(),
+                options: ToastOptions::default()
+                    .duration_in_seconds(3.0)
+                    .show_progress(true),
+                style: Default::default(),
+            });
         }
 
         let mut toasts = Toasts::new()

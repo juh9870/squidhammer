@@ -1,5 +1,6 @@
 use crate::workspace::editors::utils::{unsupported, EditorResultExt, EditorSize};
 use crate::workspace::editors::{editor_for_type, DynProps, Editor, EditorResponse};
+use dbe2::diagnostic::context::DiagnosticContextRef;
 use dbe2::registry::ETypesRegistry;
 use dbe2::value::EValue;
 use egui::collapsing_header::CollapsingState;
@@ -18,9 +19,10 @@ impl Editor for ListEditor {
         &self,
         ui: &mut Ui,
         reg: &ETypesRegistry,
+        mut diagnostics: DiagnosticContextRef,
         field_name: &str,
         value: &mut EValue,
-        _props: &DynProps,
+        props: &DynProps,
     ) -> EditorResponse {
         let EValue::List { values, id } = value else {
             unsupported!(ui, field_name, value, self);
@@ -44,8 +46,11 @@ impl Editor for ListEditor {
                     let editor = editor_for_type(reg, &ty);
                     list_edit::list_editor::<EValue, _>(ui.id().with(field_name).with("list"))
                         .new_item(|_| ty.default_value(reg).into_owned())
-                        .show(ui, values, |ui, _, val| {
-                            if editor.show(ui, reg, "", val).changed {
+                        .show(ui, values, |ui, i, val| {
+                            if editor
+                                .show(ui, reg, diagnostics.enter_index(i.index), "", val)
+                                .changed
+                            {
                                 changed = true;
                             }
                         });

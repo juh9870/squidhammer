@@ -1,9 +1,11 @@
 use crate::workspace::editors::editor_for_value;
-use crate::DbeApp;
+use crate::{report_error, DbeApp};
 use camino::Utf8PathBuf;
 use dbe2::project::{Project, ProjectFile};
+use dbe2::validation::validate;
 use egui::{Color32, RichText, Ui, WidgetText};
 use egui_dock::{DockArea, TabViewer};
+use tracing::trace;
 
 pub mod editors;
 
@@ -50,7 +52,17 @@ impl TabViewer for WorkspaceTabViewer<'_> {
             ProjectFile::Value(value) => {
                 let editor = editor_for_value(&self.0.registry, value);
 
-                editor.show(ui, &self.0.registry, "", value);
+                let mut diagnostics = self.0.diagnostics.enter(tab.to_string());
+
+                let res = editor.show(ui, &self.0.registry, diagnostics.as_readonly(), "", value);
+
+                if res.changed {
+                    trace!(%tab, "tab value changed, revalidating");
+                    if let Err(err) = validate(&self.0.registry, diagnostics, None, value) {
+                        report_error(err);
+                    }
+                }
+
                 ui.label(format!("{:?}", value));
             }
             ProjectFile::BadValue(err) => {

@@ -4,6 +4,7 @@ use crate::registry::ETypesRegistry;
 use crate::value::id::ETypeId;
 use crate::value::EValue;
 use camino::{Utf8Path, Utf8PathBuf};
+use diagnostic::context::DiagnosticContext;
 use miette::{miette, Context, IntoDiagnostic, Report};
 use serde::{Deserialize, Serialize};
 use std::collections::{BTreeMap, BTreeSet};
@@ -13,6 +14,7 @@ use walkdir::WalkDir;
 #[derive(Debug)]
 pub struct Project {
     pub registry: ETypesRegistry,
+    pub diagnostics: DiagnosticContext,
     pub files: BTreeMap<Utf8PathBuf, ProjectFile>,
     pub root: Utf8PathBuf,
     pub config: Config,
@@ -98,6 +100,7 @@ impl Project {
 
         let mut project = Self {
             registry,
+            diagnostics: Default::default(),
             files: Default::default(),
             root,
             config,

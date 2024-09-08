@@ -3,7 +3,7 @@ use crate::m_try;
 use crate::registry::ETypesRegistry;
 use crate::value::EValue;
 use atomic_refcell::AtomicRefCell;
-use diagnostic::context::DiagnosticContextRef;
+use diagnostic::context::DiagnosticContextMut;
 use miette::{miette, Context};
 use std::borrow::Cow;
 use std::fmt::Debug;
@@ -24,7 +24,7 @@ pub trait DataValidator: Send + Sync + Debug {
     fn validate(
         &self,
         registry: &ETypesRegistry,
-        ctx: DiagnosticContextRef,
+        ctx: DiagnosticContextMut,
         item: Option<&EItemInfo>,
         data: &EValue,
     ) -> miette::Result<()>;
@@ -46,7 +46,7 @@ impl DataValidator for Validator {
     fn validate(
         &self,
         registry: &ETypesRegistry,
-        ctx: DiagnosticContextRef,
+        ctx: DiagnosticContextMut,
         item: Option<&EItemInfo>,
         data: &EValue,
     ) -> miette::Result<()> {
@@ -63,7 +63,7 @@ impl DataValidator for Validator {
 /// indicating a corrupt application state
 pub fn validate(
     registry: &ETypesRegistry,
-    mut ctx: DiagnosticContextRef,
+    mut ctx: DiagnosticContextMut,
     item: Option<&EItemInfo>,
     data: &EValue,
 ) -> miette::Result<()> {
@@ -73,7 +73,7 @@ pub fn validate(
 
 fn validate_inner(
     registry: &ETypesRegistry,
-    mut ctx: DiagnosticContextRef,
+    mut ctx: DiagnosticContextMut,
     item: Option<&EItemInfo>,
     data: &EValue,
 ) -> miette::Result<()> {

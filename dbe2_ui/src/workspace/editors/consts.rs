@@ -1,5 +1,6 @@
 use crate::workspace::editors::utils::{labeled_error, labeled_field, EditorSize};
 use crate::workspace::editors::{cast_props, DynProps, Editor, EditorProps, EditorResponse};
+use dbe2::diagnostic::context::DiagnosticContextRef;
 use dbe2::etype::econst::ETypeConst;
 use dbe2::etype::eitem::EItemInfo;
 use dbe2::etype::EDataType;
@@ -31,6 +32,7 @@ impl Editor for ConstEditor {
         &self,
         ui: &mut Ui,
         reg: &ETypesRegistry,
+        diagnostics: DiagnosticContextRef,
         field_name: &str,
         value: &mut EValue,
         props: &DynProps,

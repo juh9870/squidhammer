@@ -4,6 +4,7 @@ use crate::workspace::editors::utils::{
 use crate::workspace::editors::{
     cast_props, editor_for_item, DynProps, Editor, EditorData, EditorProps, EditorResponse,
 };
+use dbe2::diagnostic::context::DiagnosticContextRef;
 use dbe2::etype::econst::ETypeConst;
 use dbe2::etype::eenum::pattern::EnumPattern;
 use dbe2::etype::eenum::variant::{EEnumVariant, EEnumVariantId, EEnumVariantWithId};
@@ -64,6 +65,7 @@ impl Editor for EnumEditor {
         &self,
         ui: &mut Ui,
         reg: &ETypesRegistry,
+        diagnostics: DiagnosticContextRef,
         field_name: &str,
         value: &mut EValue,
         props: &DynProps,
@@ -78,7 +80,9 @@ impl Editor for EnumEditor {
 
         let props = cast_props::<EnumEditorProps>(props);
 
-        let Some(mut editor) = EnumEditorData::init(ui, reg, field_name, variant, value) else {
+        let Some(mut editor) =
+            EnumEditorData::init(ui, reg, diagnostics, field_name, variant, value)
+        else {
             return EditorResponse::unchanged();
         };
         editor.hide_const_body();
@@ -147,6 +151,7 @@ impl EditorProps for EnumEditorProps {}
 
 struct EnumEditorData<'a> {
     registry: &'a ETypesRegistry,
+    diagnostics: DiagnosticContextRef<'a>,
     field_name: &'a str,
     variant: &'a mut EEnumVariantId,
     value: &'a mut EValue,
@@ -162,6 +167,7 @@ impl<'a> EnumEditorData<'a> {
     pub fn init(
         ui: &mut Ui,
         registry: &'a ETypesRegistry,
+        diagnostics: DiagnosticContextRef<'a>,
         field_name: &'a str,
         variant: &'a mut EEnumVariantId,
         value: &'a mut EValue,
@@ -175,6 +181,7 @@ impl<'a> EnumEditorData<'a> {
 
         Some(Self {
             registry,
+            diagnostics,
             field_name,
             variant,
             value,
@@ -287,9 +294,16 @@ impl<'a> EnumEditorData<'a> {
         }
     }
 
-    fn body(self, ui: &mut Ui) -> EditorResponse {
+    fn body(mut self, ui: &mut Ui) -> EditorResponse {
         if !self.skip_draw_body {
-            self.editor.show(ui, self.registry, "", self.value)
+            self.editor.show(
+                ui,
+                self.registry,
+                self.diagnostics
+                    .enter_variant(self.selected_variant.name.as_str()),
+                "",
+                self.value,
+            )
         } else {
             EditorResponse::unchanged()
         }

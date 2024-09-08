@@ -1,5 +1,6 @@
 use crate::workspace::editors::utils::{labeled_field, unsupported, EditorSize};
 use crate::workspace::editors::{DynProps, Editor, EditorResponse};
+use dbe2::diagnostic::context::DiagnosticContextRef;
 use dbe2::registry::ETypesRegistry;
 use dbe2::value::EValue;
 use egui::Ui;
@@ -16,6 +17,7 @@ impl Editor for BooleanEditor {
         &self,
         ui: &mut Ui,
         reg: &ETypesRegistry,
+        diagnostics: DiagnosticContextRef,
         field_name: &str,
         value: &mut EValue,
         props: &DynProps,

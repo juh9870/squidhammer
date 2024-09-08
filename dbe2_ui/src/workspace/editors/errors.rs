@@ -1,5 +1,6 @@
 use crate::workspace::editors::utils::{labeled_error, EditorSize};
 use crate::workspace::editors::{cast_props, DynProps, Editor, EditorProps, EditorResponse};
+use dbe2::diagnostic::context::DiagnosticContextRef;
 use dbe2::registry::ETypesRegistry;
 use dbe2::value::EValue;
 use egui::Ui;
@@ -16,9 +17,10 @@ impl Editor for ErrorEditor {
     fn edit(
         &self,
         ui: &mut Ui,
-        _reg: &ETypesRegistry,
+        reg: &ETypesRegistry,
+        diagnostics: DiagnosticContextRef,
         field_name: &str,
-        _value: &mut EValue,
+        value: &mut EValue,
         props: &DynProps,
     ) -> EditorResponse {
         let props = cast_props::<ErrorProps>(props);

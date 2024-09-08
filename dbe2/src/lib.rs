@@ -6,6 +6,8 @@ pub(crate) mod serialization;
 pub mod validation;
 pub mod value;
 
+pub use diagnostic;
+
 /// Helper for wrapping a code block to help with contextualizing errors
 /// Better editor support but slightly worse ergonomic than a macro
 #[inline(always)]

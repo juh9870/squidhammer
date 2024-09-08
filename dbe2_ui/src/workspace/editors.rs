@@ -9,6 +9,7 @@ use crate::workspace::editors::string::StringEditor;
 use crate::workspace::editors::structs::StructEditor;
 use crate::workspace::editors::utils::{prop_opt, EditorSize};
 use ahash::AHashMap;
+use dbe2::diagnostic::context::DiagnosticContextRef;
 use dbe2::etype::econst::ETypeConst;
 use dbe2::etype::eitem::EItemInfo;
 use dbe2::etype::EDataType;
@@ -101,6 +102,7 @@ trait Editor: std::any::Any + Send + Sync + Debug {
         &self,
         ui: &mut Ui,
         reg: &ETypesRegistry,
+        diagnostics: DiagnosticContextRef,
         field_name: &str,
         value: &mut EValue,
         props: &DynProps,
@@ -196,11 +198,12 @@ impl EditorData {
         &self,
         ui: &mut Ui,
         reg: &ETypesRegistry,
+        diagnostics: DiagnosticContextRef,
         field_name: &str,
         value: &mut EValue,
     ) -> EditorResponse {
         let Self(editor, props) = self;
-        editor.edit(ui, reg, field_name, value, props)
+        editor.edit(ui, reg, diagnostics, field_name, value, props)
     }
 
     pub fn size(&self) -> EditorSize {

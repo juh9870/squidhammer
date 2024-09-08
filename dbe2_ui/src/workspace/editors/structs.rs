@@ -4,6 +4,7 @@ use crate::workspace::editors::utils::{
 use crate::workspace::editors::{
     cast_props, editor_for_item, DynProps, Editor, EditorProps, EditorResponse,
 };
+use dbe2::diagnostic::context::DiagnosticContextRef;
 use dbe2::etype::eitem::EItemInfo;
 use dbe2::registry::ETypesRegistry;
 use dbe2::value::EValue;
@@ -31,6 +32,7 @@ impl Editor for StructEditor {
         &self,
         ui: &mut Ui,
         reg: &ETypesRegistry,
+        mut diagnostics: DiagnosticContextRef,
         field_name: &str,
         value: &mut EValue,
         props: &DynProps,
@@ -60,7 +62,16 @@ impl Editor for StructEditor {
                             .get_mut(&field.name)
                             .ok_or_else(|| miette!("field `{}` is missing", field.name))
                             .then_draw(ui, |ui, value| {
-                                if editor.show(ui, reg, field.name.as_ref(), value).changed {
+                                if editor
+                                    .show(
+                                        ui,
+                                        reg,
+                                        diagnostics.enter_field(field.name.as_str()),
+                                        field.name.as_ref(),
+                                        value,
+                                    )
+                                    .changed
+                                {
                                     changed = true;
                                 };
                             });

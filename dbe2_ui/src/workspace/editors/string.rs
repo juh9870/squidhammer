@@ -1,5 +1,6 @@
 use crate::workspace::editors::utils::{labeled_field, prop, unsupported, EditorSize};
 use crate::workspace::editors::{cast_props, DynProps, Editor, EditorProps, EditorResponse};
+use dbe2::diagnostic::context::DiagnosticContextRef;
 use dbe2::etype::eitem::EItemInfo;
 use dbe2::registry::ETypesRegistry;
 use dbe2::value::EValue;
@@ -27,7 +28,8 @@ impl Editor for StringEditor {
     fn edit(
         &self,
         ui: &mut Ui,
-        _reg: &ETypesRegistry,
+        reg: &ETypesRegistry,
+        diagnostics: DiagnosticContextRef,
         field_name: &str,
         value: &mut EValue,
         props: &DynProps,
