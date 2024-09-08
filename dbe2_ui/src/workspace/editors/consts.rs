@@ -31,8 +31,8 @@ impl Editor for ConstEditor {
     fn edit(
         &self,
         ui: &mut Ui,
-        reg: &ETypesRegistry,
-        diagnostics: DiagnosticContextRef,
+        _reg: &ETypesRegistry,
+        _diagnostics: DiagnosticContextRef,
         field_name: &str,
         value: &mut EValue,
         props: &DynProps,

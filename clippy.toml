@@ -1,0 +1,1 @@
+ignore-interior-mutability = ["bytes::Bytes", "lockfree_object_pool::LinearReusable"]

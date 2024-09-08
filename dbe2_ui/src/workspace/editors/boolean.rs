@@ -16,11 +16,11 @@ impl Editor for BooleanEditor {
     fn edit(
         &self,
         ui: &mut Ui,
-        reg: &ETypesRegistry,
-        diagnostics: DiagnosticContextRef,
+        _reg: &ETypesRegistry,
+        _diagnostics: DiagnosticContextRef,
         field_name: &str,
         value: &mut EValue,
-        props: &DynProps,
+        _props: &DynProps,
     ) -> EditorResponse {
         let Ok(value) = value.try_as_boolean_mut() else {
             unsupported!(ui, field_name, value, self);

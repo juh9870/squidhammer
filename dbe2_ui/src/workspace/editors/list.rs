@@ -22,7 +22,7 @@ impl Editor for ListEditor {
         mut diagnostics: DiagnosticContextRef,
         field_name: &str,
         value: &mut EValue,
-        props: &DynProps,
+        _props: &DynProps,
     ) -> EditorResponse {
         let EValue::List { values, id } = value else {
             unsupported!(ui, field_name, value, self);

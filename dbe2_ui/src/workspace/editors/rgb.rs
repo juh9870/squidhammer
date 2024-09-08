@@ -27,11 +27,11 @@ impl Editor for RgbEditor {
     fn edit(
         &self,
         ui: &mut Ui,
-        reg: &ETypesRegistry,
-        diagnostics: DiagnosticContextRef,
+        _reg: &ETypesRegistry,
+        _diagnostics: DiagnosticContextRef,
         field_name: &str,
         value: &mut EValue,
-        props: &DynProps,
+        _props: &DynProps,
     ) -> EditorResponse {
         let field_names = ["r", "g", "b", if self.with_alpha { "a" } else { "" }];
         let EValue::Struct { fields, .. } = value else {

@@ -69,10 +69,6 @@ miette = { git = "https://github.com/zkat/miette", rev = "bf5aa3742fd664be3c9316
 [patch.crates-io]
 miette = { git = "https://github.com/zkat/miette", rev = "bf5aa3742fd664be3c93160b9c28c145b1ed8bc9" }
 
-[workspace.lints.clippy.mutable_key_type]
-level = "warn"
-ignore-interior-mutability = ["bytes::Bytes", "lockfree_object_pool::LinearReusable"]
-
 [profile.release]
 opt-level = 3
 codegen-units = 1

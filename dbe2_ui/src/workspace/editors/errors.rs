@@ -17,10 +17,10 @@ impl Editor for ErrorEditor {
     fn edit(
         &self,
         ui: &mut Ui,
-        reg: &ETypesRegistry,
-        diagnostics: DiagnosticContextRef,
+        _reg: &ETypesRegistry,
+        _diagnostics: DiagnosticContextRef,
         field_name: &str,
-        value: &mut EValue,
+        _value: &mut EValue,
         props: &DynProps,
     ) -> EditorResponse {
         let props = cast_props::<ErrorProps>(props);

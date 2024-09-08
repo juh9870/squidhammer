@@ -1,9 +1,4 @@
-use crate::json_utils::{json_kind, JsonValue};
 use crate::value::id::editor_id::EditorId;
-use miette::bail;
-use serde::{Deserialize, Serialize};
-use serde_json::Value;
-use std::fmt::{Display, Formatter};
 use std::path::Path;
 
 pub mod editor_id;
@@ -71,55 +66,55 @@ impl ETypeId {
     }
 }
 
-id_type!(EValueIdStr);
+// id_type!(EValueIdStr);
 
 id_type!(EListId);
 
 id_type!(EMapId);
 
-#[derive(Debug, Copy, Clone, Eq, PartialEq, Hash, Ord, PartialOrd, Serialize, Deserialize)]
-#[serde(untagged)]
-pub enum EValueId {
-    String(EValueIdStr),
-    Numeric(i32),
-}
+// #[derive(Debug, Copy, Clone, Eq, PartialEq, Hash, Ord, PartialOrd, Serialize, Deserialize)]
+// #[serde(untagged)]
+// pub enum EValueId {
+//     String(EValueIdStr),
+//     Numeric(i32),
+// }
 
-impl EValueId {
-    pub fn parse_json(json: &mut JsonValue) -> miette::Result<EValueId> {
-        match json {
-            Value::Number(num) => {
-                let num = num.as_f64().unwrap();
-                if num < 0.0 {
-                    bail!("negative numeric ID: {}", num)
-                }
-                if num > i32::MAX as f64 {
-                    bail!(
-                        "numeric ID too large, must be at most {}, but got {}",
-                        i32::MAX,
-                        num
-                    )
-                }
-                Ok(EValueId::Numeric(num as i32))
-            }
-            Value::String(str) => Ok(EValueId::String(EValueIdStr::parse(str)?)),
-            other => {
-                bail!(
-                    "invalid data type. Expected string or number but got {}",
-                    json_kind(other)
-                )
-            }
-        }
-    }
-}
-
-impl Display for EValueId {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        match self {
-            EValueId::String(str) => str.fmt(f),
-            EValueId::Numeric(num) => num.fmt(f),
-        }
-    }
-}
+// impl EValueId {
+//     pub fn parse_json(json: &mut JsonValue) -> miette::Result<EValueId> {
+//         match json {
+//             Value::Number(num) => {
+//                 let num = num.as_f64().unwrap();
+//                 if num < 0.0 {
+//                     bail!("negative numeric ID: {}", num)
+//                 }
+//                 if num > i32::MAX as f64 {
+//                     bail!(
+//                         "numeric ID too large, must be at most {}, but got {}",
+//                         i32::MAX,
+//                         num
+//                     )
+//                 }
+//                 Ok(EValueId::Numeric(num as i32))
+//             }
+//             Value::String(str) => Ok(EValueId::String(EValueIdStr::parse(str)?)),
+//             other => {
+//                 bail!(
+//                     "invalid data type. Expected string or number but got {}",
+//                     json_kind(other)
+//                 )
+//             }
+//         }
+//     }
+// }
+//
+// impl Display for EValueId {
+//     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+//         match self {
+//             EValueId::String(str) => str.fmt(f),
+//             EValueId::Numeric(num) => num.fmt(f),
+//         }
+//     }
+// }
 
 #[cfg(test)]
 mod tests {

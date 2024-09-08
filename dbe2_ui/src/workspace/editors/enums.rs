@@ -89,6 +89,13 @@ impl Editor for EnumEditor {
 
         match props.ty {
             EnumEditorType::Toggle | EnumEditorType::Auto if editor.is_auto_toggle() => {
+                if !editor.can_be_toggle() {
+                    labeled_error(
+                        ui,
+                        field_name,
+                        miette!("toggle enum must have exactly 2 variants"),
+                    );
+                }
                 if editor.body_size().is_block() {
                     CollapsingState::load_with_default_open(
                         ui.ctx(),

@@ -19,6 +19,7 @@ pub enum EditorSize {
     /// Editors with this size promise to reasonably fit as a part of a single
     /// line, along with other content
     Inline,
+    #[allow(dead_code)]
     /// Editors with this size may occupy up to a whole line
     SingleLine,
     /// Editors with this size may occupy more than one line
@@ -26,10 +27,11 @@ pub enum EditorSize {
 }
 
 impl EditorSize {
+    #[allow(dead_code)]
     pub fn is_inline(&self) -> bool {
         matches!(self, EditorSize::Inline)
     }
-
+    #[allow(dead_code)]
     pub fn is_single_line(&self) -> bool {
         matches!(self, EditorSize::SingleLine)
     }
@@ -62,6 +64,7 @@ pub fn prop<'a, T: TryFrom<ETypeConst, Error = miette::Error>>(
 }
 
 #[inline(always)]
+#[allow(dead_code)]
 pub fn prop_required<'a, T: TryFrom<ETypeConst, Error = miette::Error>>(
     props: impl Into<Option<Props<'a>>>,
     name: &str,
@@ -175,10 +178,6 @@ pub fn labeled_error(ui: &mut Ui, label: impl Into<WidgetText>, err: impl Into<m
         ui.label(label);
         inline_error(ui, err);
     });
-}
-
-pub fn unsupported_fn(ui: &mut Ui, label: impl Into<WidgetText>) {
-    labeled_error(ui, label, miette!("{}", "dbe.editor.unsupported_value"));
 }
 
 macro_rules! unsupported {

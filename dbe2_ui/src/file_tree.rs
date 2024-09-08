@@ -133,12 +133,12 @@ fn show_folder(
     }
 }
 
-fn folder_context_menu(ui: &mut Ui, path: &Utf8Path) {
+fn folder_context_menu(ui: &mut Ui, _path: &Utf8Path) {
     if ui.button("New File").clicked() {
         todo!("Create new File");
         // commands.push(TabCommand::CreateNewFile {
         //     parent_folder: path.to_path_buf(),
         // });
-        ui.close_menu()
+        // ui.close_menu()
     }
 }
