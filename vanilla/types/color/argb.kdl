@@ -1,4 +1,4 @@
-struct editor="rgba" repr="rgba" color="#c7c729" {
+struct editor="rgba" repr="argb" color="#c7c729" {
     number "r"
     number "g"
     number "b"
