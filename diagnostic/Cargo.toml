@@ -6,3 +6,4 @@ edition = "2021"
 [dependencies]
 lockfree-object-pool = { workspace = true }
 miette = { workspace = true }
+smallvec = { workspace = true }

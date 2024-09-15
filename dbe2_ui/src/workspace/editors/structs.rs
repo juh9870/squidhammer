@@ -1,3 +1,4 @@
+use crate::widgets::report::diagnostics_column;
 use crate::workspace::editors::utils::{
     labeled_field, prop, unsupported, EditorResultExt, EditorSize,
 };
@@ -62,18 +63,14 @@ impl Editor for StructEditor {
                             .get_mut(&field.name)
                             .ok_or_else(|| miette!("field `{}` is missing", field.name))
                             .then_draw(ui, |ui, value| {
+                                let mut d = diagnostics.enter_field(field.name.as_str());
                                 if editor
-                                    .show(
-                                        ui,
-                                        reg,
-                                        diagnostics.enter_field(field.name.as_str()),
-                                        field.name.as_ref(),
-                                        value,
-                                    )
+                                    .show(ui, reg, d.enter_inline(), field.name.as_ref(), value)
                                     .changed
                                 {
                                     changed = true;
                                 };
+                                diagnostics_column(ui, d.get_reports_shallow())
                             });
                     }
                 };

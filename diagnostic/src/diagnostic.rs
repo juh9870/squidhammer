@@ -1,4 +1,4 @@
-#[derive(Debug, Clone, Eq, PartialEq, Ord, PartialOrd)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Ord, PartialOrd)]
 pub enum DiagnosticLevel {
     Trace,
     Debug,

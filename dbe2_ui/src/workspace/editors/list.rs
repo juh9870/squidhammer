@@ -1,3 +1,4 @@
+use crate::widgets::report::diagnostics_column;
 use crate::workspace::editors::utils::{unsupported, EditorResultExt, EditorSize};
 use crate::workspace::editors::{editor_for_type, DynProps, Editor, EditorResponse};
 use dbe2::diagnostic::context::DiagnosticContextRef;
@@ -47,12 +48,12 @@ impl Editor for ListEditor {
                     list_edit::list_editor::<EValue, _>(ui.id().with(field_name).with("list"))
                         .new_item(|_| ty.default_value(reg).into_owned())
                         .show(ui, values, |ui, i, val| {
-                            if editor
-                                .show(ui, reg, diagnostics.enter_index(i.index), "", val)
-                                .changed
-                            {
+                            let mut d = diagnostics.enter_index(i.index);
+                            if editor.show(ui, reg, d.enter_inline(), "", val).changed {
                                 changed = true;
                             }
+
+                            diagnostics_column(ui, d.get_reports_shallow());
                         });
                 });
             });

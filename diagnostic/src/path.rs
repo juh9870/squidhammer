@@ -1,15 +1,12 @@
 use std::borrow::Cow;
 use std::fmt::{Debug, Display, Formatter};
 use std::hash::{Hash, Hasher};
-use std::sync::OnceLock;
+use std::sync::LazyLock;
 
 use lockfree_object_pool::{LinearObjectPool, LinearReusable};
 
-static PATH_VEC_POOL: OnceLock<LinearObjectPool<Vec<DiagnosticPathSegment>>> = OnceLock::new();
-
-fn path_vec_pool() -> &'static LinearObjectPool<Vec<DiagnosticPathSegment>> {
-    PATH_VEC_POOL.get_or_init(|| LinearObjectPool::new(Vec::new, |v| v.clear()))
-}
+static PATH_VEC_POOL: LazyLock<LinearObjectPool<Vec<DiagnosticPathSegment>>> =
+    LazyLock::new(|| LinearObjectPool::new(Vec::new, |v| v.clear()));
 
 #[derive(Debug, Clone, Eq, PartialEq, Hash, Ord, PartialOrd)]
 pub enum DiagnosticPathSegment {
@@ -102,7 +99,7 @@ impl Debug for DiagnosticPath {
 
 impl Clone for DiagnosticPath {
     fn clone(&self) -> Self {
-        let mut new_path = path_vec_pool().pull();
+        let mut new_path = PATH_VEC_POOL.pull();
         new_path.extend(self.0.iter().cloned());
         DiagnosticPath(new_path)
     }
@@ -136,7 +133,7 @@ impl PartialOrd for DiagnosticPath {
 
 impl DiagnosticPath {
     pub fn empty() -> Self {
-        DiagnosticPath(path_vec_pool().pull())
+        DiagnosticPath(PATH_VEC_POOL.pull())
     }
 
     pub fn push(&mut self, path: impl Into<DiagnosticPathSegment>) {
@@ -189,6 +186,13 @@ impl DiagnosticPath {
 
     pub fn starts_with(&self, other: &DiagnosticPath) -> bool {
         self.0.starts_with(&other.0)
+    }
+
+    pub fn strip_prefix(&mut self, prefix: &DiagnosticPath) -> Option<Self> {
+        let slice = self.0.strip_prefix(prefix.0.as_slice())?;
+        let mut new_path = PATH_VEC_POOL.pull();
+        new_path.extend(slice.iter().cloned());
+        Some(DiagnosticPath(new_path))
     }
 
     pub fn iter(&self) -> impl Iterator<Item = &DiagnosticPathSegment> {

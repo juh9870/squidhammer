@@ -1,3 +1,4 @@
+use crate::widgets::report::diagnostics_column;
 use crate::workspace::editors::utils::{
     inline_error, labeled_error, labeled_field, prop, unsupported, EditorSize,
 };
@@ -303,14 +304,17 @@ impl<'a> EnumEditorData<'a> {
 
     fn body(mut self, ui: &mut Ui) -> EditorResponse {
         if !self.skip_draw_body {
-            self.editor.show(
-                ui,
-                self.registry,
-                self.diagnostics
-                    .enter_variant(self.selected_variant.name.as_str()),
-                "",
-                self.value,
-            )
+            let mut d = self
+                .diagnostics
+                .enter_variant(self.selected_variant.name.as_str());
+
+            let res = self
+                .editor
+                .show(ui, self.registry, d.enter_inline(), "", self.value);
+
+            diagnostics_column(ui, d.get_reports_shallow());
+
+            res
         } else {
             EditorResponse::unchanged()
         }

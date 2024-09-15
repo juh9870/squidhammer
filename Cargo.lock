@@ -799,6 +799,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e0ec6b951b160caa93cc0c7b209e5a3bff7aae9062213451ac99493cd844c239"
 
 [[package]]
+name = "cansi"
+version = "2.2.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4bdcae87153686017415ce77e48c53e6818a0a058f0e21b56640d1e944967ef8"
+
+[[package]]
 name = "cc"
 version = "1.1.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1155,6 +1161,7 @@ version = "0.1.0"
 dependencies = [
  "ahash",
  "camino",
+ "cansi",
  "dbe2",
  "downcast-rs",
  "dyn-clone",
@@ -1207,6 +1214,7 @@ version = "0.1.0"
 dependencies = [
  "lockfree-object-pool",
  "miette",
+ "smallvec",
 ]
 
 [[package]]
@@ -3577,9 +3585,9 @@ dependencies = [
 
 [[package]]
 name = "smallvec"
-version = "1.11.0"
+version = "1.13.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "62bb4feee49fdd9f707ef802e22365a35de4b7b299de4763d44bfea899442ff9"
+checksum = "3c5e1a9a646d36c3599cd173a41282daf47c44583ad367b8e6837255952e5c67"
 
 [[package]]
 name = "smithay-client-toolkit"

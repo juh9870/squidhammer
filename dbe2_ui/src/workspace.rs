@@ -1,5 +1,6 @@
+use crate::error::report_error;
 use crate::workspace::editors::editor_for_value;
-use crate::{report_error, DbeApp};
+use crate::DbeApp;
 use camino::Utf8PathBuf;
 use dbe2::project::{Project, ProjectFile};
 use dbe2::validation::validate;

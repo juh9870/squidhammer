@@ -1,3 +1,4 @@
+use crate::error::report_error;
 use crate::file_tree::file_tab;
 use crate::workspace::Tab;
 use dbe2::project::Project;
@@ -9,15 +10,17 @@ use egui_file::FileDialog;
 use egui_toast::{Toast, ToastKind, ToastOptions, Toasts};
 use egui_tracing::tracing::collector::AllowedTargets;
 use egui_tracing::EventCollector;
-use itertools::{Itertools, Position};
+use itertools::Itertools;
 use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicBool, Ordering};
-use tracing::{error, info};
+use tracing::info;
 use tracing_subscriber::filter::LevelFilter;
 use tracing_subscriber::layer::SubscriberExt;
 use tracing_subscriber::EnvFilter;
 
+mod error;
 mod file_tree;
+mod widgets;
 mod workspace;
 
 fn main() -> eframe::Result<()> {
@@ -52,35 +55,6 @@ fn main() -> eframe::Result<()> {
         native_options,
         Box::new(|cx| Ok(Box::new(DbeApp::new(cx, collector)))),
     )
-}
-
-fn report_error(err: miette::Report) {
-    let mut msg = String::new();
-
-    for (pos, err) in err.chain().with_position() {
-        if !matches!(pos, Position::First) {
-            msg += "\n";
-        }
-
-        match pos {
-            Position::First | Position::Only => {
-                msg += "X Error: ";
-            }
-            Position::Middle => {
-                msg += "+ because: ";
-            }
-            Position::Last => {
-                msg += "+ because: ";
-            }
-        }
-        msg += &err.to_string();
-    }
-
-    let str = strip_ansi_escapes::strip_str(format!("{err:?}"));
-
-    error!("{str}");
-
-    ERROR_HAPPENED.store(true, Ordering::Release);
 }
 
 struct DbeApp {

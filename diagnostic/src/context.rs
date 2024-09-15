@@ -1,12 +1,13 @@
 use crate::diagnostic::{Diagnostic, DiagnosticLevel};
 use crate::path::{DiagnosticPath, DiagnosticPathSegment};
+use smallvec::SmallVec;
 use std::borrow::Cow;
 use std::collections::BTreeMap;
 use std::fmt::Display;
 
 #[derive(Debug)]
 pub struct DiagnosticContext {
-    pub diagnostics: BTreeMap<String, BTreeMap<DiagnosticPath, Diagnostic>>,
+    pub diagnostics: BTreeMap<String, BTreeMap<DiagnosticPath, SmallVec<[Diagnostic; 1]>>>,
     path: DiagnosticPath,
 }
 
@@ -50,7 +51,9 @@ impl DiagnosticContext {
 impl<'a> DiagnosticContextMut<'a> {
     pub fn emit(&mut self, info: miette::Report, level: DiagnosticLevel) {
         self.diagnostics
-            .insert(self.path.clone(), Diagnostic { info, level });
+            .entry(self.path.clone())
+            .or_default()
+            .push(Diagnostic { info, level });
     }
 
     pub fn emit_error(&mut self, info: miette::Report) {
@@ -78,9 +81,9 @@ impl<'a> DiagnosticContextMut<'a> {
 }
 
 pub type DiagnosticContextRef<'a> =
-    DiagnosticContextRefHolder<'a, &'a BTreeMap<DiagnosticPath, Diagnostic>>;
+    DiagnosticContextRefHolder<'a, &'a BTreeMap<DiagnosticPath, SmallVec<[Diagnostic; 1]>>>;
 pub type DiagnosticContextMut<'a> =
-    DiagnosticContextRefHolder<'a, &'a mut BTreeMap<DiagnosticPath, Diagnostic>>;
+    DiagnosticContextRefHolder<'a, &'a mut BTreeMap<DiagnosticPath, SmallVec<[Diagnostic; 1]>>>;
 
 pub struct DiagnosticContextRefHolder<'a, T: 'a + ContextLike> {
     diagnostics: T,
@@ -133,6 +136,27 @@ where
     pub fn path(&self) -> &DiagnosticPath {
         self.path
     }
+
+    /// Returns reports of the current context only.
+    pub fn get_reports_shallow(&self) -> impl Iterator<Item = &Diagnostic> {
+        let p = self.path();
+        self.diagnostics
+            .as_btreemap()
+            .get(p)
+            .into_iter()
+            .flat_map(|v| v.iter())
+    }
+
+    /// Returns reports of the current context and all its children.
+    pub fn get_reports_deep(
+        &self,
+    ) -> impl Iterator<Item = (&DiagnosticPath, impl IntoIterator<Item = &Diagnostic>)> {
+        let p = self.path();
+        self.diagnostics
+            .as_btreemap()
+            .range(p..)
+            .take_while(|i| i.0.starts_with(p))
+    }
 }
 
 impl<'a, T: 'a + ContextLike> Drop for DiagnosticContextRefHolder<'a, T> {
@@ -145,16 +169,25 @@ impl<'a, T: 'a + ContextLike> Drop for DiagnosticContextRefHolder<'a, T> {
 
 pub trait ContextLike: sealed::Sealed {
     fn make_ref(&mut self) -> Self::Target<'_>;
+    fn as_btreemap(&self) -> &BTreeMap<DiagnosticPath, SmallVec<[Diagnostic; 1]>>;
 }
 
-impl<'a> ContextLike for &'a BTreeMap<DiagnosticPath, Diagnostic> {
+impl<'a> ContextLike for &'a BTreeMap<DiagnosticPath, SmallVec<[Diagnostic; 1]>> {
     fn make_ref(&mut self) -> Self::Target<'_> {
+        self
+    }
+
+    fn as_btreemap(&self) -> &BTreeMap<DiagnosticPath, SmallVec<[Diagnostic; 1]>> {
         self
     }
 }
 
-impl<'a> ContextLike for &'a mut BTreeMap<DiagnosticPath, Diagnostic> {
+impl<'a> ContextLike for &'a mut BTreeMap<DiagnosticPath, SmallVec<[Diagnostic; 1]>> {
     fn make_ref(&mut self) -> Self::Target<'_> {
+        self
+    }
+
+    fn as_btreemap(&self) -> &BTreeMap<DiagnosticPath, SmallVec<[Diagnostic; 1]>> {
         self
     }
 }
@@ -162,16 +195,18 @@ impl<'a> ContextLike for &'a mut BTreeMap<DiagnosticPath, Diagnostic> {
 mod sealed {
     use crate::diagnostic::Diagnostic;
     use crate::path::DiagnosticPath;
+    use smallvec::SmallVec;
     use std::collections::BTreeMap;
 
     pub trait Sealed {
         type Target<'b>;
     }
 
-    impl<'a> Sealed for &'a BTreeMap<DiagnosticPath, Diagnostic> {
-        type Target<'b> = &'b BTreeMap<DiagnosticPath, Diagnostic>;
+    impl<'a> Sealed for &'a BTreeMap<DiagnosticPath, SmallVec<[Diagnostic; 1]>> {
+        type Target<'b> = &'b BTreeMap<DiagnosticPath, SmallVec<[Diagnostic; 1]>>;
     }
-    impl<'a> Sealed for &'a mut BTreeMap<DiagnosticPath, Diagnostic> {
-        type Target<'b> = &'b mut BTreeMap<DiagnosticPath, Diagnostic>;
+
+    impl<'a> Sealed for &'a mut BTreeMap<DiagnosticPath, SmallVec<[Diagnostic; 1]>> {
+        type Target<'b> = &'b mut BTreeMap<DiagnosticPath, SmallVec<[Diagnostic; 1]>>;
     }
 }
