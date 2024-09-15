@@ -103,7 +103,7 @@ macro_rules! transparent {
                 obj.get(stringify!($field_name))
                     .ok_or_else(|| miette::miette!("missing `{}` field", $field_name))?,
             )
-            .ok_or_else(|| miette::miette!("`{}` field must be a string", $field_name))?;
+            .ok_or_else(|| miette::miette!("`{}` field must be a {}", $field_name, $expected))?;
 
             Ok(id.into())
         }
