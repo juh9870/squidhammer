@@ -88,6 +88,17 @@ pub fn get_repr(name: &Ustr) -> Option<Repr> {
 
 macro_rules! transparent {
     ($field_name:literal, $cast_fn:path, $expected:literal, $pattern:expr) => {
+        $crate::json_utils::repr::transparent_from!($field_name, $cast_fn, $expected);
+        $crate::json_utils::repr::transparent_to!($field_name, $cast_fn, $expected);
+
+        fn enum_pat(&self) -> Option<EnumPattern> {
+            Some($pattern)
+        }
+    };
+}
+
+macro_rules! transparent_from {
+    ($field_name:literal, $cast_fn:path, $expected:literal) => {
         fn from_repr(
             &self,
             _registry: &$crate::registry::ETypesRegistry,
@@ -102,7 +113,10 @@ macro_rules! transparent {
 
             Ok(fields.into())
         }
-
+    };
+}
+macro_rules! transparent_to {
+    ($field_name:literal, $cast_fn:path, $expected:literal) => {
         fn into_repr(
             &self,
             _registry: &$crate::registry::ETypesRegistry,
@@ -118,11 +132,9 @@ macro_rules! transparent {
 
             Ok(id.into())
         }
-
-        fn enum_pat(&self) -> Option<EnumPattern> {
-            Some($pattern)
-        }
     };
 }
 
 pub(crate) use transparent;
+pub(crate) use transparent_from;
+pub(crate) use transparent_to;
