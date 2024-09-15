@@ -2,8 +2,10 @@ use crate::etype::eenum::pattern::EnumPattern;
 use crate::json_utils::repr::colors::ColorStringRepr;
 use crate::json_utils::JsonValue;
 use crate::registry::ETypesRegistry;
+use crate::validation::Validator;
 use miette::miette;
 use parking_lot::RwLock;
+use std::borrow::Cow;
 use std::fmt::Debug;
 use std::str::FromStr;
 use std::sync::{Arc, LazyLock};
@@ -26,6 +28,11 @@ pub trait JsonRepr: Send + Sync + Debug {
 
     /// Custom enum pattern for this repr. Leave none if this repr does not change the shape of the data
     fn enum_pat(&self) -> Option<EnumPattern>;
+
+    /// Custom validators imposed by this repr
+    fn validators(&self) -> Cow<'static, [Validator]> {
+        Cow::Borrowed(&[])
+    }
 }
 
 #[derive(Debug, Clone)]
@@ -47,6 +54,10 @@ impl JsonRepr for Repr {
 
     fn enum_pat(&self) -> Option<EnumPattern> {
         self.0.enum_pat()
+    }
+
+    fn validators(&self) -> Cow<'static, [Validator]> {
+        self.0.validators()
     }
 }
 
@@ -114,4 +125,5 @@ macro_rules! transparent {
     };
 }
 
+use crate::validation::Validator;
 pub(crate) use transparent;

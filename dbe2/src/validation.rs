@@ -1,4 +1,5 @@
 use crate::etype::eitem::EItemInfo;
+use crate::json_utils::repr::JsonRepr;
 use crate::m_try;
 use crate::registry::ETypesRegistry;
 use crate::value::EValue;
@@ -99,6 +100,12 @@ fn validate_inner(
                     )
                 })?;
 
+                if let Some(repr) = &obj.repr {
+                    for v in repr.validators().iter() {
+                        v.validate(registry, ctx.enter_inline(), item, data)?;
+                    }
+                }
+
                 let default = data.ty().default_value(registry);
                 let default = default.try_as_struct().with_context(|| {
                     format!(
@@ -128,6 +135,19 @@ fn validate_inner(
                 }
             }
             EValue::Enum { data, variant } => {
+                let enum_data = registry.get_enum(&variant.enum_id()).ok_or_else(|| {
+                    miette!(
+                        "!!INTERNAL ERROR!! unknown enum ID or not an enum `{}`",
+                        data
+                    )
+                })?;
+
+                if let Some(repr) = &enum_data.repr {
+                    for v in repr.validators().iter() {
+                        v.validate(registry, ctx.enter_inline(), item, data)?;
+                    }
+                }
+
                 validate_inner(
                     registry,
                     ctx.enter_variant(variant.variant_name().as_str()),
