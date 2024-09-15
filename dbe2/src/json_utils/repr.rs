@@ -125,5 +125,4 @@ macro_rules! transparent {
     };
 }
 
-use crate::validation::Validator;
 pub(crate) use transparent;
