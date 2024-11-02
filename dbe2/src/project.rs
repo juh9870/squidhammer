@@ -1,6 +1,7 @@
 use crate::json_utils::JsonValue;
 use crate::m_try;
 use crate::registry::ETypesRegistry;
+use crate::validation::validate;
 use crate::value::id::ETypeId;
 use crate::value::EValue;
 use camino::{Utf8Path, Utf8PathBuf};
@@ -64,7 +65,7 @@ impl Project {
 
         for path in files {
             let relative = path
-                .strip_prefix(&root).map_err(|_|miette!("directory contains file `{}` which is outside of the directory. Are there symlinks?", path.display()))?;
+                .strip_prefix(&root).map_err(|_| miette!("directory contains file `{}` which is outside of the directory. Are there symlinks?", path.display()))?;
 
             let path = Utf8Path::from_path(relative)
                 .ok_or_else(|| miette!("Got non-UTF8 path at {}", relative.display()))?;
@@ -113,11 +114,22 @@ impl Project {
                 .deserialize_json(json)
                 .with_context(|| format!("failed to deserialize JSON at `{}`", path))
             {
-                Ok(data) => ProjectFile::Value(data),
+                Ok(data) => {
+                    validate(
+                        &project.registry,
+                        project.diagnostics.enter(path.as_str()),
+                        None,
+                        &data,
+                    )?;
+                    ProjectFile::Value(data)
+                }
                 Err(err) => ProjectFile::BadValue(err),
             };
             project.files.insert(path, item);
         }
+
+        // Validate again after all files are loaded
+        project.validate_all()?;
 
         Ok(project)
     }
@@ -155,6 +167,20 @@ impl Project {
         Self::from_files(root, config, paths, |path| {
             fs_err::read(root.join(path)).into_diagnostic()
         })
+    }
+
+    pub fn validate_all(&mut self) -> miette::Result<()> {
+        for (path, file) in &self.files {
+            if let ProjectFile::Value(file) = file {
+                validate(
+                    &self.registry,
+                    self.diagnostics.enter(path.as_str()),
+                    None,
+                    file,
+                )?;
+            }
+        }
+        Ok(())
     }
 }
 

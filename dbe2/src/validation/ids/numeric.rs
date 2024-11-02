@@ -1,5 +1,8 @@
 use crate::etype::eitem::EItemInfo;
+use crate::etype::EDataType;
 use crate::registry::ETypesRegistry;
+use crate::validation::DataValidator;
+use crate::value::{ENumber, EValue};
 use ahash::AHashMap;
 use diagnostic::context::DiagnosticContextMut;
 use itertools::Itertools;
@@ -9,21 +12,17 @@ use std::borrow::Cow;
 use std::collections::BTreeSet;
 use std::fmt::Display;
 use thiserror::Error;
-use tracing::trace;
-use ustr::{Ustr, UstrMap};
-
-use crate::validation::DataValidator;
-use crate::value::{ENumber, EValue};
+use ustr::Ustr;
 
 #[derive(Default)]
 pub struct NumericIDsRegistry {
-    ids: UstrMap<AHashMap<ENumber, BTreeSet<String>>>,
+    ids: AHashMap<EDataType, AHashMap<ENumber, BTreeSet<String>>>,
 }
 
 type Data = RwLock<NumericIDsRegistry>;
 
 /// Extracts the struct type and ID from an ID struct value
-fn ty_and_id(registry: &ETypesRegistry, data: &EValue) -> miette::Result<(Ustr, ENumber)> {
+fn ty_and_id(registry: &ETypesRegistry, data: &EValue) -> miette::Result<(EDataType, ENumber)> {
     let EValue::Struct { ident, fields } = data else {
         bail!("expected an ID struct value, got {:?}", data);
     };
@@ -33,7 +32,7 @@ fn ty_and_id(registry: &ETypesRegistry, data: &EValue) -> miette::Result<(Ustr, 
         .ok_or_else(|| miette!("unknown object type or not a struct: `{:?}`", ident))?;
 
     let arg = obj_data
-        .generic_arguments
+        .generic_arguments_values
         .iter()
         .exactly_one()
         .map_err(|_| {
@@ -41,7 +40,8 @@ fn ty_and_id(registry: &ETypesRegistry, data: &EValue) -> miette::Result<(Ustr, 
                 "expected struct with exactly one generic argument, got {:?}",
                 obj_data.generic_arguments.len()
             )
-        })?;
+        })?
+        .ty();
 
     let Some(id) = fields.get(&Ustr::from("id")) else {
         bail!(
@@ -57,7 +57,7 @@ fn ty_and_id(registry: &ETypesRegistry, data: &EValue) -> miette::Result<(Ustr, 
         )
     })?;
 
-    Ok((*arg, *id))
+    Ok((arg, *id))
 }
 
 #[derive(Debug, Error)]
@@ -97,7 +97,7 @@ impl DataValidator for Id {
 
         let ids = reg.ids.entry(ty).or_default().entry(id).or_default();
 
-        trace!("validating id: {:?}", id);
+        // trace!("validating id: `{}` for type `{:?}`", id, ty);
 
         let path = ctx.ident();
         ids.insert(path.to_string());

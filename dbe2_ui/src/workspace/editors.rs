@@ -59,7 +59,7 @@ fn default_editors() -> impl Iterator<Item = (Ustr, Box<dyn Editor>)> {
             Box::new(WrappedEditor::new(NumberEditor::new(false), "id".into())),
         ),
         (
-            "ref/numeric".into(),
+            "ids/numeric_ref".into(),
             Box::new(WrappedEditor::new(NumberEditor::new(false), "id".into())),
         ),
         // Enums

@@ -14,6 +14,7 @@ use ustr::{Ustr, UstrMap};
 #[derive(Debug, Clone)]
 pub struct EStructData {
     pub generic_arguments: Vec<Ustr>,
+    pub generic_arguments_values: Vec<EItemInfo>,
     pub ident: ETypeId,
     pub fields: Vec<EStructField>,
     // pub id_field: Option<usize>,
@@ -36,6 +37,7 @@ impl EStructData {
     ) -> EStructData {
         Self {
             generic_arguments,
+            generic_arguments_values: vec![],
             fields: Default::default(),
             ident,
             // id_field: None,
@@ -73,6 +75,13 @@ impl EStructData {
                 })?;
                 x.ty = item.clone();
             }
+        }
+
+        for arg in &self.generic_arguments {
+            let item = arguments
+                .get(arg)
+                .ok_or_else(|| miette!("generic argument `{}` is not provided", arg))?;
+            self.generic_arguments_values.push(item.clone());
         }
 
         // if let Ok((_, item)) = arguments.iter().exactly_one() {

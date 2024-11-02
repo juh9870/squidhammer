@@ -9,7 +9,6 @@ use miette::{miette, Context};
 use std::borrow::Cow;
 use std::fmt::Debug;
 use std::sync::{Arc, LazyLock};
-use tracing::trace;
 use ustr::{Ustr, UstrMap};
 
 pub mod ids;
@@ -40,7 +39,7 @@ pub struct Validator(Arc<dyn DataValidator>);
 
 /// Looks up the validator given their name
 pub fn validator_by_name(name: Ustr) -> Option<Validator> {
-    trace!("looking up validator by name: {:?}", name);
+    // trace!("looking up validator by name: {:?}", name);
     VALIDATORS.borrow().get(&name).map(|x| Validator(x.clone()))
 }
 

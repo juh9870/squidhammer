@@ -18,6 +18,7 @@ pub mod variant;
 #[derive(Debug, Clone)]
 pub struct EEnumData {
     pub generic_arguments: Vec<Ustr>,
+    pub generic_arguments_values: Vec<EItemInfo>,
     pub ident: ETypeId,
     pub repr: Option<Repr>,
     pub extra_properties: AHashMap<String, ETypeConst>,
@@ -36,6 +37,7 @@ impl EEnumData {
     ) -> Self {
         Self {
             generic_arguments,
+            generic_arguments_values: vec![],
             ident,
             repr,
             extra_properties,
@@ -78,6 +80,13 @@ impl EEnumData {
             }
         }
         self.recalculate_variants();
+
+        for arg in &self.generic_arguments {
+            let item = arguments
+                .get(arg)
+                .ok_or_else(|| miette!("generic argument `{}` is not provided", arg))?;
+            self.generic_arguments_values.push(item.clone());
+        }
 
         // if let Ok((_, item)) = arguments.iter().exactly_one() {
         //     if self.color.is_none() {

@@ -18,7 +18,7 @@ pub mod eenum;
 pub mod eitem;
 pub mod estruct;
 
-#[derive(Debug, Copy, Clone, PartialEq, Eq, Serialize, Deserialize, EnumIs)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, EnumIs)]
 pub enum EDataType {
     /// Primitive boolean type
     Boolean,

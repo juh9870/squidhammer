@@ -11,7 +11,7 @@ pub struct Id;
 static ID_VALIDATOR: LazyLock<Validator> =
     LazyLock::new(|| validator_by_name("ids/numeric".into()).unwrap());
 static REF_VALIDATOR: LazyLock<Validator> =
-    LazyLock::new(|| validator_by_name("ref/numeric".into()).unwrap());
+    LazyLock::new(|| validator_by_name("ids/numeric_ref".into()).unwrap());
 
 impl JsonRepr for Id {
     transparent!("id", JsonValue::as_f64, "number", EnumPattern::Number);
