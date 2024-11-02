@@ -7,6 +7,7 @@ use crate::json_utils::repr::Repr;
 use crate::m_try;
 use crate::registry::{EObjectType, ETypesRegistry};
 use crate::serialization::item::ThingItem;
+use crate::validation::{validator_by_name, Validator};
 use crate::value::id::ETypeId;
 use ahash::AHashMap;
 use itertools::Itertools;
@@ -15,7 +16,7 @@ use knuffel::errors::DecodeError;
 use knuffel::span::Spanned;
 use knuffel::traits::ErrorSpan;
 use knuffel::{DecodeScalar, Error};
-use miette::{bail, Context, IntoDiagnostic};
+use miette::{bail, miette, Context, IntoDiagnostic};
 use ustr::Ustr;
 
 mod item;
@@ -136,6 +137,27 @@ impl ThingEnum {
         }
         Ok(data)
     }
+}
+
+fn validators(extra_properties: &AHashMap<String, ETypeConst>) -> miette::Result<Vec<Validator>> {
+    let mut validators = vec![];
+    for (key, optional) in [("validator", false), ("editor", true)] {
+        if let Some(prop) = extra_properties.get(key) {
+            let editor_name = prop
+                .as_string()
+                .ok_or_else(|| miette!("property `{key}` is expected to be a string"))?;
+
+            let Some(validator) = validator_by_name(editor_name) else {
+                if optional {
+                    continue;
+                }
+                bail!("unknown validator `{editor_name}`")
+            };
+
+            validators.push(validator);
+        }
+    }
+    Ok(validators)
 }
 
 impl<S: ErrorSpan> DecodeScalar<S> for ETypeConst {

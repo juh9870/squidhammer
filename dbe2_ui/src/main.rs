@@ -1,6 +1,7 @@
 use crate::error::report_error;
 use crate::file_tree::file_tab;
 use crate::workspace::Tab;
+use color_backtrace::{default_output_stream, BacktracePrinter};
 use dbe2::project::Project;
 use eframe::epaint::FontFamily;
 use eframe::{App, CreationContext, Frame, Storage};
@@ -24,6 +25,20 @@ mod widgets;
 mod workspace;
 
 fn main() -> eframe::Result<()> {
+    BacktracePrinter::new()
+        .add_frame_filter(Box::new(|frame| {
+            frame.retain(|frame| {
+                if frame
+                    .name
+                    .as_ref()
+                    .is_some_and(|name| name.starts_with("core::ops::function::FnOnce::call_once"))
+                {
+                    return false;
+                }
+                true
+            })
+        }))
+        .install(default_output_stream());
     let collector = egui_tracing::EventCollector::default()
         .allowed_targets(AllowedTargets::Selected(vec!["dbe".to_string()]));
 

@@ -8,6 +8,7 @@ use crate::workspace::editors::rgb::RgbEditor;
 use crate::workspace::editors::string::StringEditor;
 use crate::workspace::editors::structs::StructEditor;
 use crate::workspace::editors::utils::{prop_opt, EditorSize};
+use crate::workspace::editors::wrapped::WrappedEditor;
 use ahash::AHashMap;
 use dbe2::diagnostic::context::DiagnosticContextRef;
 use dbe2::etype::econst::ETypeConst;
@@ -36,6 +37,7 @@ mod number;
 mod rgb;
 mod string;
 mod structs;
+mod wrapped;
 
 static EDITORS: LazyLock<UstrMap<Box<dyn Editor>>> = LazyLock::new(|| default_editors().collect());
 
@@ -51,6 +53,15 @@ fn default_editors() -> impl Iterator<Item = (Ustr, Box<dyn Editor>)> {
         ("const".into(), Box::new(ConstEditor)),
         ("enum".into(), Box::new(EnumEditor)),
         ("list".into(), Box::new(ListEditor)),
+        // TODO: proper editors for ids
+        (
+            "ids/numeric".into(),
+            Box::new(WrappedEditor::new(NumberEditor::new(false), "id".into())),
+        ),
+        (
+            "ref/numeric".into(),
+            Box::new(WrappedEditor::new(NumberEditor::new(false), "id".into())),
+        ),
         // Enums
         // (
         //     "enum".to_string(),

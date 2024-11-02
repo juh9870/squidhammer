@@ -9,14 +9,18 @@ use miette::{miette, Context};
 use std::borrow::Cow;
 use std::fmt::Debug;
 use std::sync::{Arc, LazyLock};
+use tracing::trace;
 use ustr::{Ustr, UstrMap};
+
+pub mod ids;
 
 static VALIDATORS: LazyLock<AtomicRefCell<UstrMap<Arc<dyn DataValidator>>>> =
     LazyLock::new(|| AtomicRefCell::new(default_validators().collect()));
 
 fn default_validators() -> impl Iterator<Item = (Ustr, Arc<dyn DataValidator>)> {
-    let v: Vec<(Ustr, Arc<dyn DataValidator>)> = vec![];
-    v.into_iter()
+    let v: Vec<Arc<dyn DataValidator>> =
+        vec![Arc::new(ids::numeric::Id), Arc::new(ids::numeric::Ref)];
+    v.into_iter().map(|item| (Ustr::from(&item.name()), item))
 }
 
 pub trait DataValidator: Send + Sync + Debug {
@@ -36,6 +40,7 @@ pub struct Validator(Arc<dyn DataValidator>);
 
 /// Looks up the validator given their name
 pub fn validator_by_name(name: Ustr) -> Option<Validator> {
+    trace!("looking up validator by name: {:?}", name);
     VALIDATORS.borrow().get(&name).map(|x| Validator(x.clone()))
 }
 
@@ -169,4 +174,14 @@ fn validate_inner(
         Ok(())
     })
     .with_context(|| format!("in path `{}`", ctx.path()))
+}
+
+/// Ensures that the item info is present, throwing an error otherwise
+fn need_item<'a>(
+    validator: &impl DataValidator,
+    item: Option<&'a EItemInfo>,
+) -> miette::Result<&'a EItemInfo> {
+    let item =
+        item.ok_or_else(|| miette!("item info is required for `{}` validator", validator.name()))?;
+    Ok(item)
 }

@@ -1,6 +1,7 @@
 use crate::error::{format_error, render_ansi};
 use dbe2::diagnostic::prelude::{Diagnostic, DiagnosticLevel};
-use egui::{Margin, RichText, Ui};
+use egui::{CollapsingHeader, Margin, RichText, Ui};
+use inline_tweak::tweak;
 
 pub fn diagnostic_widget(ui: &mut Ui, diagnostic: &Diagnostic) {
     let style = ui.style();
@@ -49,14 +50,25 @@ pub fn diagnostic_widget(ui: &mut Ui, diagnostic: &Diagnostic) {
 
     frame.show(ui, |ui| {
         let text = format_error(&diagnostic.info, false);
+        let text = text.trim();
         let idx = text.find('\n');
         if let Some(idx) = idx {
             let (title, rest) = text.split_at(idx);
-            ui.collapsing(RichText::new(title).color(color), |ui| {
-                render_ansi(ui, rest);
-            });
+            CollapsingHeader::new(RichText::new(strip_ansi_escapes::strip_str(title)).color(color))
+                .show_unindented(ui, |ui| {
+                    egui::Frame::none()
+                        .outer_margin(Margin {
+                            top: tweak!(0.0),
+                            bottom: tweak!(2.0),
+                            left: tweak!(0.0),
+                            right: tweak!(8.0),
+                        })
+                        .show(ui, |ui| {
+                            render_ansi(ui, rest.trim());
+                        });
+                });
         } else {
-            ui.colored_label(color, text);
+            ui.colored_label(color, strip_ansi_escapes::strip_str(text));
         }
     });
 }

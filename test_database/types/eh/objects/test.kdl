@@ -3,7 +3,7 @@ struct {
     const "ItemType" 9870
     string "Name"
     number "Level" type="int"
-    enum "Power" "sys:optional" {
+    object "Power" "sys:optional" {
         number "Item"
     }
     enum "AlterWeaponPlatform" "eh:enums/platform_type"

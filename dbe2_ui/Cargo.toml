@@ -8,6 +8,7 @@ edition = "2021"
 ahash = { workspace = true }
 camino = { workspace = true }
 cansi = { workspace = true }
+color-backtrace = { workspace = true }
 dbe2 = { workspace = true }
 downcast-rs = { workspace = true }
 dyn-clone = { workspace = true }

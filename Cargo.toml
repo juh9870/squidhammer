@@ -1,17 +1,15 @@
 [workspace]
 resolver = "2"
 members = [
-    #    "dbe",
     "dbe2",
     "dbe2_runner",
     "dbe2_ui",
-    "diagnostic", "eh_codegen",
-    #    "eframe_runner",
-    #    "egui_node_graph/egui_node_graph",
+    "diagnostic",
+    "eh_codegen",
     "list_edit",
     "node_macro",
     "utils",
-    "xtask",
+    "xtask"
 ]
 
 [workspace.dependencies]

@@ -8,7 +8,7 @@ use crate::json_utils::repr::JsonRepr;
 use crate::registry::ETypesRegistry;
 use crate::value::id::ETypeId;
 use crate::value::EValue;
-use miette::{bail, miette};
+use miette::{bail, Context};
 use serde::{Deserialize, Serialize};
 use std::fmt::{Display, Formatter};
 use ustr::Ustr;
@@ -65,8 +65,8 @@ impl EEnumVariant {
                 EDataType::Map { .. } => EnumPattern::Map,
                 EDataType::Object { ident } => {
                     let data = registry
-                        .get_object(ident)
-                        .ok_or_else(|| miette!("!!INTERNAL ERROR!! unknown object `{}` while deserializing enum pattern", ident))?;
+                        .fetch_or_deserialize(*ident).context("This error might potentially be caused by the circular reference in types. Try specifying enum pattern manually")?;
+                    // .ok_or_else(|| miette!("!!INTERNAL ERROR!! unknown object `{}` while deserializing enum pattern", ident))?;
 
                     if let Some(pat) = data.repr().and_then(|repr| repr.enum_pat()) {
                         pat

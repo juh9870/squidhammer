@@ -3,7 +3,6 @@ use crate::path::{DiagnosticPath, DiagnosticPathSegment};
 use smallvec::SmallVec;
 use std::borrow::Cow;
 use std::collections::BTreeMap;
-use std::fmt::Display;
 
 #[derive(Debug)]
 pub struct DiagnosticContext {
@@ -21,25 +20,27 @@ impl Default for DiagnosticContext {
 }
 
 impl DiagnosticContext {
-    pub fn enter(&mut self, ident: impl Display) -> DiagnosticContextMut<'_> {
+    pub fn enter<'a>(&'a mut self, ident: &'a str) -> DiagnosticContextMut<'a> {
         let entry = self.diagnostics.entry(ident.to_string()).or_default();
         DiagnosticContextMut {
             diagnostics: entry,
             path: &mut self.path,
+            ident,
             pop_on_exit: false,
         }
     }
 
-    pub fn enter_readonly(&mut self, ident: impl Display) -> DiagnosticContextRef<'_> {
+    pub fn enter_readonly<'a>(&'a mut self, ident: &'a str) -> DiagnosticContextRef<'a> {
         let entry = self.diagnostics.entry(ident.to_string()).or_default();
         DiagnosticContextRef {
             diagnostics: entry,
             path: &mut self.path,
+            ident,
             pop_on_exit: false,
         }
     }
 
-    pub fn enter_new(&mut self, ident: impl Display) -> DiagnosticContextMut<'_> {
+    pub fn enter_new<'a>(&'a mut self, ident: &'a str) -> DiagnosticContextMut<'a> {
         if self.diagnostics.contains_key(&ident.to_string()) {
             panic!("Diagnostic context already exists for {}", ident);
         }
@@ -75,6 +76,7 @@ impl<'a> DiagnosticContextMut<'a> {
         DiagnosticContextRef {
             diagnostics: self.diagnostics,
             path: &mut self.path,
+            ident: self.ident,
             pop_on_exit: false,
         }
     }
@@ -88,6 +90,7 @@ pub type DiagnosticContextMut<'a> =
 pub struct DiagnosticContextRefHolder<'a, T: 'a + ContextLike> {
     diagnostics: T,
     path: &'a mut DiagnosticPath,
+    ident: &'a str,
     pop_on_exit: bool,
 }
 
@@ -103,6 +106,7 @@ where
         DiagnosticContextRefHolder {
             diagnostics: self.diagnostics.make_ref(),
             path: self.path,
+            ident: self.ident,
             pop_on_exit: true,
         }
     }
@@ -129,12 +133,17 @@ where
         DiagnosticContextRefHolder {
             diagnostics: self.diagnostics.make_ref(),
             path: self.path,
+            ident: self.ident,
             pop_on_exit: false,
         }
     }
 
     pub fn path(&self) -> &DiagnosticPath {
         self.path
+    }
+
+    pub fn ident(&self) -> &str {
+        self.ident
     }
 
     /// Returns reports of the current context only.

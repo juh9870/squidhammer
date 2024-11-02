@@ -13,6 +13,8 @@ use ahash::AHashMap;
 use atomic_refcell::AtomicRefCell;
 use itertools::Itertools;
 use miette::{bail, miette, Context};
+use parking_lot::RwLock;
+use std::any::{Any, TypeId};
 use std::collections::btree_map::Entry;
 use std::collections::BTreeMap;
 use std::sync::Arc;
@@ -140,7 +142,7 @@ pub struct ETypesRegistry {
     maps: BTreeMap<EMapId, MapData>,
     default_objects_cache: AtomicRefCell<BTreeMap<ETypeId, Arc<EValue>>>,
     // editors: AHashMap<String, Box<dyn EFieldEditorConstructor>>,
-    last_id: u64,
+    extra_data: RwLock<BTreeMap<TypeId, Arc<dyn Any + Send + Sync>>>,
 }
 
 impl ETypesRegistry {
@@ -160,7 +162,7 @@ impl ETypesRegistry {
             maps: Default::default(),
             // editors: default_editors().into_iter().collect(),
             default_objects_cache: Default::default(),
-            last_id: 0,
+            extra_data: Default::default(),
         };
 
         reg.deserialize_all().context("failed to deserialize types")
@@ -329,9 +331,15 @@ impl ETypesRegistry {
         }
     }
 
-    pub fn next_temp_id(&mut self) -> ETypeId {
-        self.last_id += 1;
-        ETypeId::temp(self.last_id)
+    /// Returns Arc with extra registry data of the specified type
+    pub fn extra_data<T: Any + Send + Sync + Default>(&self) -> Arc<T> {
+        self.extra_data
+            .write()
+            .entry(TypeId::of::<T>())
+            .or_insert_with(|| Arc::new(T::default()))
+            .clone()
+            .downcast::<T>()
+            .unwrap()
     }
 
     pub(crate) fn default_value_inner(&self, ident: &ETypeId) -> DefaultEValue {

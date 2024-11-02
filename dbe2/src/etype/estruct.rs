@@ -81,7 +81,7 @@ impl EStructData {
         //     }
         // }
 
-        self.generic_arguments = vec![];
+        // self.generic_arguments = vec![];
 
         Ok(self)
     }

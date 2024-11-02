@@ -53,7 +53,7 @@ impl TabViewer for WorkspaceTabViewer<'_> {
             ProjectFile::Value(value) => {
                 let editor = editor_for_value(&self.0.registry, value);
 
-                let mut diagnostics = self.0.diagnostics.enter(tab.to_string());
+                let mut diagnostics = self.0.diagnostics.enter(tab.as_str());
 
                 let res = editor.show(ui, &self.0.registry, diagnostics.as_readonly(), "", value);
 
