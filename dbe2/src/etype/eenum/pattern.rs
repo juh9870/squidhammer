@@ -67,9 +67,15 @@ impl EnumPattern {
         match self {
             EnumPattern::Tagged { tag, repr } => value.as_object().is_some_and(|m| match repr {
                 Tagged::External => m.get(tag.as_json_key().as_str()).is_some(),
-                Tagged::Adjacent { tag_field, .. } | Tagged::Internal { tag_field } => m
-                    .get(tag_field.as_str())
-                    .is_some_and(|val| tag.matches_json(val).by_value),
+                Tagged::Adjacent { tag_field, .. } | Tagged::Internal { tag_field } => {
+                    let tag_field = m.get(tag_field.as_str());
+                    tag_field.is_some_and(|val| tag.matches_json(val).by_value)
+                        // When tag field is missing, match the first variant that has an empty tag
+                        || (tag_field.is_none()
+                            && (tag == &ETypeConst::Null
+                                || tag == &ETypeConst::Number(0.into())
+                                || tag == &ETypeConst::String("".into())))
+                }
             }),
             EnumPattern::UntaggedObject => value.is_object(),
             EnumPattern::Boolean => value.is_boolean(),

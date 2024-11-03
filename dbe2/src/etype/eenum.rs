@@ -151,17 +151,17 @@ impl EEnumData {
                     }
                 }
                 Tagged::Internal { tag_field } => {
-                    if !data.contains_key(tag_field.as_str()) {
-                        bail!("tag field `{tag_field}` is missing in internally tagged enum")
-                    }
+                    // if !data.contains_key(tag_field.as_str()) {
+                    //     bail!("tag field `{tag_field}` is missing in internally tagged enum")
+                    // }
                 }
                 Tagged::Adjacent {
                     tag_field,
                     content_field,
                 } => {
-                    if !data.contains_key(tag_field.as_str()) {
-                        bail!("tag field `{tag_field}` is missing in adjacently tagged enum")
-                    }
+                    // if !data.contains_key(tag_field.as_str()) {
+                    //     bail!("tag field `{tag_field}` is missing in adjacently tagged enum")
+                    // }
                     if !inline {
                         let mut unknown_keys = data
                             .keys()
