@@ -1,3 +1,4 @@
+use crate::diagnostics_list::diagnostics_tab;
 use crate::error::report_error;
 use crate::file_tree::file_tab;
 use crate::workspace::Tab;
@@ -19,6 +20,7 @@ use tracing_subscriber::filter::LevelFilter;
 use tracing_subscriber::layer::SubscriberExt;
 use tracing_subscriber::EnvFilter;
 
+mod diagnostics_list;
 mod error;
 mod file_tree;
 mod widgets;
@@ -275,6 +277,7 @@ impl App for DbeApp {
         });
 
         egui::SidePanel::left("files").show(ctx, |ui| file_tab(ui, self));
+        egui::SidePanel::right("diagnostics").show(ctx, |ui| diagnostics_tab(ui, self));
 
         egui::CentralPanel::default().show(ctx, |ui| workspace::workspace(ui, self));
 

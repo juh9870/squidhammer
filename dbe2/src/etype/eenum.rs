@@ -160,7 +160,7 @@ impl EEnumData {
                     content_field,
                 } => {
                     if !data.contains_key(tag_field.as_str()) {
-                        bail!("tag field `{tag_field}` is missing in internally tagged enum")
+                        bail!("tag field `{tag_field}` is missing in adjacently tagged enum")
                     }
                     if !inline {
                         let mut unknown_keys = data

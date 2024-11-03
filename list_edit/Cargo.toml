@@ -7,3 +7,4 @@ edition = "2021"
 [dependencies]
 egui = { workspace = true }
 egui_dnd = { workspace = true }
+inline_tweak = { workspace = true }

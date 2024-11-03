@@ -12,17 +12,17 @@ use std::borrow::Cow;
 use std::collections::BTreeSet;
 use std::fmt::Display;
 use thiserror::Error;
-use ustr::Ustr;
+use ustr::{Ustr, UstrMap};
 
 #[derive(Default)]
 pub struct NumericIDsRegistry {
-    ids: AHashMap<EDataType, AHashMap<ENumber, BTreeSet<String>>>,
+    ids: UstrMap<AHashMap<ENumber, BTreeSet<String>>>,
 }
 
 type Data = RwLock<NumericIDsRegistry>;
 
 /// Extracts the struct type and ID from an ID struct value
-fn ty_and_id(registry: &ETypesRegistry, data: &EValue) -> miette::Result<(EDataType, ENumber)> {
+fn ty_and_id(registry: &ETypesRegistry, data: &EValue) -> miette::Result<(Ustr, ENumber)> {
     let EValue::Struct { ident, fields } = data else {
         bail!("expected an ID struct value, got {:?}", data);
     };
@@ -37,11 +37,32 @@ fn ty_and_id(registry: &ETypesRegistry, data: &EValue) -> miette::Result<(EDataT
         .exactly_one()
         .map_err(|_| {
             miette!(
-                "expected struct with exactly one generic argument, got {:?}",
+                "expected struct with exactly one generic argument called `Id`, got {:?} arguments",
                 obj_data.generic_arguments.len()
             )
         })?
         .ty();
+
+    if obj_data.generic_arguments[0] != "Id" {
+        bail!(
+            "expected generic argument to be called `Id`, got `{}`",
+            obj_data.generic_arguments[0]
+        );
+    }
+
+    let EDataType::Const { value } = arg else {
+        bail!(
+            "generic argument `Id` is expected to be a constant string, got `{:?}`",
+            arg
+        );
+    };
+
+    let Some(arg) = value.as_string() else {
+        bail!(
+            "generic argument `Id` is expected to be a constant string, got constant `{:?}`",
+            value
+        );
+    };
 
     let Some(id) = fields.get(&Ustr::from("id")) else {
         bail!(
@@ -61,8 +82,9 @@ fn ty_and_id(registry: &ETypesRegistry, data: &EValue) -> miette::Result<(EDataT
 }
 
 #[derive(Debug, Error)]
-#[error("Duplicate ID")]
+#[error("Duplicate ID of type {}", .ty)]
 struct DuplicateIdError {
+    ty: Ustr,
     others: Vec<String>,
 }
 
@@ -105,6 +127,7 @@ impl DataValidator for Id {
         if ids.len() > 1 {
             ctx.emit_error(
                 DuplicateIdError {
+                    ty,
                     others: ids.iter().filter(|other| *other != path).cloned().collect(),
                 }
                 .into(),
@@ -138,7 +161,7 @@ impl DataValidator for Ref {
         let ids = reg.ids.entry(ty).or_default().entry(id).or_default();
 
         if ids.is_empty() {
-            ctx.emit_error(miette!("ID `{}` is not defined", id));
+            ctx.emit_error(miette!("ID {} of type {} is not defined", id, ty));
         }
 
         Ok(())

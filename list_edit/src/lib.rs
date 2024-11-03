@@ -1,6 +1,7 @@
-use egui::{Id, Rect, Sense, Ui, Vec2};
+use egui::{Id, Rect, Sense, Separator, Ui, Vec2, Widget};
 pub use egui_dnd::ItemState;
 use egui_dnd::{dnd, DragDropItem};
+use inline_tweak::tweak;
 use std::hash::Hash;
 use std::marker::PhantomData;
 
@@ -51,9 +52,15 @@ impl<T, NewItem: Fn(usize) -> T, CanDelete: Fn(usize, T) -> bool, IdSource: Hash
                                         let style = ui.style_mut();
                                         style.visuals.widgets.noninteractive.bg_stroke.color =
                                             style.visuals.widgets.active.fg_stroke.color;
-                                        let res_a = ui.separator();
-                                        let res_b = ui.separator();
-                                        (res_a, res_b)
+                                        fn separator() -> Separator {
+                                            Separator::default()
+                                                .spacing(tweak!(1.0))
+                                                .shrink(tweak!(2.0))
+                                        };
+                                        let res_left = separator().ui(ui);
+                                        separator().ui(ui);
+                                        let res_right = separator().ui(ui);
+                                        (res_left, res_right)
                                     })
                                     .inner;
 
