@@ -10,6 +10,7 @@ struct {
 	number "Price" min=0 max=10000 type="int"
 	boolean "Hidden"
 	boolean "Special"
+	boolean "DoesnPreventUnlocking" description="If this flag is set, locked components on ships can be unlocked even if the technology has not yet been researched."
 	list "Dependencies" {
 		object "Item" "sys:ids/numeric_ref" {
 			const "Id" "eh:objects/technology"

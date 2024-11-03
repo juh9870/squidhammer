@@ -29,6 +29,7 @@ enum {
 	const "StatUpgradeTemplate" 32
 	const "FrontierLevel" 33
 	const "FrontierCommonLevel" 34
+	const "ComponentGroupTag" 35
 	const "ShipSettings" 100
 	const "GalaxySettings" 101
 	const "DatabaseSettings" 102

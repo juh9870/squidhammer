@@ -1,0 +1,3 @@
+struct {
+	number "MaxInstallableComponents" min=1 type="int"
+}

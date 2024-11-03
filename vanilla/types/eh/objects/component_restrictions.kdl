@@ -4,6 +4,11 @@ struct {
 	}
 	boolean "NotForOrganicShips"
 	boolean "NotForMechanicShips"
-	string "UniqueComponentTag"
 	number "MaxComponentAmount" min=0 type="int"
+	object "ComponentGroupTag" "sys:optional" {
+		object "Item" "sys:ids/numeric_ref" {
+			const "Id" "eh:objects/component_group_tag"
+		}
+	}
+	string "UniqueComponentTag"
 }

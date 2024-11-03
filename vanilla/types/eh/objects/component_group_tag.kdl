@@ -1,0 +1,6 @@
+struct {
+	object "Id" "sys:ids/numeric" {
+		const "Id" "eh:objects/component_group_tag"
+	}
+	object "Data" "eh:objects/component_group_tag_data" inline=true
+}
