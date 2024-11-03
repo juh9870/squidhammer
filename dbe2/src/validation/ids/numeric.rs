@@ -1,16 +1,20 @@
 use crate::etype::eitem::EItemInfo;
 use crate::etype::EDataType;
+use crate::registry::config::merge::ConfigMerge;
 use crate::registry::ETypesRegistry;
 use crate::validation::DataValidator;
 use crate::value::{ENumber, EValue};
-use ahash::AHashMap;
+use ahash::{AHashMap, AHashSet};
+use camino::Utf8PathBuf;
 use diagnostic::context::DiagnosticContextMut;
 use itertools::Itertools;
 use miette::{bail, miette, Diagnostic};
 use parking_lot::RwLock;
+use serde::Deserialize;
 use std::borrow::Cow;
 use std::collections::BTreeSet;
 use std::fmt::Display;
+use std::sync::Arc;
 use thiserror::Error;
 use ustr::{Ustr, UstrMap};
 
@@ -97,6 +101,38 @@ impl Diagnostic for DuplicateIdError {
     }
 }
 
+#[derive(Debug, Error, Diagnostic)]
+#[error("ID {} of type {} is reserved", .id, .ty)]
+struct ReservedIdError {
+    ty: Ustr,
+    id: ENumber,
+}
+
+#[derive(Debug, Default, Deserialize)]
+struct ReservedIdConfig {
+    reserved_ids: UstrMap<AHashSet<ENumber>>,
+}
+
+impl ConfigMerge for ReservedIdConfig {
+    fn merge(
+        &mut self,
+        paths: &[&Utf8PathBuf],
+        other: Self,
+        other_path: &Utf8PathBuf,
+    ) -> miette::Result<()> {
+        ConfigMerge::merge(
+            &mut self.reserved_ids,
+            paths,
+            other.reserved_ids,
+            other_path,
+        )
+    }
+}
+
+fn reserved_ids(reg: &ETypesRegistry, ty: Ustr) -> miette::Result<Arc<ReservedIdConfig>> {
+    reg.config().get::<ReservedIdConfig>("ids/numeric")
+}
+
 #[derive(Debug)]
 pub struct Id;
 
@@ -134,6 +170,16 @@ impl DataValidator for Id {
             );
         }
 
+        let reserved = reserved_ids(registry, ty)?;
+
+        if reserved
+            .reserved_ids
+            .get(&ty)
+            .is_some_and(|ids| ids.contains(&id))
+        {
+            ctx.emit_error(ReservedIdError { ty, id }.into());
+        }
+
         Ok(())
     }
 }
@@ -161,7 +207,15 @@ impl DataValidator for Ref {
         let ids = reg.ids.entry(ty).or_default().entry(id).or_default();
 
         if ids.is_empty() {
-            ctx.emit_error(miette!("ID {} of type {} is not defined", id, ty));
+            let reserved = reserved_ids(registry, ty)?;
+
+            if !reserved
+                .reserved_ids
+                .get(&ty)
+                .is_some_and(|ids| ids.contains(&id))
+            {
+                ctx.emit_error(miette!("ID {} of type {} is not defined", id, ty));
+            }
         }
 
         Ok(())

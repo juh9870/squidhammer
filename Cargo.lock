@@ -1142,6 +1142,7 @@ dependencies = [
  "serde",
  "serde_json",
  "serde_json5",
+ "smallvec",
  "strum",
  "thiserror",
  "toml",

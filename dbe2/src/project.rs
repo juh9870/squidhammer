@@ -1,4 +1,4 @@
-use crate::json_utils::JsonValue;
+use crate::json_utils::{json_kind, JsonValue};
 use crate::m_try;
 use crate::registry::ETypesRegistry;
 use crate::validation::validate;
@@ -7,7 +7,7 @@ use crate::value::EValue;
 use camino::{Utf8Path, Utf8PathBuf};
 use diagnostic::context::DiagnosticContext;
 use diagnostic::diagnostic::DiagnosticLevel;
-use miette::{miette, Context, IntoDiagnostic, Report};
+use miette::{bail, miette, Context, IntoDiagnostic, Report};
 use serde::{Deserialize, Serialize};
 use std::collections::{BTreeMap, BTreeSet};
 use std::path::{Path, PathBuf};
@@ -50,7 +50,8 @@ impl Project {
         read_file: impl Fn(&Path) -> miette::Result<Vec<u8>>,
     ) -> miette::Result<Self> {
         let mut registry_items = BTreeMap::new();
-        let mut jsons = BTreeMap::<Utf8PathBuf, JsonValue>::new();
+        let mut editor_jsons = BTreeMap::<Utf8PathBuf, JsonValue>::new();
+        let mut types_jsons = BTreeMap::<Utf8PathBuf, JsonValue>::new();
 
         fn utf8str(path: &Utf8Path, data: Vec<u8>) -> miette::Result<String> {
             String::from_utf8(data).into_diagnostic().with_context(|| {
@@ -88,7 +89,23 @@ impl Project {
                             serde_json5::from_str(&utf8str(path, read_file(path.as_ref())?)?)
                                 .into_diagnostic()
                                 .context("failed to deserialize JSON")?;
-                        jsons.insert(path.to_path_buf(), data);
+                        if path.starts_with(&config.types_config.root) {
+                            types_jsons.insert(path.to_path_buf(), data);
+                        } else {
+                            editor_jsons.insert(path.to_path_buf(), data);
+                        }
+                    }
+                    "toml"
+                        if path != "project.toml"
+                            && path.starts_with(&config.types_config.root) =>
+                    {
+                        let data = toml::de::from_str::<JsonValue>(&utf8str(
+                            path,
+                            read_file(path.as_ref())?,
+                        )?)
+                        .into_diagnostic()
+                        .context("failed to deserialize TOML")?;
+                        types_jsons.insert(path.to_path_buf(), data);
                     }
                     _ => {}
                 }
@@ -110,7 +127,22 @@ impl Project {
 
         project.validate_config()?;
 
-        for (path, json) in jsons {
+        for (path, json) in types_jsons {
+            let JsonValue::Object(obj) = json else {
+                bail!(
+                    "Type configuration should be an object, but instead got {}, in {}",
+                    json_kind(&json),
+                    path
+                );
+            };
+
+            for (key, value) in obj {
+                let cfg = project.registry.extra_config_mut(key);
+                cfg.push((path.clone(), value));
+            }
+        }
+
+        for (path, json) in editor_jsons {
             let item = match project
                 .deserialize_json(json)
                 .with_context(|| format!("failed to deserialize JSON at `{}`", path))

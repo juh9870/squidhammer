@@ -6,19 +6,24 @@ use crate::etype::estruct::EStructData;
 use crate::etype::EDataType;
 use crate::json_utils::repr::{JsonRepr, Repr};
 use crate::json_utils::JsonValue;
+use crate::registry::config::ExtraConfig;
 use crate::serialization::deserialize_etype;
 use crate::value::id::{EListId, EMapId, ETypeId};
 use crate::value::EValue;
 use ahash::AHashMap;
 use atomic_refcell::AtomicRefCell;
+use camino::Utf8PathBuf;
 use itertools::Itertools;
 use miette::{bail, miette, Context};
 use parking_lot::RwLock;
+use smallvec::SmallVec;
 use std::any::{Any, TypeId};
 use std::collections::btree_map::Entry;
 use std::collections::BTreeMap;
 use std::sync::Arc;
 use ustr::{Ustr, UstrMap};
+
+pub mod config;
 
 #[derive(Debug, Clone)]
 pub struct ListData {
@@ -142,7 +147,12 @@ pub struct ETypesRegistry {
     maps: BTreeMap<EMapId, MapData>,
     default_objects_cache: AtomicRefCell<BTreeMap<ETypeId, Arc<EValue>>>,
     // editors: AHashMap<String, Box<dyn EFieldEditorConstructor>>,
+    /// Read/write data used by various editors, validators, etc
     extra_data: RwLock<BTreeMap<TypeId, Arc<dyn Any + Send + Sync>>>,
+    /// Read/write cache storage
+    cache: RwLock<AHashMap<String, Arc<dyn Any + Send + Sync>>>,
+    /// Read-only configuration used by various editors, validators, etc
+    extra_config: BTreeMap<String, SmallVec<[(Utf8PathBuf, JsonValue); 1]>>,
 }
 
 impl ETypesRegistry {
@@ -163,6 +173,8 @@ impl ETypesRegistry {
             // editors: default_editors().into_iter().collect(),
             default_objects_cache: Default::default(),
             extra_data: Default::default(),
+            cache: Default::default(),
+            extra_config: Default::default(),
         };
 
         reg.deserialize_all().context("failed to deserialize types")
@@ -340,6 +352,21 @@ impl ETypesRegistry {
             .clone()
             .downcast::<T>()
             .unwrap()
+    }
+
+    pub fn config(&self) -> ExtraConfig<'_> {
+        ExtraConfig(self)
+    }
+
+    // fn extra_config(&self, name: &str) -> Option<&SmallVec<[(Utf8PathBuf, Value); 1]>> {
+    //     self.extra_config.get(name)
+    // }
+
+    pub(crate) fn extra_config_mut(
+        &mut self,
+        name: String,
+    ) -> &mut SmallVec<[(Utf8PathBuf, JsonValue); 1]> {
+        self.extra_config.entry(name).or_default()
     }
 
     pub(crate) fn default_value_inner(&self, ident: &ETypeId) -> DefaultEValue {

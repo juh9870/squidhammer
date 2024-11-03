@@ -105,14 +105,14 @@ impl EditorId {
             .strip_prefix(types_root)
             .map_err(|_| {
                 miette!(
-                    "Thing is outside of types root folder.\nThing: `{}`",
+                    "Type is outside of types root folder.\nType: `{}`",
                     path.display()
                 )
             })?
             .components()
             .collect_vec();
         if sub_path.len() < 2 {
-            bail!("Things can't be placed in a root of types folder")
+            bail!("Types can't be placed in a root of types folder")
         }
 
         let mut segments = sub_path.into_iter();
@@ -146,7 +146,7 @@ impl EditorId {
         let path = segments.join("/");
 
         if path.is_empty() {
-            bail!("Things can't be placed in a root of types folder")
+            bail!("Type can't be placed in a root of types folder")
         }
 
         Self::parse(&format!("{namespace}:{path}"))
