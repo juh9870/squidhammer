@@ -134,10 +134,9 @@ impl Ctx {
                         .iter()
                         .filter(|m| {
                             m.name != switch_field
-                                && !m
-                                    .case
-                                    .as_ref()
-                                    .is_some_and(|c| !c.split(",").any(|c| c == variant_name))
+                                && !m.case.as_ref().is_some_and(|c| {
+                                    !c.split(",").any(|c| c.trim() == variant_name)
+                                })
                         })
                         .cloned()
                         .collect_vec(),
