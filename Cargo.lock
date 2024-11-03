@@ -916,7 +916,7 @@ name = "codegen_schema"
 version = "0.1.0"
 source = "git+https://github.com/juh9870/eh_codegen.git?rev=4cf9c64e29ce85bc935c605b79aa477a41976162#4cf9c64e29ce85bc935c605b79aa477a41976162"
 dependencies = [
- "fs-err",
+ "fs-err 2.11.0",
  "miette",
  "quick-xml",
  "serde",
@@ -1131,7 +1131,7 @@ dependencies = [
  "atomic_refcell",
  "camino",
  "diagnostic",
- "fs-err",
+ "fs-err 3.0.0",
  "itertools",
  "knuffel",
  "miette",
@@ -1420,9 +1420,9 @@ dependencies = [
 
 [[package]]
 name = "egui_dnd"
-version = "0.9.0"
+version = "0.9.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c485135fa6dcb0cfef807dc55a5c9dbd8d24c060da75def84bfb02337b1731f5"
+checksum = "0ccfb4f23619d5638dfc3eaf125984da37be112b8dbcb949694b29e9916f627d"
 dependencies = [
  "egui",
  "egui_animation",
@@ -1491,7 +1491,7 @@ dependencies = [
  "codegen_schema",
  "color-backtrace",
  "convert_case",
- "fs-err",
+ "fs-err 3.0.0",
  "itertools",
  "miette",
  "tracing",
@@ -1705,6 +1705,15 @@ name = "fs-err"
 version = "2.11.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "88a41f105fe1d5b6b34b2055e3dc59bb79b46b48b2040b9e6c7b4b5de097aa41"
+dependencies = [
+ "autocfg",
+]
+
+[[package]]
+name = "fs-err"
+version = "3.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8bb60e7409f34ef959985bc9d9c5ee8f5db24ee46ed9775850548021710f807f"
 dependencies = [
  "autocfg",
 ]
