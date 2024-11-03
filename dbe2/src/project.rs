@@ -6,6 +6,7 @@ use crate::value::id::ETypeId;
 use crate::value::EValue;
 use camino::{Utf8Path, Utf8PathBuf};
 use diagnostic::context::DiagnosticContext;
+use diagnostic::diagnostic::DiagnosticLevel;
 use miette::{miette, Context, IntoDiagnostic, Report};
 use serde::{Deserialize, Serialize};
 use std::collections::{BTreeMap, BTreeSet};
@@ -171,15 +172,51 @@ impl Project {
 
     pub fn validate_all(&mut self) -> miette::Result<()> {
         for (path, file) in &self.files {
-            if let ProjectFile::Value(file) = file {
-                validate(
-                    &self.registry,
-                    self.diagnostics.enter(path.as_str()),
-                    None,
-                    file,
-                )?;
+            match file {
+                ProjectFile::Value(file) => {
+                    validate(
+                        &self.registry,
+                        self.diagnostics.enter(path.as_str()),
+                        None,
+                        file,
+                    )?;
+                }
+                ProjectFile::BadValue(_) => {
+                    self.diagnostics
+                        .enter(path.as_str())
+                        .emit_error(miette!("failed to deserialize JSON at `{path}`, open the file in editor for details"));
+                }
             }
         }
+        Ok(())
+    }
+
+    pub fn save(&mut self) -> miette::Result<()> {
+        self.validate_all()?;
+
+        if self.diagnostics.has_diagnostics(DiagnosticLevel::Error) {
+            return Err(miette!("project has unresolved errors, cannot save"));
+        }
+
+        for (path, file) in &self.files {
+            let real_path = self.root.join(path);
+
+            let ProjectFile::Value(value) = file else {
+                panic!("BadValue should have been filtered out by validate_all");
+            };
+
+            let json_string = m_try(|| {
+                let json = self.serialize_json(value)?;
+
+                serde_json::to_string_pretty(&json).into_diagnostic()
+            })
+            .with_context(|| format!("failed to serialize JSON at `{}`", path))?;
+
+            fs_err::write(&real_path, json_string)
+                .into_diagnostic()
+                .with_context(|| format!("failed to write JSON to `{}`", real_path))?;
+        }
+
         Ok(())
     }
 }
@@ -206,5 +243,15 @@ impl Project {
             .expect("Config was validated");
 
         object.parse_json(&self.registry, &mut value, false)
+    }
+
+    fn serialize_json(&self, value: &EValue) -> miette::Result<JsonValue> {
+        // let object = self
+        //     .registry
+        //     .get_object(&self.config.types_config.import)
+        //     .expect("Config was validated");
+
+        // object.parse_json(&self.registry, &mut value, false)
+        todo!();
     }
 }

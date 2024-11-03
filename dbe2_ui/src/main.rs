@@ -173,6 +173,27 @@ impl DbeApp {
         self.open_file_dialog = Some(dialog);
     }
 
+    pub fn save_project(&mut self) {
+        if let Some(project) = &mut self.project {
+            match project.save() {
+                Ok(_) => {
+                    info!("Project saved successfully");
+                    self.toasts.push(Toast {
+                        kind: ToastKind::Success,
+                        text: "Project saved successfully".into(),
+                        options: ToastOptions::default()
+                            .duration_in_seconds(3.0)
+                            .show_progress(true),
+                        style: Default::default(),
+                    })
+                }
+                Err(error) => {
+                    report_error(error);
+                }
+            }
+        }
+    }
+
     fn load_project_from_path(&mut self, path: impl AsRef<Path>) {
         let path = path.as_ref().to_path_buf();
         self.remember_last_project(path.clone());
@@ -212,6 +233,14 @@ impl App for DbeApp {
 
             egui::menu::bar(ui, |ui| {
                 ui.menu_button("File", |ui| {
+                    if ui
+                        .add_enabled(self.project.is_some(), egui::Button::new("Save"))
+                        .clicked()
+                    {
+                        self.save_project();
+                        ui.close_menu();
+                    }
+
                     if ui.button("Open").clicked() {
                         self.open_project();
                         ui.close_menu();

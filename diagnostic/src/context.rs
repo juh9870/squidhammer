@@ -47,6 +47,15 @@ impl DiagnosticContext {
 
         self.enter(ident)
     }
+
+    /// Checks if there are any diagnostics of the specified level or higher
+    pub fn has_diagnostics(&self, level: DiagnosticLevel) -> bool {
+        self.diagnostics
+            .iter()
+            .flat_map(|x| x.1.iter())
+            .flat_map(|x| x.1.iter())
+            .any(|x| x.level >= level)
+    }
 }
 
 impl<'a> DiagnosticContextMut<'a> {
