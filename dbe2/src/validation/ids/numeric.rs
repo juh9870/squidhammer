@@ -153,6 +153,17 @@ impl DataValidator for Id {
 
         let (ty, id) = ty_and_id(registry, data)?;
 
+        let reserved = reserved_ids(registry, ty)?;
+
+        if reserved
+            .reserved_ids
+            .get(&ty)
+            .is_some_and(|ids| ids.contains(&id))
+        {
+            ctx.emit_error(ReservedIdError { ty, id }.into());
+            return Ok(());
+        }
+
         let ids = reg.ids.entry(ty).or_default().entry(id).or_default();
 
         // trace!("validating id: `{}` for type `{:?}`", id, ty);
@@ -168,16 +179,6 @@ impl DataValidator for Id {
                 }
                 .into(),
             );
-        }
-
-        let reserved = reserved_ids(registry, ty)?;
-
-        if reserved
-            .reserved_ids
-            .get(&ty)
-            .is_some_and(|ids| ids.contains(&id))
-        {
-            ctx.emit_error(ReservedIdError { ty, id }.into());
         }
 
         Ok(())
