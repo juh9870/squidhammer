@@ -41,7 +41,7 @@ fn main() -> eframe::Result<()> {
             })
         }))
         .install(default_output_stream());
-    let collector = egui_tracing::EventCollector::default()
+    let collector = EventCollector::default()
         .allowed_targets(AllowedTargets::Selected(vec!["dbe".to_string()]));
 
     let subscriber = tracing_subscriber::Registry::default()

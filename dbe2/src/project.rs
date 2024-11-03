@@ -182,8 +182,9 @@ impl Project {
                     )?;
                 }
                 ProjectFile::BadValue(_) => {
-                    self.diagnostics
-                        .enter(path.as_str())
+                    let mut ctx = self.diagnostics.enter(path.as_str());
+                    ctx.clear_downstream();
+                    ctx
                         .emit_error(miette!("failed to deserialize JSON at `{path}`, open the file in editor for details"));
                 }
             }

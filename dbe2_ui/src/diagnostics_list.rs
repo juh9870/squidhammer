@@ -22,7 +22,7 @@ pub fn diagnostics_tab(ui: &mut Ui, app: &mut DbeApp) {
             let state = egui::collapsing_header::CollapsingState::load_with_default_open(
                 ui.ctx(),
                 ui.id().with(file),
-                true,
+                false,
             );
             state
                 .show_header(ui, |ui| {
