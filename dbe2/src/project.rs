@@ -1,3 +1,4 @@
+use crate::json_utils::formatter::DBEJsonFormatter;
 use crate::json_utils::{json_kind, JsonValue};
 use crate::m_try;
 use crate::registry::ETypesRegistry;
@@ -241,7 +242,15 @@ impl Project {
             let json_string = m_try(|| {
                 let json = self.serialize_json(value)?;
 
-                serde_json::to_string_pretty(&json).into_diagnostic()
+                let mut buf = vec![];
+                let mut serializer = serde_json::ser::Serializer::with_formatter(
+                    &mut buf,
+                    DBEJsonFormatter::pretty(),
+                );
+
+                json.serialize(&mut serializer).into_diagnostic()?;
+
+                Ok(String::from_utf8(buf).expect("JSON should be UTF-8"))
             })
             .with_context(|| format!("failed to serialize JSON at `{}`", path))?;
 
