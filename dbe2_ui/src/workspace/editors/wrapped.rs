@@ -60,7 +60,7 @@ impl<T: Editor> Editor for WrappedEditor<T> {
         value: &mut EValue,
         props: &DynProps,
     ) -> EditorResponse {
-        let EValue::Struct { fields, ident } = value else {
+        let EValue::Struct { fields, ident: _ } = value else {
             unsupported!(ui, field_name, value, self);
         };
 

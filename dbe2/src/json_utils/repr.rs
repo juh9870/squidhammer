@@ -126,7 +126,7 @@ macro_rules! transparent_to {
             let obj = $crate::json_utils::json_expected(data.as_object(), &data, "object")?;
 
             let id = $cast_fn(
-                obj.get(stringify!($field_name))
+                obj.get($field_name)
                     .ok_or_else(|| miette::miette!("missing `{}` field", $field_name))?,
             )
             .ok_or_else(|| miette::miette!("`{}` field must be a {}", $field_name, $expected))?;

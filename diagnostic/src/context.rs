@@ -155,6 +155,10 @@ where
         self.ident
     }
 
+    pub fn full_path(&self) -> String {
+        format!("{}@{}", self.ident, self.path)
+    }
+
     /// Returns reports of the current context only.
     pub fn get_reports_shallow(&self) -> impl Iterator<Item = &Diagnostic> {
         let p = self.path();

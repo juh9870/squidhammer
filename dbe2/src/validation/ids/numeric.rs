@@ -8,9 +8,11 @@ use ahash::{AHashMap, AHashSet};
 use camino::Utf8PathBuf;
 use diagnostic::context::DiagnosticContextMut;
 use itertools::Itertools;
-use miette::{bail, miette, Diagnostic};
+use miette::{bail, miette, Context, Diagnostic};
 use parking_lot::RwLock;
+use parking_lot::RwLockWriteGuard;
 use serde::Deserialize;
+use smallvec::{smallvec, SmallVec};
 use std::borrow::Cow;
 use std::collections::BTreeSet;
 use std::fmt::Display;
@@ -86,34 +88,69 @@ fn ty_and_id(registry: &ETypesRegistry, data: &EValue) -> miette::Result<(Ustr, 
 }
 
 #[derive(Debug, Error)]
-#[error("Duplicate ID of type {}", .ty)]
-struct DuplicateIdError {
-    ty: Ustr,
-    others: Vec<String>,
+enum IdValidationError {
+    #[error("duplicate ID of type {}", .ty)]
+    DuplicateId { ty: Ustr, others: Vec<String> },
+    #[error("ID {} of type {} is reserved", .id, .ty)]
+    ReservedId { ty: Ustr, id: ENumber },
+    #[error("ID of type {} conflicts with ID of type {}", .ty, .conflicting)]
+    FromConflicting {
+        ty: Ustr,
+        conflicting: Ustr,
+        #[source]
+        error: Box<IdValidationError>,
+    },
 }
 
-impl Diagnostic for DuplicateIdError {
+impl Diagnostic for IdValidationError {
     fn help<'a>(&'a self) -> Option<Box<dyn Display + 'a>> {
-        Some(Box::new(format!(
-            "duplicate IDs in:\n\t{}",
-            self.others.join("\n\t")
-        )))
+        match self {
+            IdValidationError::DuplicateId { ty: _, others } => Some(Box::new(format!(
+                "duplicate IDs in:\n\t{}",
+                others.join("\n\t")
+            ))),
+            _ => None,
+        }
     }
-}
 
-#[derive(Debug, Error, Diagnostic)]
-#[error("ID {} of type {} is reserved", .id, .ty)]
-struct ReservedIdError {
-    ty: Ustr,
-    id: ENumber,
+    fn diagnostic_source(&self) -> Option<&dyn Diagnostic> {
+        match self {
+            IdValidationError::FromConflicting { error, .. } => Some(error.as_ref()),
+            _ => None,
+        }
+    }
 }
 
 #[derive(Debug, Default, Deserialize)]
 struct ReservedIdConfig {
-    reserved_ids: UstrMap<AHashSet<ENumber>>,
+    types: UstrMap<ReservedIdTypeConfig>,
 }
 
 impl ConfigMerge for ReservedIdConfig {
+    fn merge(
+        &mut self,
+        paths: &[&Utf8PathBuf],
+        other: Self,
+        other_path: &Utf8PathBuf,
+    ) -> miette::Result<()> {
+        ConfigMerge::merge(&mut self.types, paths, other.types, other_path)
+    }
+}
+
+#[derive(Debug, Default, Deserialize)]
+struct ReservedIdTypeConfig {
+    /// Reserved IDs
+    #[serde(default)]
+    reserved_ids: AHashSet<ENumber>,
+    /// Other types that this type cannot share IDs with
+    #[serde(default)]
+    conflicting_types: Vec<Ustr>,
+    /// Other types that this ID can be satisfied by
+    #[serde(default)]
+    satisfied_by_types: Vec<Ustr>,
+}
+
+impl ConfigMerge for ReservedIdTypeConfig {
     fn merge(
         &mut self,
         paths: &[&Utf8PathBuf],
@@ -125,16 +162,31 @@ impl ConfigMerge for ReservedIdConfig {
             paths,
             other.reserved_ids,
             other_path,
-        )
+        )?;
+        ConfigMerge::merge(
+            &mut self.conflicting_types,
+            paths,
+            other.conflicting_types,
+            other_path,
+        )?;
+        ConfigMerge::merge(
+            &mut self.satisfied_by_types,
+            paths,
+            other.satisfied_by_types,
+            other_path,
+        )?;
+        Ok(())
     }
 }
 
-fn reserved_ids(reg: &ETypesRegistry, ty: Ustr) -> miette::Result<Arc<ReservedIdConfig>> {
+fn config(reg: &ETypesRegistry) -> miette::Result<Arc<ReservedIdConfig>> {
     reg.config().get::<ReservedIdConfig>("ids/numeric")
 }
 
 #[derive(Debug)]
 pub struct Id;
+
+const MAX_DEPTH: usize = 16;
 
 impl DataValidator for Id {
     fn name(&self) -> Cow<'static, str> {
@@ -151,34 +203,89 @@ impl DataValidator for Id {
         let reg = registry.extra_data::<Data>();
         let mut reg = reg.write();
 
-        let (ty, id) = ty_and_id(registry, data)?;
+        fn check_id_conflicts(
+            registry: &ETypesRegistry,
+            reg: &mut RwLockWriteGuard<NumericIDsRegistry>,
+            mut ctx: DiagnosticContextMut,
+            ty: Ustr,
+            id: ENumber,
+            visited: &mut SmallVec<[Ustr; 2]>,
+            top: bool,
+        ) -> miette::Result<Vec<IdValidationError>> {
+            if visited.contains(&ty) {
+                return Ok(vec![]);
+            }
+            visited.push(ty);
 
-        let reserved = reserved_ids(registry, ty)?;
+            let mut errors = vec![];
 
-        if reserved
-            .reserved_ids
-            .get(&ty)
-            .is_some_and(|ids| ids.contains(&id))
-        {
-            ctx.emit_error(ReservedIdError { ty, id }.into());
-            return Ok(());
+            let config = config(registry)?;
+            if let Some(config) = config.types.get(&ty) {
+                if config.reserved_ids.contains(&id) {
+                    errors.push(IdValidationError::ReservedId { ty, id });
+                }
+                for conflicting in &config.conflicting_types {
+                    let conflicts = check_id_conflicts(
+                        registry,
+                        reg,
+                        ctx.enter_inline(),
+                        *conflicting,
+                        id,
+                        visited,
+                        false,
+                    )
+                    .with_context(|| format!("in conflicting type `{}`", conflicting))?;
+                    errors.extend(conflicts.into_iter().map(|error| {
+                        IdValidationError::FromConflicting {
+                            ty,
+                            conflicting: *conflicting,
+                            error: Box::new(error),
+                        }
+                    }));
+                }
+            }
+
+            let ids = reg.ids.entry(ty).or_default().entry(id).or_default();
+
+            // trace!("validating id: `{}` for type `{:?}`", id, ty);
+
+            let mut filter_out_path = None;
+            if top {
+                let path = ctx.full_path();
+                ids.insert(path.to_string());
+                filter_out_path = Some(path);
+            }
+
+            if ids.len() > if top { 1 } else { 0 } {
+                errors.push(IdValidationError::DuplicateId {
+                    ty,
+                    others: if let Some(path) = filter_out_path {
+                        ids.iter()
+                            .filter(|other| *other != &path)
+                            .cloned()
+                            .collect()
+                    } else {
+                        ids.iter().cloned().collect()
+                    },
+                });
+            }
+            Ok(errors)
         }
 
-        let ids = reg.ids.entry(ty).or_default().entry(id).or_default();
+        let (ty, id) = ty_and_id(registry, data)?;
 
-        // trace!("validating id: `{}` for type `{:?}`", id, ty);
+        let errors = check_id_conflicts(
+            registry,
+            &mut reg,
+            ctx.enter_inline(),
+            ty,
+            id,
+            &mut smallvec![],
+            true,
+        )?;
 
-        let path = ctx.ident();
-        ids.insert(path.to_string());
-
-        if ids.len() > 1 {
-            ctx.emit_error(
-                DuplicateIdError {
-                    ty,
-                    others: ids.iter().filter(|other| *other != path).cloned().collect(),
-                }
-                .into(),
-            );
+        for error in errors {
+            ctx.emit_error(error.into());
         }
 
         Ok(())
@@ -205,18 +312,43 @@ impl DataValidator for Ref {
 
         let (ty, id) = ty_and_id(registry, data)?;
 
-        let ids = reg.ids.entry(ty).or_default().entry(id).or_default();
-
-        if ids.is_empty() {
-            let reserved = reserved_ids(registry, ty)?;
-
-            if !reserved
-                .reserved_ids
-                .get(&ty)
-                .is_some_and(|ids| ids.contains(&id))
-            {
-                ctx.emit_error(miette!("ID {} of type {} is not defined", id, ty));
+        fn check_id_exists(
+            registry: &ETypesRegistry,
+            reg: &mut RwLockWriteGuard<NumericIDsRegistry>,
+            ty: Ustr,
+            id: ENumber,
+            visited: &mut SmallVec<[Ustr; 2]>,
+        ) -> miette::Result<bool> {
+            if visited.contains(&ty) {
+                return Ok(false);
             }
+            visited.push(ty);
+
+            let config = config(registry)?;
+            if let Some(config) = config.types.get(&ty) {
+                if config.reserved_ids.contains(&id) {
+                    return Ok(true);
+                }
+                for satisfied in &config.satisfied_by_types {
+                    if check_id_exists(registry, reg, *satisfied, id, visited)
+                        .with_context(|| format!("in satisfied_by type `{}`", satisfied))?
+                    {
+                        return Ok(true);
+                    }
+                }
+            }
+
+            Ok(!reg
+                .ids
+                .entry(ty)
+                .or_default()
+                .entry(id)
+                .or_default()
+                .is_empty())
+        }
+
+        if !check_id_exists(registry, &mut reg, ty, id, &mut smallvec![])? {
+            ctx.emit_error(miette!("ID {} of type `{}` is not defined", id, ty));
         }
 
         Ok(())

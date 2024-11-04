@@ -1,0 +1,18 @@
+{
+  "ids/numeric": {
+    types: {
+      "eh:objects/faction": {
+        "reserved_ids": [
+          -1,
+          0
+        ]
+      },
+      "eh:ids/any_ammunition": {
+        satisfied_by_types: [
+          "eh:objects/weapon/ammunition",
+          "eh:objects/ammunition_obsolete"
+        ]
+      }
+    }
+  }
+}

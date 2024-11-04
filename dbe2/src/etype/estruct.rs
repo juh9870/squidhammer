@@ -10,6 +10,7 @@ use ahash::AHashMap;
 use itertools::Itertools;
 use miette::{bail, miette, Context};
 use std::collections::BTreeMap;
+use tracing::trace;
 use ustr::{Ustr, UstrMap};
 
 #[derive(Debug, Clone)]
@@ -209,6 +210,7 @@ impl EStructData {
         fields: &BTreeMap<Ustr, EValue>,
         registry: &ETypesRegistry,
     ) -> miette::Result<JsonValue> {
+        trace!("Serializing struct {}", self.ident);
         let mut json_fields = JsonMap::new();
 
         fn conflicting_fields(name: &str) -> miette::Report {

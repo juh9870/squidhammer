@@ -28,12 +28,7 @@ struct {
 	}
 	object "AmmunitionId" "sys:optional" alias="Ammunition" {
 		object "Item" "sys:ids/numeric_ref" {
-			const "Id" "eh:objects/weapon/ammunition"
-		}
-	}
-	object "AmmunitionId" "sys:optional" alias="AmmunitionObsolete" {
-		object "Item" "sys:ids/numeric_ref" {
-			const "Id" "eh:objects/ammunition_obsolete"
+			const "Id" "eh:ids/any_ammunition"
 		}
 	}
 	string "WeaponSlotType"
