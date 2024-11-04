@@ -1,7 +1,8 @@
 use crate::etype::econst::ETypeConst;
 use crate::etype::eitem::EItemInfo;
-use crate::json_utils::repr::Repr;
-use crate::json_utils::{json_kind, JsonValue};
+use crate::json_utils::repr::{JsonRepr, Repr};
+use crate::json_utils::{json_kind, JsonMap, JsonValue};
+use crate::m_try;
 use crate::registry::ETypesRegistry;
 use crate::value::id::ETypeId;
 use crate::value::EValue;
@@ -26,6 +27,15 @@ pub struct EStructData {
 pub struct EStructField {
     pub name: Ustr,
     pub ty: EItemInfo,
+}
+
+impl EStructField {
+    fn is_inline(&self) -> bool {
+        self.ty
+            .extra_properties()
+            .get("inline")
+            .is_some_and(|val| val == &ETypeConst::Boolean(true))
+    }
 }
 
 impl EStructData {
@@ -124,7 +134,7 @@ impl EStructData {
         Ok(())
     }
 
-    pub fn parse_json(
+    pub(crate) fn parse_json(
         &self,
         registry: &ETypesRegistry,
         json_data: &mut JsonValue,
@@ -153,12 +163,7 @@ impl EStructData {
 
         for field in &self.fields {
             let data = j_fields(json_data)?;
-            let value = if field
-                .ty
-                .extra_properties()
-                .get("inline")
-                .is_some_and(|val| val == &ETypeConst::Boolean(true))
-            {
+            let value = if field.is_inline() {
                 field
                     .ty
                     .ty()
@@ -197,5 +202,61 @@ impl EStructData {
             ident: self.ident,
             fields,
         })
+    }
+
+    pub(crate) fn write_json(
+        &self,
+        fields: &BTreeMap<Ustr, EValue>,
+        registry: &ETypesRegistry,
+    ) -> miette::Result<JsonValue> {
+        let mut json_fields = JsonMap::new();
+
+        fn conflicting_fields(name: &str) -> miette::Report {
+            miette!("multiple occurrences of field `{}` are present", name)
+        }
+
+        // TODO: throw an error if provided fields map contains unknown fields
+        for field in &self.fields {
+            m_try(|| {
+                let json_value = if let Some(value) = fields.get(&field.name) {
+                    value.write_json(registry)?
+                } else {
+                    field.ty.default_value(registry).write_json(registry)?
+                };
+                if field.is_inline() {
+                    if let JsonValue::Object(obj) = json_value {
+                        for (k, v) in obj {
+                            if json_fields.contains_key(&k) {
+                                bail!(conflicting_fields(&k))
+                            } else {
+                                json_fields.insert(k, v);
+                            }
+                        }
+                    } else {
+                        bail!(
+                            "inline field must serialize into an object, but got `{}`",
+                            json_kind(&json_value)
+                        )
+                    }
+                } else {
+                    let key = field.name.as_str().into();
+                    if json_fields.contains_key(&key) {
+                        bail!(conflicting_fields(field.name.as_str()))
+                    }
+                    json_fields.insert(key, json_value);
+                }
+
+                Ok(())
+            })
+            .with_context(|| format!("in field `{}`", field.name))?;
+        }
+
+        let json = JsonValue::Object(json_fields);
+
+        if let Some(repr) = &self.repr {
+            return repr.into_repr(registry, json);
+        }
+
+        Ok(json)
     }
 }

@@ -6,6 +6,10 @@ use itertools::Itertools;
 use ordered_float::OrderedFloat;
 use serde::{Deserialize, Serialize};
 
+use crate::json_utils::JsonValue;
+use crate::m_try;
+use crate::registry::ETypesRegistry;
+use miette::{bail, miette, Context};
 use std::collections::BTreeMap;
 use std::fmt::{Display, Formatter};
 use std::hash::Hash;
@@ -272,5 +276,63 @@ impl Display for EValue {
                 )
             }
         }
+    }
+}
+
+impl EValue {
+    pub fn write_json(&self, registry: &ETypesRegistry) -> miette::Result<JsonValue> {
+        let value = match self {
+            EValue::Null => JsonValue::Null,
+            EValue::Boolean { value } => JsonValue::Bool(*value),
+            EValue::Number { value } => JsonValue::from(value.0),
+            EValue::String { value } => JsonValue::from(value.clone()),
+            EValue::Struct { ident, fields } => m_try(|| {
+                let struct_data = registry
+                    .get_struct(ident)
+                    .ok_or_else(|| miette!("unknown struct `{}`", ident))?;
+
+                struct_data.write_json(fields, registry)
+            })
+            .with_context(|| format!("in struct `{}`", ident))?,
+            EValue::Enum { data, variant } => m_try(|| {
+                let enum_data = registry
+                    .get_enum(&variant.enum_id())
+                    .ok_or_else(|| miette!("unknown enum `{}`", variant.enum_id()))?;
+
+                enum_data.write_json(registry, data, variant)
+            })
+            .with_context(|| format!("in enum variant `{}`", variant.variant_name()))?,
+            EValue::List { id: _, values } => JsonValue::Array(
+                values
+                    .iter()
+                    .enumerate()
+                    .map(|(i, e)| {
+                        e.write_json(registry)
+                            .with_context(|| format!("at index {}", i))
+                    })
+                    .try_collect()?,
+            ),
+            EValue::Map { id: _, values } => JsonValue::Object(
+                values
+                    .iter()
+                    .map(|(k, v)| {
+                        let key_val = k.write_json(registry)?;
+                        let JsonValue::String(key) = key_val else {
+                            bail!(
+                                "json map key should serialize to string, but instead got {}",
+                                key_val
+                            );
+                        };
+                        Ok((
+                            key,
+                            v.write_json(registry)
+                                .with_context(|| format!("in entry with key `{k}`"))?,
+                        ))
+                    })
+                    .try_collect()?,
+            ),
+        };
+
+        Ok(value)
     }
 }

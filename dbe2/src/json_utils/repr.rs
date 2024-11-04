@@ -23,6 +23,7 @@ pub trait JsonRepr: Send + Sync + Debug {
         data: &mut JsonValue,
         ignore_extra_fields: bool,
     ) -> miette::Result<JsonValue>;
+
     /// Converts from the consumable data to the serialized data representation
     fn into_repr(&self, registry: &ETypesRegistry, data: JsonValue) -> miette::Result<JsonValue>;
 

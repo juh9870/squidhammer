@@ -33,6 +33,14 @@ impl EEnumVariant {
         Self { pat, data, name }
     }
 
+    pub(crate) fn get_tag_value(&self) -> ETypeConst {
+        self.data
+            .extra_properties()
+            .get("tag")
+            .copied()
+            .unwrap_or(ETypeConst::String(self.name))
+    }
+
     pub(crate) fn from_eitem(
         item: EItemInfo,
         name: Ustr,

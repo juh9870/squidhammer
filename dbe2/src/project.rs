@@ -285,6 +285,6 @@ impl Project {
         //     .expect("Config was validated");
 
         // object.parse_json(&self.registry, &mut value, false)
-        todo!();
+        value.write_json(&self.registry)
     }
 }

@@ -1,6 +1,7 @@
 pub mod repr;
 
 use miette::miette;
+pub use serde_json::Map as JsonMap;
 use serde_json::Value;
 pub use serde_json::Value as JsonValue;
 

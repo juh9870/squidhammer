@@ -2,8 +2,8 @@ use crate::etype::econst::ETypeConst;
 use crate::etype::eenum::pattern::{EnumPattern, Tagged};
 use crate::etype::eenum::variant::{EEnumVariant, EEnumVariantId, EEnumVariantWithId};
 use crate::etype::eitem::EItemInfo;
-use crate::json_utils::repr::Repr;
-use crate::json_utils::{json_kind, JsonValue};
+use crate::json_utils::repr::{JsonRepr, Repr};
+use crate::json_utils::{json_kind, JsonMap, JsonValue};
 use crate::registry::ETypesRegistry;
 use crate::value::id::ETypeId;
 use crate::value::EValue;
@@ -222,5 +222,66 @@ impl EEnumData {
         }
 
         bail!("value did not match any of enum variants")
+    }
+
+    pub(crate) fn write_json(
+        &self,
+        registry: &ETypesRegistry,
+        value: &EValue,
+        variant: &EEnumVariantId,
+    ) -> miette::Result<JsonValue> {
+        let variant = self
+            .variants
+            .iter()
+            .find(|v| v.name == variant.variant)
+            .ok_or_else(|| {
+                miette!(
+                    "enum variant `{}` not found in enum `{}`",
+                    variant.variant,
+                    self.ident
+                )
+            })?;
+        let mut json_content = value.write_json(registry).context("in enum value")?;
+        let json_value = if let Some(repr) = self.tagged_repr {
+            let tag = variant.get_tag_value();
+            match repr {
+                Tagged::External => {
+                    let mut obj = JsonMap::new();
+                    obj.insert(tag.as_json_key().to_string(), json_content);
+                    JsonValue::Object(obj)
+                }
+                Tagged::Internal { tag_field } => {
+                    let JsonValue::Object(obj) = &mut json_content else {
+                        bail!("internally tagged enum variant should serialize to object, but instead got {}", json_content)
+                    };
+
+                    if obj.contains_key(tag_field.as_str()) {
+                        bail!("tag field `{tag_field}` is already present in serialized value of internally tagged enum variant")
+                    }
+
+                    obj.insert(tag_field.to_string(), tag.as_json_value());
+
+                    json_content
+                }
+                Tagged::Adjacent {
+                    tag_field,
+                    content_field,
+                } => {
+                    let mut obj = JsonMap::new();
+                    obj.insert(tag_field.to_string(), tag.as_json_value());
+                    obj.insert(content_field.to_string(), json_content);
+                    JsonValue::Object(obj)
+                }
+            }
+        } else {
+            // Untagged enum
+            json_content
+        };
+
+        if let Some(repr) = &self.repr {
+            return repr.into_repr(registry, json_value);
+        }
+
+        Ok(json_value)
     }
 }
