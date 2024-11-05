@@ -71,6 +71,9 @@ impl TabViewer for WorkspaceTabViewer<'_> {
 
                 ui.label(RichText::new(strip_ansi_escapes::strip_str(err_str)).color(Color32::RED));
             }
+            ProjectFile::Graph(_) => {
+                todo!()
+            }
         }
     }
 }

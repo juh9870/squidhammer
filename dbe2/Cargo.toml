@@ -9,9 +9,12 @@ ahash = { workspace = true, features = ["serde"] }
 atomic_refcell = { workspace = true }
 camino = { workspace = true }
 diagnostic = { workspace = true }
+dyn-clone = { workspace = true }
+egui-snarl = { workspace = true, features = ["serde"] }
+emath = { workspace = true }
 fs-err = { workspace = true }
 itertools = { workspace = true }
-knuffel = { git = "https://github.com/TheLostLambda/knuffel.git", rev = "744bf56c1fc64b87f7c47d67470ff7898970dc70" }
+knuffel = { workspace = true }
 miette = { workspace = true }
 ordered-float = { workspace = true, features = ["serde"] }
 parking_lot = { workspace = true }

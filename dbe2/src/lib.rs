@@ -1,4 +1,5 @@
 pub mod etype;
+pub mod graph;
 pub mod json_utils;
 pub mod project;
 pub mod registry;

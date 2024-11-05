@@ -1,3 +1,4 @@
+use crate::graph::Graph;
 use crate::json_utils::formatter::DBEJsonFormatter;
 use crate::json_utils::{json_kind, JsonValue};
 use crate::m_try;
@@ -27,6 +28,7 @@ pub struct Project {
 pub enum ProjectFile {
     /// Valid plain JSON value
     Value(EValue),
+    Graph(Graph),
     /// Plain JSON value that had issues during parsing or loading
     BadValue(Report),
 }
@@ -53,6 +55,7 @@ impl Project {
         let mut registry_items = BTreeMap::new();
         let mut editor_jsons = BTreeMap::<Utf8PathBuf, JsonValue>::new();
         let mut types_jsons = BTreeMap::<Utf8PathBuf, JsonValue>::new();
+        let mut graphs = BTreeMap::<Utf8PathBuf, JsonValue>::new();
 
         fn utf8str(path: &Utf8Path, data: Vec<u8>) -> miette::Result<String> {
             String::from_utf8(data).into_diagnostic().with_context(|| {
@@ -95,6 +98,13 @@ impl Project {
                         } else {
                             editor_jsons.insert(path.to_path_buf(), data);
                         }
+                    }
+                    "dbegraph" => {
+                        let data =
+                            serde_json5::from_str(&utf8str(path, read_file(path.as_ref())?)?)
+                                .into_diagnostic()
+                                .context("failed to deserialize graph JSON")?;
+                        graphs.insert(path.to_path_buf(), data);
                     }
                     "toml"
                         if path != "project.toml"
@@ -162,6 +172,12 @@ impl Project {
             project.files.insert(path, item);
         }
 
+        for (path, mut json) in graphs {
+            let graph = Graph::parse_json(&project.registry, &mut json)
+                .with_context(|| format!("failed to deseialize Graph at `{}`", path))?;
+            project.files.insert(path, ProjectFile::Graph(graph));
+        }
+
         // Validate again after all files are loaded
         project.validate_all()?;
 
@@ -219,6 +235,9 @@ impl Project {
                     ctx.clear_downstream();
                     ctx
                         .emit_error(miette!("failed to deserialize JSON at `{path}`, open the file in editor for details"));
+                }
+                &ProjectFile::Graph(_) => {
+                    // TODO: validate graph
                 }
             }
         }
