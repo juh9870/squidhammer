@@ -2,13 +2,16 @@ use crate::error::report_error;
 use crate::workspace::editors::editor_for_value;
 use crate::DbeApp;
 use camino::Utf8PathBuf;
+use dbe2::graph::execution::partial::PartialGraphExecutionContext;
 use dbe2::project::{Project, ProjectFile};
 use dbe2::validation::validate;
 use egui::{Color32, RichText, Ui, WidgetText};
 use egui_dock::{DockArea, TabViewer};
+use egui_snarl::ui::SnarlStyle;
 use tracing::trace;
 
 pub mod editors;
+pub mod graph;
 
 pub fn workspace(ui: &mut Ui, app: &mut DbeApp) {
     if app.project.is_none() {
@@ -49,11 +52,11 @@ impl TabViewer for WorkspaceTabViewer<'_> {
             return;
         };
 
+        let mut diagnostics = self.0.diagnostics.enter(tab.as_str());
+
         match data {
             ProjectFile::Value(value) => {
                 let editor = editor_for_value(&self.0.registry, value);
-
-                let mut diagnostics = self.0.diagnostics.enter(tab.as_str());
 
                 let res = editor.show(ui, &self.0.registry, diagnostics.as_readonly(), "", value);
 
@@ -71,8 +74,16 @@ impl TabViewer for WorkspaceTabViewer<'_> {
 
                 ui.label(RichText::new(strip_ansi_escapes::strip_str(err_str)).color(Color32::RED));
             }
-            ProjectFile::Graph(_) => {
-                todo!()
+            ProjectFile::Graph(graph) => {
+                let (ctx, snarl) =
+                    PartialGraphExecutionContext::from_graph(graph, &self.0.registry);
+
+                let mut viewer = graph::GraphViewer {
+                    ctx,
+                    diagnostics: diagnostics.as_readonly(),
+                };
+
+                snarl.show(&mut viewer, &SnarlStyle::default(), tab.to_string(), ui);
             }
         }
     }

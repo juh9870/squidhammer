@@ -9,11 +9,13 @@ ahash = { workspace = true }
 camino = { workspace = true }
 cansi = { workspace = true }
 color-backtrace = { workspace = true }
+csscolorparser = { workspace = true }
 dbe2 = { workspace = true }
 downcast-rs = { workspace = true }
 dyn-clone = { workspace = true }
 eframe = { workspace = true, features = ["persistence"] }
 egui = { workspace = true }
+egui-snarl = { workspace = true }
 egui-toast = { workspace = true }
 egui_dock = { workspace = true }
 egui_file = { workspace = true }
@@ -24,6 +26,7 @@ list_edit = { workspace = true }
 miette = { workspace = true, features = ["fancy"] }
 num-traits = { workspace = true }
 num_cpus = { workspace = true }
+random_color = { workspace = true }
 rayon = { workspace = true }
 serde_json5 = { workspace = true }
 strip-ansi-escapes = { workspace = true }

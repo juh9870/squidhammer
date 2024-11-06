@@ -150,7 +150,7 @@ impl EEnumData {
                         bail!("value of externally tagged enum can not be an empty object")
                     }
                 }
-                Tagged::Internal { tag_field } => {
+                Tagged::Internal { tag_field: _ } => {
                     // if !data.contains_key(tag_field.as_str()) {
                     //     bail!("tag field `{tag_field}` is missing in internally tagged enum")
                     // }
@@ -194,15 +194,14 @@ impl EEnumData {
                     match repr {
                         Tagged::External => data_holder.insert(fields
                             .remove(tag.as_json_key().as_str())
-                            .ok_or_else(||miette!("!!INTERNAL ERROR!! externally tagged enum variant lacks the tag field `{tag}`, even though the pattern matched"))?),
+                            .ok_or_else(|| miette!("!!INTERNAL ERROR!! externally tagged enum variant lacks the tag field `{tag}`, even though the pattern matched"))?),
                         Tagged::Internal { tag_field } => {
                             fields.remove(tag_field.as_str());
                             data
                         }
                         Tagged::Adjacent { content_field, .. } =>
                             data_holder.insert(fields.remove(content_field.as_str())
-                                .ok_or_else(||miette!("Adjacently tagged enum variant lacks the content field `{tag}`"))?)
-
+                                .ok_or_else(|| miette!("Adjacently tagged enum variant lacks the content field `{tag}`"))?)
                     }
                 } else {
                     data

@@ -6,7 +6,6 @@ use crate::value::EValue;
 use atomic_refcell::AtomicRefCell;
 use dyn_clone::DynClone;
 use miette::bail;
-use std::borrow::Cow;
 use std::fmt::Debug;
 use std::sync::{Arc, LazyLock};
 use ustr::{Ustr, UstrMap};
@@ -30,6 +29,18 @@ pub trait NodeFactory: Send + Sync + Debug + 'static {
 
 pub type SnarlNode = Box<dyn Node>;
 
+#[derive(Debug, Copy, Clone)]
+pub struct InputData {
+    pub ty: EDataType,
+    pub name: Ustr,
+}
+
+#[derive(Debug, Copy, Clone)]
+pub struct OutputData {
+    pub ty: EDataType,
+    pub name: Ustr,
+}
+
 pub trait Node: DynClone + Debug + Send + Sync + 'static {
     /// Writes node state to json
     fn write_json(&self, _registry: &ETypesRegistry) -> miette::Result<JsonValue> {
@@ -51,18 +62,50 @@ pub trait Node: DynClone + Debug + Send + Sync + 'static {
         registry: &ETypesRegistry,
         input: usize,
     ) -> miette::Result<DefaultEValue> {
-        let inputs = self.inputs(registry)?;
-        if input >= inputs.len() {
-            bail!("Input index #{} out of bounds", input);
-        }
-        Ok(inputs[input].default_value(registry))
+        let input = self.try_input(registry, input)?;
+        Ok(input.ty.default_value(registry))
+    }
+
+    fn title(&self) -> String {
+        self.id().to_string()
     }
 
     /// Node inputs
-    fn inputs(&self, registry: &ETypesRegistry) -> miette::Result<Cow<'static, [EDataType]>>;
+    fn inputs_count(&self, registry: &ETypesRegistry) -> usize;
+
+    /// Returns the type of the input pin
+    /// # Panics
+    /// This method panics if the input index is out of bounds
+    fn input_unchecked(&self, registry: &ETypesRegistry, input: usize)
+        -> miette::Result<InputData>;
 
     /// Node outputs
-    fn outputs(&self, registry: &ETypesRegistry) -> miette::Result<Cow<'static, [EDataType]>>;
+    fn outputs_count(&self, registry: &ETypesRegistry) -> usize;
+
+    /// Returns the type of the output pin
+    /// # Panics
+    /// This method panics if the input index is out of bounds
+    fn output_unchecked(
+        &self,
+        registry: &ETypesRegistry,
+        output: usize,
+    ) -> miette::Result<InputData>;
+
+    fn try_input(&self, registry: &ETypesRegistry, input: usize) -> miette::Result<InputData> {
+        if input > self.outputs_count(registry) {
+            bail!("input index out of bounds")
+        } else {
+            self.input_unchecked(registry, input)
+        }
+    }
+
+    fn try_output(&self, registry: &ETypesRegistry, output: usize) -> miette::Result<InputData> {
+        if output > self.outputs_count(registry) {
+            bail!("output index out of bounds")
+        } else {
+            self.output_unchecked(registry, output)
+        }
+    }
 
     /// Whenever the node has side effects and must be executed
     fn has_side_effects(&self) -> bool {
