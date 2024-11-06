@@ -269,6 +269,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "arc-swap"
+version = "1.7.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "69f7f8c3906b62b754cd5326047894316021dcfe5a194c8ea52bdd94934a3457"
+dependencies = [
+ "serde",
+]
+
+[[package]]
 name = "arrayref"
 version = "0.3.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1114,10 +1123,12 @@ dependencies = [
  "dyn-clone",
  "eframe",
  "egui",
+ "egui-modal",
  "egui-snarl",
  "egui-toast",
  "egui_dock",
  "egui_file",
+ "egui_hooks",
  "egui_tracing",
  "inline_tweak",
  "itertools",
@@ -1127,6 +1138,7 @@ dependencies = [
  "num_cpus",
  "random_color",
  "rayon",
+ "sanitise-file-name",
  "serde_json5",
  "strip-ansi-escapes",
  "tracing",
@@ -1284,6 +1296,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "egui-modal"
+version = "0.5.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "297fa5697b1048198cc12f5f101312a6fcae42e55a637c861a316d6028797e42"
+dependencies = [
+ "egui",
+]
+
+[[package]]
 name = "egui-snarl"
 version = "0.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1400,6 +1421,18 @@ dependencies = [
  "wasm-bindgen",
  "web-sys",
  "winit",
+]
+
+[[package]]
+name = "egui_hooks"
+version = "0.6.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b00451a08b340a6a7e2a7f69ff2101ee54adb6e4c5f53a533fc1bc3f665b628e"
+dependencies = [
+ "arc-swap",
+ "egui",
+ "parking_lot",
+ "serde",
 ]
 
 [[package]]
@@ -2290,6 +2323,7 @@ checksum = "c1cc9717a20b1bb222f333e6a92fd32f7d8a18ddc5a3191a11af45dcbf4dcd16"
 dependencies = [
  "autocfg",
  "scopeguard",
+ "serde",
 ]
 
 [[package]]
@@ -3406,6 +3440,12 @@ checksum = "93fc1dc3aaa9bfed95e02e6eadabb4baf7e3078b0bd1b4d7b6b0b68378900502"
 dependencies = [
  "winapi-util",
 ]
+
+[[package]]
+name = "sanitise-file-name"
+version = "1.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "19d36299972b96b8ae7e8f04ecbf75fb41a27bf3781af00abcf57609774cb911"
 
 [[package]]
 name = "scoped-tls"

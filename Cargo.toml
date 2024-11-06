@@ -32,6 +32,8 @@ egui_dnd = "0.10.0"
 egui_dock = "0.14.0"
 egui_file = "0.19.0"
 egui_tracing = "0.2.6"
+egui-modal = "0.5.0"
+egui_hooks = "0.6.1"
 fs-err = "3.0.0"
 inline_tweak = "1.1.1"
 itertools = "0.13.0"
@@ -60,6 +62,7 @@ ustr = "1.0.0"
 walkdir = "2.5.0"
 csscolorparser = "0.7"
 random_color = "1.0.0"
+sanitise-file-name = "1.0.0"
 
 # Workspace crates
 dbe2 = { path = "dbe2" }

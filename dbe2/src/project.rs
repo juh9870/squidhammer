@@ -1,3 +1,4 @@
+use crate::etype::EDataType;
 use crate::graph::Graph;
 use crate::json_utils::formatter::DBEJsonFormatter;
 use crate::json_utils::{json_kind, JsonValue};
@@ -28,7 +29,7 @@ pub struct Project {
 pub enum ProjectFile {
     /// Valid plain JSON value
     Value(EValue),
-    Graph(Graph),
+    Graph(Box<Graph>),
     /// Plain JSON value that had issues during parsing or loading
     BadValue(Report),
 }
@@ -36,13 +37,13 @@ pub enum ProjectFile {
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Config {
     #[serde(rename = "types")]
-    types_config: TypesConfig,
+    pub types_config: TypesConfig,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-struct TypesConfig {
+pub struct TypesConfig {
     root: String,
-    import: ETypeId,
+    pub import: ETypeId,
 }
 
 impl Project {
@@ -175,7 +176,9 @@ impl Project {
         for (path, mut json) in graphs {
             let graph = Graph::parse_json(&project.registry, &mut json)
                 .with_context(|| format!("failed to deseialize Graph at `{}`", path))?;
-            project.files.insert(path, ProjectFile::Graph(graph));
+            project
+                .files
+                .insert(path, ProjectFile::Graph(Box::new(graph)));
         }
 
         // Validate again after all files are loaded
@@ -279,6 +282,12 @@ impl Project {
         }
 
         Ok(())
+    }
+
+    pub fn import_root(&self) -> EDataType {
+        EDataType::Object {
+            ident: self.config.types_config.import,
+        }
     }
 }
 

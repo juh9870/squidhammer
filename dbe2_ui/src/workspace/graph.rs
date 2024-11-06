@@ -10,7 +10,7 @@ use dbe2::graph::node::SnarlNode;
 use dbe2::registry::ETypesRegistry;
 use egui::{Color32, Stroke, Ui};
 use egui_snarl::ui::{PinInfo, SnarlViewer};
-use egui_snarl::{InPin, OutPin, Snarl};
+use egui_snarl::{InPin, NodeId, OutPin, Snarl};
 use miette::miette;
 use random_color::options::Luminosity;
 use random_color::RandomColor;
@@ -23,6 +23,19 @@ pub struct GraphViewer<'a> {
 impl<'a> SnarlViewer<SnarlNode> for GraphViewer<'a> {
     fn title(&mut self, node: &SnarlNode) -> String {
         node.title()
+    }
+
+    fn show_header(
+        &mut self,
+        node: NodeId,
+        _inputs: &[InPin],
+        _outputs: &[OutPin],
+        ui: &mut Ui,
+        _scale: f32,
+        snarl: &mut Snarl<SnarlNode>,
+    ) {
+        ui.label(node.0.to_string());
+        ui.label(snarl[node].title());
     }
 
     fn outputs(&mut self, node: &SnarlNode) -> usize {

@@ -65,6 +65,6 @@ pub fn diagnostics_tab(ui: &mut Ui, app: &mut DbeApp) {
         });
 
     if let Some(path) = open_file {
-        app.open_tab_for(path);
+        app.open_tab_for(ui.ctx(), path);
     }
 }

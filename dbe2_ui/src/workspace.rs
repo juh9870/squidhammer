@@ -5,9 +5,13 @@ use camino::Utf8PathBuf;
 use dbe2::graph::execution::partial::PartialGraphExecutionContext;
 use dbe2::project::{Project, ProjectFile};
 use dbe2::validation::validate;
-use egui::{Color32, RichText, Ui, WidgetText};
+use egui::{Color32, Context, RichText, Ui, WidgetText};
 use egui_dock::{DockArea, TabViewer};
+use egui_hooks::UseHookExt;
+use egui_modal::Modal;
 use egui_snarl::ui::SnarlStyle;
+use miette::miette;
+use std::ops::DerefMut;
 use tracing::trace;
 
 pub mod editors;
@@ -24,12 +28,92 @@ pub fn workspace(ui: &mut Ui, app: &mut DbeApp) {
 }
 
 impl DbeApp {
-    pub fn open_tab_for(&mut self, path: Utf8PathBuf) {
+    pub fn open_tab_for(&mut self, ctx: &Context, path: Utf8PathBuf) {
         if let Some(tab) = self.tabs.find_tab(&path) {
             self.tabs.set_active_tab(tab)
         } else {
             self.tabs.push_to_focused_leaf(path)
         }
+    }
+
+    pub fn new_file(&mut self, ctx: &Context, folder: Utf8PathBuf) {
+        self.show_new_file_modal(ctx, folder, |app, ctx, folder, filename| {
+            let filename = format!("{}.json", filename);
+            let path = folder.join(filename);
+            let Some(project) = app.project.as_mut() else {
+                report_error(miette!("No project is open"));
+                return;
+            };
+
+            if project.files.contains_key(&path) {
+                report_error(miette!("File already exists"))
+            } else {
+                let value = project
+                    .import_root()
+                    .default_value(&project.registry)
+                    .into_owned();
+                project
+                    .files
+                    .insert(path.clone(), ProjectFile::Value(value));
+                app.open_tab_for(ctx, path);
+            }
+        })
+    }
+
+    pub fn new_graph(&mut self, ctx: &Context, folder: Utf8PathBuf) {
+        self.show_new_file_modal(ctx, folder, |app, ctx, folder, filename| {
+            let filename = format!("{}.dbegraph", filename);
+            let path = folder.join(filename);
+            let Some(project) = app.project.as_mut() else {
+                report_error(miette!("No project is open"));
+                return;
+            };
+
+            if project.files.contains_key(&path) {
+                report_error(miette!("File already exists"))
+            } else {
+                project
+                    .files
+                    .insert(path.clone(), ProjectFile::Graph(Default::default()));
+                app.open_tab_for(ctx, path);
+            }
+        })
+    }
+
+    fn show_new_file_modal(
+        &mut self,
+        ctx: &Context,
+        folder: Utf8PathBuf,
+        cb: impl Fn(&mut DbeApp, &Context, Utf8PathBuf, String) + 'static,
+    ) {
+        let modal = Modal::new(ctx, "new_file_modal");
+        modal.open();
+        self.modals.insert(
+            "new_file_modal",
+            Box::new(move |app, ctx| {
+                modal.show(|ui| {
+                    let mut file_name = ui.use_state(|| "".to_string(), ()).into_var();
+                    modal.title(ui, "New File");
+                    modal.frame(ui, |ui| {
+                        ui.horizontal(|ui| {
+                            ui.label("File name ");
+                            ui.text_edit_singleline(file_name.deref_mut());
+                        });
+                    });
+                    let sanitized = sanitise_file_name::sanitise(file_name.trim());
+                    modal.buttons(ui, |ui| {
+                        let can_create = !sanitized.is_empty();
+                        ui.add_enabled_ui(can_create, |ui| {
+                            if modal.suggested_button(ui, "create").clicked() {
+                                cb(app, ctx, folder.clone(), sanitized);
+                            }
+                        });
+                        if modal.button(ui, "close").clicked() {}
+                    });
+                });
+                modal.is_open()
+            }),
+        );
     }
 }
 

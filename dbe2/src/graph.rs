@@ -14,7 +14,7 @@ use ustr::Ustr;
 pub mod execution;
 pub mod node;
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct Graph {
     snarl: Snarl<SnarlNode>,
     inputs: AHashMap<InPinId, EValue>,

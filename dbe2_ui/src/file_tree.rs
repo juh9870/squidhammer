@@ -1,7 +1,7 @@
 use crate::DbeApp;
 use camino::{Utf8Path, Utf8PathBuf};
 use dbe2::project::Project;
-use egui::{CollapsingHeader, Label, RichText, Sense, Ui};
+use egui::{CollapsingHeader, Context, Label, RichText, Sense, Ui};
 use inline_tweak::tweak;
 use itertools::Itertools;
 use std::iter::Peekable;
@@ -9,6 +9,8 @@ use std::iter::Peekable;
 #[derive(Debug)]
 enum Command {
     OpenFile { path: Utf8PathBuf },
+    NewFile { folder: Utf8PathBuf },
+    NewGraph { folder: Utf8PathBuf },
 }
 
 pub fn file_tab(ui: &mut Ui, app: &mut DbeApp) {
@@ -18,7 +20,7 @@ pub fn file_tab(ui: &mut Ui, app: &mut DbeApp) {
             ui.style_mut().wrap_mode = Some(egui::TextWrapMode::Extend);
             if let Some(project) = &mut app.project {
                 let commands = file_tree(ui, project);
-                consume_commands(commands, app);
+                consume_commands(commands, app, ui.ctx());
             } else {
                 if ui.button("Open Project").clicked() {
                     app.open_project();
@@ -46,10 +48,12 @@ fn file_tree(ui: &mut Ui, project: &mut Project) -> Vec<Command> {
     commands
 }
 
-fn consume_commands(commands: Vec<Command>, app: &mut DbeApp) {
+fn consume_commands(commands: Vec<Command>, app: &mut DbeApp, ctx: &Context) {
     for cmd in commands {
         match cmd {
-            Command::OpenFile { path } => app.open_tab_for(path),
+            Command::OpenFile { path } => app.open_tab_for(ctx, path),
+            Command::NewFile { folder } => app.new_file(ctx, folder),
+            Command::NewGraph { folder } => app.new_graph(ctx, folder),
         }
     }
 }
@@ -129,16 +133,23 @@ fn show_folder(
     if is_enabled {
         response
             .header_response
-            .context_menu(|ui| folder_context_menu(ui, path));
+            .context_menu(|ui| folder_context_menu(ui, path, commands));
     }
 }
 
-fn folder_context_menu(ui: &mut Ui, _path: &Utf8Path) {
-    if ui.button("New File").clicked() {
-        todo!("Create new File");
-        // commands.push(TabCommand::CreateNewFile {
-        //     parent_folder: path.to_path_buf(),
-        // });
-        // ui.close_menu()
-    }
+fn folder_context_menu(ui: &mut Ui, path: &Utf8Path, commands: &mut Vec<Command>) {
+    ui.menu_button("Create", |ui| {
+        if ui.button("File").clicked() {
+            commands.push(Command::NewFile {
+                folder: path.to_path_buf(),
+            });
+            ui.close_menu()
+        }
+        if ui.button("Graph").clicked() {
+            commands.push(Command::NewGraph {
+                folder: path.to_path_buf(),
+            });
+            ui.close_menu()
+        }
+    });
 }
