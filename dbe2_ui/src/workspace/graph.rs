@@ -6,8 +6,9 @@ use dbe2::diagnostic::prelude::{Diagnostic, DiagnosticLevel};
 use dbe2::etype::econst::ETypeConst;
 use dbe2::etype::EDataType;
 use dbe2::graph::execution::partial::PartialGraphExecutionContext;
-use dbe2::graph::node::SnarlNode;
+use dbe2::graph::node::{all_node_factories, SnarlNode};
 use dbe2::registry::ETypesRegistry;
+use eframe::emath::Pos2;
 use egui::{Color32, Stroke, Ui};
 use egui_snarl::ui::{PinInfo, SnarlViewer};
 use egui_snarl::{InPin, NodeId, OutPin, Snarl};
@@ -64,13 +65,17 @@ impl<'a> SnarlViewer<SnarlNode> for GraphViewer<'a> {
                     .get_mut(&pin.id)
                     .ok_or_else(|| miette!("Input not found"))?;
                 let editor = editor_for_value(self.ctx.registry, value);
-                editor.show(
+                let res = editor.show(
                     ui,
                     self.ctx.registry,
                     self.diagnostics.enter_field(input_data.name.as_str()),
                     &input_data.name,
                     value,
                 );
+
+                if res.changed {
+                    self.ctx.mark_dirty(snarl, pin.id.node);
+                }
             } else {
                 let value = self.ctx.read_input(snarl, pin.id)?;
                 ui.horizontal(|ui| {
@@ -82,6 +87,7 @@ impl<'a> SnarlViewer<SnarlNode> for GraphViewer<'a> {
             Ok(pin_info(input_data.ty, registry))
         })
         .unwrap_or_else(|err| {
+            ui.set_max_width(128.0);
             diagnostic_widget(
                 ui,
                 &Diagnostic {
@@ -113,6 +119,7 @@ impl<'a> SnarlViewer<SnarlNode> for GraphViewer<'a> {
             Ok(pin_info(output_data.ty, registry))
         })
         .unwrap_or_else(|err| {
+            ui.set_max_width(128.0);
             diagnostic_widget(
                 ui,
                 &Diagnostic {
@@ -122,6 +129,65 @@ impl<'a> SnarlViewer<SnarlNode> for GraphViewer<'a> {
             );
             PinInfo::circle().with_fill(Color32::BLACK)
         })
+    }
+
+    fn has_graph_menu(&mut self, _pos: Pos2, _snarl: &mut Snarl<SnarlNode>) -> bool {
+        true
+    }
+
+    fn show_graph_menu(
+        &mut self,
+        pos: Pos2,
+        ui: &mut Ui,
+        _scale: f32,
+        snarl: &mut Snarl<SnarlNode>,
+    ) {
+        ui.menu_button("Add node", |ui| {
+            for factory in all_node_factories() {
+                if ui.button(factory.id().as_str()).clicked() {
+                    let node = factory.create();
+                    snarl.insert_node(pos, node);
+                    ui.close_menu();
+                }
+            }
+        });
+    }
+
+    fn connect(&mut self, from: &OutPin, to: &InPin, snarl: &mut Snarl<SnarlNode>) {
+        if !to.remotes.is_empty() {
+            return;
+        }
+
+        let from_ty = snarl[from.id.node]
+            .try_output(self.ctx.registry, from.id.output)
+            .expect("should have output")
+            .ty;
+        let to_ty = snarl[to.id.node]
+            .try_input(self.ctx.registry, to.id.input)
+            .expect("should have input")
+            .ty;
+
+        if from_ty == to_ty {
+            snarl.connect(from.id, to.id);
+            self.ctx.mark_dirty(snarl, to.id.node);
+        }
+    }
+
+    fn disconnect(&mut self, from: &OutPin, to: &InPin, snarl: &mut Snarl<SnarlNode>) {
+        snarl.disconnect(from.id, to.id);
+        self.ctx.mark_dirty(snarl, to.id.node);
+    }
+
+    fn drop_inputs(&mut self, pin: &InPin, snarl: &mut Snarl<SnarlNode>) {
+        snarl.drop_inputs(pin.id);
+        self.ctx.mark_dirty(snarl, pin.id.node);
+    }
+
+    fn drop_outputs(&mut self, pin: &OutPin, snarl: &mut Snarl<SnarlNode>) {
+        snarl.drop_outputs(pin.id);
+        for in_pin in &pin.remotes {
+            self.ctx.mark_dirty(snarl, in_pin.node);
+        }
     }
 }
 

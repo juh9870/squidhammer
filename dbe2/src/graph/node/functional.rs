@@ -1,8 +1,9 @@
 use crate::etype::conversion::EDataTypeAdapter;
-use crate::graph::node::{InputData, Node, OutputData};
-use crate::value::EValue;
+use crate::graph::node::{InputData, Node, NodeFactory, OutputData};
+use crate::value::{ENumber, EValue};
 use std::fmt::{Debug, Formatter};
 use std::marker::PhantomData;
+use std::sync::Arc;
 
 pub mod macros;
 
@@ -101,7 +102,7 @@ pub fn functional_node<I, O, Arg: IntoFunctionalNode<I, O>>(
     id: &'static str,
     input_names: FunctionalArgNames,
     output_names: FunctionalArgNames,
-) -> Arg::Fn {
+) -> Arc<Arg::Fn> {
     let node = arg.into_node(id, input_names, output_names);
 
     assert_eq!(
@@ -119,5 +120,133 @@ pub fn functional_node<I, O, Arg: IntoFunctionalNode<I, O>>(
         output_names.len()
     );
 
-    node
+    Arc::new(node)
+}
+
+pub fn functional_nodes() -> Vec<Arc<dyn NodeFactory>> {
+    vec![
+        functional_node(|a: ENumber, b: ENumber| a + b, "add", &["a", "b"], &["sum"]),
+        functional_node(
+            |a: ENumber, b: ENumber| a - b,
+            "subtract",
+            &["a", "b"],
+            &["difference"],
+        ),
+        functional_node(
+            |a: ENumber, b: ENumber| a * b,
+            "multiply",
+            &["a", "b"],
+            &["product"],
+        ),
+        functional_node(
+            |a: ENumber, b: ENumber| a / b,
+            "divide",
+            &["a", "b"],
+            &["quotient"],
+        ),
+        functional_node(
+            |a: ENumber, b: ENumber| ENumber::from(a.powf(b.0)),
+            "power",
+            &["a", "b"],
+            &["result"],
+        ),
+        functional_node(|a: ENumber| -a, "negate", &["a"], &["-a"]),
+        functional_node(|a: ENumber| a, "identity", &["a"], &["a"]),
+        functional_node(
+            |a: ENumber| ENumber::from(a.abs()),
+            "absolute",
+            &["a"],
+            &["|a|"],
+        ),
+        functional_node(
+            |a: ENumber| ENumber::from(a.floor()),
+            "floor",
+            &["a"],
+            &["⌊a⌋"],
+        ),
+        functional_node(
+            |a: ENumber| ENumber::from(a.ceil()),
+            "ceiling",
+            &["a"],
+            &["⌈a⌉"],
+        ),
+        functional_node(
+            |a: ENumber| ENumber::from(a.round()),
+            "round",
+            &["a"],
+            &["⌊a⌋"],
+        ),
+        functional_node(
+            |a: ENumber| ENumber::from(a.trunc()),
+            "truncate",
+            &["a"],
+            &["result"],
+        ),
+        functional_node(
+            |a: ENumber| ENumber::from(a.fract()),
+            "fractional",
+            &["a"],
+            &["{a}"],
+        ),
+        functional_node(
+            |a: ENumber| ENumber::from(a.sqrt()),
+            "square_root",
+            &["a"],
+            &["√a"],
+        ),
+        functional_node(
+            |a: ENumber| ENumber::from(a.ln()),
+            "natural_logarithm",
+            &["a"],
+            &["ln(a)"],
+        ),
+        functional_node(
+            |a: ENumber| ENumber::from(a.log10()),
+            "logarithm_base_10",
+            &["a"],
+            &["log10(a)"],
+        ),
+        functional_node(
+            |a: ENumber| ENumber::from(a.sin()),
+            "exponential",
+            &["a"],
+            &["e^a"],
+        ),
+        functional_node(
+            |a: ENumber| ENumber::from(a.sin()),
+            "sine",
+            &["a"],
+            &["sin(a)"],
+        ),
+        functional_node(
+            |a: ENumber| ENumber::from(a.cos()),
+            "cosine",
+            &["a"],
+            &["cos(a)"],
+        ),
+        functional_node(
+            |a: ENumber| ENumber::from(a.tan()),
+            "tangent",
+            &["a"],
+            &["tan(a)"],
+        ),
+        functional_node(
+            |a: ENumber| ENumber::from(a.asin()),
+            "arc_sine",
+            &["a"],
+            &["asin(a)"],
+        ),
+        functional_node(
+            |a: ENumber| ENumber::from(a.acos()),
+            "arc_cosine",
+            &["a"],
+            &["acos(a)"],
+        ),
+        functional_node(
+            |a: ENumber| ENumber::from(a.atan()),
+            "arc_tangent",
+            &["a"],
+            &["atan(a)"],
+        ),
+    ]
 }

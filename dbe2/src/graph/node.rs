@@ -1,5 +1,6 @@
 use crate::etype::default::DefaultEValue;
 use crate::etype::EDataType;
+use crate::graph::node::functional::functional_nodes;
 use crate::json_utils::JsonValue;
 use crate::registry::ETypesRegistry;
 use crate::value::EValue;
@@ -16,12 +17,16 @@ static NODE_FACTORIES: LazyLock<AtomicRefCell<UstrMap<Arc<dyn NodeFactory>>>> =
     LazyLock::new(|| AtomicRefCell::new(default_nodes().collect()));
 
 fn default_nodes() -> impl Iterator<Item = (Ustr, Arc<dyn NodeFactory>)> {
-    let v: Vec<Arc<dyn NodeFactory>> = vec![];
+    let v: Vec<Arc<dyn NodeFactory>> = functional_nodes();
     v.into_iter().map(|item| (Ustr::from(&item.id()), item))
 }
 
 pub fn get_snarl_node(id: &Ustr) -> Option<SnarlNode> {
     NODE_FACTORIES.borrow().get(id).map(|f| f.create())
+}
+
+pub fn all_node_factories() -> Vec<Arc<dyn NodeFactory>> {
+    default_nodes().map(|(_, factory)| factory).collect()
 }
 
 pub trait NodeFactory: Send + Sync + Debug + 'static {

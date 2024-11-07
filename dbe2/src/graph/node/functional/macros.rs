@@ -2,7 +2,7 @@ use super::{
     FuncNode, FunctionalArgNames, FunctionalNode, FunctionalNodeOutput, IntoFunctionalNode,
 };
 use crate::etype::conversion::EDataTypeAdapter;
-use crate::graph::node::{InputData, Node, OutputData};
+use crate::graph::node::{InputData, Node, NodeFactory, OutputData};
 use crate::registry::ETypesRegistry;
 use crate::value::EValue;
 use miette::Context;
@@ -131,6 +131,15 @@ macro_rules! impl_functional_node {
 
             fn execute(&self, _registry: &ETypesRegistry, inputs: &[EValue], outputs: &mut Vec<EValue>) -> miette::Result<()> {
                 <Self as FunctionalNode>::execute(self, inputs, outputs)
+            }
+        }
+        impl<$($in: EDataTypeAdapter + 'static,)* Output: FunctionalNodeOutput, F: Fn($($in),*) -> Output + Clone + Send + Sync> NodeFactory for FuncNode<($($in,)*), Output, F> {
+            fn id(&self) -> Ustr {
+                self.id.into()
+            }
+
+            fn create(&self) -> Box<dyn Node> {
+                Box::new(self.clone())
             }
         }
     };
