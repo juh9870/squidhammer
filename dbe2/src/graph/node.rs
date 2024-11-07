@@ -10,6 +10,8 @@ use std::fmt::Debug;
 use std::sync::{Arc, LazyLock};
 use ustr::{Ustr, UstrMap};
 
+pub mod functional;
+
 static NODE_FACTORIES: LazyLock<AtomicRefCell<UstrMap<Arc<dyn NodeFactory>>>> =
     LazyLock::new(|| AtomicRefCell::new(default_nodes().collect()));
 
@@ -89,7 +91,7 @@ pub trait Node: DynClone + Debug + Send + Sync + 'static {
         &self,
         registry: &ETypesRegistry,
         output: usize,
-    ) -> miette::Result<InputData>;
+    ) -> miette::Result<OutputData>;
 
     fn try_input(&self, registry: &ETypesRegistry, input: usize) -> miette::Result<InputData> {
         if input > self.outputs_count(registry) {
@@ -99,7 +101,7 @@ pub trait Node: DynClone + Debug + Send + Sync + 'static {
         }
     }
 
-    fn try_output(&self, registry: &ETypesRegistry, output: usize) -> miette::Result<InputData> {
+    fn try_output(&self, registry: &ETypesRegistry, output: usize) -> miette::Result<OutputData> {
         if output > self.outputs_count(registry) {
             bail!("output index out of bounds")
         } else {
