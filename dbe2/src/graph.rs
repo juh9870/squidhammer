@@ -7,7 +7,6 @@ use egui_snarl::{InPinId, NodeId, OutPinId, Snarl};
 use emath::Pos2;
 use miette::{miette, Context, IntoDiagnostic};
 use serde::{Deserialize, Serialize};
-use std::collections::BTreeMap;
 use std::fmt::Debug;
 use ustr::Ustr;
 
@@ -86,6 +85,8 @@ impl Graph {
             inputs: Default::default(),
         };
 
+        let mut inputs = AHashMap::new();
+
         for (pin, value) in &self.inputs {
             let value_json = value.write_json(registry).with_context(|| {
                 format!(
@@ -93,7 +94,7 @@ impl Graph {
                     pin.input, pin.node
                 )
             })?;
-            packed.inputs.insert(*pin, value_json);
+            inputs.insert(*pin, value_json);
         }
 
         for (id, node) in self.snarl.node_ids() {
@@ -106,14 +107,16 @@ impl Graph {
                 pos: info.pos,
                 open: info.open,
             };
-            packed.nodes.insert(id, packed_node);
+            packed.nodes.push((id, packed_node));
         }
 
         for (out_pin, in_pin) in self.snarl.wires() {
             // do not serialize inputs with connections
-            packed.inputs.remove(&in_pin);
+            inputs.remove(&in_pin);
             packed.edges.push((out_pin, in_pin));
         }
+
+        packed.inputs = inputs.into_iter().collect();
 
         serde_json::value::to_value(&packed)
             .into_diagnostic()
@@ -123,9 +126,9 @@ impl Graph {
 
 #[derive(Debug, Serialize, Deserialize)]
 struct PackedGraph {
-    nodes: BTreeMap<NodeId, PackedNode>,
+    nodes: Vec<(NodeId, PackedNode)>,
     edges: Vec<(OutPinId, InPinId)>,
-    inputs: AHashMap<InPinId, JsonValue>,
+    inputs: Vec<(InPinId, JsonValue)>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]

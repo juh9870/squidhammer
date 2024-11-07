@@ -257,12 +257,14 @@ impl Project {
         for (path, file) in &self.files {
             let real_path = self.root.join(path);
 
-            let ProjectFile::Value(value) = file else {
-                panic!("BadValue should have been filtered out by validate_all");
-            };
-
             let json_string = m_try(|| {
-                let json = self.serialize_json(value)?;
+                let json = match file {
+                    ProjectFile::Value(value) => self.serialize_json(value)?,
+                    ProjectFile::Graph(graph) => graph.write_json(&self.registry)?,
+                    ProjectFile::BadValue(_) => {
+                        panic!("BadValue should have been filtered out by validate_all");
+                    }
+                };
 
                 let mut buf = vec![];
                 let mut serializer = serde_json::ser::Serializer::with_formatter(
@@ -275,7 +277,6 @@ impl Project {
                 Ok(String::from_utf8(buf).expect("JSON should be UTF-8"))
             })
             .with_context(|| format!("failed to serialize JSON at `{}`", path))?;
-
             fs_err::write(&real_path, json_string)
                 .into_diagnostic()
                 .with_context(|| format!("failed to write JSON to `{}`", real_path))?;

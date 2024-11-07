@@ -1,0 +1,95 @@
+{
+  "edges": [
+    [
+      {
+        "node": 2,
+        "output": 0
+      },
+      {
+        "input": 1,
+        "node": 0
+      }
+    ],
+    [
+      {
+        "node": 0,
+        "output": 0
+      },
+      {
+        "input": 0,
+        "node": 1
+      }
+    ],
+    [
+      {
+        "node": 2,
+        "output": 0
+      },
+      {
+        "input": 1,
+        "node": 1
+      }
+    ]
+  ],
+  "inputs": [
+    [
+      {
+        "input": 0,
+        "node": 0
+      },
+      20
+    ],
+    [
+      {
+        "input": 1,
+        "node": 2
+      },
+      5
+    ],
+    [
+      {
+        "input": 0,
+        "node": 2
+      },
+      12
+    ]
+  ],
+  "nodes": [
+    [
+      0,
+      {
+        "data": null,
+        "id": "add",
+        "open": true,
+        "pos": {
+          "x": -61,
+          "y": -189
+        }
+      }
+    ],
+    [
+      1,
+      {
+        "data": null,
+        "id": "subtract",
+        "open": true,
+        "pos": {
+          "x": 261,
+          "y": -156
+        }
+      }
+    ],
+    [
+      2,
+      {
+        "data": null,
+        "id": "multiply",
+        "open": true,
+        "pos": {
+          "x": -325,
+          "y": -91
+        }
+      }
+    ]
+  ]
+}
