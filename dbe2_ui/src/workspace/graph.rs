@@ -178,16 +178,16 @@ impl<'a> SnarlViewer<SnarlNode> for GraphViewer<'a> {
         self.ctx.mark_dirty(snarl, to.id.node);
     }
 
-    fn drop_inputs(&mut self, pin: &InPin, snarl: &mut Snarl<SnarlNode>) {
-        snarl.drop_inputs(pin.id);
-        self.ctx.mark_dirty(snarl, pin.id.node);
-    }
-
     fn drop_outputs(&mut self, pin: &OutPin, snarl: &mut Snarl<SnarlNode>) {
         snarl.drop_outputs(pin.id);
         for in_pin in &pin.remotes {
             self.ctx.mark_dirty(snarl, in_pin.node);
         }
+    }
+
+    fn drop_inputs(&mut self, pin: &InPin, snarl: &mut Snarl<SnarlNode>) {
+        snarl.drop_inputs(pin.id);
+        self.ctx.mark_dirty(snarl, pin.id.node);
     }
 }
 
