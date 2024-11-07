@@ -28,6 +28,11 @@ mod widgets;
 mod workspace;
 
 fn main() -> eframe::Result<()> {
+    #[cfg(debug_assertions)]
+    unsafe {
+        backtrace_on_stack_overflow::enable();
+    }
+
     BacktracePrinter::new()
         .add_frame_filter(Box::new(|frame| {
             frame.retain(|frame| {

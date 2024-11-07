@@ -6,6 +6,7 @@ use crate::value::EValue;
 use ahash::AHashMap;
 use egui_snarl::{InPinId, NodeId, OutPinId, Snarl};
 use miette::{bail, miette, Context};
+use smallvec::SmallVec;
 use std::collections::hash_map::Entry;
 
 pub mod partial;
@@ -32,13 +33,7 @@ impl<'a> GraphExecutionContext<'a, 'a> {
 impl<'a, 'snarl> GraphExecutionContext<'a, 'snarl> {
     /// Marks the node and all downstream nodes as dirty
     pub fn mark_dirty(&mut self, node: NodeId) {
-        self.cache.remove(&node);
-
-        for (out_pin, in_pin) in self.snarl.wires() {
-            if out_pin.node == node {
-                self.mark_dirty(in_pin.node);
-            }
-        }
+        self.mark_dirty_inner(node, &mut SmallVec::new());
     }
 
     pub fn full_eval(&mut self) -> miette::Result<()> {
@@ -79,11 +74,27 @@ impl<'a, 'snarl> GraphExecutionContext<'a, 'snarl> {
 }
 
 impl<'a, 'snarl> GraphExecutionContext<'a, 'snarl> {
+    pub fn mark_dirty_inner(&mut self, node: NodeId, marked: &mut SmallVec<[NodeId; 4]>) {
+        if marked.contains(&node) {
+            return;
+        }
+        marked.push(node);
+
+        self.cache.remove(&node);
+
+        for (out_pin, in_pin) in self.snarl.wires() {
+            if out_pin.node == node {
+                self.mark_dirty_inner(in_pin.node, marked);
+            }
+        }
+    }
+
     fn read_node_output_inner(
         &mut self,
         stack: &mut Vec<NodeId>,
         pin: OutPinId,
     ) -> miette::Result<EValue> {
+        // trace!("Reading output #{} of node {:?}", pin.output, pin.node);
         m_try(|| {
             if let Some(node) = self.cache.get(&pin.node) {
                 return Ok(node
@@ -117,6 +128,7 @@ impl<'a, 'snarl> GraphExecutionContext<'a, 'snarl> {
         id: InPinId,
         node: &SnarlNode,
     ) -> miette::Result<EValue> {
+        // trace!("Reading input #{} of node {:?}", id.input, id.node);
         m_try(|| {
             // TODO: check for valid types
             let slot = self.snarl.in_pin(id);
@@ -147,12 +159,12 @@ impl<'a, 'snarl> GraphExecutionContext<'a, 'snarl> {
     }
 
     fn eval_node_inner(&mut self, stack: &mut Vec<NodeId>, id: NodeId) -> miette::Result<()> {
+        // trace!("Evaluating node {:?}", id);
         m_try(|| {
-            // let registry= self.registry;
-            // if self.stack.contains(&id) {
-            //     bail!("Cyclic dependency detected");
-            // }
-            // self.stack.push(id);
+            if stack.contains(&id) {
+                bail!("Cyclic dependency detected");
+            }
+            stack.push(id);
 
             let node = self
                 .snarl

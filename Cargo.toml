@@ -63,6 +63,7 @@ walkdir = "2.5.0"
 csscolorparser = "0.7"
 random_color = "1.0.0"
 sanitise-file-name = "1.0.0"
+backtrace-on-stack-overflow = "0.3.0"
 
 # Workspace crates
 dbe2 = { path = "dbe2" }
