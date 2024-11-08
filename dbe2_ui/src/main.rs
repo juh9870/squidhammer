@@ -84,14 +84,14 @@ fn main() -> eframe::Result<()> {
 ///
 /// The function should return true if the modal is done and should no
 /// longer be called
-type ModalFn = Box<dyn Fn(&mut DbeApp, &Context) -> bool>;
+type ModalFn = Box<dyn FnMut(&mut DbeApp, &Context) -> bool>;
 
 struct DbeApp {
     project: Option<Project>,
     open_file_dialog: Option<FileDialog>,
     collector: EventCollector,
     toasts: Vec<Toast>,
-    modals: AHashMap<&'static str, Box<dyn FnMut(&mut DbeApp, &Context) -> bool>>,
+    modals: AHashMap<&'static str, ModalFn>,
     history: Vec<PathBuf>,
     tabs: DockState<Tab>,
 }

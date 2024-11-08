@@ -236,7 +236,7 @@ impl<'a> EnumEditorData<'a> {
 
     fn picker(&mut self, ui: &mut Ui) {
         let mut selected = *self.variant;
-        egui::ComboBox::from_id_source(self.field_name)
+        egui::ComboBox::from_id_salt(self.field_name)
             .selected_text(self.selected_variant.name.as_str())
             // .width(ui.available_width())
             .show_ui(ui, |ui| {

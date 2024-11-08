@@ -41,7 +41,7 @@ impl DiagnosticContext {
     }
 
     pub fn enter_new<'a>(&'a mut self, ident: &'a str) -> DiagnosticContextMut<'a> {
-        if self.diagnostics.contains_key(&ident.to_string()) {
+        if self.diagnostics.contains_key(ident) {
             panic!("Diagnostic context already exists for {}", ident);
         }
 

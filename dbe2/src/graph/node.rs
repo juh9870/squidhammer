@@ -17,19 +17,19 @@ pub mod functional;
 static NODE_FACTORIES: LazyLock<AtomicRefCell<UstrMap<Arc<dyn NodeFactory>>>> =
     LazyLock::new(|| AtomicRefCell::new(default_nodes().collect()));
 
-static NODE_FACTORIES_BY_CATEGORY: LazyLock<
-    AtomicRefCell<BTreeMap<&'static str, Vec<Arc<dyn NodeFactory>>>>,
-> = LazyLock::new(|| {
-    AtomicRefCell::new({
-        let mut map: BTreeMap<&str, Vec<Arc<dyn NodeFactory>>> = BTreeMap::new();
-        for (_, fac) in default_nodes() {
-            for cat in fac.categories() {
-                map.entry(*cat).or_default().push(fac.clone());
+type FactoriesByCategory = BTreeMap<&'static str, Vec<Arc<dyn NodeFactory>>>;
+static NODE_FACTORIES_BY_CATEGORY: LazyLock<AtomicRefCell<FactoriesByCategory>> =
+    LazyLock::new(|| {
+        AtomicRefCell::new({
+            let mut map: BTreeMap<&str, Vec<Arc<dyn NodeFactory>>> = BTreeMap::new();
+            for (_, fac) in default_nodes() {
+                for cat in fac.categories() {
+                    map.entry(*cat).or_default().push(fac.clone());
+                }
             }
-        }
-        map
-    })
-});
+            map
+        })
+    });
 
 fn default_nodes() -> impl Iterator<Item = (Ustr, Arc<dyn NodeFactory>)> {
     let v: Vec<Arc<dyn NodeFactory>> = functional_nodes();
@@ -44,8 +44,7 @@ pub fn all_node_factories() -> Vec<Arc<dyn NodeFactory>> {
     default_nodes().map(|(_, factory)| factory).collect()
 }
 
-pub fn node_factories_by_category(
-) -> AtomicRef<'static, BTreeMap<&'static str, Vec<Arc<dyn NodeFactory>>>> {
+pub fn node_factories_by_category() -> AtomicRef<'static, FactoriesByCategory> {
     NODE_FACTORIES_BY_CATEGORY.borrow()
 }
 

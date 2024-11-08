@@ -56,7 +56,7 @@ impl<T, NewItem: Fn(usize) -> T, CanDelete: Fn(usize, T) -> bool, IdSource: Hash
                                             Separator::default()
                                                 .spacing(tweak!(1.0))
                                                 .shrink(tweak!(2.0))
-                                        };
+                                        }
                                         let res_left = separator().ui(ui);
                                         separator().ui(ui);
                                         let res_right = separator().ui(ui);

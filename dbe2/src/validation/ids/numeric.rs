@@ -186,8 +186,6 @@ fn config(reg: &ETypesRegistry) -> miette::Result<Arc<ReservedIdConfig>> {
 #[derive(Debug)]
 pub struct Id;
 
-const MAX_DEPTH: usize = 16;
-
 impl DataValidator for Id {
     fn name(&self) -> Cow<'static, str> {
         "ids/numeric".into()

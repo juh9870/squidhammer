@@ -28,7 +28,7 @@ pub fn workspace(ui: &mut Ui, app: &mut DbeApp) {
 }
 
 impl DbeApp {
-    pub fn open_tab_for(&mut self, ctx: &Context, path: Utf8PathBuf) {
+    pub fn open_tab_for(&mut self, _ctx: &Context, path: Utf8PathBuf) {
         if let Some(tab) = self.tabs.find_tab(&path) {
             self.tabs.set_active_tab(tab)
         } else {

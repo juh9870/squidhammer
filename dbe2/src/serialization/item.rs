@@ -44,7 +44,6 @@ impl ThingItem {
     pub fn into_item(
         self,
         registry: &mut ETypesRegistry,
-        type_id: ETypeId,
         generic_arguments: &[Ustr],
     ) -> miette::Result<(Ustr, EItemInfo)> {
         let no_args = || {
@@ -80,7 +79,7 @@ impl ThingItem {
                     //             .join(", ")
                     //     )
                     // }
-                    arg.into_item(registry, type_id, generic_arguments)
+                    arg.into_item(registry, generic_arguments)
                 })
                 .with_context(|| {
                     format!("failed to parse generic child at position {i} with name {name}")
