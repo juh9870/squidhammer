@@ -6,7 +6,7 @@ use dbe2::diagnostic::prelude::{Diagnostic, DiagnosticLevel};
 use dbe2::etype::econst::ETypeConst;
 use dbe2::etype::EDataType;
 use dbe2::graph::execution::partial::PartialGraphExecutionContext;
-use dbe2::graph::node::{all_node_factories, SnarlNode};
+use dbe2::graph::node::{node_factories_by_category, NodeFactory, SnarlNode};
 use dbe2::registry::ETypesRegistry;
 use eframe::emath::Pos2;
 use egui::{Color32, Stroke, Ui};
@@ -15,6 +15,8 @@ use egui_snarl::{InPin, NodeId, OutPin, Snarl};
 use miette::miette;
 use random_color::options::Luminosity;
 use random_color::RandomColor;
+use std::iter::Peekable;
+use std::sync::Arc;
 
 pub struct GraphViewer<'a> {
     pub ctx: PartialGraphExecutionContext<'a>,
@@ -143,14 +145,88 @@ impl<'a> SnarlViewer<SnarlNode> for GraphViewer<'a> {
         snarl: &mut Snarl<SnarlNode>,
     ) {
         ui.menu_button("Add node", |ui| {
-            for factory in all_node_factories() {
-                if ui.button(factory.id().as_str()).clicked() {
-                    let node = factory.create();
-                    snarl.insert_node(pos, node);
-                    ui.close_menu();
+            let categories = node_factories_by_category();
+            let mut categories = categories.iter().peekable();
+
+            fn is_sub_category(category: &str, parent: &str) -> bool {
+                category.starts_with(parent)
+                    && category.chars().nth(parent.len()).is_some_and(|c| c == '.')
+            }
+            fn show<'a>(
+                ui: &mut Ui,
+                parent: &'static str,
+                categories: &mut Peekable<
+                    impl Iterator<Item = (&'a &'static str, &'a Vec<Arc<dyn NodeFactory>>)>,
+                >,
+            ) -> Option<SnarlNode> {
+                while let Some((cat, _)) = categories.peek() {
+                    if !parent.is_empty() && !is_sub_category(cat, parent) {
+                        return None;
+                    }
+
+                    if !parent.is_empty() {
+                        ui.separator();
+                    }
+
+                    let (category, factories) = categories.next().unwrap();
+                    let cat_name = category
+                        .strip_prefix(parent)
+                        .and_then(|c| c.strip_prefix("."))
+                        .unwrap_or(category);
+                    if let Some(node) = ui
+                        .menu_button(cat_name, |ui| {
+                            for factory in factories.iter() {
+                                if ui.button(factory.id().as_str()).clicked() {
+                                    let node = factory.create();
+                                    ui.close_menu();
+                                    return Some(node);
+                                }
+                            }
+
+                            show(ui, category, categories)
+                        })
+                        .inner
+                        .flatten()
+                    {
+                        return Some(node);
+                    }
+
+                    while let Some((next_cat, _)) = categories.peek() {
+                        if !is_sub_category(next_cat, category) {
+                            break;
+                        }
+                        categories.next();
+                    }
                 }
+
+                None
+            }
+
+            if let Some(to_insert) = show(ui, "", &mut categories) {
+                snarl.insert_node(pos, to_insert);
             }
         });
+    }
+
+    fn has_node_menu(&mut self, _node: &SnarlNode) -> bool {
+        true
+    }
+
+    fn show_node_menu(
+        &mut self,
+        node: NodeId,
+        _inputs: &[InPin],
+        _outputs: &[OutPin],
+        ui: &mut Ui,
+        _scale: f32,
+        snarl: &mut Snarl<SnarlNode>,
+    ) {
+        ui.label("Node menu");
+        if ui.button("Remove").clicked() {
+            self.ctx.mark_dirty(snarl, node);
+            snarl.remove_node(node);
+            ui.close_menu();
+        }
     }
 
     fn connect(&mut self, from: &OutPin, to: &InPin, snarl: &mut Snarl<SnarlNode>) {

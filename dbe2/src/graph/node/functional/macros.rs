@@ -30,14 +30,21 @@ macro_rules! impl_into_node {
         impl<$($in: EDataTypeAdapter + 'static,)* O: EDataTypeAdapter + 'static, F: Fn($($in),*) -> O + Clone + Send + Sync + 'static> IntoFunctionalNode<($($in,)*), O> for F {
             type Fn = FuncNode<($($in,)*), O, F>;
 
-            fn into_node(self, id: &'static str, input_names: FunctionalArgNames, output_names: FunctionalArgNames) -> Self::Fn {
+            fn into_node(
+                self,
+                id: &'static str,
+                input_names: <Self::Fn as FunctionalNode>::InputNames,
+                output_names: <<Self::Fn as FunctionalNode>::Output as FunctionalNodeOutput>::OutputNames,
+                categories: &'static[&'static str],
+            ) -> Self::Fn {
                 FuncNode {
                     f: self,
                     id,
-                    input_names,
-                    output_names,
+                    input_names: input_names.as_ref(),
+                    output_names: output_names.as_ref(),
                     marker1: Default::default(),
                     marker2: Default::default(),
+                    categories,
                 }
             }
         }
@@ -80,6 +87,7 @@ macro_rules! impl_functional_node {
     ($($in:ident),*) => {
         impl<$($in: EDataTypeAdapter + 'static,)* Output: FunctionalNodeOutput, F: Fn($($in),*) -> Output + Clone + Send + Sync> FunctionalNode for FuncNode<($($in,)*), Output, F> {
             type Output = Output;
+            type InputNames = &'static [&'static str; count!($($in)*)];
 
             fn inputs_count(&self) -> usize {
                 count!($($in)*)
@@ -141,6 +149,10 @@ macro_rules! impl_functional_node {
             fn create(&self) -> Box<dyn Node> {
                 Box::new(self.clone())
             }
+
+            fn categories(&self) -> &'static [&'static str] {
+                self.categories
+            }
         }
     };
 }
@@ -148,6 +160,8 @@ macro_rules! impl_functional_node {
 macro_rules! impl_functional_output {
     ($($out:ident),*) => {
         impl<$($out: EDataTypeAdapter + 'static,)*> FunctionalNodeOutput for ($($out,)*) {
+            type OutputNames = &'static [&'static str; count!($($out)*)];
+
             fn outputs_count() -> usize {
                 count!($($out)*)
             }

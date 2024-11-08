@@ -4,9 +4,10 @@ use crate::graph::node::functional::functional_nodes;
 use crate::json_utils::JsonValue;
 use crate::registry::ETypesRegistry;
 use crate::value::EValue;
-use atomic_refcell::AtomicRefCell;
+use atomic_refcell::{AtomicRef, AtomicRefCell};
 use dyn_clone::DynClone;
 use miette::bail;
+use std::collections::BTreeMap;
 use std::fmt::Debug;
 use std::sync::{Arc, LazyLock};
 use ustr::{Ustr, UstrMap};
@@ -15,6 +16,20 @@ pub mod functional;
 
 static NODE_FACTORIES: LazyLock<AtomicRefCell<UstrMap<Arc<dyn NodeFactory>>>> =
     LazyLock::new(|| AtomicRefCell::new(default_nodes().collect()));
+
+static NODE_FACTORIES_BY_CATEGORY: LazyLock<
+    AtomicRefCell<BTreeMap<&'static str, Vec<Arc<dyn NodeFactory>>>>,
+> = LazyLock::new(|| {
+    AtomicRefCell::new({
+        let mut map: BTreeMap<&str, Vec<Arc<dyn NodeFactory>>> = BTreeMap::new();
+        for (_, fac) in default_nodes() {
+            for cat in fac.categories() {
+                map.entry(*cat).or_default().push(fac.clone());
+            }
+        }
+        map
+    })
+});
 
 fn default_nodes() -> impl Iterator<Item = (Ustr, Arc<dyn NodeFactory>)> {
     let v: Vec<Arc<dyn NodeFactory>> = functional_nodes();
@@ -29,8 +44,14 @@ pub fn all_node_factories() -> Vec<Arc<dyn NodeFactory>> {
     default_nodes().map(|(_, factory)| factory).collect()
 }
 
+pub fn node_factories_by_category(
+) -> AtomicRef<'static, BTreeMap<&'static str, Vec<Arc<dyn NodeFactory>>>> {
+    NODE_FACTORIES_BY_CATEGORY.borrow()
+}
+
 pub trait NodeFactory: Send + Sync + Debug + 'static {
     fn id(&self) -> Ustr;
+    fn categories(&self) -> &'static [&'static str];
     fn create(&self) -> SnarlNode;
 }
 
