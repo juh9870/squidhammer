@@ -288,7 +288,35 @@ pub fn functional_nodes() -> Vec<Arc<dyn NodeFactory>> {
             "pi",
             &[],
             &["pi"],
-            &["math.trigonometry"],
+            &["math.trigonometry", "math.constants"],
+        ),
+        functional_node(
+            || ENumber::from(std::f64::consts::E),
+            "e",
+            &[],
+            &["e"],
+            &["math.transcendental", "math.constants"],
+        ),
+        functional_node(
+            || ENumber::from(std::f64::consts::TAU),
+            "tau",
+            &[],
+            &["tau"],
+            &["math.trigonometry", "math.constants"],
+        ),
+        functional_node(
+            || ENumber::from(1.618_033_988_749_895_f64),
+            "golden_ratio",
+            &[],
+            &["phi"],
+            &["math.constants"],
+        ),
+        functional_node(
+            || ENumber::from(std::f64::consts::SQRT_2),
+            "sqrt_2",
+            &[],
+            &["√2"],
+            &["math.constants"],
         ),
     ]
 }
