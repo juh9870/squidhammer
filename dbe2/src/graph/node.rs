@@ -1,18 +1,23 @@
 use crate::etype::default::DefaultEValue;
 use crate::etype::EDataType;
+use crate::graph::node::commands::{SnarlCommand, SnarlCommands};
 use crate::graph::node::functional::functional_nodes;
+use crate::graph::node::reroute::RerouteFactory;
 use crate::json_utils::JsonValue;
 use crate::registry::ETypesRegistry;
 use crate::value::EValue;
 use atomic_refcell::{AtomicRef, AtomicRefCell};
 use dyn_clone::DynClone;
+use egui_snarl::{InPin, OutPin};
 use miette::bail;
 use std::collections::BTreeMap;
 use std::fmt::Debug;
 use std::sync::{Arc, LazyLock};
 use ustr::{Ustr, UstrMap};
 
+pub mod commands;
 pub mod functional;
+pub mod reroute;
 
 static NODE_FACTORIES: LazyLock<AtomicRefCell<UstrMap<Arc<dyn NodeFactory>>>> =
     LazyLock::new(|| AtomicRefCell::new(default_nodes().collect()));
@@ -32,7 +37,8 @@ static NODE_FACTORIES_BY_CATEGORY: LazyLock<AtomicRefCell<FactoriesByCategory>> 
     });
 
 fn default_nodes() -> impl Iterator<Item = (Ustr, Arc<dyn NodeFactory>)> {
-    let v: Vec<Arc<dyn NodeFactory>> = functional_nodes();
+    let mut v: Vec<Arc<dyn NodeFactory>> = functional_nodes();
+    v.push(Arc::new(RerouteFactory));
     v.into_iter().map(|item| (Ustr::from(&item.id()), item))
 }
 
@@ -70,15 +76,17 @@ pub struct OutputData {
 
 pub trait Node: DynClone + Debug + Send + Sync + 'static {
     /// Writes node state to json
-    fn write_json(&self, _registry: &ETypesRegistry) -> miette::Result<JsonValue> {
+    fn write_json(&self, registry: &ETypesRegistry) -> miette::Result<JsonValue> {
+        let _ = (registry,);
         Ok(JsonValue::Null)
     }
     /// Loads node state from json
     fn parse_json(
         &mut self,
-        _registry: &ETypesRegistry,
-        _value: &mut JsonValue,
+        registry: &ETypesRegistry,
+        value: &mut JsonValue,
     ) -> miette::Result<()> {
+        let _ = (registry, value);
         Ok(())
     }
 
@@ -134,6 +142,36 @@ pub trait Node: DynClone + Debug + Send + Sync + 'static {
         }
     }
 
+    /// Attempts to create a connection to the input pin of the node
+    /// Returns true if the connection can be made
+    ///
+    /// On success, cthe onnection may or may not be made depending on the node logic
+    ///
+    /// Nodes may mutate their internal state when a connection is made
+    fn try_connect(
+        &mut self,
+        registry: &ETypesRegistry,
+        commands: &mut SnarlCommands,
+        from: &OutPin,
+        to: &InPin,
+        incoming_type: EDataType,
+    ) -> miette::Result<()> {
+        self._default_try_connect(registry, commands, from, to, incoming_type)
+    }
+
+    /// Disconnect the input pin of the node
+    ///
+    /// On success, the provided connection should no longer exist after executing emitted commands
+    fn try_disconnect(
+        &mut self,
+        registry: &ETypesRegistry,
+        commands: &mut SnarlCommands,
+        from: &OutPin,
+        to: &InPin,
+    ) -> miette::Result<()> {
+        self._default_try_disconnect(registry, commands, from, to)
+    }
+
     /// Whenever the node has side effects and must be executed
     fn has_side_effects(&self) -> bool {
         false
@@ -146,4 +184,43 @@ pub trait Node: DynClone + Debug + Send + Sync + 'static {
         inputs: &[EValue],
         outputs: &mut Vec<EValue>,
     ) -> miette::Result<()>;
+
+    fn _default_try_connect(
+        &mut self,
+        registry: &ETypesRegistry,
+        commands: &mut SnarlCommands,
+        from: &OutPin,
+        to: &InPin,
+        incoming_type: EDataType,
+    ) -> miette::Result<()> {
+        let ty = self.try_input(registry, to.id.input)?;
+        if ty.ty == incoming_type {
+            // TODO: support for multi-connect ports
+            if !to.remotes.is_empty() {
+                commands.push(SnarlCommand::DropInputsRaw { to: to.id });
+            }
+
+            commands.push(SnarlCommand::ConnectRaw {
+                from: from.id,
+                to: to.id,
+            });
+        }
+
+        Ok(())
+    }
+
+    fn _default_try_disconnect(
+        &mut self,
+        registry: &ETypesRegistry,
+        commands: &mut SnarlCommands,
+        from: &OutPin,
+        to: &InPin,
+    ) -> miette::Result<()> {
+        let _ = (registry,);
+        commands.push(SnarlCommand::DisconnectRaw {
+            from: from.id,
+            to: to.id,
+        });
+        Ok(())
+    }
 }

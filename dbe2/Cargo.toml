@@ -8,6 +8,7 @@ edition = "2021"
 ahash = { workspace = true, features = ["serde"] }
 atomic_refcell = { workspace = true }
 camino = { workspace = true }
+derive_more = { workspace = true, features = ["debug"] }
 diagnostic = { workspace = true }
 dyn-clone = { workspace = true }
 egui-snarl = { workspace = true, features = ["serde"] }

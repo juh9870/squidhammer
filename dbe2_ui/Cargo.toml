@@ -6,6 +6,7 @@ edition = "2021"
 
 [dependencies]
 ahash = { workspace = true }
+atomic_refcell = { workspace = true }
 backtrace-on-stack-overflow = { workspace = true }
 camino = { workspace = true }
 cansi = { workspace = true }

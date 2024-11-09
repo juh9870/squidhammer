@@ -1,26 +1,44 @@
+use crate::error::report_error;
 use crate::m_try;
 use crate::widgets::report::diagnostic_widget;
-use crate::workspace::editors::editor_for_value;
+use crate::workspace::graph::viewer::get_viewer;
 use dbe2::diagnostic::context::DiagnosticContextRef;
 use dbe2::diagnostic::prelude::{Diagnostic, DiagnosticLevel};
 use dbe2::etype::econst::ETypeConst;
 use dbe2::etype::EDataType;
 use dbe2::graph::execution::partial::PartialGraphExecutionContext;
+use dbe2::graph::node::commands::SnarlCommands;
 use dbe2::graph::node::{node_factories_by_category, NodeFactory, SnarlNode};
 use dbe2::registry::ETypesRegistry;
 use eframe::emath::Pos2;
 use egui::{Color32, Stroke, Ui};
 use egui_snarl::ui::{PinInfo, SnarlViewer};
 use egui_snarl::{InPin, NodeId, OutPin, Snarl};
-use miette::miette;
 use random_color::options::Luminosity;
 use random_color::RandomColor;
 use std::iter::Peekable;
 use std::sync::Arc;
 
+pub mod viewer;
+
+#[derive(Debug)]
 pub struct GraphViewer<'a> {
     pub ctx: PartialGraphExecutionContext<'a>,
     pub diagnostics: DiagnosticContextRef<'a>,
+    commands: SnarlCommands,
+}
+
+impl<'a> GraphViewer<'a> {
+    pub fn new(
+        ctx: PartialGraphExecutionContext<'a>,
+        diagnostics: DiagnosticContextRef<'a>,
+    ) -> Self {
+        Self {
+            ctx,
+            diagnostics,
+            commands: Default::default(),
+        }
+    }
 }
 
 impl<'a> SnarlViewer<SnarlNode> for GraphViewer<'a> {
@@ -31,14 +49,25 @@ impl<'a> SnarlViewer<SnarlNode> for GraphViewer<'a> {
     fn show_header(
         &mut self,
         node: NodeId,
-        _inputs: &[InPin],
-        _outputs: &[OutPin],
+        inputs: &[InPin],
+        outputs: &[OutPin],
         ui: &mut Ui,
-        _scale: f32,
+        scale: f32,
         snarl: &mut Snarl<SnarlNode>,
     ) {
-        ui.label(node.0.to_string());
-        ui.label(snarl[node].title());
+        m_try(|| {
+            get_viewer(&snarl[node].id()).show_header(self, node, inputs, outputs, ui, scale, snarl)
+        })
+        .unwrap_or_else(|err| {
+            ui.set_max_width(128.0);
+            diagnostic_widget(
+                ui,
+                &Diagnostic {
+                    info: err,
+                    level: DiagnosticLevel::Error,
+                },
+            );
+        })
     }
 
     fn outputs(&mut self, node: &SnarlNode) -> usize {
@@ -56,49 +85,18 @@ impl<'a> SnarlViewer<SnarlNode> for GraphViewer<'a> {
         _scale: f32,
         snarl: &mut Snarl<SnarlNode>,
     ) -> PinInfo {
-        m_try(|| {
-            let registry = self.ctx.registry;
-            let node = &snarl[pin.id.node];
-            let input_data = node.try_input(self.ctx.registry, pin.id.input)?;
-            if pin.remotes.is_empty() {
-                let value = self
-                    .ctx
-                    .inputs
-                    .get_mut(&pin.id)
-                    .ok_or_else(|| miette!("Input not found"))?;
-                let editor = editor_for_value(self.ctx.registry, value);
-                let res = editor.show(
+        m_try(|| get_viewer(&snarl[pin.id.node].id()).show_input(self, pin, ui, _scale, snarl))
+            .unwrap_or_else(|err| {
+                // ui.set_max_width(128.0);
+                diagnostic_widget(
                     ui,
-                    self.ctx.registry,
-                    self.diagnostics.enter_field(input_data.name.as_str()),
-                    &input_data.name,
-                    value,
+                    &Diagnostic {
+                        info: err,
+                        level: DiagnosticLevel::Error,
+                    },
                 );
-
-                if res.changed {
-                    self.ctx.mark_dirty(snarl, pin.id.node);
-                }
-            } else {
-                let value = self.ctx.read_input(snarl, pin.id)?;
-                ui.horizontal(|ui| {
-                    ui.label(&*input_data.name);
-                    ui.label(value.to_string());
-                });
-            }
-
-            Ok(pin_info(input_data.ty, registry))
-        })
-        .unwrap_or_else(|err| {
-            ui.set_max_width(128.0);
-            diagnostic_widget(
-                ui,
-                &Diagnostic {
-                    info: err,
-                    level: DiagnosticLevel::Error,
-                },
-            );
-            PinInfo::circle().with_fill(Color32::BLACK)
-        })
+                PinInfo::circle().with_fill(Color32::BLACK)
+            })
     }
 
     fn show_output(
@@ -108,29 +106,18 @@ impl<'a> SnarlViewer<SnarlNode> for GraphViewer<'a> {
         _scale: f32,
         snarl: &mut Snarl<SnarlNode>,
     ) -> PinInfo {
-        m_try(|| {
-            let registry = self.ctx.registry;
-            let node = &snarl[pin.id.node];
-            let output_data = node.try_output(self.ctx.registry, pin.id.output)?;
-            let value = self.ctx.read_output(snarl, pin.id)?;
-            ui.horizontal(|ui| {
-                ui.label(&*output_data.name);
-                ui.label(value.to_string());
-            });
-
-            Ok(pin_info(output_data.ty, registry))
-        })
-        .unwrap_or_else(|err| {
-            ui.set_max_width(128.0);
-            diagnostic_widget(
-                ui,
-                &Diagnostic {
-                    info: err,
-                    level: DiagnosticLevel::Error,
-                },
-            );
-            PinInfo::circle().with_fill(Color32::BLACK)
-        })
+        m_try(|| get_viewer(&snarl[pin.id.node].id()).show_output(self, pin, ui, _scale, snarl))
+            .unwrap_or_else(|err| {
+                ui.set_max_width(128.0);
+                diagnostic_widget(
+                    ui,
+                    &Diagnostic {
+                        info: err,
+                        level: DiagnosticLevel::Error,
+                    },
+                );
+                PinInfo::circle().with_fill(Color32::BLACK)
+            })
     }
 
     fn has_graph_menu(&mut self, _pos: Pos2, _snarl: &mut Snarl<SnarlNode>) -> bool {
@@ -230,40 +217,41 @@ impl<'a> SnarlViewer<SnarlNode> for GraphViewer<'a> {
     }
 
     fn connect(&mut self, from: &OutPin, to: &InPin, snarl: &mut Snarl<SnarlNode>) {
-        if !to.remotes.is_empty() {
-            return;
-        }
-
-        let from_ty = snarl[from.id.node]
-            .try_output(self.ctx.registry, from.id.output)
-            .expect("should have output")
-            .ty;
-        let to_ty = snarl[to.id.node]
-            .try_input(self.ctx.registry, to.id.input)
-            .expect("should have input")
-            .ty;
-
-        if from_ty == to_ty {
-            snarl.connect(from.id, to.id);
-            self.ctx.mark_dirty(snarl, to.id.node);
+        if let Err(err) = self.ctx.connect(from, to, snarl, &mut self.commands) {
+            report_error(err)
         }
     }
 
     fn disconnect(&mut self, from: &OutPin, to: &InPin, snarl: &mut Snarl<SnarlNode>) {
-        snarl.disconnect(from.id, to.id);
-        self.ctx.mark_dirty(snarl, to.id.node);
+        if let Err(err) = self.ctx.disconnect(from, to, snarl, &mut self.commands) {
+            report_error(err);
+        }
     }
 
     fn drop_outputs(&mut self, pin: &OutPin, snarl: &mut Snarl<SnarlNode>) {
-        snarl.drop_outputs(pin.id);
-        for in_pin in &pin.remotes {
-            self.ctx.mark_dirty(snarl, in_pin.node);
+        if let Err(err) = m_try(|| {
+            for remote in &pin.remotes {
+                self.ctx
+                    .disconnect(pin, &snarl.in_pin(*remote), snarl, &mut self.commands)?;
+            }
+
+            Ok(())
+        }) {
+            report_error(err);
         }
     }
 
     fn drop_inputs(&mut self, pin: &InPin, snarl: &mut Snarl<SnarlNode>) {
-        snarl.drop_inputs(pin.id);
-        self.ctx.mark_dirty(snarl, pin.id.node);
+        if let Err(err) = m_try(|| {
+            for remote in &pin.remotes {
+                self.ctx
+                    .disconnect(&snarl.out_pin(*remote), pin, snarl, &mut self.commands)?;
+            }
+
+            Ok(())
+        }) {
+            report_error(err);
+        }
     }
 }
 

@@ -162,10 +162,7 @@ impl TabViewer for WorkspaceTabViewer<'_> {
                 let (ctx, snarl) =
                     PartialGraphExecutionContext::from_graph(graph, &self.0.registry);
 
-                let mut viewer = graph::GraphViewer {
-                    ctx,
-                    diagnostics: diagnostics.as_readonly(),
-                };
+                let mut viewer = graph::GraphViewer::new(ctx, diagnostics.as_readonly());
 
                 snarl.show(&mut viewer, &SnarlStyle::default(), tab.to_string(), ui);
             }

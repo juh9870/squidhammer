@@ -96,6 +96,7 @@ pub type DiagnosticContextRef<'a> =
 pub type DiagnosticContextMut<'a> =
     DiagnosticContextRefHolder<'a, &'a mut BTreeMap<DiagnosticPath, SmallVec<[Diagnostic; 1]>>>;
 
+#[derive(Debug)]
 pub struct DiagnosticContextRefHolder<'a, T: 'a + ContextLike> {
     diagnostics: T,
     path: &'a mut DiagnosticPath,

@@ -80,7 +80,10 @@ impl<'a, 'snarl> GraphExecutionContext<'a, 'snarl> {
         }
         marked.push(node);
 
-        self.cache.remove(&node);
+        if self.cache.remove(&node).is_none() {
+            // Node was not cached, so it's already dirty
+            return;
+        }
 
         for (out_pin, in_pin) in self.snarl.wires() {
             if out_pin.node == node {
@@ -122,6 +125,20 @@ impl<'a, 'snarl> GraphExecutionContext<'a, 'snarl> {
         })
     }
 
+    fn inline_input_value(
+        &mut self,
+        pin: InPinId,
+        node: &SnarlNode,
+    ) -> miette::Result<&mut EValue> {
+        Ok(match self.inputs.entry(pin) {
+            Entry::Occupied(entry) => entry.into_mut(),
+            Entry::Vacant(entry) => {
+                let default = node.default_input_value(self.registry, pin.input)?;
+                entry.insert(default.into_owned())
+            }
+        })
+    }
+
     fn read_node_input_inner(
         &mut self,
         stack: &mut Vec<NodeId>,
@@ -133,14 +150,7 @@ impl<'a, 'snarl> GraphExecutionContext<'a, 'snarl> {
             // TODO: check for valid types
             let slot = self.snarl.in_pin(id);
             let value = if slot.remotes.is_empty() {
-                match self.inputs.entry(slot.id) {
-                    Entry::Occupied(entry) => entry.into_mut(),
-                    Entry::Vacant(entry) => {
-                        let default = node.default_input_value(self.registry, id.input)?;
-                        entry.insert(default.into_owned())
-                    }
-                }
-                .clone()
+                self.inline_input_value(slot.id, node)?.clone()
             } else if slot.remotes.len() == 1 {
                 let remote = slot.remotes[0];
                 self.read_node_output_inner(stack, remote)?
