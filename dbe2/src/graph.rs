@@ -1,5 +1,8 @@
+use crate::graph::execution::partial::PartialGraphExecutionContext;
+use crate::graph::node::commands::SnarlCommands;
 use crate::graph::node::{get_snarl_node, SnarlNode};
 use crate::json_utils::JsonValue;
+use crate::m_try;
 use crate::registry::ETypesRegistry;
 use crate::value::EValue;
 use ahash::AHashMap;
@@ -25,57 +28,98 @@ impl Graph {
         let packed: PackedGraph = PackedGraph::deserialize(value.take()).into_diagnostic()?;
         let mut mapping = AHashMap::with_capacity(packed.nodes.len());
 
-        for (serialized_id, node) in packed.nodes {
-            let created_node = get_snarl_node(&node.id)
-                .ok_or_else(|| miette!("node type {} not found", node.id))?;
-            let node_id = if node.open {
-                snarl.insert_node(node.pos, created_node)
-            } else {
-                snarl.insert_node_collapsed(node.pos, created_node)
-            };
-            mapping.insert(serialized_id, node_id);
-        }
+        m_try(|| {
+            for (serialized_id, node) in packed.nodes {
+                let created_node = get_snarl_node(&node.id)
+                    .ok_or_else(|| miette!("node type {} not found", node.id))?;
+                let node_id = if node.open {
+                    snarl.insert_node(node.pos, created_node)
+                } else {
+                    snarl.insert_node_collapsed(node.pos, created_node)
+                };
+                mapping.insert(serialized_id, node_id);
+            }
+            Ok(())
+        })
+        .context("failed to create nodes")?;
 
-        for (mut out_pin, mut in_pin) in packed.edges {
-            out_pin.node = *mapping
-                .get(&out_pin.node)
-                .ok_or_else(|| miette!("node {:?} not found", out_pin.node))?;
-            in_pin.node = *mapping
-                .get(&in_pin.node)
-                .ok_or_else(|| miette!("node {:?} not found", in_pin.node))?;
-            snarl.connect(out_pin, in_pin);
-        }
+        let inputs = AHashMap::with_capacity(packed.inputs.len());
 
-        let mut inputs = AHashMap::with_capacity(packed.inputs.len());
-        for (mut in_pin, mut value) in packed.inputs {
-            in_pin.node = *mapping
-                .get(&in_pin.node)
-                .ok_or_else(|| miette!("node {:?} not found", in_pin.node))?;
-
-            let node = snarl
-                .get_node(in_pin.node)
-                .expect("Mappings should be correct");
-
-            let input_type = node
-                .try_input(registry, in_pin.input)
-                .with_context(|| format!("failed to get inputs for node {:?}", in_pin.node))?;
-            let value = input_type
-                .ty
-                .parse_json(registry, &mut value, false)
-                .with_context(|| {
-                    format!(
-                        "failed to parse input value #{} for node {:?}",
-                        in_pin.input, in_pin.node
-                    )
-                })?;
-            inputs.insert(in_pin, value);
-        }
-
-        Ok(Self {
+        let mut graph = Self {
             snarl,
             inputs,
             cache: Default::default(),
+        };
+
+        m_try(|| {
+            let (mut ctx, snarl) = PartialGraphExecutionContext::from_graph(&mut graph, registry);
+            let commands = &mut SnarlCommands::new();
+
+            let mut to_connect = Vec::with_capacity(packed.edges.len());
+
+            for (mut out_pin, mut in_pin) in packed.edges {
+                out_pin.node = *mapping
+                    .get(&out_pin.node)
+                    .ok_or_else(|| miette!("node {:?} not found", out_pin.node))?;
+                in_pin.node = *mapping
+                    .get(&in_pin.node)
+                    .ok_or_else(|| miette!("node {:?} not found", in_pin.node))?;
+                // snarl.connect(out_pin, in_pin);
+                let out_pin = snarl.out_pin(out_pin);
+                let in_pin = snarl.in_pin(in_pin);
+                to_connect.push((out_pin, in_pin));
+            }
+
+            to_connect.sort_by_key(|(out_pin, in_pin)| {
+                (
+                    out_pin.id.node,
+                    out_pin.id.output,
+                    in_pin.id.node,
+                    in_pin.id.input,
+                )
+            });
+
+            for (out_pin, in_pin) in to_connect {
+                ctx.connect(&out_pin, &in_pin, snarl, commands)?;
+            }
+
+            commands
+                .execute(&mut ctx, snarl, registry)
+                .with_context(|| "failed sto execute commands")
         })
+        .context("failed to connect pins")?;
+
+        m_try(|| {
+            for (mut in_pin, mut value) in packed.inputs {
+                in_pin.node = *mapping
+                    .get(&in_pin.node)
+                    .ok_or_else(|| miette!("node {:?} not found", in_pin.node))?;
+
+                let node = graph
+                    .snarl
+                    .get_node(in_pin.node)
+                    .expect("Mappings should be correct");
+
+                let input_type = node
+                    .try_input(registry, in_pin.input)
+                    .with_context(|| format!("failed to get inputs for node {:?}", in_pin.node))?;
+                let value = input_type
+                    .ty
+                    .ty()
+                    .parse_json(registry, &mut value, false)
+                    .with_context(|| {
+                        format!(
+                            "failed to parse input value #{} for node {:?}",
+                            in_pin.input, in_pin.node
+                        )
+                    })?;
+                graph.inputs.insert(in_pin, value);
+            }
+            Ok(())
+        })
+        .context("failed to populate inputs")?;
+
+        Ok(graph)
     }
 
     pub fn write_json(&self, registry: &ETypesRegistry) -> miette::Result<JsonValue> {
