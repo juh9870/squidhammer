@@ -282,7 +282,7 @@ impl<'a> SnarlViewer<SnarlNode> for GraphViewer<'a> {
             }
             Ok(())
         })
-        .unwrap_or_else(|err| report_error(err))
+        .unwrap_or_else(report_error)
     }
 
     fn connect(&mut self, from: &OutPin, to: &InPin, snarl: &mut Snarl<SnarlNode>) {

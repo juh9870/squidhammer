@@ -29,9 +29,12 @@ impl Graph {
         let mut mapping = AHashMap::with_capacity(packed.nodes.len());
 
         m_try(|| {
-            for (serialized_id, node) in packed.nodes {
-                let created_node = get_snarl_node(&node.id)
+            for (serialized_id, mut node) in packed.nodes {
+                let mut created_node = get_snarl_node(&node.id)
                     .ok_or_else(|| miette!("node type {} not found", node.id))?;
+
+                created_node.parse_json(registry, &mut node.data)?;
+
                 let node_id = if node.open {
                     snarl.insert_node(node.pos, created_node)
                 } else {
