@@ -2,6 +2,7 @@ use crate::graph::execution::partial::PartialGraphExecutionContext;
 use crate::graph::node::SnarlNode;
 use crate::registry::ETypesRegistry;
 use egui_snarl::{InPinId, NodeId, OutPinId, Snarl};
+use itertools::Itertools;
 
 #[derive(derive_more::Debug)]
 pub enum SnarlCommand {
@@ -11,6 +12,8 @@ pub enum SnarlCommand {
     Disconnect { from: OutPinId, to: InPinId },
     /// Disconnects all connections coming from the pin, marking the output pins' node as dirty
     DropOutputs { from: OutPinId },
+    /// Deletes a node, running disconnection logic and marking connected nodes as dirty
+    DeleteNode { node: NodeId },
     /// Disconnects and reconnects an output pin to an input pin, running the connected nodes' logic
     ///
     /// The most likely use case for this is when a node's output pin type
@@ -147,6 +150,26 @@ impl SnarlCommand {
                     SnarlCommand::Disconnect { from, to: pin }
                         .execute(ctx, snarl, registry, commands)?;
                 }
+            }
+            SnarlCommand::DeleteNode { node } => {
+                // Disconnect all outputs
+                for (out_pin, in_pin) in snarl.wires().filter(|w| w.0.node == node).collect_vec() {
+                    SnarlCommand::Disconnect {
+                        from: out_pin,
+                        to: in_pin,
+                    }
+                    .execute(ctx, snarl, registry, commands)?;
+                }
+                // Disconnect all inputs
+                for (out_pin, in_pin) in snarl.wires().filter(|w| w.1.node == node).collect_vec() {
+                    ctx.inputs.remove(&in_pin);
+                    SnarlCommand::Disconnect {
+                        from: out_pin,
+                        to: in_pin,
+                    }
+                    .execute(ctx, snarl, registry, commands)?;
+                }
+                snarl.remove_node(node);
             }
         }
         Ok(())

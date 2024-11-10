@@ -1,5 +1,5 @@
 use crate::graph::execution::GraphExecutionContext;
-use crate::graph::node::commands::SnarlCommands;
+use crate::graph::node::commands::{SnarlCommand, SnarlCommands};
 use crate::graph::node::SnarlNode;
 use crate::graph::Graph;
 use crate::m_try;
@@ -139,5 +139,18 @@ impl<'a> PartialGraphExecutionContext<'a> {
         snarl[to.id.node].try_disconnect(self.registry, commands, from, to)?;
 
         commands.execute(self, snarl, self.registry)
+    }
+
+    pub fn remove_node(
+        &mut self,
+        node: NodeId,
+        snarl: &mut Snarl<SnarlNode>,
+        commands: &mut SnarlCommands,
+    ) -> miette::Result<()> {
+        commands.push(SnarlCommand::DeleteNode { node });
+
+        commands
+            .execute(self, snarl, self.registry)
+            .with_context(|| format!("failed to remove node: {:?}", node))
     }
 }

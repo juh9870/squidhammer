@@ -274,12 +274,15 @@ impl<'a> SnarlViewer<SnarlNode> for GraphViewer<'a> {
         _scale: f32,
         snarl: &mut Snarl<SnarlNode>,
     ) {
-        ui.label("Node menu");
-        if ui.button("Remove").clicked() {
-            self.ctx.mark_dirty(snarl, node);
-            snarl.remove_node(node);
-            ui.close_menu();
-        }
+        m_try(|| {
+            ui.label("Node menu");
+            if ui.button("Remove").clicked() {
+                self.ctx.remove_node(node, snarl, &mut self.commands)?;
+                ui.close_menu();
+            }
+            Ok(())
+        })
+        .unwrap_or_else(|err| report_error(err))
     }
 
     fn connect(&mut self, from: &OutPin, to: &InPin, snarl: &mut Snarl<SnarlNode>) {

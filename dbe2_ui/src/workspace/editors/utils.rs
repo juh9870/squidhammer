@@ -186,7 +186,7 @@ macro_rules! unsupported {
         $crate::workspace::editors::utils::labeled_error(
             $ui,
             $label,
-            miette::miette!("{}", ("dbe.editor.unsupported_value")),
+            miette::miette!("Unsupported value: {}", $value),
         );
         return $crate::workspace::editors::EditorResponse::unchanged();
     };
