@@ -10,6 +10,7 @@ atomic_refcell = { workspace = true }
 camino = { workspace = true }
 derive_more = { workspace = true, features = ["debug"] }
 diagnostic = { workspace = true }
+downcast-rs = "1.2.1"
 dyn-clone = { workspace = true }
 egui-snarl = { workspace = true, features = ["serde"] }
 emath = { workspace = true }

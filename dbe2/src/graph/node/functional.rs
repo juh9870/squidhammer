@@ -1,4 +1,4 @@
-use crate::etype::conversion::EDataTypeAdapter;
+use crate::etype::conversion::EItemInfoAdapter;
 use crate::graph::node::{InputData, Node, NodeFactory, OutputData};
 use crate::value::{ENumber, EValue};
 use std::fmt::{Debug, Formatter};
@@ -73,7 +73,7 @@ pub trait IntoFunctionalNode<Input, Output> {
     ) -> Self::Fn;
 }
 
-impl<T: EDataTypeAdapter + 'static> FunctionalNodeOutput for T {
+impl<T: EItemInfoAdapter + 'static> FunctionalNodeOutput for T {
     type OutputNames = <(T,) as FunctionalNodeOutput>::OutputNames;
 
     fn outputs_count() -> usize {

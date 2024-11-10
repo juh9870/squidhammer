@@ -1,4 +1,5 @@
 use crate::etype::econst::ETypeConst;
+use crate::etype::eitem::EItemInfo;
 use crate::etype::EDataType;
 use crate::graph::node::commands::{SnarlCommand, SnarlCommands};
 use crate::graph::node::{InputData, Node, NodeFactory, OutputData, SnarlNode};
@@ -9,7 +10,7 @@ use ustr::Ustr;
 
 #[derive(Debug, Clone, Default)]
 pub struct RerouteNode {
-    inputs: Vec<EDataType>,
+    inputs: Vec<EItemInfo>,
 }
 impl Node for RerouteNode {
     fn id(&self) -> Ustr {
@@ -27,14 +28,14 @@ impl Node for RerouteNode {
     ) -> miette::Result<InputData> {
         if input == self.inputs.len() {
             return Ok(InputData {
-                ty: EDataType::Const {
+                ty: EItemInfo::simple_type(EDataType::Const {
                     value: ETypeConst::Null,
-                },
+                }),
                 name: "".into(),
             });
         }
         Ok(InputData {
-            ty: self.inputs[input],
+            ty: self.inputs[input].clone(),
             name: input.to_string().into(),
         })
     }
@@ -49,7 +50,7 @@ impl Node for RerouteNode {
         output: usize,
     ) -> miette::Result<OutputData> {
         Ok(OutputData {
-            ty: self.inputs[output],
+            ty: self.inputs[output].clone(),
             name: output.to_string().into(),
         })
     }
@@ -60,13 +61,13 @@ impl Node for RerouteNode {
         commands: &mut SnarlCommands,
         from: &OutPin,
         to: &InPin,
-        incoming_type: EDataType,
+        incoming_type: EItemInfo,
     ) -> miette::Result<()> {
         let i = to.id.input;
         if i == self.inputs.len() {
-            self.inputs.push(incoming_type);
-        } else if self.inputs[i] != incoming_type {
-            self.inputs[i] = incoming_type;
+            self.inputs.push(incoming_type.clone());
+        } else if self.inputs[i].ty() != incoming_type.ty() {
+            self.inputs[i] = incoming_type.clone();
             // Reconnect the corresponding output pin to propagate type
             // changes and clear invalid connections
             commands.push(SnarlCommand::Reconnect {
@@ -98,7 +99,7 @@ impl Node for RerouteNode {
             },
         });
         for i in to.id.input..(self.inputs.len() - 1) {
-            self.inputs[i] = self.inputs[i + 1];
+            self.inputs.as_mut_slice().swap(i, i + 1);
             commands.push(SnarlCommand::InputMovedRaw {
                 from: InPinId {
                     node: to.id.node,

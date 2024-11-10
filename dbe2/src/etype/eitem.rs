@@ -5,6 +5,8 @@ use crate::registry::ETypesRegistry;
 use crate::validation::Validator;
 use crate::value::EValue;
 use ahash::AHashMap;
+use atomic_refcell::AtomicRefCell;
+use std::sync::{Arc, LazyLock};
 use strum::EnumIs;
 use tracing::error;
 use ustr::Ustr;
@@ -25,11 +27,27 @@ pub struct EItemInfoGeneric {
 
 #[derive(Debug, Clone, EnumIs)]
 pub enum EItemInfo {
-    Specific(EItemInfoSpecific),
-    Generic(EItemInfoGeneric),
+    Specific(Arc<EItemInfoSpecific>),
+    Generic(Arc<EItemInfoGeneric>),
 }
 
 impl EItemInfo {
+    pub fn simple_type(ty: EDataType) -> Self {
+        static CACHE: LazyLock<AtomicRefCell<AHashMap<EDataType, EItemInfo>>> =
+            LazyLock::new(|| AtomicRefCell::new(Default::default()));
+        CACHE
+            .borrow_mut()
+            .entry(ty)
+            .or_insert_with(|| {
+                Self::Specific(Arc::new(EItemInfoSpecific {
+                    ty,
+                    extra_properties: Default::default(),
+                    validators: Default::default(),
+                }))
+            })
+            .clone()
+    }
+
     pub fn ty(&self) -> EDataType {
         match self {
             EItemInfo::Specific(ty) => ty.ty,

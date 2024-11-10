@@ -1,7 +1,7 @@
 use super::{
     FuncNode, FunctionalArgNames, FunctionalNode, FunctionalNodeOutput, IntoFunctionalNode,
 };
-use crate::etype::conversion::EDataTypeAdapter;
+use crate::etype::conversion::EItemInfoAdapter;
 use crate::graph::node::{InputData, Node, NodeFactory, OutputData};
 use crate::registry::ETypesRegistry;
 use crate::value::EValue;
@@ -27,7 +27,7 @@ macro_rules! enumerate {
 
 macro_rules! impl_into_node {
     ($($in:ident),*) => {
-        impl<$($in: EDataTypeAdapter + 'static,)* O: EDataTypeAdapter + 'static, F: Fn($($in),*) -> O + Clone + Send + Sync + 'static> IntoFunctionalNode<($($in,)*), O> for F {
+        impl<$($in: EItemInfoAdapter + 'static,)* O: EItemInfoAdapter + 'static, F: Fn($($in),*) -> O + Clone + Send + Sync + 'static> IntoFunctionalNode<($($in,)*), O> for F {
             type Fn = FuncNode<($($in,)*), O, F>;
 
             fn into_node(
@@ -57,7 +57,7 @@ macro_rules! get_edata_type {
             {
                 $(const [< $in _IDX >]: usize = $i;)*
                 match $varname {
-                    $([< $in _IDX >] => <$in as EDataTypeAdapter>::edata_type(),)*
+                    $([< $in _IDX >] => <$in as EItemInfoAdapter>::edata_type(),)*
                     _ => panic!("input index out of bounds"),
                 }
             }
@@ -85,7 +85,7 @@ macro_rules! invoke_f {
 
 macro_rules! impl_functional_node {
     ($($in:ident),*) => {
-        impl<$($in: EDataTypeAdapter + 'static,)* Output: FunctionalNodeOutput, F: Fn($($in),*) -> Output + Clone + Send + Sync> FunctionalNode for FuncNode<($($in,)*), Output, F> {
+        impl<$($in: EItemInfoAdapter + 'static,)* Output: FunctionalNodeOutput, F: Fn($($in),*) -> Output + Clone + Send + Sync> FunctionalNode for FuncNode<($($in,)*), Output, F> {
             type Output = Output;
             type InputNames = &'static [&'static str; count!($($in)*)];
 
@@ -116,7 +116,7 @@ macro_rules! impl_functional_node {
             }
         }
 
-        impl<$($in: EDataTypeAdapter + 'static,)* Output: FunctionalNodeOutput, F: Fn($($in),*) -> Output + Clone + Send + Sync> Node for FuncNode<($($in,)*), Output, F> {
+        impl<$($in: EItemInfoAdapter + 'static,)* Output: FunctionalNodeOutput, F: Fn($($in),*) -> Output + Clone + Send + Sync> Node for FuncNode<($($in,)*), Output, F> {
             fn id(&self) -> Ustr {
                 self.id.into()
             }
@@ -141,7 +141,7 @@ macro_rules! impl_functional_node {
                 <Self as FunctionalNode>::execute(self, inputs, outputs)
             }
         }
-        impl<$($in: EDataTypeAdapter + 'static,)* Output: FunctionalNodeOutput, F: Fn($($in),*) -> Output + Clone + Send + Sync> NodeFactory for FuncNode<($($in,)*), Output, F> {
+        impl<$($in: EItemInfoAdapter + 'static,)* Output: FunctionalNodeOutput, F: Fn($($in),*) -> Output + Clone + Send + Sync> NodeFactory for FuncNode<($($in,)*), Output, F> {
             fn id(&self) -> Ustr {
                 self.id.into()
             }
@@ -159,7 +159,7 @@ macro_rules! impl_functional_node {
 
 macro_rules! impl_functional_output {
     ($($out:ident),*) => {
-        impl<$($out: EDataTypeAdapter + 'static,)*> FunctionalNodeOutput for ($($out,)*) {
+        impl<$($out: EItemInfoAdapter + 'static,)*> FunctionalNodeOutput for ($($out,)*) {
             type OutputNames = &'static [&'static str; count!($($out)*)];
 
             fn outputs_count() -> usize {

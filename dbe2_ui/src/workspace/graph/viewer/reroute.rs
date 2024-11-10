@@ -40,7 +40,7 @@ impl NodeView for RerouteViewer {
         let registry = viewer.ctx.registry;
         let node = &snarl[pin.id.node];
         let input_data = node.try_input(viewer.ctx.registry, pin.id.input)?;
-        Ok(pin_info(input_data.ty, registry))
+        Ok(pin_info(&input_data.ty, registry))
     }
 
     fn show_output(
@@ -59,6 +59,6 @@ impl NodeView for RerouteViewer {
             ui.label(value.to_string());
         }
 
-        Ok(pin_info(output_data.ty, registry))
+        Ok(pin_info(&output_data.ty, registry))
     }
 }

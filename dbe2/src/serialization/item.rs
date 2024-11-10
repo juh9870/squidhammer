@@ -9,6 +9,7 @@ use ahash::AHashMap;
 use itertools::Itertools;
 use miette::{bail, Context, Diagnostic};
 use std::fmt::Display;
+use std::sync::Arc;
 use strum::EnumString;
 use thiserror::Error;
 use ustr::{Ustr, UstrMap};
@@ -146,11 +147,11 @@ impl ThingItem {
                 let arg = generic_name(arg, 0, generic_arguments)?;
                 return Ok((
                     self.name,
-                    EItemInfo::Generic(EItemInfoGeneric {
+                    EItemInfo::Generic(Arc::new(EItemInfoGeneric {
                         argument_name: arg,
                         extra_properties: self.extra_properties,
                         validators: vec![],
-                    }),
+                    })),
                 ));
             }
         };
@@ -159,11 +160,11 @@ impl ThingItem {
 
         Ok((
             self.name,
-            EItemInfo::Specific(EItemInfoSpecific {
+            EItemInfo::Specific(Arc::new(EItemInfoSpecific {
                 ty,
                 extra_properties: self.extra_properties,
                 validators,
-            }),
+            })),
         ))
     }
 }

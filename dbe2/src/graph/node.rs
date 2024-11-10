@@ -1,5 +1,5 @@
 use crate::etype::default::DefaultEValue;
-use crate::etype::EDataType;
+use crate::etype::eitem::EItemInfo;
 use crate::graph::node::commands::{SnarlCommand, SnarlCommands};
 use crate::graph::node::functional::functional_nodes;
 use crate::graph::node::reroute::RerouteFactory;
@@ -7,6 +7,7 @@ use crate::json_utils::JsonValue;
 use crate::registry::ETypesRegistry;
 use crate::value::EValue;
 use atomic_refcell::{AtomicRef, AtomicRefCell};
+use downcast_rs::{impl_downcast, Downcast};
 use dyn_clone::DynClone;
 use egui_snarl::{InPin, OutPin};
 use miette::bail;
@@ -18,6 +19,7 @@ use ustr::{Ustr, UstrMap};
 pub mod commands;
 pub mod functional;
 pub mod reroute;
+pub mod struct_node;
 
 static NODE_FACTORIES: LazyLock<AtomicRefCell<UstrMap<Arc<dyn NodeFactory>>>> =
     LazyLock::new(|| AtomicRefCell::new(default_nodes().collect()));
@@ -39,6 +41,7 @@ static NODE_FACTORIES_BY_CATEGORY: LazyLock<AtomicRefCell<FactoriesByCategory>> 
 fn default_nodes() -> impl Iterator<Item = (Ustr, Arc<dyn NodeFactory>)> {
     let mut v: Vec<Arc<dyn NodeFactory>> = functional_nodes();
     v.push(Arc::new(RerouteFactory));
+    v.push(Arc::new(StructNodeFactory));
     v.into_iter().map(|item| (Ustr::from(&item.id()), item))
 }
 
@@ -46,8 +49,8 @@ pub fn get_snarl_node(id: &Ustr) -> Option<SnarlNode> {
     NODE_FACTORIES.borrow().get(id).map(|f| f.create())
 }
 
-pub fn all_node_factories() -> Vec<Arc<dyn NodeFactory>> {
-    default_nodes().map(|(_, factory)| factory).collect()
+pub fn all_node_factories() -> AtomicRef<'static, UstrMap<Arc<dyn NodeFactory>>> {
+    NODE_FACTORIES.borrow()
 }
 
 pub fn node_factories_by_category() -> AtomicRef<'static, FactoriesByCategory> {
@@ -62,19 +65,19 @@ pub trait NodeFactory: Send + Sync + Debug + 'static {
 
 pub type SnarlNode = Box<dyn Node>;
 
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Clone)]
 pub struct InputData {
-    pub ty: EDataType,
+    pub ty: EItemInfo,
     pub name: Ustr,
 }
 
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Clone)]
 pub struct OutputData {
-    pub ty: EDataType,
+    pub ty: EItemInfo,
     pub name: Ustr,
 }
 
-pub trait Node: DynClone + Debug + Send + Sync + 'static {
+pub trait Node: DynClone + Debug + Send + Sync + Downcast + 'static {
     /// Writes node state to json
     fn write_json(&self, registry: &ETypesRegistry) -> miette::Result<JsonValue> {
         let _ = (registry,);
@@ -127,7 +130,7 @@ pub trait Node: DynClone + Debug + Send + Sync + 'static {
     ) -> miette::Result<OutputData>;
 
     fn try_input(&self, registry: &ETypesRegistry, input: usize) -> miette::Result<InputData> {
-        if input > self.outputs_count(registry) {
+        if input > self.inputs_count(registry) {
             bail!("input index out of bounds")
         } else {
             self.input_unchecked(registry, input)
@@ -154,7 +157,7 @@ pub trait Node: DynClone + Debug + Send + Sync + 'static {
         commands: &mut SnarlCommands,
         from: &OutPin,
         to: &InPin,
-        incoming_type: EDataType,
+        incoming_type: EItemInfo,
     ) -> miette::Result<()> {
         self._default_try_connect(registry, commands, from, to, incoming_type)
     }
@@ -191,10 +194,10 @@ pub trait Node: DynClone + Debug + Send + Sync + 'static {
         commands: &mut SnarlCommands,
         from: &OutPin,
         to: &InPin,
-        incoming_type: EDataType,
+        incoming_type: EItemInfo,
     ) -> miette::Result<()> {
         let ty = self.try_input(registry, to.id.input)?;
-        if ty.ty == incoming_type {
+        if ty.ty.ty() == incoming_type.ty() {
             // TODO: support for multi-connect ports
             if !to.remotes.is_empty() {
                 commands.push(SnarlCommand::DropInputsRaw { to: to.id });
@@ -224,3 +227,27 @@ pub trait Node: DynClone + Debug + Send + Sync + 'static {
         Ok(())
     }
 }
+
+impl_downcast!(Node);
+
+/// Implements write_json and parse_json for the node by serializing whole node struct via serde
+macro_rules! impl_serde_node {
+    () => {
+        fn write_json(&self, _registry: &ETypesRegistry) -> miette::Result<JsonValue> {
+            serde_json::value::to_value(&self).into_diagnostic()
+        }
+
+        fn parse_json(
+            &mut self,
+            _registry: &ETypesRegistry,
+            value: &mut JsonValue,
+        ) -> miette::Result<()> {
+            Self::deserialize(value.take())
+                .into_diagnostic()
+                .map(|node| *self = node)
+        }
+    };
+}
+
+use crate::graph::node::struct_node::StructNodeFactory;
+pub(crate) use impl_serde_node;

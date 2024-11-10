@@ -1,7 +1,8 @@
-use crate::workspace::editors::editor_for_value;
+use crate::workspace::editors::editor_for_item;
 use crate::workspace::graph::viewer::NodeView;
 use crate::workspace::graph::{pin_info, GraphViewer};
 use dbe2::graph::node::SnarlNode;
+use dbe2::value::EValue;
 use egui::Ui;
 use egui_snarl::ui::PinInfo;
 use egui_snarl::{InPin, NodeId, OutPin, Snarl};
@@ -10,6 +11,27 @@ use ustr::Ustr;
 
 #[derive(Debug)]
 pub struct DefaultNodeView;
+
+fn format_value(value: EValue) -> String {
+    match value {
+        EValue::Null => "null".to_string(),
+        EValue::Boolean { value } => value.to_string(),
+        EValue::Number { value } => {
+            format!("{}", value)
+        }
+        EValue::String { value } => {
+            if value.len() > 8 {
+                format!("{:?}...", &value[..8])
+            } else {
+                format!("{:?}", value)
+            }
+        }
+        EValue::Struct { .. } => ("struct{{...}}").to_string(),
+        EValue::Enum { .. } => ("enum{{...}}").to_string(),
+        EValue::List { .. } => "[...]".to_string(),
+        EValue::Map { .. } => "{...}".to_string(),
+    }
+}
 
 impl NodeView for DefaultNodeView {
     fn id(&self) -> Ustr {
@@ -43,29 +65,30 @@ impl NodeView for DefaultNodeView {
         let node = &snarl[pin.id.node];
         let input_data = node.try_input(viewer.ctx.registry, pin.id.input)?;
         if pin.remotes.is_empty() {
-            let reg = viewer.ctx.registry;
             let value = viewer.ctx.get_inline_input_mut(snarl, pin.id)?;
-            let editor = editor_for_value(reg, value);
-            let res = editor.show(
-                ui,
-                reg,
-                viewer.diagnostics.enter_field(input_data.name.as_str()),
-                &input_data.name,
-                value,
-            );
+            let editor = editor_for_item(registry, &input_data.ty);
+            let res = ui.vertical(|ui| {
+                editor.show(
+                    ui,
+                    registry,
+                    viewer.diagnostics.enter_field(input_data.name.as_str()),
+                    &input_data.name,
+                    value,
+                )
+            });
 
-            if res.changed {
+            if res.inner.changed {
                 viewer.ctx.mark_dirty(snarl, pin.id.node);
             }
         } else {
             let value = viewer.ctx.read_input(snarl, pin.id)?;
             ui.horizontal(|ui| {
                 ui.label(&*input_data.name);
-                ui.label(value.to_string());
+                ui.label(format_value(value));
             });
         }
 
-        Ok(pin_info(input_data.ty, registry))
+        Ok(pin_info(&input_data.ty, registry))
     }
 
     fn show_output(
@@ -82,9 +105,9 @@ impl NodeView for DefaultNodeView {
         let value = viewer.ctx.read_output(snarl, pin.id)?;
         ui.horizontal(|ui| {
             ui.label(&*output_data.name);
-            ui.label(value.to_string());
+            ui.label(format_value(value));
         });
 
-        Ok(pin_info(output_data.ty, registry))
+        Ok(pin_info(&output_data.ty, registry))
     }
 }

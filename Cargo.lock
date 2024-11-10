@@ -1093,6 +1093,7 @@ dependencies = [
  "camino",
  "derive_more",
  "diagnostic",
+ "downcast-rs",
  "dyn-clone",
  "egui-snarl",
  "emath",

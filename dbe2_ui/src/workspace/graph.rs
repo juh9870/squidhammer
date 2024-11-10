@@ -2,22 +2,31 @@ use crate::error::report_error;
 use crate::m_try;
 use crate::widgets::report::diagnostic_widget;
 use crate::workspace::graph::viewer::get_viewer;
+use ahash::AHashMap;
 use dbe2::diagnostic::context::DiagnosticContextRef;
 use dbe2::diagnostic::prelude::{Diagnostic, DiagnosticLevel};
 use dbe2::etype::econst::ETypeConst;
+use dbe2::etype::eitem::EItemInfo;
 use dbe2::etype::EDataType;
 use dbe2::graph::execution::partial::PartialGraphExecutionContext;
 use dbe2::graph::node::commands::SnarlCommands;
-use dbe2::graph::node::{node_factories_by_category, NodeFactory, SnarlNode};
+use dbe2::graph::node::struct_node::StructNode;
+use dbe2::graph::node::{
+    all_node_factories, get_snarl_node, node_factories_by_category, NodeFactory, SnarlNode,
+};
 use dbe2::registry::ETypesRegistry;
+use dbe2::value::id::ETypeId;
 use eframe::emath::Pos2;
 use egui::{Color32, Stroke, Ui};
+use egui_hooks::UseHookExt;
 use egui_snarl::ui::{PinInfo, SnarlViewer};
 use egui_snarl::{InPin, NodeId, OutPin, Snarl};
 use random_color::options::Luminosity;
 use random_color::RandomColor;
 use std::iter::Peekable;
+use std::ops::DerefMut;
 use std::sync::Arc;
+use ustr::Ustr;
 
 pub mod viewer;
 
@@ -132,6 +141,63 @@ impl<'a> SnarlViewer<SnarlNode> for GraphViewer<'a> {
         snarl: &mut Snarl<SnarlNode>,
     ) {
         ui.menu_button("Add node", |ui| {
+            #[derive(Debug, Copy, Clone)]
+            enum NodeCombo {
+                Factory(Ustr),
+                Struct(ETypeId),
+            }
+
+            impl AsRef<str> for NodeCombo {
+                fn as_ref(&self) -> &str {
+                    match self {
+                        NodeCombo::Factory(id) => id.as_str(),
+                        NodeCombo::Struct(id) => id.as_raw().unwrap(),
+                    }
+                }
+            }
+
+            let mut search_query = ui.use_state(|| "".to_string(), ()).into_var();
+            let search_nodes = ui.use_memo(
+                || {
+                    let factories = all_node_factories();
+                    let all_nodes = factories.iter().map(|(id, _)| NodeCombo::Factory(*id));
+                    let all_structs = self
+                        .ctx
+                        .registry
+                        .all_objects()
+                        .filter_map(|o| o.as_struct())
+                        .map(|s| NodeCombo::Struct(s.ident));
+                    all_nodes
+                        .chain(all_structs)
+                        .map(|n| (n.as_ref().to_string(), n))
+                        .collect::<AHashMap<_, _>>()
+                },
+                (),
+            );
+
+            let search_bar = ui.text_edit_singleline(search_query.deref_mut());
+
+            ui.use_effect(|| search_bar.request_focus(), ());
+
+            ui.use_cleanup(move || search_bar.surrender_focus(), ());
+
+            if search_query.trim() != "" {
+                for (name, node) in search_nodes
+                    .iter()
+                    .filter(|(k, _)| k.contains(search_query.as_str()))
+                    .take(10)
+                {
+                    if ui.button(name).clicked() {
+                        let node = match node {
+                            NodeCombo::Factory(id) => get_snarl_node(id).unwrap(),
+                            NodeCombo::Struct(id) => Box::new(StructNode::new(*id)),
+                        };
+                        snarl.insert_node(pos, node);
+                        ui.close_menu();
+                    }
+                }
+            }
+
             let categories = node_factories_by_category();
             let mut categories = categories.iter().peekable();
 
@@ -313,8 +379,8 @@ fn pin_stroke(ty: EDataType, registry: &ETypesRegistry) -> Stroke {
     }
 }
 
-fn pin_info(ty: EDataType, registry: &ETypesRegistry) -> PinInfo {
-    let shape = match ty {
+fn pin_info(ty: &EItemInfo, registry: &ETypesRegistry) -> PinInfo {
+    let shape = match ty.ty() {
         EDataType::Boolean | EDataType::Number | EDataType::String | EDataType::Const { .. } => {
             PinInfo::circle()
         }
@@ -324,6 +390,6 @@ fn pin_info(ty: EDataType, registry: &ETypesRegistry) -> PinInfo {
     };
 
     shape
-        .with_fill(pin_color(ty, registry))
-        .with_stroke(pin_stroke(ty, registry))
+        .with_fill(pin_color(ty.ty(), registry))
+        .with_stroke(pin_stroke(ty.ty(), registry))
 }
