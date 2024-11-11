@@ -87,7 +87,7 @@ impl Graph {
             }
 
             commands
-                .execute(&mut ctx, snarl, registry)
+                .execute(&mut ctx, snarl)
                 .with_context(|| "failed sto execute commands")
         })
         .context("failed to connect pins")?;

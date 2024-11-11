@@ -196,6 +196,16 @@ impl<'a> SnarlViewer<SnarlNode> for GraphViewer<'a> {
                         .ctx
                         .registry
                         .all_objects()
+                        .filter(|obj| {
+                            match obj
+                                .extra_properties()
+                                .get("graph_search_hide")
+                                .and_then(|o| o.as_bool())
+                            {
+                                None => true,
+                                Some(hide) => !hide,
+                            }
+                        })
                         .map(|s| NodeCombo::Object(s.ident()));
                     all_nodes
                         .chain(objects)

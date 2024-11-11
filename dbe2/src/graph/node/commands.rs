@@ -207,7 +207,6 @@ impl SnarlCommands {
         &mut self,
         ctx: &mut PartialGraphExecutionContext,
         snarl: &mut Snarl<SnarlNode>,
-        registry: &ETypesRegistry,
     ) -> miette::Result<()> {
         let mut iter = 0;
         while !self.commands.is_empty() {
@@ -217,7 +216,7 @@ impl SnarlCommands {
             }
             let mut commands = std::mem::take(&mut self.commands);
             for command in commands.drain(..) {
-                command.execute(ctx, snarl, registry, self)?;
+                command.execute(ctx, snarl, ctx.registry, self)?;
             }
             if self.commands.is_empty() {
                 self.commands = commands;

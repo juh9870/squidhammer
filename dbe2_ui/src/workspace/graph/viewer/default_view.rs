@@ -35,20 +35,27 @@ fn format_value(value: &EValue) -> String {
     }
 }
 
-fn show_inline_editor(registry: &ETypesRegistry, ty: EDataType) -> bool {
+fn has_inline_editor(registry: &ETypesRegistry, ty: EDataType) -> bool {
     match ty {
         EDataType::Boolean => true,
         EDataType::Number => true,
         EDataType::String => true,
-        EDataType::Object { .. } => false,
-        EDataType::Const { value } => false,
+        EDataType::Object { ident } => registry
+            .get_object(&ident)
+            .map(|obj| {
+                obj.extra_properties()
+                    .get("graph_inline")
+                    .is_some_and(|v| v.as_bool().is_some_and(|v| v))
+            })
+            .unwrap_or(false),
+        EDataType::Const { .. } => false,
         EDataType::List { id } => registry
             .get_list(&id)
-            .map(|list| show_inline_editor(registry, list.value_type))
+            .map(|list| has_inline_editor(registry, list.value_type))
             .unwrap_or(false),
         EDataType::Map { id } => registry
             .get_map(&id)
-            .map(|map| show_inline_editor(registry, map.value_type))
+            .map(|map| has_inline_editor(registry, map.value_type))
             .unwrap_or(false),
     }
 }
@@ -86,7 +93,7 @@ impl NodeView for DefaultNodeView {
         let input_data = node.try_input(viewer.ctx.registry, pin.id.input)?;
         if pin.remotes.is_empty() {
             let value = viewer.ctx.get_inline_input_mut(snarl, pin.id)?;
-            if show_inline_editor(registry, input_data.ty.ty()) {
+            if has_inline_editor(registry, input_data.ty.ty()) {
                 let editor = editor_for_item(registry, &input_data.ty);
                 let res = ui.vertical(|ui| {
                     editor.show(

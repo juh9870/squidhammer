@@ -1,4 +1,4 @@
-struct {
+struct graph_inline=true {
     number "x"
     number "y"
 }

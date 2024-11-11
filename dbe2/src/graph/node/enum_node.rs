@@ -6,7 +6,7 @@ use crate::graph::node::commands::{SnarlCommand, SnarlCommands};
 use crate::graph::node::{impl_serde_node, InputData, Node, NodeFactory, OutputData, SnarlNode};
 use crate::registry::ETypesRegistry;
 use crate::value::EValue;
-use egui_snarl::{InPinId, NodeId, OutPinId};
+use egui_snarl::{InPin, InPinId, NodeId, OutPin};
 use serde::{Deserialize, Serialize};
 use ustr::Ustr;
 
@@ -47,11 +47,11 @@ impl EnumNode {
         }
 
         self.variant = Some(variant);
-        commands.push(SnarlCommand::ReconnectInput {
-            id: InPinId { node, input: 0 },
+        commands.push(SnarlCommand::DropInputsRaw {
+            to: InPinId { node, input: 0 },
         });
-        commands.push(SnarlCommand::ReconnectOutput {
-            id: OutPinId { node, output: 0 },
+        commands.push(SnarlCommand::DeletePinValue {
+            pin: InPinId { node, input: 0 },
         });
 
         Ok(())
@@ -112,6 +112,32 @@ impl Node for EnumNode {
             ty: EItemInfo::simple_type(EDataType::Object { ident: data.ident }),
             name: "output".into(),
         })
+    }
+
+    fn try_connect(
+        &mut self,
+        registry: &ETypesRegistry,
+        commands: &mut SnarlCommands,
+        from: &OutPin,
+        to: &InPin,
+        incoming_type: EItemInfo,
+    ) -> miette::Result<()> {
+        let Some((data, _)) = self.get_data(registry) else {
+            panic!("Unknown enum variant");
+        };
+
+        if to.id.input != 0 {
+            panic!("Enum only has one input");
+        }
+
+        for (variant, id) in data.variants_with_ids() {
+            if variant.data.ty() == incoming_type.ty() {
+                self.set_variant(commands, to.id.node, *id)?;
+                break;
+            }
+        }
+
+        self._default_try_connect(registry, commands, from, to, incoming_type)
     }
 
     fn execute(

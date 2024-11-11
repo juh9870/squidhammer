@@ -126,7 +126,7 @@ impl<'a> PartialGraphExecutionContext<'a> {
         })
         .with_context(|| format!("failed to connect pins: {:?} -> {:?}", from.id, to.id))?;
 
-        commands.execute(self, snarl, self.registry)
+        commands.execute(self, snarl)
     }
 
     pub fn disconnect(
@@ -138,7 +138,7 @@ impl<'a> PartialGraphExecutionContext<'a> {
     ) -> miette::Result<()> {
         snarl[to.id.node].try_disconnect(self.registry, commands, from, to)?;
 
-        commands.execute(self, snarl, self.registry)
+        commands.execute(self, snarl)
     }
 
     pub fn remove_node(
@@ -150,7 +150,7 @@ impl<'a> PartialGraphExecutionContext<'a> {
         commands.push(SnarlCommand::DeleteNode { node });
 
         commands
-            .execute(self, snarl, self.registry)
+            .execute(self, snarl)
             .with_context(|| format!("failed to remove node: {:?}", node))
     }
 }

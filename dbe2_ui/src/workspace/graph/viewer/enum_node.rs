@@ -47,6 +47,7 @@ impl NodeView for EnumNodeViewer {
             });
 
         node.set_variant(&mut viewer.commands, node_id, variant_id)?;
+        viewer.commands.execute(&mut viewer.ctx, snarl)?;
         Ok(())
     }
 }
