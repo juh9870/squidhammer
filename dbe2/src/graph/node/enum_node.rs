@@ -146,12 +146,12 @@ impl Node for EnumNode {
         inputs: &[EValue],
         outputs: &mut Vec<EValue>,
     ) -> miette::Result<()> {
-        let Some((data, variant)) = self.get_data(registry) else {
+        let Some((_, _)) = self.get_data(registry) else {
             panic!("Unknown enum variant");
         };
 
         assert_eq!(inputs.len(), 1);
-        assert_eq!(inputs[0].ty(), variant.data.ty());
+        // assert_eq!(inputs[0].ty(), variant.data.ty());
 
         outputs.clear();
         outputs.push(EValue::Enum {

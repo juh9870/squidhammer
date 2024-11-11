@@ -36,6 +36,7 @@ pub fn get_viewer(id: &Ustr) -> Arc<dyn NodeView> {
 pub trait NodeView: Send + Sync + Debug + 'static {
     fn id(&self) -> Ustr;
 
+    #[allow(clippy::too_many_arguments)]
     fn show_header(
         &self,
         viewer: &GraphViewer,
@@ -75,6 +76,7 @@ pub trait NodeView: Send + Sync + Debug + 'static {
         DefaultNodeView.has_body(viewer, node)
     }
 
+    #[allow(clippy::too_many_arguments)]
     fn show_body(
         &self,
         viewer: &mut GraphViewer,

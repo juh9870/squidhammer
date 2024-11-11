@@ -2,32 +2,32 @@
   "edges": [
     [
       {
-        "node": 2,
-        "output": 0
-      },
-      {
-        "input": 1,
-        "node": 0
-      }
-    ],
-    [
-      {
-        "node": 2,
-        "output": 0
-      },
-      {
-        "input": 1,
-        "node": 1
-      }
-    ],
-    [
-      {
         "node": 5,
         "output": 0
       },
       {
         "input": 1,
         "node": 4
+      }
+    ],
+    [
+      {
+        "node": 7,
+        "output": 0
+      },
+      {
+        "input": 8,
+        "node": 5
+      }
+    ],
+    [
+      {
+        "node": 8,
+        "output": 0
+      },
+      {
+        "input": 11,
+        "node": 5
       }
     ],
     [
@@ -39,44 +39,39 @@
         "input": 0,
         "node": 1
       }
+    ],
+    [
+      {
+        "node": 2,
+        "output": 0
+      },
+      {
+        "input": 1,
+        "node": 1
+      }
+    ],
+    [
+      {
+        "node": 9,
+        "output": 0
+      },
+      {
+        "input": 0,
+        "node": 8
+      }
+    ],
+    [
+      {
+        "node": 2,
+        "output": 0
+      },
+      {
+        "input": 1,
+        "node": 0
+      }
     ]
   ],
   "inputs": [
-    [
-      {
-        "input": 8,
-        "node": 5
-      },
-      "#00000000"
-    ],
-    [
-      {
-        "input": 12,
-        "node": 5
-      },
-      null
-    ],
-    [
-      {
-        "input": 4,
-        "node": 5
-      },
-      0
-    ],
-    [
-      {
-        "input": 6,
-        "node": 5
-      },
-      0
-    ],
-    [
-      {
-        "input": 10,
-        "node": 5
-      },
-      ""
-    ],
     [
       {
         "input": 17,
@@ -93,34 +88,6 @@
     ],
     [
       {
-        "input": 0,
-        "node": 5
-      },
-      ""
-    ],
-    [
-      {
-        "input": 11,
-        "node": 5
-      },
-      null
-    ],
-    [
-      {
-        "input": 3,
-        "node": 5
-      },
-      0
-    ],
-    [
-      {
-        "input": 7,
-        "node": 5
-      },
-      ""
-    ],
-    [
-      {
         "input": 14,
         "node": 5
       },
@@ -128,45 +95,10 @@
     ],
     [
       {
-        "input": 1,
-        "node": 5
-      },
-      ""
-    ],
-    [
-      {
-        "input": 0,
-        "node": 0
-      },
-      20
-    ],
-    [
-      {
-        "input": 16,
-        "node": 5
-      },
-      null
-    ],
-    [
-      {
-        "input": 0,
-        "node": 4
+        "input": 3,
+        "node": 7
       },
       0
-    ],
-    [
-      {
-        "input": 9,
-        "node": 5
-      },
-      ""
-    ],
-    [
-      {
-        "input": 5,
-        "node": 5
-      },
-      null
     ],
     [
       {
@@ -191,17 +123,24 @@
     ],
     [
       {
-        "input": 1,
-        "node": 2
+        "input": 0,
+        "node": 7
       },
-      5
+      0
     ],
     [
       {
-        "input": 15,
+        "input": 5,
         "node": 5
       },
       null
+    ],
+    [
+      {
+        "input": 0,
+        "node": 0
+      },
+      20
     ],
     [
       {
@@ -212,6 +151,34 @@
     ],
     [
       {
+        "input": 15,
+        "node": 5
+      },
+      null
+    ],
+    [
+      {
+        "input": 1,
+        "node": 2
+      },
+      5
+    ],
+    [
+      {
+        "input": 9,
+        "node": 5
+      },
+      ""
+    ],
+    [
+      {
+        "input": 3,
+        "node": 5
+      },
+      0
+    ],
+    [
+      {
         "input": 0,
         "node": 2
       },
@@ -219,8 +186,50 @@
     ],
     [
       {
-        "input": 0,
-        "node": 6
+        "input": 12,
+        "node": 5
+      },
+      null
+    ],
+    [
+      {
+        "input": 1,
+        "node": 7
+      },
+      0
+    ],
+    [
+      {
+        "input": 7,
+        "node": 5
+      },
+      ""
+    ],
+    [
+      {
+        "input": 13,
+        "node": 5
+      },
+      null
+    ],
+    [
+      {
+        "input": 1,
+        "node": 5
+      },
+      ""
+    ],
+    [
+      {
+        "input": 10,
+        "node": 5
+      },
+      ""
+    ],
+    [
+      {
+        "input": 2,
+        "node": 5
       },
       0
     ],
@@ -261,17 +270,59 @@
     ],
     [
       {
-        "input": 13,
+        "input": 0,
+        "node": 6
+      },
+      0
+    ],
+    [
+      {
+        "input": 0,
+        "node": 4
+      },
+      0
+    ],
+    [
+      {
+        "input": 16,
         "node": 5
       },
       null
     ],
     [
       {
-        "input": 2,
+        "input": 4,
         "node": 5
       },
       0
+    ],
+    [
+      {
+        "input": 6,
+        "node": 5
+      },
+      0
+    ],
+    [
+      {
+        "input": 0,
+        "node": 5
+      },
+      ""
+    ],
+    [
+      {
+        "input": 2,
+        "node": 7
+      },
+      0
+    ],
+    [
+      {
+        "input": 0,
+        "node": 9
+      },
+      15
     ]
   ],
   "nodes": [
@@ -367,6 +418,51 @@
         "pos": {
           "x": -282.5,
           "y": -279
+        }
+      }
+    ],
+    [
+      7,
+      {
+        "data": {
+          "id": "color:argb"
+        },
+        "id": "struct_node",
+        "open": true,
+        "pos": {
+          "x": -1032.5,
+          "y": -347
+        }
+      }
+    ],
+    [
+      8,
+      {
+        "data": {
+          "variant": {
+            "ident": "sys:optional<Item=sys:ids/numeric_ref<Id='eh:objects/device'>>",
+            "variant": "some"
+          }
+        },
+        "id": "enum_node",
+        "open": true,
+        "pos": {
+          "x": -1110.5,
+          "y": -43
+        }
+      }
+    ],
+    [
+      9,
+      {
+        "data": {
+          "id": "sys:ids/numeric_ref<Id='eh:objects/device'>"
+        },
+        "id": "struct_node",
+        "open": true,
+        "pos": {
+          "x": -1555.5,
+          "y": -92
         }
       }
     ]

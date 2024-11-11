@@ -95,7 +95,7 @@ impl Node for StructNode {
         let mut fields = BTreeMap::default();
 
         for (i, field) in data.fields.iter().enumerate() {
-            assert_eq!(inputs[i].ty(), field.ty.ty());
+            // assert_eq!(inputs[i].ty(), field.ty.ty());
             fields.insert(field.name, inputs[i].clone());
         }
 

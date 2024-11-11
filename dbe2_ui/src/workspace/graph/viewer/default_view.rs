@@ -115,11 +115,26 @@ impl NodeView for DefaultNodeView {
                 });
             }
         } else {
-            let value = viewer.ctx.read_input(snarl, pin.id)?;
-            ui.horizontal(|ui| {
-                ui.label(&*input_data.name);
-                ui.label(format_value(&value));
-            });
+            let mut value = viewer.ctx.read_input(snarl, pin.id)?;
+            if has_inline_editor(registry, input_data.ty.ty()) {
+                let editor = editor_for_item(registry, &input_data.ty);
+                ui.add_enabled_ui(true, |ui| {
+                    ui.vertical(|ui| {
+                        editor.show(
+                            ui,
+                            registry,
+                            viewer.diagnostics.enter_field(input_data.name.as_str()),
+                            &input_data.name,
+                            &mut value,
+                        )
+                    });
+                });
+            } else {
+                ui.horizontal(|ui| {
+                    ui.label(&*input_data.name);
+                    ui.label(format_value(&value));
+                });
+            }
         }
 
         Ok(pin_info(&input_data.ty, registry))

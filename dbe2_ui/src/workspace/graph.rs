@@ -10,18 +10,14 @@ use dbe2::etype::eitem::EItemInfo;
 use dbe2::etype::EDataType;
 use dbe2::graph::execution::partial::PartialGraphExecutionContext;
 use dbe2::graph::node::commands::SnarlCommands;
-use dbe2::graph::node::enum_node::EnumNode;
-use dbe2::graph::node::struct_node::StructNode;
-use dbe2::graph::node::{
-    all_node_factories, get_snarl_node, node_factories_by_category, NodeFactory, SnarlNode,
-};
-use dbe2::registry::{EObjectType, ETypesRegistry};
+use dbe2::graph::node::{all_node_factories, node_factories_by_category, NodeFactory, SnarlNode};
+use dbe2::registry::ETypesRegistry;
 use dbe2::value::id::ETypeId;
 use eframe::emath::Pos2;
 use egui::{Color32, Stroke, Ui};
 use egui_hooks::UseHookExt;
-use egui_snarl::ui::{PinInfo, SnarlViewer};
-use egui_snarl::{InPin, NodeId, OutPin, Snarl};
+use egui_snarl::ui::{AnyPins, PinInfo, SnarlViewer};
+use egui_snarl::{InPin, NodeId, OutPin, OutPinId, Snarl};
 use random_color::options::Luminosity;
 use random_color::RandomColor;
 use std::iter::Peekable;
@@ -226,88 +222,83 @@ impl<'a> SnarlViewer<SnarlNode> for GraphViewer<'a> {
                 {
                     if ui.button(name).clicked() {
                         let node = match node {
-                            NodeCombo::Factory(id) => get_snarl_node(id).unwrap(),
+                            NodeCombo::Factory(id) => {
+                                self.ctx.create_node(*id, pos, snarl, &mut self.commands)
+                            }
                             NodeCombo::Object(id) => {
-                                let node: SnarlNode = match self
-                                    .ctx
-                                    .registry
-                                    .get_object(id)
-                                    .expect("object id should be valid")
-                                {
-                                    EObjectType::Struct(_) => Box::new(StructNode::new(*id)),
-                                    EObjectType::Enum(data) => {
-                                        Box::new(EnumNode::new(data.variant_ids()[0]))
-                                    }
-                                };
-
-                                node
+                                self.ctx
+                                    .create_object_node(*id, pos, snarl, &mut self.commands)
                             }
                         };
-                        snarl.insert_node(pos, node);
-                        ui.close_menu();
-                    }
-                }
-            }
-
-            let categories = node_factories_by_category();
-            let mut categories = categories.iter().peekable();
-
-            fn is_sub_category(category: &str, parent: &str) -> bool {
-                category.starts_with(parent)
-                    && category.chars().nth(parent.len()).is_some_and(|c| c == '.')
-            }
-            fn show<'a>(
-                ui: &mut Ui,
-                parent: &'static str,
-                categories: &mut Peekable<
-                    impl Iterator<Item = (&'a &'static str, &'a Vec<Arc<dyn NodeFactory>>)>,
-                >,
-            ) -> Option<SnarlNode> {
-                while let Some((cat, _)) = categories.peek() {
-                    if !parent.is_empty() && !is_sub_category(cat, parent) {
-                        return None;
-                    }
-
-                    if !parent.is_empty() {
-                        ui.separator();
-                    }
-
-                    let (category, factories) = categories.next().unwrap();
-                    let cat_name = category
-                        .strip_prefix(parent)
-                        .and_then(|c| c.strip_prefix("."))
-                        .unwrap_or(category);
-                    if let Some(node) = ui
-                        .menu_button(cat_name, |ui| {
-                            for factory in factories.iter() {
-                                if ui.button(factory.id().as_str()).clicked() {
-                                    let node = factory.create();
-                                    ui.close_menu();
-                                    return Some(node);
-                                }
-                            }
-
-                            show(ui, category, categories)
-                        })
-                        .inner
-                        .flatten()
-                    {
-                        return Some(node);
-                    }
-
-                    while let Some((next_cat, _)) = categories.peek() {
-                        if !is_sub_category(next_cat, category) {
-                            break;
+                        if let Err(err) = node {
+                            report_error(err);
                         }
-                        categories.next();
+                        *search_query = "".to_string();
+                        ui.close_menu();
+                        return;
                     }
                 }
+            } else {
+                let categories = node_factories_by_category();
+                let mut categories = categories.iter().peekable();
 
-                None
-            }
+                fn is_sub_category(category: &str, parent: &str) -> bool {
+                    category.starts_with(parent)
+                        && category.chars().nth(parent.len()).is_some_and(|c| c == '.')
+                }
+                fn show<'a>(
+                    ui: &mut Ui,
+                    parent: &'static str,
+                    categories: &mut Peekable<
+                        impl Iterator<Item = (&'a &'static str, &'a Vec<Arc<dyn NodeFactory>>)>,
+                    >,
+                ) -> Option<SnarlNode> {
+                    while let Some((cat, _)) = categories.peek() {
+                        if !parent.is_empty() && !is_sub_category(cat, parent) {
+                            return None;
+                        }
 
-            if let Some(to_insert) = show(ui, "", &mut categories) {
-                snarl.insert_node(pos, to_insert);
+                        if !parent.is_empty() {
+                            ui.separator();
+                        }
+
+                        let (category, factories) = categories.next().unwrap();
+                        let cat_name = category
+                            .strip_prefix(parent)
+                            .and_then(|c| c.strip_prefix("."))
+                            .unwrap_or(category);
+                        if let Some(node) = ui
+                            .menu_button(cat_name, |ui| {
+                                for factory in factories.iter() {
+                                    if ui.button(factory.id().as_str()).clicked() {
+                                        let node = factory.create();
+                                        ui.close_menu();
+                                        return Some(node);
+                                    }
+                                }
+
+                                show(ui, category, categories)
+                            })
+                            .inner
+                            .flatten()
+                        {
+                            return Some(node);
+                        }
+
+                        while let Some((next_cat, _)) = categories.peek() {
+                            if !is_sub_category(next_cat, category) {
+                                break;
+                            }
+                            categories.next();
+                        }
+                    }
+
+                    None
+                }
+
+                if let Some(to_insert) = show(ui, "", &mut categories) {
+                    snarl.insert_node(pos, to_insert);
+                }
             }
         });
     }
@@ -371,6 +362,57 @@ impl<'a> SnarlViewer<SnarlNode> for GraphViewer<'a> {
             Ok(())
         }) {
             report_error(err);
+        }
+    }
+
+    fn has_dropped_wire_menu(&mut self, _src_pins: AnyPins, _snarl: &mut Snarl<SnarlNode>) -> bool {
+        true
+    }
+
+    fn show_dropped_wire_menu(
+        &mut self,
+        pos: Pos2,
+        ui: &mut Ui,
+        _scale: f32,
+        src_pins: AnyPins,
+        snarl: &mut Snarl<SnarlNode>,
+    ) {
+        match src_pins {
+            AnyPins::Out(_) => ui.close_menu(),
+            AnyPins::In(pins) => {
+                for pin in pins {
+                    m_try(|| {
+                        let node = &snarl[pin.node];
+                        let data = node.try_input(self.ctx.registry, pin.input)?;
+                        match data.ty.ty() {
+                            EDataType::Object { ident } => {
+                                if ui.button(ident.as_raw().unwrap()).clicked() {
+                                    let node = self.ctx.create_object_node(
+                                        ident,
+                                        pos,
+                                        snarl,
+                                        &mut self.commands,
+                                    )?;
+                                    self.ctx.connect(
+                                        &snarl.out_pin(OutPinId { node, output: 0 }),
+                                        &snarl.in_pin(*pin),
+                                        snarl,
+                                        &mut self.commands,
+                                    )?;
+                                    ui.close_menu();
+                                }
+                            }
+                            // TODO: search by output type
+                            _ => ui.close_menu(),
+                        }
+                        Ok(())
+                    })
+                    .unwrap_or_else(|err| {
+                        report_error(err);
+                        ui.close_menu()
+                    })
+                }
+            }
         }
     }
 }

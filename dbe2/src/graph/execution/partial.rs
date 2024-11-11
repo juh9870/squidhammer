@@ -1,13 +1,18 @@
 use crate::graph::execution::GraphExecutionContext;
 use crate::graph::node::commands::{SnarlCommand, SnarlCommands};
-use crate::graph::node::SnarlNode;
+use crate::graph::node::enum_node::EnumNode;
+use crate::graph::node::struct_node::StructNode;
+use crate::graph::node::{get_snarl_node, SnarlNode};
 use crate::graph::Graph;
 use crate::m_try;
-use crate::registry::ETypesRegistry;
+use crate::registry::{EObjectType, ETypesRegistry};
+use crate::value::id::ETypeId;
 use crate::value::EValue;
 use ahash::AHashMap;
 use egui_snarl::{InPin, InPinId, NodeId, OutPin, OutPinId, Snarl};
+use emath::Pos2;
 use miette::Context;
+use ustr::Ustr;
 
 #[derive(Debug)]
 pub struct PartialGraphExecutionContext<'a> {
@@ -152,5 +157,40 @@ impl<'a> PartialGraphExecutionContext<'a> {
         commands
             .execute(self, snarl)
             .with_context(|| format!("failed to remove node: {:?}", node))
+    }
+
+    pub fn create_node(
+        &mut self,
+        id: Ustr,
+        pos: Pos2,
+        snarl: &mut Snarl<SnarlNode>,
+        _commands: &mut SnarlCommands,
+    ) -> miette::Result<NodeId> {
+        let id = snarl.insert_node(pos, get_snarl_node(&id).unwrap());
+        self.inputs.retain(|in_pin, _| in_pin.node != id);
+
+        Ok(id)
+    }
+
+    pub fn create_object_node(
+        &mut self,
+        object: ETypeId,
+        pos: Pos2,
+        snarl: &mut Snarl<SnarlNode>,
+        _commands: &mut SnarlCommands,
+    ) -> miette::Result<NodeId> {
+        let node: SnarlNode = match self
+            .registry
+            .get_object(&object)
+            .expect("object id should be valid")
+        {
+            EObjectType::Struct(_) => Box::new(StructNode::new(object)),
+            EObjectType::Enum(data) => Box::new(EnumNode::new(data.variant_ids()[0])),
+        };
+
+        let id = snarl.insert_node(pos, node);
+        self.inputs.retain(|in_pin, _| in_pin.node != id);
+
+        Ok(id)
     }
 }
