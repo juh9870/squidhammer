@@ -18,7 +18,12 @@ pub enum SnarlCommand {
     ///
     /// The most likely use case for this is when a node's output pin type
     /// changes, this allows to propagate the change and clean up the now invalid connections
-    Reconnect { id: OutPinId },
+    ReconnectOutput { id: OutPinId },
+    /// Disconnects and reconnects all connection to the input pin, running the connected nodes' logic
+    ///
+    /// The most likely use case for this is when a node's input pin type
+    /// changes, this allows to propagate the change and clean up the now invalid connections
+    ReconnectInput { id: InPinId },
     /// Marks a node as dirty
     MarkDirty { node: NodeId },
     /// Removes the inline input value of the pin
@@ -114,11 +119,19 @@ impl SnarlCommand {
             SnarlCommand::Custom { cb } => {
                 cb(ctx, snarl, registry)?;
             }
-            SnarlCommand::Reconnect { id } => {
+            SnarlCommand::ReconnectOutput { id } => {
                 for pin in snarl.out_pin(id).remotes {
                     SnarlCommand::Disconnect { from: id, to: pin }
                         .execute(ctx, snarl, registry, commands)?;
                     SnarlCommand::Connect { from: id, to: pin }
+                        .execute(ctx, snarl, registry, commands)?;
+                }
+            }
+            SnarlCommand::ReconnectInput { id } => {
+                for pin in snarl.in_pin(id).remotes {
+                    SnarlCommand::Disconnect { from: pin, to: id }
+                        .execute(ctx, snarl, registry, commands)?;
+                    SnarlCommand::Connect { from: pin, to: id }
                         .execute(ctx, snarl, registry, commands)?;
                 }
             }

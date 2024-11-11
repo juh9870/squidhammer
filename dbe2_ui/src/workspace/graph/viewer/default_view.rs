@@ -1,7 +1,9 @@
 use crate::workspace::editors::editor_for_item;
 use crate::workspace::graph::viewer::NodeView;
 use crate::workspace::graph::{pin_info, GraphViewer};
+use dbe2::etype::EDataType;
 use dbe2::graph::node::SnarlNode;
+use dbe2::registry::ETypesRegistry;
 use dbe2::value::EValue;
 use egui::Ui;
 use egui_snarl::ui::PinInfo;
@@ -12,13 +14,13 @@ use ustr::Ustr;
 #[derive(Debug)]
 pub struct DefaultNodeView;
 
-fn format_value(value: EValue) -> String {
+fn format_value(value: &EValue) -> String {
     match value {
         EValue::Null => "null".to_string(),
         EValue::Boolean { value } => value.to_string(),
-        EValue::Number { value } => {
-            format!("{}", value)
-        }
+        EValue::Number { value } => format!("{:.5}", value)
+            .trim_end_matches(['0', '.'])
+            .to_string(),
         EValue::String { value } => {
             if value.len() > 8 {
                 format!("{:?}...", &value[..8])
@@ -26,10 +28,28 @@ fn format_value(value: EValue) -> String {
                 format!("{:?}", value)
             }
         }
-        EValue::Struct { .. } => ("struct{{...}}").to_string(),
-        EValue::Enum { .. } => ("enum{{...}}").to_string(),
-        EValue::List { .. } => "[...]".to_string(),
-        EValue::Map { .. } => "{...}".to_string(),
+        EValue::Struct { .. } => "".to_string(),
+        EValue::Enum { .. } => "".to_string(),
+        EValue::List { .. } => "".to_string(),
+        EValue::Map { .. } => "".to_string(),
+    }
+}
+
+fn show_inline_editor(registry: &ETypesRegistry, ty: EDataType) -> bool {
+    match ty {
+        EDataType::Boolean => true,
+        EDataType::Number => true,
+        EDataType::String => true,
+        EDataType::Object { .. } => false,
+        EDataType::Const { value } => false,
+        EDataType::List { id } => registry
+            .get_list(&id)
+            .map(|list| show_inline_editor(registry, list.value_type))
+            .unwrap_or(false),
+        EDataType::Map { id } => registry
+            .get_map(&id)
+            .map(|map| show_inline_editor(registry, map.value_type))
+            .unwrap_or(false),
     }
 }
 
@@ -66,25 +86,32 @@ impl NodeView for DefaultNodeView {
         let input_data = node.try_input(viewer.ctx.registry, pin.id.input)?;
         if pin.remotes.is_empty() {
             let value = viewer.ctx.get_inline_input_mut(snarl, pin.id)?;
-            let editor = editor_for_item(registry, &input_data.ty);
-            let res = ui.vertical(|ui| {
-                editor.show(
-                    ui,
-                    registry,
-                    viewer.diagnostics.enter_field(input_data.name.as_str()),
-                    &input_data.name,
-                    value,
-                )
-            });
+            if show_inline_editor(registry, input_data.ty.ty()) {
+                let editor = editor_for_item(registry, &input_data.ty);
+                let res = ui.vertical(|ui| {
+                    editor.show(
+                        ui,
+                        registry,
+                        viewer.diagnostics.enter_field(input_data.name.as_str()),
+                        &input_data.name,
+                        value,
+                    )
+                });
 
-            if res.inner.changed {
-                viewer.ctx.mark_dirty(snarl, pin.id.node);
+                if res.inner.changed {
+                    viewer.ctx.mark_dirty(snarl, pin.id.node);
+                }
+            } else {
+                ui.horizontal(|ui| {
+                    ui.label(&*input_data.name);
+                    ui.label(format_value(value));
+                });
             }
         } else {
             let value = viewer.ctx.read_input(snarl, pin.id)?;
             ui.horizontal(|ui| {
                 ui.label(&*input_data.name);
-                ui.label(format_value(value));
+                ui.label(format_value(&value));
             });
         }
 
@@ -105,9 +132,26 @@ impl NodeView for DefaultNodeView {
         let value = viewer.ctx.read_output(snarl, pin.id)?;
         ui.horizontal(|ui| {
             ui.label(&*output_data.name);
-            ui.label(format_value(value));
+            ui.label(format_value(&value));
         });
 
         Ok(pin_info(&output_data.ty, registry))
+    }
+
+    fn has_body(&self, _viewer: &mut GraphViewer, _node: &SnarlNode) -> miette::Result<bool> {
+        Ok(false)
+    }
+
+    fn show_body(
+        &self,
+        _viewer: &mut GraphViewer,
+        _node: NodeId,
+        _inputs: &[InPin],
+        _outputs: &[OutPin],
+        _ui: &mut Ui,
+        _scale: f32,
+        _snarl: &mut Snarl<SnarlNode>,
+    ) -> miette::Result<()> {
+        Ok(())
     }
 }

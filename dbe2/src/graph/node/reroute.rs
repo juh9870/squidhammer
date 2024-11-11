@@ -70,7 +70,7 @@ impl Node for RerouteNode {
             self.inputs[i] = incoming_type.clone();
             // Reconnect the corresponding output pin to propagate type
             // changes and clear invalid connections
-            commands.push(SnarlCommand::Reconnect {
+            commands.push(SnarlCommand::ReconnectOutput {
                 id: OutPinId {
                     node: to.id.node,
                     output: i,

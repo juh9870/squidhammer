@@ -1,4 +1,5 @@
 use crate::workspace::graph::viewer::default_view::DefaultNodeView;
+use crate::workspace::graph::viewer::enum_node::EnumNodeViewer;
 use crate::workspace::graph::viewer::reroute::RerouteViewer;
 use crate::workspace::graph::GraphViewer;
 use atomic_refcell::AtomicRefCell;
@@ -12,15 +13,15 @@ use std::sync::{Arc, LazyLock};
 use ustr::{Ustr, UstrMap};
 
 pub mod default_view;
+pub mod enum_node;
 pub mod reroute;
 
 static NODE_VIEWERS: LazyLock<AtomicRefCell<UstrMap<Arc<dyn NodeView>>>> =
     LazyLock::new(|| AtomicRefCell::new(default_viewers().collect()));
-static DEFAULT_VIEWER: LazyLock<Arc<dyn NodeView>> =
-    LazyLock::new(|| Arc::new(default_view::DefaultNodeView));
+static DEFAULT_VIEWER: LazyLock<Arc<dyn NodeView>> = LazyLock::new(|| Arc::new(DefaultNodeView));
 
 fn default_viewers() -> impl Iterator<Item = (Ustr, Arc<dyn NodeView>)> {
-    let v: Vec<Arc<dyn NodeView>> = vec![Arc::new(RerouteViewer)];
+    let v: Vec<Arc<dyn NodeView>> = vec![Arc::new(RerouteViewer), Arc::new(EnumNodeViewer)];
     v.into_iter().map(|item| (Ustr::from(&item.id()), item))
 }
 
@@ -68,5 +69,22 @@ pub trait NodeView: Send + Sync + Debug + 'static {
         snarl: &mut Snarl<SnarlNode>,
     ) -> miette::Result<PinInfo> {
         DefaultNodeView.show_output(viewer, pin, ui, _scale, snarl)
+    }
+
+    fn has_body(&self, viewer: &mut GraphViewer, node: &SnarlNode) -> miette::Result<bool> {
+        DefaultNodeView.has_body(viewer, node)
+    }
+
+    fn show_body(
+        &self,
+        viewer: &mut GraphViewer,
+        node: NodeId,
+        inputs: &[InPin],
+        outputs: &[OutPin],
+        ui: &mut Ui,
+        scale: f32,
+        snarl: &mut Snarl<SnarlNode>,
+    ) -> miette::Result<()> {
+        DefaultNodeView.show_body(viewer, node, inputs, outputs, ui, scale, snarl)
     }
 }

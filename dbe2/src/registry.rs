@@ -101,6 +101,13 @@ impl EObjectType {
         }
     }
 
+    pub fn ident(&self) -> ETypeId {
+        match self {
+            EObjectType::Struct(s) => s.ident,
+            EObjectType::Enum(e) => e.ident,
+        }
+    }
+
     // pub fn default_editor(&self) -> Option<&str> {
     //     match self {
     //         EObjectType::Struct(s) => s.default_editor.as_ref().map(|e| e.as_str()),

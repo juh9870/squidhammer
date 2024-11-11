@@ -1,11 +1,10 @@
 use crate::etype::eitem::EItemInfo;
 use crate::etype::EDataType;
 use crate::graph::node::{impl_serde_node, InputData, Node, NodeFactory, OutputData, SnarlNode};
-use crate::json_utils::JsonValue;
 use crate::registry::ETypesRegistry;
 use crate::value::id::ETypeId;
 use crate::value::EValue;
-use miette::{miette, IntoDiagnostic};
+use miette::miette;
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 use ustr::Ustr;
@@ -74,7 +73,7 @@ impl Node for StructNode {
         };
 
         if output != 0 {
-            panic!("Invalid output index")
+            panic!("Struct only has one output")
         }
 
         Ok(OutputData {
@@ -96,6 +95,7 @@ impl Node for StructNode {
         let mut fields = BTreeMap::default();
 
         for (i, field) in data.fields.iter().enumerate() {
+            assert_eq!(inputs[i].ty(), field.ty.ty());
             fields.insert(field.name, inputs[i].clone());
         }
 

@@ -17,6 +17,7 @@ use std::sync::{Arc, LazyLock};
 use ustr::{Ustr, UstrMap};
 
 pub mod commands;
+pub mod enum_node;
 pub mod functional;
 pub mod reroute;
 pub mod struct_node;
@@ -42,6 +43,7 @@ fn default_nodes() -> impl Iterator<Item = (Ustr, Arc<dyn NodeFactory>)> {
     let mut v: Vec<Arc<dyn NodeFactory>> = functional_nodes();
     v.push(Arc::new(RerouteFactory));
     v.push(Arc::new(StructNodeFactory));
+    v.push(Arc::new(EnumNodeFactory));
     v.into_iter().map(|item| (Ustr::from(&item.id()), item))
 }
 
@@ -130,7 +132,7 @@ pub trait Node: DynClone + Debug + Send + Sync + Downcast + 'static {
     ) -> miette::Result<OutputData>;
 
     fn try_input(&self, registry: &ETypesRegistry, input: usize) -> miette::Result<InputData> {
-        if input > self.inputs_count(registry) {
+        if input >= self.inputs_count(registry) {
             bail!("input index out of bounds")
         } else {
             self.input_unchecked(registry, input)
@@ -138,7 +140,7 @@ pub trait Node: DynClone + Debug + Send + Sync + Downcast + 'static {
     }
 
     fn try_output(&self, registry: &ETypesRegistry, output: usize) -> miette::Result<OutputData> {
-        if output > self.outputs_count(registry) {
+        if output >= self.outputs_count(registry) {
             bail!("output index out of bounds")
         } else {
             self.output_unchecked(registry, output)
@@ -233,21 +235,24 @@ impl_downcast!(Node);
 /// Implements write_json and parse_json for the node by serializing whole node struct via serde
 macro_rules! impl_serde_node {
     () => {
-        fn write_json(&self, _registry: &ETypesRegistry) -> miette::Result<JsonValue> {
-            serde_json::value::to_value(&self).into_diagnostic()
+        fn write_json(
+            &self,
+            _registry: &ETypesRegistry,
+        ) -> miette::Result<$crate::json_utils::JsonValue> {
+            miette::IntoDiagnostic::into_diagnostic(serde_json::value::to_value(&self))
         }
 
         fn parse_json(
             &mut self,
             _registry: &ETypesRegistry,
-            value: &mut JsonValue,
+            value: &mut $crate::json_utils::JsonValue,
         ) -> miette::Result<()> {
-            Self::deserialize(value.take())
-                .into_diagnostic()
+            miette::IntoDiagnostic::into_diagnostic(Self::deserialize(value.take()))
                 .map(|node| *self = node)
         }
     };
 }
 
+use crate::graph::node::enum_node::EnumNodeFactory;
 use crate::graph::node::struct_node::StructNodeFactory;
 pub(crate) use impl_serde_node;

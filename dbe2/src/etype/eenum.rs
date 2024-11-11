@@ -117,11 +117,11 @@ impl EEnumData {
         }
     }
 
-    pub fn variants(&self) -> &Vec<EEnumVariant> {
+    pub fn variants(&self) -> &[EEnumVariant] {
         &self.variants
     }
 
-    pub fn variant_ids(&self) -> &Vec<EEnumVariantId> {
+    pub fn variant_ids(&self) -> &[EEnumVariantId] {
         &self.variant_ids
     }
 

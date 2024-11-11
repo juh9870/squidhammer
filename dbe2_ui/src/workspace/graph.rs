@@ -10,11 +10,12 @@ use dbe2::etype::eitem::EItemInfo;
 use dbe2::etype::EDataType;
 use dbe2::graph::execution::partial::PartialGraphExecutionContext;
 use dbe2::graph::node::commands::SnarlCommands;
+use dbe2::graph::node::enum_node::EnumNode;
 use dbe2::graph::node::struct_node::StructNode;
 use dbe2::graph::node::{
     all_node_factories, get_snarl_node, node_factories_by_category, NodeFactory, SnarlNode,
 };
-use dbe2::registry::ETypesRegistry;
+use dbe2::registry::{EObjectType, ETypesRegistry};
 use dbe2::value::id::ETypeId;
 use eframe::emath::Pos2;
 use egui::{Color32, Stroke, Ui};
@@ -129,6 +130,36 @@ impl<'a> SnarlViewer<SnarlNode> for GraphViewer<'a> {
             })
     }
 
+    fn has_body(&mut self, node: &SnarlNode) -> bool {
+        m_try(|| get_viewer(&node.id()).has_body(self, node)).unwrap_or_else(|err| {
+            report_error(err);
+            false
+        })
+    }
+
+    fn show_body(
+        &mut self,
+        node: NodeId,
+        inputs: &[InPin],
+        outputs: &[OutPin],
+        ui: &mut Ui,
+        scale: f32,
+        snarl: &mut Snarl<SnarlNode>,
+    ) {
+        m_try(|| {
+            get_viewer(&snarl[node].id()).show_body(self, node, inputs, outputs, ui, scale, snarl)
+        })
+        .unwrap_or_else(|err| {
+            diagnostic_widget(
+                ui,
+                &Diagnostic {
+                    info: err,
+                    level: DiagnosticLevel::Error,
+                },
+            );
+        })
+    }
+
     fn has_graph_menu(&mut self, _pos: Pos2, _snarl: &mut Snarl<SnarlNode>) -> bool {
         true
     }
@@ -144,14 +175,14 @@ impl<'a> SnarlViewer<SnarlNode> for GraphViewer<'a> {
             #[derive(Debug, Copy, Clone)]
             enum NodeCombo {
                 Factory(Ustr),
-                Struct(ETypeId),
+                Object(ETypeId),
             }
 
             impl AsRef<str> for NodeCombo {
                 fn as_ref(&self) -> &str {
                     match self {
                         NodeCombo::Factory(id) => id.as_str(),
-                        NodeCombo::Struct(id) => id.as_raw().unwrap(),
+                        NodeCombo::Object(id) => id.as_raw().unwrap(),
                     }
                 }
             }
@@ -161,14 +192,13 @@ impl<'a> SnarlViewer<SnarlNode> for GraphViewer<'a> {
                 || {
                     let factories = all_node_factories();
                     let all_nodes = factories.iter().map(|(id, _)| NodeCombo::Factory(*id));
-                    let all_structs = self
+                    let objects = self
                         .ctx
                         .registry
                         .all_objects()
-                        .filter_map(|o| o.as_struct())
-                        .map(|s| NodeCombo::Struct(s.ident));
+                        .map(|s| NodeCombo::Object(s.ident()));
                     all_nodes
-                        .chain(all_structs)
+                        .chain(objects)
                         .map(|n| (n.as_ref().to_string(), n))
                         .collect::<AHashMap<_, _>>()
                 },
@@ -190,7 +220,21 @@ impl<'a> SnarlViewer<SnarlNode> for GraphViewer<'a> {
                     if ui.button(name).clicked() {
                         let node = match node {
                             NodeCombo::Factory(id) => get_snarl_node(id).unwrap(),
-                            NodeCombo::Struct(id) => Box::new(StructNode::new(*id)),
+                            NodeCombo::Object(id) => {
+                                let node: SnarlNode = match self
+                                    .ctx
+                                    .registry
+                                    .get_object(id)
+                                    .expect("object id should be valid")
+                                {
+                                    EObjectType::Struct(_) => Box::new(StructNode::new(*id)),
+                                    EObjectType::Enum(data) => {
+                                        Box::new(EnumNode::new(data.variant_ids()[0]))
+                                    }
+                                };
+
+                                node
+                            }
                         };
                         snarl.insert_node(pos, node);
                         ui.close_menu();
