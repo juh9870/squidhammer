@@ -1,6 +1,7 @@
 use crate::graph::node::SnarlNode;
 use crate::graph::Graph;
 use crate::m_try;
+use crate::project::side_effects::SideEffectsContext;
 use crate::registry::ETypesRegistry;
 use crate::value::EValue;
 use ahash::AHashMap;
@@ -16,16 +17,22 @@ pub struct GraphExecutionContext<'a, 'snarl> {
     pub snarl: &'snarl Snarl<SnarlNode>,
     pub inputs: &'a mut AHashMap<InPinId, EValue>,
     pub registry: &'a ETypesRegistry,
+    pub side_effects: SideEffectsContext<'a>,
     cache: &'a mut AHashMap<NodeId, Vec<EValue>>,
 }
 
 impl<'a> GraphExecutionContext<'a, 'a> {
-    pub fn from_graph(graph: &'a mut Graph, registry: &'a ETypesRegistry) -> Self {
+    pub fn from_graph(
+        graph: &'a mut Graph,
+        registry: &'a ETypesRegistry,
+        side_effects: SideEffectsContext<'a>,
+    ) -> Self {
         GraphExecutionContext {
             snarl: &graph.snarl,
             inputs: &mut graph.inputs,
             cache: &mut graph.cache,
             registry,
+            side_effects,
         }
     }
 }
@@ -36,8 +43,8 @@ impl<'a, 'snarl> GraphExecutionContext<'a, 'snarl> {
         self.mark_dirty_inner(node, &mut SmallVec::new());
     }
 
-    pub fn full_eval(&mut self) -> miette::Result<()> {
-        // self.cache.clear();
+    pub fn full_eval(&mut self, side_effects: bool) -> miette::Result<()> {
+        self.cache.clear();
         for (id, has_side_effects) in self
             .snarl
             .node_ids()
@@ -52,7 +59,7 @@ impl<'a, 'snarl> GraphExecutionContext<'a, 'snarl> {
 
             let mut stack = Vec::new();
 
-            self.eval_node_inner(&mut stack, id)?
+            self.eval_node_inner(&mut stack, id, side_effects)?
         }
 
         Ok(())
@@ -60,7 +67,7 @@ impl<'a, 'snarl> GraphExecutionContext<'a, 'snarl> {
 
     pub fn read_output(&mut self, id: OutPinId) -> miette::Result<EValue> {
         let mut stack = Vec::new();
-        self.read_node_output_inner(&mut stack, id)
+        self.read_node_output_inner(&mut stack, id, false)
     }
 
     pub fn read_input(&mut self, id: InPinId) -> miette::Result<EValue> {
@@ -69,7 +76,7 @@ impl<'a, 'snarl> GraphExecutionContext<'a, 'snarl> {
             .get_node(id.node)
             .ok_or_else(|| miette!("Node {:?} not found", id.node))?;
         let mut stack = Vec::new();
-        self.read_node_input_inner(&mut stack, id, node)
+        self.read_node_input_inner(&mut stack, id, node, false)
     }
 }
 
@@ -96,6 +103,7 @@ impl<'a, 'snarl> GraphExecutionContext<'a, 'snarl> {
         &mut self,
         stack: &mut Vec<NodeId>,
         pin: OutPinId,
+        side_effects: bool,
     ) -> miette::Result<EValue> {
         // trace!("Reading output #{} of node {:?}", pin.output, pin.node);
         m_try(|| {
@@ -106,7 +114,7 @@ impl<'a, 'snarl> GraphExecutionContext<'a, 'snarl> {
                     .clone());
             }
 
-            self.eval_node_inner(stack, pin.node)?;
+            self.eval_node_inner(stack, pin.node, side_effects)?;
 
             let node = self.cache.get(&pin.node).ok_or_else(|| {
                 miette!("!!INTERNAL ERROR!! Node was not cached after evaluation")
@@ -144,6 +152,7 @@ impl<'a, 'snarl> GraphExecutionContext<'a, 'snarl> {
         stack: &mut Vec<NodeId>,
         id: InPinId,
         node: &SnarlNode,
+        side_effects: bool,
     ) -> miette::Result<EValue> {
         // trace!("Reading input #{} of node {:?}", id.input, id.node);
         m_try(|| {
@@ -153,7 +162,7 @@ impl<'a, 'snarl> GraphExecutionContext<'a, 'snarl> {
                 self.inline_input_value(slot.id, node)?.clone()
             } else if slot.remotes.len() == 1 {
                 let remote = slot.remotes[0];
-                self.read_node_output_inner(stack, remote)?
+                self.read_node_output_inner(stack, remote, side_effects)?
             } else {
                 // TODO: allow multi-connect for inputs
                 bail!(
@@ -168,7 +177,12 @@ impl<'a, 'snarl> GraphExecutionContext<'a, 'snarl> {
         .with_context(|| format!("failed to read input #{} of node {:?}", id.input, id.node))
     }
 
-    fn eval_node_inner(&mut self, stack: &mut Vec<NodeId>, id: NodeId) -> miette::Result<()> {
+    fn eval_node_inner(
+        &mut self,
+        stack: &mut Vec<NodeId>,
+        id: NodeId,
+        side_effects: bool,
+    ) -> miette::Result<()> {
         // trace!("Evaluating node {:?}", id);
         m_try(|| {
             if stack.contains(&id) {
@@ -189,11 +203,21 @@ impl<'a, 'snarl> GraphExecutionContext<'a, 'snarl> {
                     stack,
                     InPinId { node: id, input: i },
                     node,
+                    side_effects,
                 )?);
             }
 
             let outputs_count = node.outputs_count(self.registry);
             let mut outputs = Vec::with_capacity(outputs_count);
+            if side_effects && node.has_side_effects() {
+                let side_effects = self.side_effects.with_node(id);
+                node.execute_side_effects(
+                    self.registry,
+                    &input_values,
+                    &mut outputs,
+                    side_effects,
+                )?;
+            }
             node.execute(self.registry, &input_values, &mut outputs)?;
 
             // TODO: check for validity of returned values types

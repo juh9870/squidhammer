@@ -3,6 +3,7 @@ use crate::graph::node::commands::SnarlCommands;
 use crate::graph::node::{get_snarl_node, SnarlNode};
 use crate::json_utils::JsonValue;
 use crate::m_try;
+use crate::project::side_effects::{SideEffects, SideEffectsContext};
 use crate::registry::ETypesRegistry;
 use crate::value::EValue;
 use ahash::AHashMap;
@@ -55,7 +56,12 @@ impl Graph {
         };
 
         m_try(|| {
-            let (mut ctx, snarl) = PartialGraphExecutionContext::from_graph(&mut graph, registry);
+            let mut side_effects = SideEffects::default();
+            let (mut ctx, snarl) = PartialGraphExecutionContext::from_graph(
+                &mut graph,
+                registry,
+                SideEffectsContext::new(&mut side_effects, "".into()),
+            );
             let commands = &mut SnarlCommands::new();
 
             let mut to_connect = Vec::with_capacity(packed.edges.len());
@@ -88,7 +94,13 @@ impl Graph {
 
             commands
                 .execute(&mut ctx, snarl)
-                .with_context(|| "failed sto execute commands")
+                .with_context(|| "failed sto execute commands")?;
+
+            if !side_effects.is_empty() {
+                panic!("Side effects are not supported during deserialization");
+            }
+
+            Ok(())
         })
         .context("failed to connect pins")?;
 

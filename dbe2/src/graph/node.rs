@@ -20,6 +20,7 @@ pub mod commands;
 pub mod enum_node;
 pub mod functional;
 pub mod reroute;
+pub mod saving_node;
 pub mod struct_node;
 
 static NODE_FACTORIES: LazyLock<AtomicRefCell<UstrMap<Arc<dyn NodeFactory>>>> =
@@ -44,6 +45,7 @@ fn default_nodes() -> impl Iterator<Item = (Ustr, Arc<dyn NodeFactory>)> {
     v.push(Arc::new(RerouteFactory));
     v.push(Arc::new(StructNodeFactory));
     v.push(Arc::new(EnumNodeFactory));
+    v.push(Arc::new(SavingNodeFactory));
     v.into_iter().map(|item| (Ustr::from(&item.id()), item))
 }
 
@@ -183,6 +185,18 @@ pub trait Node: DynClone + Debug + Send + Sync + Downcast + 'static {
     }
 
     /// Execute the node
+    fn execute_side_effects(
+        &self,
+        registry: &ETypesRegistry,
+        inputs: &[EValue],
+        outputs: &mut Vec<EValue>,
+        side_effects: SideEffectsContext<'_>,
+    ) -> miette::Result<()> {
+        let _ = (registry, inputs, outputs, side_effects);
+        panic!("Node has no side effects")
+    }
+
+    /// Execute the node
     fn execute(
         &self,
         registry: &ETypesRegistry,
@@ -254,5 +268,7 @@ macro_rules! impl_serde_node {
 }
 
 use crate::graph::node::enum_node::EnumNodeFactory;
+use crate::graph::node::saving_node::SavingNodeFactory;
 use crate::graph::node::struct_node::StructNodeFactory;
+use crate::project::side_effects::SideEffectsContext;
 pub(crate) use impl_serde_node;

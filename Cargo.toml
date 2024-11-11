@@ -65,6 +65,7 @@ tracing-panic = "0.1.2"
 tracing-subscriber = "0.3.18"
 ustr = "1.0.0"
 walkdir = "2.5.0"
+path-clean = "1.0.1"
 
 # Workspace crates
 dbe2 = { path = "dbe2" }

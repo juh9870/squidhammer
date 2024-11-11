@@ -5,6 +5,7 @@ use crate::graph::node::struct_node::StructNode;
 use crate::graph::node::{get_snarl_node, SnarlNode};
 use crate::graph::Graph;
 use crate::m_try;
+use crate::project::side_effects::SideEffectsContext;
 use crate::registry::{EObjectType, ETypesRegistry};
 use crate::value::id::ETypeId;
 use crate::value::EValue;
@@ -18,6 +19,7 @@ use ustr::Ustr;
 pub struct PartialGraphExecutionContext<'a> {
     pub inputs: &'a mut AHashMap<InPinId, EValue>,
     pub registry: &'a ETypesRegistry,
+    pub side_effects: SideEffectsContext<'a>,
     cache: &'a mut AHashMap<NodeId, Vec<EValue>>,
 }
 
@@ -30,6 +32,7 @@ impl<'a> PartialGraphExecutionContext<'a> {
                 inputs: ctx.inputs,
                 cache: ctx.cache,
                 registry: ctx.registry,
+                side_effects: ctx.side_effects.clone(),
             },
             ctx.snarl,
         )
@@ -38,12 +41,14 @@ impl<'a> PartialGraphExecutionContext<'a> {
     pub fn from_graph(
         graph: &'a mut Graph,
         registry: &'a ETypesRegistry,
+        side_effects: SideEffectsContext<'a>,
     ) -> (Self, &'a mut Snarl<SnarlNode>) {
         (
             PartialGraphExecutionContext {
                 inputs: &mut graph.inputs,
                 cache: &mut graph.cache,
                 registry,
+                side_effects,
             },
             &mut graph.snarl,
         )
@@ -61,6 +66,7 @@ impl<'a> PartialGraphExecutionContext<'a> {
             inputs: self.inputs,
             cache: self.cache,
             registry: self.registry,
+            side_effects: self.side_effects.clone(),
         }
     }
 
@@ -68,8 +74,12 @@ impl<'a> PartialGraphExecutionContext<'a> {
         self.as_full(snarl).mark_dirty(node)
     }
 
-    pub fn full_eval(&mut self, snarl: &Snarl<SnarlNode>) -> miette::Result<()> {
-        self.as_full(snarl).full_eval()
+    pub fn full_eval(
+        &mut self,
+        snarl: &Snarl<SnarlNode>,
+        side_effects: bool,
+    ) -> miette::Result<()> {
+        self.as_full(snarl).full_eval(side_effects)
     }
 
     pub fn read_output(

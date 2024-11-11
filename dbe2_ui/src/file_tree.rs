@@ -34,7 +34,7 @@ pub fn file_tab(ui: &mut Ui, app: &mut DbeApp) {
         });
 }
 
-fn file_tree(ui: &mut Ui, project: &mut Project) -> Vec<Command> {
+fn file_tree<Io>(ui: &mut Ui, project: &mut Project<Io>) -> Vec<Command> {
     let mut commands = vec![];
 
     show_folder(

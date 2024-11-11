@@ -6,6 +6,7 @@ use crate::etype::estruct::EStructData;
 use crate::etype::EDataType;
 use crate::json_utils::repr::{JsonRepr, Repr};
 use crate::json_utils::JsonValue;
+use crate::project::ProjectConfig;
 use crate::registry::config::ExtraConfig;
 use crate::serialization::deserialize_etype;
 use crate::value::id::{EListId, EMapId, ETypeId};
@@ -153,6 +154,7 @@ pub struct ETypesRegistry {
     lists: BTreeMap<EListId, ListData>,
     maps: BTreeMap<EMapId, MapData>,
     default_objects_cache: AtomicRefCell<BTreeMap<ETypeId, Arc<EValue>>>,
+    project_config: ProjectConfig,
     // editors: AHashMap<String, Box<dyn EFieldEditorConstructor>>,
     /// Read/write data used by various editors, validators, etc
     extra_data: RwLock<BTreeMap<TypeId, Arc<dyn Any + Send + Sync>>>,
@@ -163,7 +165,10 @@ pub struct ETypesRegistry {
 }
 
 impl ETypesRegistry {
-    pub fn from_raws(data: impl IntoIterator<Item = (ETypeId, String)>) -> miette::Result<Self> {
+    pub fn from_raws(
+        data: impl IntoIterator<Item = (ETypeId, String)>,
+        project_config: ProjectConfig,
+    ) -> miette::Result<Self> {
         let iter = data.into_iter();
 
         let types: BTreeMap<ETypeId, RegistryItem> = iter
@@ -179,6 +184,7 @@ impl ETypesRegistry {
             maps: Default::default(),
             // editors: default_editors().into_iter().collect(),
             default_objects_cache: Default::default(),
+            project_config,
             extra_data: Default::default(),
             cache: Default::default(),
             extra_config: Default::default(),
@@ -503,5 +509,9 @@ impl ETypesRegistry {
             bail!("Type `{id}` is not defined")
         }
         Ok(())
+    }
+
+    pub fn project_config(&self) -> &ProjectConfig {
+        &self.project_config
     }
 }

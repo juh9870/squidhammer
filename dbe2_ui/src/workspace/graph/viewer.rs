@@ -1,6 +1,7 @@
 use crate::workspace::graph::viewer::default_view::DefaultNodeView;
 use crate::workspace::graph::viewer::enum_node::EnumNodeViewer;
 use crate::workspace::graph::viewer::reroute::RerouteViewer;
+use crate::workspace::graph::viewer::saving::SavingNodeViewer;
 use crate::workspace::graph::GraphViewer;
 use atomic_refcell::AtomicRefCell;
 use dbe2::graph::node::SnarlNode;
@@ -15,13 +16,18 @@ use ustr::{Ustr, UstrMap};
 pub mod default_view;
 pub mod enum_node;
 pub mod reroute;
+pub mod saving;
 
 static NODE_VIEWERS: LazyLock<AtomicRefCell<UstrMap<Arc<dyn NodeView>>>> =
     LazyLock::new(|| AtomicRefCell::new(default_viewers().collect()));
 static DEFAULT_VIEWER: LazyLock<Arc<dyn NodeView>> = LazyLock::new(|| Arc::new(DefaultNodeView));
 
 fn default_viewers() -> impl Iterator<Item = (Ustr, Arc<dyn NodeView>)> {
-    let v: Vec<Arc<dyn NodeView>> = vec![Arc::new(RerouteViewer), Arc::new(EnumNodeViewer)];
+    let v: Vec<Arc<dyn NodeView>> = vec![
+        Arc::new(RerouteViewer),
+        Arc::new(EnumNodeViewer),
+        Arc::new(SavingNodeViewer),
+    ];
     v.into_iter().map(|item| (Ustr::from(&item.id()), item))
 }
 

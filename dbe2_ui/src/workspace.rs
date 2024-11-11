@@ -3,6 +3,7 @@ use crate::workspace::editors::editor_for_value;
 use crate::DbeApp;
 use camino::Utf8PathBuf;
 use dbe2::graph::execution::partial::PartialGraphExecutionContext;
+use dbe2::project::side_effects::SideEffectsContext;
 use dbe2::project::{Project, ProjectFile};
 use dbe2::validation::validate;
 use egui::{Color32, Context, RichText, Ui, WidgetText};
@@ -119,9 +120,9 @@ impl DbeApp {
 
 pub type Tab = Utf8PathBuf;
 
-struct WorkspaceTabViewer<'a>(&'a mut Project);
+struct WorkspaceTabViewer<'a, Io>(&'a mut Project<Io>);
 
-impl TabViewer for WorkspaceTabViewer<'_> {
+impl<Io> TabViewer for WorkspaceTabViewer<'_, Io> {
     type Tab = Tab;
 
     fn title(&mut self, tab: &mut Self::Tab) -> WidgetText {
@@ -138,6 +139,7 @@ impl TabViewer for WorkspaceTabViewer<'_> {
 
         let mut diagnostics = self.0.diagnostics.enter(tab.as_str());
 
+        let mut side_effects = Default::default();
         match data {
             ProjectFile::Value(value) => {
                 let editor = editor_for_value(&self.0.registry, value);
@@ -146,7 +148,9 @@ impl TabViewer for WorkspaceTabViewer<'_> {
 
                 if res.changed {
                     trace!(%tab, "tab value changed, revalidating");
-                    if let Err(err) = validate(&self.0.registry, diagnostics, None, value) {
+                    if let Err(err) =
+                        validate(&self.0.registry, diagnostics.enter_inline(), None, value)
+                    {
                         report_error(err);
                     }
                 }
@@ -159,13 +163,32 @@ impl TabViewer for WorkspaceTabViewer<'_> {
                 ui.label(RichText::new(strip_ansi_escapes::strip_str(err_str)).color(Color32::RED));
             }
             ProjectFile::Graph(graph) => {
-                let (ctx, snarl) =
-                    PartialGraphExecutionContext::from_graph(graph, &self.0.registry);
+                let (ctx, snarl) = PartialGraphExecutionContext::from_graph(
+                    graph,
+                    &self.0.registry,
+                    SideEffectsContext::new(&mut side_effects, tab.clone()),
+                );
 
                 let mut viewer = graph::GraphViewer::new(ctx, diagnostics.as_readonly());
 
                 snarl.show(&mut viewer, &SnarlStyle::default(), tab.to_string(), ui);
             }
+            ProjectFile::GeneratedValue(value) => {
+                let editor = editor_for_value(&self.0.registry, value);
+
+                ui.label("Generated value, do not edit");
+                ui.separator();
+                ui.add_enabled_ui(false, |ui| {
+                    let res =
+                        editor.show(ui, &self.0.registry, diagnostics.as_readonly(), "", value);
+                    if res.changed {
+                        panic!("Generated value was edited");
+                    }
+                });
+            }
         }
+
+        drop(diagnostics);
+        side_effects.execute(self.0).unwrap();
     }
 }

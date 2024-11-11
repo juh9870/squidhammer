@@ -4,6 +4,7 @@ use crate::file_tree::file_tab;
 use crate::workspace::Tab;
 use ahash::AHashMap;
 use color_backtrace::{default_output_stream, BacktracePrinter};
+use dbe2::project::io::FilesystemIO;
 use dbe2::project::Project;
 use eframe::epaint::FontFamily;
 use eframe::{App, CreationContext, Frame, Storage};
@@ -87,7 +88,7 @@ fn main() -> eframe::Result<()> {
 type ModalFn = Box<dyn FnMut(&mut DbeApp, &Context) -> bool>;
 
 struct DbeApp {
-    project: Option<Project>,
+    project: Option<Project<FilesystemIO>>,
     open_file_dialog: Option<FileDialog>,
     collector: EventCollector,
     toasts: Vec<Toast>,

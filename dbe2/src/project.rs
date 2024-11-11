@@ -1,12 +1,16 @@
 use crate::etype::EDataType;
+use crate::graph::execution::GraphExecutionContext;
 use crate::graph::Graph;
 use crate::json_utils::formatter::DBEJsonFormatter;
 use crate::json_utils::{json_kind, JsonValue};
 use crate::m_try;
+use crate::project::io::{FilesystemIO, ProjectIO};
+use crate::project::side_effects::SideEffectsContext;
 use crate::registry::ETypesRegistry;
 use crate::validation::validate;
 use crate::value::id::ETypeId;
 use crate::value::EValue;
+use ahash::AHashSet;
 use camino::{Utf8Path, Utf8PathBuf};
 use diagnostic::context::DiagnosticContext;
 use diagnostic::diagnostic::DiagnosticLevel;
@@ -16,28 +20,64 @@ use std::collections::{BTreeMap, BTreeSet};
 use std::path::{Path, PathBuf};
 use walkdir::WalkDir;
 
+pub mod io;
+pub mod side_effects;
+
 #[derive(Debug)]
-pub struct Project {
+pub struct Project<IO> {
+    /// Types registry
     pub registry: ETypesRegistry,
+    /// Diagnostic context
     pub diagnostics: DiagnosticContext,
+    /// Files present in the project
     pub files: BTreeMap<Utf8PathBuf, ProjectFile>,
+    /// Files that should be deleted on save
+    pub to_delete: AHashSet<Utf8PathBuf>,
+    /// Root folder of the project
     pub root: Utf8PathBuf,
-    pub config: Config,
+    io: IO,
 }
 
 #[derive(Debug)]
 pub enum ProjectFile {
     /// Valid plain JSON value
     Value(EValue),
+    /// Valid plain JSON value that was automatically generated
+    GeneratedValue(EValue),
+    /// Snarl graph
     Graph(Box<Graph>),
     /// Plain JSON value that had issues during parsing or loading
     BadValue(Report),
 }
 
+impl ProjectFile {
+    pub fn is_value(&self) -> bool {
+        matches!(self, ProjectFile::Value(_))
+    }
+
+    pub fn is_generated(&self) -> bool {
+        matches!(self, ProjectFile::GeneratedValue(_))
+    }
+
+    pub fn is_graph(&self) -> bool {
+        matches!(self, ProjectFile::Graph(_))
+    }
+
+    pub fn is_bad(&self) -> bool {
+        matches!(self, ProjectFile::BadValue(_))
+    }
+}
+
 #[derive(Debug, Serialize, Deserialize)]
-pub struct Config {
+pub struct ProjectConfig {
     #[serde(rename = "types")]
     pub types_config: TypesConfig,
+    #[serde(default = "default_emitted_dir")]
+    pub emitted_dir: Utf8PathBuf,
+}
+
+fn default_emitted_dir() -> Utf8PathBuf {
+    Utf8PathBuf::from("emitted")
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -46,12 +86,47 @@ pub struct TypesConfig {
     pub import: ETypeId,
 }
 
-impl Project {
+impl Project<FilesystemIO> {
+    pub fn from_path(root: impl AsRef<Path>) -> miette::Result<Self> {
+        let root = root.as_ref();
+
+        let mut paths = BTreeSet::new();
+        let wd = WalkDir::new(root);
+        for entry in wd {
+            let entry = entry.into_diagnostic()?;
+            if entry.path().is_dir() {
+                continue;
+            }
+
+            paths.insert(entry.path().to_path_buf());
+        }
+
+        let config = fs_err::read_to_string(root.join("project.toml"))
+            .into_diagnostic()
+            .context("failed to read project configuration")?;
+
+        let config = toml::de::from_str(&config)
+            .into_diagnostic()
+            .context("Failed to parse project configuration")?;
+
+        // let items = paths
+        //     .into_par_iter()
+        //     .map(|path| {
+        //         let data = fs_err::read(&path).into_diagnostic()?;
+        //         miette::Result::<(PathBuf, Vec<u8>)>::Ok((path, data))
+        //     })
+        //     .collect::<Result<Vec<_>, _>>()?;
+
+        Self::from_files(root, config, paths, FilesystemIO::new(root.to_path_buf()))
+    }
+}
+
+impl<IO: ProjectIO> Project<IO> {
     pub fn from_files(
         root: impl AsRef<Path>,
-        config: Config,
+        config: ProjectConfig,
         files: impl IntoIterator<Item = PathBuf>,
-        read_file: impl Fn(&Path) -> miette::Result<Vec<u8>>,
+        mut io: IO,
     ) -> miette::Result<Self> {
         let mut registry_items = BTreeMap::new();
         let mut editor_jsons = BTreeMap::<Utf8PathBuf, JsonValue>::new();
@@ -86,14 +161,13 @@ impl Project {
                     "kdl" => {
                         let id = ETypeId::from_path(path, &config.types_config.root)
                             .context("failed to generate type identifier")?;
-                        let value = utf8str(path, read_file(path.as_ref())?)?;
+                        let value = utf8str(path, io.read_file(path)?)?;
                         registry_items.insert(id, value);
                     }
                     "json5" | "json" => {
-                        let data =
-                            serde_json5::from_str(&utf8str(path, read_file(path.as_ref())?)?)
-                                .into_diagnostic()
-                                .context("failed to deserialize JSON")?;
+                        let data = serde_json5::from_str(&utf8str(path, io.read_file(path)?)?)
+                            .into_diagnostic()
+                            .context("failed to deserialize JSON")?;
                         if path.starts_with(&config.types_config.root) {
                             types_jsons.insert(path.to_path_buf(), data);
                         } else {
@@ -101,22 +175,19 @@ impl Project {
                         }
                     }
                     "dbegraph" => {
-                        let data =
-                            serde_json5::from_str(&utf8str(path, read_file(path.as_ref())?)?)
-                                .into_diagnostic()
-                                .context("failed to deserialize graph JSON")?;
+                        let data = serde_json5::from_str(&utf8str(path, io.read_file(path)?)?)
+                            .into_diagnostic()
+                            .context("failed to deserialize graph JSON")?;
                         graphs.insert(path.to_path_buf(), data);
                     }
                     "toml"
                         if path != "project.toml"
                             && path.starts_with(&config.types_config.root) =>
                     {
-                        let data = toml::de::from_str::<JsonValue>(&utf8str(
-                            path,
-                            read_file(path.as_ref())?,
-                        )?)
-                        .into_diagnostic()
-                        .context("failed to deserialize TOML")?;
+                        let data =
+                            toml::de::from_str::<JsonValue>(&utf8str(path, io.read_file(path)?)?)
+                                .into_diagnostic()
+                                .context("failed to deserialize TOML")?;
                         types_jsons.insert(path.to_path_buf(), data);
                     }
                     _ => {}
@@ -127,14 +198,15 @@ impl Project {
             .with_context(|| format!("failed to load file at `{}`", path))?;
         }
 
-        let registry = ETypesRegistry::from_raws(registry_items)?;
+        let registry = ETypesRegistry::from_raws(registry_items, config)?;
 
         let mut project = Self {
             registry,
             diagnostics: Default::default(),
             files: Default::default(),
+            to_delete: Default::default(),
             root,
-            config,
+            io,
         };
 
         project.validate_config()?;
@@ -166,7 +238,11 @@ impl Project {
                         None,
                         &data,
                     )?;
-                    ProjectFile::Value(data)
+                    if project.io.file_exists(generated_marker_path(&path))? {
+                        ProjectFile::GeneratedValue(data)
+                    } else {
+                        ProjectFile::Value(data)
+                    }
                 }
                 Err(err) => ProjectFile::BadValue(err),
             };
@@ -187,45 +263,51 @@ impl Project {
         Ok(project)
     }
 
-    pub fn from_path(root: impl AsRef<Path>) -> miette::Result<Self> {
-        let root = root.as_ref();
-
-        let mut paths = BTreeSet::new();
-        let wd = WalkDir::new(root);
-        for entry in wd {
-            let entry = entry.into_diagnostic()?;
-            if entry.path().is_dir() {
-                continue;
+    pub fn delete_file(&mut self, path: impl AsRef<Utf8Path>) -> miette::Result<()> {
+        let path = path.as_ref();
+        if let Some(removed) = self.files.remove(path) {
+            if removed.is_generated() {
+                self.to_delete.insert(generated_marker_path(path));
             }
-
-            paths.insert(entry.path().to_path_buf());
+            self.to_delete.insert(path.to_owned());
         }
 
-        let config = fs_err::read_to_string(root.join("project.toml"))
-            .into_diagnostic()
-            .context("failed to read project configuration")?;
+        Ok(())
+    }
 
-        let config = toml::de::from_str(&config)
-            .into_diagnostic()
-            .context("Failed to parse project configuration")?;
+    pub fn evaluate_graphs(&mut self) -> miette::Result<()> {
+        let mut side_effects = side_effects::SideEffects::new();
+        let mut generated = vec![];
+        for (path, file) in &mut self.files {
+            if file.is_generated() {
+                generated.push(path.clone());
+                continue;
+            }
+            let ProjectFile::Graph(graph) = file else {
+                continue;
+            };
 
-        // let items = paths
-        //     .into_par_iter()
-        //     .map(|path| {
-        //         let data = fs_err::read(&path).into_diagnostic()?;
-        //         miette::Result::<(PathBuf, Vec<u8>)>::Ok((path, data))
-        //     })
-        //     .collect::<Result<Vec<_>, _>>()?;
+            let mut ctx = GraphExecutionContext::from_graph(
+                graph,
+                &self.registry,
+                SideEffectsContext::new(&mut side_effects, path.clone()),
+            );
+            ctx.full_eval(true)?;
+        }
 
-        Self::from_files(root, config, paths, |path| {
-            fs_err::read(root.join(path)).into_diagnostic()
-        })
+        for path in generated {
+            self.delete_file(&path)?;
+        }
+
+        side_effects.execute(self)?;
+
+        Ok(())
     }
 
     pub fn validate_all(&mut self) -> miette::Result<()> {
         for (path, file) in &self.files {
             match file {
-                ProjectFile::Value(file) => {
+                ProjectFile::Value(file) | ProjectFile::GeneratedValue(file) => {
                     validate(
                         &self.registry,
                         self.diagnostics.enter(path.as_str()),
@@ -248,6 +330,7 @@ impl Project {
     }
 
     pub fn save(&mut self) -> miette::Result<()> {
+        self.evaluate_graphs()?;
         self.validate_all()?;
 
         if self.diagnostics.has_diagnostics(DiagnosticLevel::Error) {
@@ -255,11 +338,15 @@ impl Project {
         }
 
         for (path, file) in &self.files {
-            let real_path = self.root.join(path);
-
+            self.to_delete.remove(path);
+            let mut generated = false;
             let json_string = m_try(|| {
                 let json = match file {
                     ProjectFile::Value(value) => self.serialize_json(value)?,
+                    ProjectFile::GeneratedValue(value) => {
+                        generated = true;
+                        self.serialize_json(value)?
+                    }
                     ProjectFile::Graph(graph) => graph.write_json(&self.registry)?,
                     ProjectFile::BadValue(_) => {
                         panic!("BadValue should have been filtered out by validate_all");
@@ -277,9 +364,24 @@ impl Project {
                 Ok(String::from_utf8(buf).expect("JSON should be UTF-8"))
             })
             .with_context(|| format!("failed to serialize JSON at `{}`", path))?;
-            fs_err::write(&real_path, json_string)
-                .into_diagnostic()
-                .with_context(|| format!("failed to write JSON to `{}`", real_path))?;
+
+            if generated {
+                let generated_path = generated_marker_path(path);
+                self.to_delete.remove(&generated_path);
+                self.io.write_file(&generated_path, &[]).with_context(|| {
+                    format!("failed to write generated marker to `{}`", generated_path)
+                })?;
+            }
+
+            self.io
+                .write_file(path, json_string.as_bytes())
+                .with_context(|| format!("failed to write JSON to `{}`", path))?;
+        }
+
+        for path in self.to_delete.drain() {
+            self.io
+                .delete_file(&path)
+                .with_context(|| format!("failed to delete `{}`", path))?;
         }
 
         Ok(())
@@ -287,20 +389,32 @@ impl Project {
 
     pub fn import_root(&self) -> EDataType {
         EDataType::Object {
-            ident: self.config.types_config.import,
+            ident: self.registry.project_config().types_config.import,
         }
     }
 }
 
-impl Project {
+fn generated_marker_path(file: impl AsRef<Utf8Path>) -> Utf8PathBuf {
+    let file = file.as_ref();
+    file.parent()
+        .expect("Path has parent")
+        .join(file.file_name().expect("Path has file name").to_string() + ".generated")
+}
+
+impl<IO: ProjectIO> Project<IO> {
     // pub fn get_value(&mut self, path: &Utf8Path) -> Option<&mut ProjectFile> {
     //     self.files.get_mut(path)
     // }
 
     fn validate_config(&self) -> miette::Result<()> {
         self.registry
-            .get_object(&self.config.types_config.import)
-            .ok_or_else(|| miette!("unknown type `{}`", self.config.types_config.import))
+            .get_object(&self.registry.project_config().types_config.import)
+            .ok_or_else(|| {
+                miette!(
+                    "unknown type `{}`",
+                    self.registry.project_config().types_config.import
+                )
+            })
             .context("failed to validate [types.import] config entry")
             .context("project config is invalid")?;
 
@@ -310,7 +424,7 @@ impl Project {
     fn deserialize_json(&self, mut value: JsonValue) -> miette::Result<EValue> {
         let object = self
             .registry
-            .get_object(&self.config.types_config.import)
+            .get_object(&self.registry.project_config().types_config.import)
             .expect("Config was validated");
 
         object.parse_json(&self.registry, &mut value, false)
