@@ -176,6 +176,11 @@ impl Graph {
         }
 
         packed.inputs = inputs.into_iter().collect();
+        packed.inputs.sort_by_key(|(in_pin, _)| *in_pin);
+        packed.nodes.sort_by_key(|(id, _)| *id);
+        packed
+            .edges
+            .sort_by_key(|(out_pin, in_pin)| (*out_pin, *in_pin));
 
         serde_json::value::to_value(&packed)
             .into_diagnostic()
