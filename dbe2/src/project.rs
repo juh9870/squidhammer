@@ -7,7 +7,7 @@ use crate::m_try;
 use crate::project::io::{FilesystemIO, ProjectIO};
 use crate::project::side_effects::SideEffectsContext;
 use crate::registry::ETypesRegistry;
-use crate::validation::validate;
+use crate::validation::{clear_validation_cache, validate};
 use crate::value::id::ETypeId;
 use crate::value::EValue;
 use ahash::AHashSet;
@@ -304,6 +304,15 @@ impl<IO: ProjectIO> Project<IO> {
         Ok(())
     }
 
+    /// Clean and validate the project, evaluating all graphs and running side effects
+    pub fn clean_validate(&mut self) -> miette::Result<()> {
+        self.evaluate_graphs()?;
+        clear_validation_cache(&self.registry);
+        // Double validate to ensure that validation cache is populated
+        self.validate_all()?;
+        self.validate_all()
+    }
+
     pub fn validate_all(&mut self) -> miette::Result<()> {
         for (path, file) in &self.files {
             match file {
@@ -330,8 +339,7 @@ impl<IO: ProjectIO> Project<IO> {
     }
 
     pub fn save(&mut self) -> miette::Result<()> {
-        self.evaluate_graphs()?;
-        self.validate_all()?;
+        self.clean_validate()?;
 
         if self.diagnostics.has_diagnostics(DiagnosticLevel::Error) {
             return Err(miette!("project has unresolved errors, cannot save"));

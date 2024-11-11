@@ -2,22 +2,12 @@
   "edges": [
     [
       {
-        "node": 9,
+        "node": 7,
         "output": 0
       },
       {
-        "input": 0,
-        "node": 8
-      }
-    ],
-    [
-      {
-        "node": 0,
-        "output": 0
-      },
-      {
-        "input": 0,
-        "node": 1
+        "input": 8,
+        "node": 5
       }
     ],
     [
@@ -32,12 +22,42 @@
     ],
     [
       {
-        "node": 7,
+        "node": 8,
         "output": 0
       },
       {
-        "input": 8,
+        "input": 11,
         "node": 5
+      }
+    ],
+    [
+      {
+        "node": 4,
+        "output": 0
+      },
+      {
+        "input": 0,
+        "node": 3
+      }
+    ],
+    [
+      {
+        "node": 5,
+        "output": 0
+      },
+      {
+        "input": 1,
+        "node": 4
+      }
+    ],
+    [
+      {
+        "node": 0,
+        "output": 0
+      },
+      {
+        "input": 0,
+        "node": 1
       }
     ],
     [
@@ -62,63 +82,92 @@
     ],
     [
       {
-        "node": 8,
-        "output": 0
-      },
-      {
-        "input": 11,
-        "node": 5
-      }
-    ],
-    [
-      {
-        "node": 5,
-        "output": 0
-      },
-      {
-        "input": 1,
-        "node": 4
-      }
-    ],
-    [
-      {
-        "node": 4,
+        "node": 9,
         "output": 0
       },
       {
         "input": 0,
-        "node": 3
+        "node": 8
       }
     ]
   ],
   "inputs": [
     [
       {
-        "input": 1,
-        "node": 6
+        "input": 17,
+        "node": 5
       },
       {
-        "Color": "#00000000",
-        "Hidden": false,
-        "HideFromMerchants": false,
-        "HideResearchTree": false,
-        "HomeStarDistance": 0,
-        "HomeStarDistanceMax": 0,
-        "Hostile": false,
-        "Name": "",
-        "NoMissions": false,
-        "NoTerritories": false,
-        "NoWanderingShips": false,
-        "WanderingShipsDistance": 0,
-        "WanderingShipsDistanceMax": 0
+        "ComponentGroupTag": null,
+        "MaxComponentAmount": 0,
+        "NotForMechanicShips": false,
+        "NotForOrganicShips": false,
+        "ShipSizes": [],
+        "UniqueComponentTag": ""
       }
     ],
     [
       {
+        "input": 5,
+        "node": 5
+      },
+      null
+    ],
+    [
+      {
+        "input": 10,
+        "node": 5
+      },
+      ""
+    ],
+    [
+      {
+        "input": 14,
+        "node": 5
+      },
+      ""
+    ],
+    [
+      {
         "input": 0,
-        "node": 7
+        "node": 4
+      },
+      9870
+    ],
+    [
+      {
+        "input": 0,
+        "node": 5
+      },
+      ""
+    ],
+    [
+      {
+        "input": 13,
+        "node": 5
+      },
+      null
+    ],
+    [
+      {
+        "input": 1,
+        "node": 2
+      },
+      5
+    ],
+    [
+      {
+        "input": 0,
+        "node": 6
       },
       0
+    ],
+    [
+      {
+        "input": 12,
+        "node": 5
+      },
+      null
     ],
     [
       {
@@ -130,14 +179,21 @@
     [
       {
         "input": 0,
-        "node": 6
+        "node": 0
       },
-      0
+      20
     ],
     [
       {
-        "input": 3,
+        "input": 7,
         "node": 5
+      },
+      ""
+    ],
+    [
+      {
+        "input": 0,
+        "node": 7
       },
       0
     ],
@@ -147,48 +203,6 @@
         "node": 7
       },
       0
-    ],
-    [
-      {
-        "input": 4,
-        "node": 5
-      },
-      3
-    ],
-    [
-      {
-        "input": 0,
-        "node": 9
-      },
-      15
-    ],
-    [
-      {
-        "input": 9,
-        "node": 5
-      },
-      ""
-    ],
-    [
-      {
-        "input": 1,
-        "node": 2
-      },
-      5
-    ],
-    [
-      {
-        "input": 1,
-        "node": 5
-      },
-      ""
-    ],
-    [
-      {
-        "input": 5,
-        "node": 5
-      },
-      null
     ],
     [
       {
@@ -206,45 +220,17 @@
     ],
     [
       {
-        "input": 13,
-        "node": 5
-      },
-      null
-    ],
-    [
-      {
-        "input": 16,
-        "node": 5
-      },
-      null
-    ],
-    [
-      {
-        "input": 14,
+        "input": 9,
         "node": 5
       },
       ""
     ],
     [
       {
-        "input": 0,
+        "input": 4,
         "node": 5
       },
-      ""
-    ],
-    [
-      {
-        "input": 10,
-        "node": 5
-      },
-      ""
-    ],
-    [
-      {
-        "input": 12,
-        "node": 5
-      },
-      null
+      3
     ],
     [
       {
@@ -269,31 +255,17 @@
     ],
     [
       {
+        "input": 16,
+        "node": 5
+      },
+      null
+    ],
+    [
+      {
         "input": 0,
-        "node": 0
+        "node": 9
       },
-      20
-    ],
-    [
-      {
-        "input": 7,
-        "node": 5
-      },
-      ""
-    ],
-    [
-      {
-        "input": 17,
-        "node": 5
-      },
-      {
-        "ComponentGroupTag": null,
-        "MaxComponentAmount": 0,
-        "NotForMechanicShips": false,
-        "NotForOrganicShips": false,
-        "ShipSizes": [],
-        "UniqueComponentTag": ""
-      }
+      15
     ],
     [
       {
@@ -304,10 +276,38 @@
     ],
     [
       {
-        "input": 0,
-        "node": 4
+        "input": 3,
+        "node": 5
       },
-      9870
+      0
+    ],
+    [
+      {
+        "input": 1,
+        "node": 5
+      },
+      ""
+    ],
+    [
+      {
+        "input": 1,
+        "node": 6
+      },
+      {
+        "Color": "#00000000",
+        "Hidden": false,
+        "HideFromMerchants": false,
+        "HideResearchTree": false,
+        "HomeStarDistance": 0,
+        "HomeStarDistanceMax": 0,
+        "Hostile": false,
+        "Name": "",
+        "NoMissions": false,
+        "NoTerritories": false,
+        "NoWanderingShips": false,
+        "WanderingShipsDistance": 0,
+        "WanderingShipsDistanceMax": 0
+      }
     ]
   ],
   "nodes": [
@@ -460,8 +460,8 @@
         "id": "write_item",
         "open": true,
         "pos": {
-          "x": 731.3639526367188,
-          "y": -376.201171875
+          "x": 521.6986694335938,
+          "y": -347.08099365234375
         }
       }
     ]
