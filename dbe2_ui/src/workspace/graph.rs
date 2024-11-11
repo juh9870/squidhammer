@@ -216,10 +216,7 @@ impl<'a> SnarlViewer<SnarlNode> for GraphViewer<'a> {
             );
 
             let search_bar = ui.text_edit_singleline(search_query.deref_mut());
-
-            ui.use_effect(|| search_bar.request_focus(), ());
-
-            ui.use_cleanup(move || search_bar.surrender_focus(), ());
+            search_bar.request_focus();
 
             if search_query.trim() != "" {
                 for (name, node) in search_nodes
