@@ -53,15 +53,18 @@ fn default_editors() -> impl Iterator<Item = (Ustr, Box<dyn Editor>)> {
         ("const".into(), Box::new(ConstEditor)),
         ("enum".into(), Box::new(EnumEditor)),
         ("list".into(), Box::new(ListEditor)),
-        // TODO: proper editors for ids
         (
             "ids/numeric".into(),
             Box::new(WrappedEditor::new(NumberEditor::new(false), "id".into())),
         ),
+        // TODO: proper editors for id refs
         (
             "ids/numeric_ref".into(),
             Box::new(WrappedEditor::new(NumberEditor::new(false), "id".into())),
         ),
+        // TODO: proper combobox editors
+        ("eh:image".into(), Box::new(StringEditor)),
+        ("eh:layout".into(), Box::new(StringEditor)),
         // Enums
         // (
         //     "enum".to_string(),
