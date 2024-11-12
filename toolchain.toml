@@ -1,7 +1,7 @@
 # toolchain.toml
 [toolchain]
 channel = "stable"
-targets = ["x86_64-unknown-linux-musl"]
+targets = ["x86_64-unknown-linux-musl", "x86_64-pc-windows-gnu"]
 components = [
     "rust-src",
     "clippy",

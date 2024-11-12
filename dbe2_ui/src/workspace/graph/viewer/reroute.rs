@@ -1,7 +1,6 @@
 use crate::workspace::graph::viewer::NodeView;
 use crate::workspace::graph::{pin_info, GraphViewer};
 use dbe2::graph::node::SnarlNode;
-use dbe2::value::EValue;
 use egui::Ui;
 use egui_snarl::ui::PinInfo;
 use egui_snarl::{InPin, NodeId, OutPin, Snarl};
@@ -55,9 +54,9 @@ impl NodeView for RerouteViewer {
         let node = &snarl[pin.id.node];
         let output_data = node.try_output(viewer.ctx.registry, pin.id.output)?;
         let value = viewer.ctx.read_output(snarl, pin.id)?;
-        if value != EValue::Null {
-            ui.label(value.to_string());
-        }
+        // if value != EValue::Null {
+        //     ui.label(value.to_string());
+        // }
 
         Ok(pin_info(&output_data.ty, registry))
     }

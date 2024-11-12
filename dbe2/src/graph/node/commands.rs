@@ -165,6 +165,7 @@ impl SnarlCommand {
                 }
             }
             SnarlCommand::DeleteNode { node } => {
+                ctx.inputs.retain(|pin, _| pin.node != node);
                 // Disconnect all outputs
                 for (out_pin, in_pin) in snarl.wires().filter(|w| w.0.node == node).collect_vec() {
                     SnarlCommand::Disconnect {
@@ -175,7 +176,6 @@ impl SnarlCommand {
                 }
                 // Disconnect all inputs
                 for (out_pin, in_pin) in snarl.wires().filter(|w| w.1.node == node).collect_vec() {
-                    ctx.inputs.remove(&in_pin);
                     SnarlCommand::Disconnect {
                         from: out_pin,
                         to: in_pin,

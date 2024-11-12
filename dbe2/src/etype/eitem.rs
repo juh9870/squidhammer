@@ -61,9 +61,9 @@ impl EItemInfo {
         }
     }
 
-    pub fn default_value(&self, _registry: &ETypesRegistry) -> DefaultEValue {
+    pub fn default_value(&self, registry: &ETypesRegistry) -> DefaultEValue {
         match self {
-            EItemInfo::Specific(ty) => ty.ty.default_value(_registry),
+            EItemInfo::Specific(ty) => ty.ty.default_value(registry),
             EItemInfo::Generic(ty) => {
                 error!(
                     name = ty.argument_name.as_str(),

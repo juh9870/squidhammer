@@ -9,7 +9,7 @@ use dbe2::diagnostic::context::DiagnosticContextRef;
 use dbe2::etype::eitem::EItemInfo;
 use dbe2::registry::ETypesRegistry;
 use dbe2::value::EValue;
-use egui::Ui;
+use egui::{Ui, Widget};
 use itertools::Itertools;
 use miette::miette;
 
@@ -81,12 +81,23 @@ impl Editor for StructEditor {
                     });
                 } else if props.inline {
                     draw_fields(ui);
-                } else {
+                } else if field_name.is_empty() {
                     ui.group(|ui| {
                         ui.vertical(|ui| {
-                            if !field_name.is_empty() {
-                                ui.label(field_name);
-                            }
+                            draw_fields(ui);
+                        })
+                    });
+                } else {
+                    egui::collapsing_header::CollapsingState::load_with_default_open(
+                        ui.ctx(),
+                        ui.id().with(field_name),
+                        true,
+                    )
+                    .show_header(ui, |ui| {
+                        egui::Label::new(field_name).selectable(false).ui(ui);
+                    })
+                    .body(|ui| {
+                        ui.vertical(|ui| {
                             draw_fields(ui);
                         })
                     });

@@ -26,12 +26,12 @@ use ustr::{Ustr, UstrMap};
 
 pub mod config;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Copy, Clone)]
 pub struct ListData {
     pub value_type: EDataType,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Copy, Clone)]
 pub struct MapData {
     pub key_type: EDataType,
     pub value_type: EDataType,
@@ -151,8 +151,8 @@ impl RegistryItem {
 #[derive(Debug)]
 pub struct ETypesRegistry {
     types: BTreeMap<ETypeId, RegistryItem>,
-    lists: BTreeMap<EListId, ListData>,
-    maps: BTreeMap<EMapId, MapData>,
+    lists: RwLock<BTreeMap<EListId, ListData>>,
+    maps: RwLock<BTreeMap<EMapId, MapData>>,
     default_objects_cache: AtomicRefCell<BTreeMap<ETypeId, Arc<EValue>>>,
     project_config: ProjectConfig,
     // editors: AHashMap<String, Box<dyn EFieldEditorConstructor>>,
@@ -224,12 +224,12 @@ impl ETypesRegistry {
             .and_then(|e| e.expect_ready().as_struct())
     }
 
-    pub fn get_list(&self, id: &EListId) -> Option<&ListData> {
-        self.lists.get(id)
+    pub fn get_list(&self, id: &EListId) -> Option<ListData> {
+        self.lists.read().get(id).copied()
     }
 
-    pub fn get_map(&self, id: &EMapId) -> Option<&MapData> {
-        self.maps.get(id)
+    pub fn get_map(&self, id: &EMapId) -> Option<MapData> {
+        self.maps.read().get(id).copied()
     }
 
     pub fn get_enum(&self, id: &ETypeId) -> Option<&EEnumData> {
@@ -248,22 +248,27 @@ impl ETypesRegistry {
         EDataType::Object { ident: id }
     }
 
-    pub fn register_list(&mut self, value_type: EDataType) -> EDataType {
+    pub fn list_of(&self, value_type: EDataType) -> EDataType {
+        EDataType::List {
+            id: self.list_id_of(value_type),
+        }
+    }
+    pub fn list_id_of(&self, value_type: EDataType) -> EListId {
         let id = format!("List<Item={}>", value_type.name());
         let id = EListId::from_raw(id.into());
-        match self.lists.entry(id) {
+        match self.lists.write().entry(id) {
             Entry::Occupied(_) => {}
             Entry::Vacant(entry) => {
                 entry.insert(ListData { value_type });
             }
         }
-        EDataType::List { id }
+        id
     }
 
-    pub fn register_map(&mut self, key_type: EDataType, value_type: EDataType) -> EDataType {
+    pub fn map_of(&self, key_type: EDataType, value_type: EDataType) -> EDataType {
         let id = format!("Map<Key={}, Item={}>", key_type.name(), value_type.name());
         let id = EMapId::from_raw(id.into());
-        match self.maps.entry(id) {
+        match self.maps.write().entry(id) {
             Entry::Occupied(_) => {}
             Entry::Vacant(entry) => {
                 entry.insert(MapData {

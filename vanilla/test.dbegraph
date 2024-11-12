@@ -37,7 +37,7 @@
       },
       {
         "input": 0,
-        "node": 10
+        "node": 9
       }
     ],
     [
@@ -62,7 +62,7 @@
     ],
     [
       {
-        "node": 7,
+        "node": 6,
         "output": 0
       },
       {
@@ -72,7 +72,7 @@
     ],
     [
       {
-        "node": 8,
+        "node": 7,
         "output": 0
       },
       {
@@ -82,12 +82,12 @@
     ],
     [
       {
-        "node": 9,
+        "node": 8,
         "output": 0
       },
       {
         "input": 0,
-        "node": 8
+        "node": 7
       }
     ]
   ],
@@ -258,54 +258,26 @@
         "input": 1,
         "node": 6
       },
-      {
-        "Color": "#00000000",
-        "Hidden": false,
-        "HideFromMerchants": false,
-        "HideResearchTree": false,
-        "HomeStarDistance": 0,
-        "HomeStarDistanceMax": 0,
-        "Hostile": false,
-        "Name": "",
-        "NoMissions": false,
-        "NoTerritories": false,
-        "NoWanderingShips": false,
-        "WanderingShipsDistance": 0,
-        "WanderingShipsDistanceMax": 0
-      }
-    ],
-    [
-      {
-        "input": 0,
-        "node": 7
-      },
-      0
-    ],
-    [
-      {
-        "input": 1,
-        "node": 7
-      },
       0
     ],
     [
       {
         "input": 2,
-        "node": 7
+        "node": 6
       },
       0
     ],
     [
       {
         "input": 3,
-        "node": 7
+        "node": 6
       },
       0
     ],
     [
       {
         "input": 0,
-        "node": 9
+        "node": 8
       },
       15
     ]
@@ -396,20 +368,6 @@
       6,
       {
         "data": {
-          "id": "eh:objects/faction"
-        },
-        "id": "struct_node",
-        "open": true,
-        "pos": {
-          "x": -282.5,
-          "y": -279
-        }
-      }
-    ],
-    [
-      7,
-      {
-        "data": {
           "id": "color:argb"
         },
         "id": "struct_node",
@@ -421,7 +379,7 @@
       }
     ],
     [
-      8,
+      7,
       {
         "data": {
           "variant": {
@@ -438,7 +396,7 @@
       }
     ],
     [
-      9,
+      8,
       {
         "data": {
           "id": "sys:ids/numeric_ref<Id='eh:objects/device'>"
@@ -452,7 +410,7 @@
       }
     ],
     [
-      10,
+      9,
       {
         "data": {
           "path": null

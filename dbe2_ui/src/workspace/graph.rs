@@ -402,6 +402,23 @@ impl<'a> SnarlViewer<SnarlNode> for GraphViewer<'a> {
                                     ui.close_menu();
                                 }
                             }
+                            EDataType::List { id } => {
+                                if ui.button("List").clicked() {
+                                    let node = self.ctx.create_list_node(
+                                        id,
+                                        pos,
+                                        snarl,
+                                        &mut self.commands,
+                                    )?;
+                                    self.ctx.connect(
+                                        &snarl.out_pin(OutPinId { node, output: 0 }),
+                                        &snarl.in_pin(*pin),
+                                        snarl,
+                                        &mut self.commands,
+                                    )?;
+                                    ui.close_menu();
+                                }
+                            }
                             // TODO: search by output type
                             _ => ui.close_menu(),
                         }

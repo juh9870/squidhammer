@@ -19,6 +19,7 @@ use ustr::{Ustr, UstrMap};
 pub mod commands;
 pub mod enum_node;
 pub mod functional;
+pub mod list;
 pub mod reroute;
 pub mod saving_node;
 pub mod struct_node;
@@ -46,6 +47,7 @@ fn default_nodes() -> impl Iterator<Item = (Ustr, Arc<dyn NodeFactory>)> {
     v.push(Arc::new(StructNodeFactory));
     v.push(Arc::new(EnumNodeFactory));
     v.push(Arc::new(SavingNodeFactory));
+    v.push(Arc::new(ListNodeFactory));
     v.into_iter().map(|item| (Ustr::from(&item.id()), item))
 }
 
@@ -112,6 +114,11 @@ pub trait Node: DynClone + Debug + Send + Sync + Downcast + 'static {
         self.id().to_string()
     }
 
+    /// Determines if the node has inline editable values
+    fn has_inline_values(&self) -> miette::Result<bool> {
+        Ok(true)
+    }
+
     /// Node inputs
     fn inputs_count(&self, registry: &ETypesRegistry) -> usize;
 
@@ -134,16 +141,18 @@ pub trait Node: DynClone + Debug + Send + Sync + Downcast + 'static {
     ) -> miette::Result<OutputData>;
 
     fn try_input(&self, registry: &ETypesRegistry, input: usize) -> miette::Result<InputData> {
-        if input >= self.inputs_count(registry) {
-            bail!("input index out of bounds")
+        let count = self.inputs_count(registry);
+        if input >= count {
+            bail!("input index {} out of bounds (max {})", input, count - 1)
         } else {
             self.input_unchecked(registry, input)
         }
     }
 
     fn try_output(&self, registry: &ETypesRegistry, output: usize) -> miette::Result<OutputData> {
-        if output >= self.outputs_count(registry) {
-            bail!("output index out of bounds")
+        let count = self.outputs_count(registry);
+        if output >= count {
+            bail!("output index {} out of bounds (max {})", output, count - 1)
         } else {
             self.output_unchecked(registry, output)
         }
@@ -163,7 +172,8 @@ pub trait Node: DynClone + Debug + Send + Sync + Downcast + 'static {
         to: &InPin,
         incoming_type: EItemInfo,
     ) -> miette::Result<()> {
-        self._default_try_connect(registry, commands, from, to, incoming_type)
+        self._default_try_connect(registry, commands, from, to, incoming_type)?;
+        Ok(())
     }
 
     /// Disconnect the input pin of the node
@@ -211,7 +221,7 @@ pub trait Node: DynClone + Debug + Send + Sync + Downcast + 'static {
         from: &OutPin,
         to: &InPin,
         incoming_type: EItemInfo,
-    ) -> miette::Result<()> {
+    ) -> miette::Result<bool> {
         let ty = self.try_input(registry, to.id.input)?;
         if ty.ty.ty() == incoming_type.ty() {
             // TODO: support for multi-connect ports
@@ -223,9 +233,11 @@ pub trait Node: DynClone + Debug + Send + Sync + Downcast + 'static {
                 from: from.id,
                 to: to.id,
             });
+
+            return Ok(true);
         }
 
-        Ok(())
+        Ok(false)
     }
 
     fn _default_try_disconnect(
@@ -268,6 +280,7 @@ macro_rules! impl_serde_node {
 }
 
 use crate::graph::node::enum_node::EnumNodeFactory;
+use crate::graph::node::list::ListNodeFactory;
 use crate::graph::node::saving_node::SavingNodeFactory;
 use crate::graph::node::struct_node::StructNodeFactory;
 use crate::project::side_effects::SideEffectsContext;

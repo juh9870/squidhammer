@@ -65,6 +65,9 @@ fn default_editors() -> impl Iterator<Item = (Ustr, Box<dyn Editor>)> {
         // TODO: proper combobox editors
         ("eh:image".into(), Box::new(StringEditor)),
         ("eh:layout".into(), Box::new(StringEditor)),
+        ("eh:audioclip".into(), Box::new(StringEditor)),
+        ("eh:prefab".into(), Box::new(StringEditor)),
+        ("eh:expression".into(), Box::new(StringEditor)),
         // Enums
         // (
         //     "enum".to_string(),

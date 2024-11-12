@@ -2,19 +2,49 @@ use crate::etype::econst::ETypeConst;
 use crate::etype::eitem::EItemInfo;
 use crate::etype::EDataType;
 use crate::graph::node::commands::{SnarlCommand, SnarlCommands};
-use crate::graph::node::{InputData, Node, NodeFactory, OutputData, SnarlNode};
+use crate::graph::node::{impl_serde_node, InputData, Node, NodeFactory, OutputData, SnarlNode};
 use crate::registry::ETypesRegistry;
 use crate::value::EValue;
 use egui_snarl::{InPin, InPinId, OutPin, OutPinId};
+use serde::{Deserialize, Serialize};
 use ustr::Ustr;
 
-#[derive(Debug, Clone, Default)]
-pub struct RerouteNode {
-    inputs: Vec<EItemInfo>,
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ListNode {
+    item: EDataType,
+    #[serde(skip)]
+    items_count: usize,
 }
-impl Node for RerouteNode {
+
+impl ListNode {
+    pub fn new() -> Self {
+        Self {
+            item: EDataType::Const {
+                value: ETypeConst::Null,
+            },
+            items_count: 0,
+        }
+    }
+
+    pub fn of_type(ty: EDataType) -> Self {
+        Self {
+            item: ty,
+            items_count: 0,
+        }
+    }
+}
+
+impl Default for ListNode {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl Node for ListNode {
+    impl_serde_node!();
+
     fn id(&self) -> Ustr {
-        RerouteFactory.id()
+        ListNodeFactory.id()
     }
 
     fn has_inline_values(&self) -> miette::Result<bool> {
@@ -22,7 +52,7 @@ impl Node for RerouteNode {
     }
 
     fn inputs_count(&self, _registry: &ETypesRegistry) -> usize {
-        self.inputs.len() + 1
+        self.items_count + 1
     }
 
     fn input_unchecked(
@@ -30,31 +60,27 @@ impl Node for RerouteNode {
         _registry: &ETypesRegistry,
         input: usize,
     ) -> miette::Result<InputData> {
-        if input == self.inputs.len() {
-            return Ok(InputData {
-                ty: EItemInfo::simple_type(EDataType::Const {
-                    value: ETypeConst::Null,
-                }),
-                name: "".into(),
-            });
-        }
         Ok(InputData {
-            ty: self.inputs[input].clone(),
-            name: input.to_string().into(),
+            ty: EItemInfo::simple_type(self.item),
+            name: if input == self.items_count {
+                "+".into()
+            } else {
+                input.to_string().into()
+            },
         })
     }
 
     fn outputs_count(&self, _registry: &ETypesRegistry) -> usize {
-        self.inputs.len()
+        1
     }
 
     fn output_unchecked(
         &self,
-        _registry: &ETypesRegistry,
+        registry: &ETypesRegistry,
         output: usize,
     ) -> miette::Result<OutputData> {
         Ok(OutputData {
-            ty: self.inputs[output].clone(),
+            ty: EItemInfo::simple_type(registry.list_of(self.item)),
             name: output.to_string().into(),
         })
     }
@@ -67,22 +93,20 @@ impl Node for RerouteNode {
         to: &InPin,
         incoming_type: EItemInfo,
     ) -> miette::Result<()> {
-        let i = to.id.input;
-        if i == self.inputs.len() {
-            self.inputs.push(incoming_type.clone());
-        } else if self.inputs[i].ty() != incoming_type.ty() {
-            self.inputs[i] = incoming_type.clone();
-            // Reconnect the corresponding output pin to propagate type
-            // changes and clear invalid connections
+        if self.items_count == 0 && self.item != incoming_type.ty() {
+            self.item = incoming_type.ty();
             commands.push(SnarlCommand::ReconnectOutput {
                 id: OutPinId {
                     node: to.id.node,
-                    output: i,
+                    output: 0,
                 },
             })
         }
 
-        self._default_try_connect(registry, commands, from, to, incoming_type)?;
+        if self._default_try_connect(registry, commands, from, to, incoming_type)? {
+            self.items_count += 1;
+        }
+
         Ok(())
     }
 
@@ -97,14 +121,7 @@ impl Node for RerouteNode {
             from: from.id,
             to: to.id,
         });
-        commands.push(SnarlCommand::DropOutputs {
-            from: OutPinId {
-                node: to.id.node,
-                output: to.id.input,
-            },
-        });
-        for i in to.id.input..(self.inputs.len() - 1) {
-            self.inputs.as_mut_slice().swap(i, i + 1);
+        for i in to.id.input..(self.items_count - 1) {
             commands.push(SnarlCommand::InputMovedRaw {
                 from: InPinId {
                     node: to.id.node,
@@ -115,23 +132,12 @@ impl Node for RerouteNode {
                     input: i,
                 },
             });
-            commands.push(SnarlCommand::OutputMovedRaw {
-                from: OutPinId {
-                    node: to.id.node,
-                    output: i + 1,
-                },
-                to: OutPinId {
-                    node: to.id.node,
-                    output: i,
-                },
-            });
         }
-
-        self.inputs.pop();
+        self.items_count -= 1;
         commands.push(SnarlCommand::DeletePinValue {
             pin: InPinId {
                 node: to.id.node,
-                input: self.inputs.len(),
+                input: self.items_count,
             },
         });
 
@@ -140,30 +146,37 @@ impl Node for RerouteNode {
 
     fn execute(
         &self,
-        _registry: &ETypesRegistry,
+        registry: &ETypesRegistry,
         inputs: &[EValue],
         outputs: &mut Vec<EValue>,
     ) -> miette::Result<()> {
-        for input in inputs.iter() {
-            outputs.push(input.clone());
+        let mut values = vec![];
+        // TODO: check for inputs count to match items_count
+        for input in 0..self.items_count {
+            values.push(inputs[input].clone());
         }
+        outputs.clear();
+        outputs.push(EValue::List {
+            id: registry.list_id_of(self.item),
+            values,
+        });
         Ok(())
     }
 }
 
 #[derive(Debug, Clone)]
-pub struct RerouteFactory;
+pub struct ListNodeFactory;
 
-impl NodeFactory for RerouteFactory {
+impl NodeFactory for ListNodeFactory {
     fn id(&self) -> Ustr {
-        "reroute".into()
+        "list".into()
     }
 
     fn categories(&self) -> &'static [&'static str] {
-        &["utility"]
+        &["list"]
     }
 
     fn create(&self) -> SnarlNode {
-        Box::new(RerouteNode::default())
+        Box::new(ListNode::default())
     }
 }

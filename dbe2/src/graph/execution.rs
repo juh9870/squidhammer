@@ -137,14 +137,17 @@ impl<'a, 'snarl> GraphExecutionContext<'a, 'snarl> {
         &mut self,
         pin: InPinId,
         node: &SnarlNode,
-    ) -> miette::Result<&mut EValue> {
-        Ok(match self.inputs.entry(pin) {
+    ) -> miette::Result<Option<&mut EValue>> {
+        if !node.has_inline_values()? {
+            return Ok(None);
+        }
+        Ok(Some(match self.inputs.entry(pin) {
             Entry::Occupied(entry) => entry.into_mut(),
             Entry::Vacant(entry) => {
                 let default = node.default_input_value(self.registry, pin.input)?;
                 entry.insert(default.into_owned())
             }
-        })
+        }))
     }
 
     fn read_node_input_inner(
@@ -159,7 +162,13 @@ impl<'a, 'snarl> GraphExecutionContext<'a, 'snarl> {
             // TODO: check for valid types
             let slot = self.snarl.in_pin(id);
             let value = if slot.remotes.is_empty() {
-                self.inline_input_value(slot.id, node)?.clone()
+                match self.inline_input_value(slot.id, node)? {
+                    None => {
+                        let ty = node.try_input(self.registry, id.input)?;
+                        ty.ty.default_value(self.registry).into_owned()
+                    }
+                    Some(val) => val.clone(),
+                }
             } else if slot.remotes.len() == 1 {
                 let remote = slot.remotes[0];
                 self.read_node_output_inner(stack, remote, side_effects)?

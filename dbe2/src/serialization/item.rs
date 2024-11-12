@@ -128,7 +128,7 @@ impl ThingItem {
                     bail!("generic argument `Item` is not provided");
                 };
 
-                registry.register_list(ty.ty())
+                registry.list_of(ty.ty())
             }
             ThingItemKind::Map => {
                 no_args()?;
@@ -140,7 +140,7 @@ impl ThingItem {
                     bail!("generic argument `Item` is not provided");
                 };
 
-                registry.register_map(key.ty(), value.ty())
+                registry.map_of(key.ty(), value.ty())
             }
             ThingItemKind::Generic => {
                 let [arg] = expect_args(self.arguments)?;

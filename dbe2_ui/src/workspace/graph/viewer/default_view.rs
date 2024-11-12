@@ -35,28 +35,25 @@ fn format_value(value: &EValue) -> String {
     }
 }
 
-fn has_inline_editor(registry: &ETypesRegistry, ty: EDataType) -> bool {
+fn has_inline_editor(registry: &ETypesRegistry, ty: EDataType, editable: bool) -> bool {
     match ty {
-        EDataType::Boolean => true,
-        EDataType::Number => true,
-        EDataType::String => true,
+        EDataType::Boolean => editable,
+        EDataType::Number => editable,
+        EDataType::String => editable,
         EDataType::Object { ident } => registry
             .get_object(&ident)
-            .map(|obj| {
-                obj.extra_properties()
-                    .get("graph_inline")
-                    .is_some_and(|v| v.as_bool().is_some_and(|v| v))
-            })
-            .unwrap_or(false),
+            .and_then(|obj| obj.extra_properties().get("graph_inline"))
+            .and_then(|v| v.as_bool())
+            .unwrap_or(editable),
         EDataType::Const { .. } => false,
         EDataType::List { id } => registry
             .get_list(&id)
-            .map(|list| has_inline_editor(registry, list.value_type))
-            .unwrap_or(false),
+            .map(|list| has_inline_editor(registry, list.value_type, editable))
+            .unwrap_or(editable),
         EDataType::Map { id } => registry
             .get_map(&id)
-            .map(|map| has_inline_editor(registry, map.value_type))
-            .unwrap_or(false),
+            .map(|map| has_inline_editor(registry, map.value_type, editable))
+            .unwrap_or(editable),
     }
 }
 
@@ -91,32 +88,38 @@ impl NodeView for DefaultNodeView {
         let registry = viewer.ctx.registry;
         let node = &snarl[pin.id.node];
         let input_data = node.try_input(viewer.ctx.registry, pin.id.input)?;
+        let mut shown = false;
         if pin.remotes.is_empty() {
-            let value = viewer.ctx.get_inline_input_mut(snarl, pin.id)?;
-            if has_inline_editor(registry, input_data.ty.ty()) {
-                let editor = editor_for_item(registry, &input_data.ty);
-                let res = ui.vertical(|ui| {
-                    editor.show(
-                        ui,
-                        registry,
-                        viewer.diagnostics.enter_field(input_data.name.as_str()),
-                        &input_data.name,
-                        value,
-                    )
-                });
+            if let Some(value) = viewer.ctx.get_inline_input_mut(snarl, pin.id)? {
+                if has_inline_editor(registry, input_data.ty.ty(), true) {
+                    let editor = editor_for_item(registry, &input_data.ty);
+                    let res = ui.vertical(|ui| {
+                        editor.show(
+                            ui,
+                            registry,
+                            viewer.diagnostics.enter_field(input_data.name.as_str()),
+                            &input_data.name,
+                            value,
+                        )
+                    });
 
-                if res.inner.changed {
-                    viewer.ctx.mark_dirty(snarl, pin.id.node);
+                    if res.inner.changed {
+                        viewer.ctx.mark_dirty(snarl, pin.id.node);
+                    }
+                    shown = true;
+                } else {
+                    ui.horizontal(|ui| {
+                        ui.label(&*input_data.name);
+                        ui.label(format_value(value));
+                    });
+                    shown = true;
                 }
-            } else {
-                ui.horizontal(|ui| {
-                    ui.label(&*input_data.name);
-                    ui.label(format_value(value));
-                });
             }
-        } else {
+        }
+
+        if !shown {
             let mut value = viewer.ctx.read_input(snarl, pin.id)?;
-            if has_inline_editor(registry, input_data.ty.ty()) {
+            if has_inline_editor(registry, input_data.ty.ty(), false) {
                 let editor = editor_for_item(registry, &input_data.ty);
                 ui.add_enabled_ui(true, |ui| {
                     ui.vertical(|ui| {
