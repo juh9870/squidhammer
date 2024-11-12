@@ -9,6 +9,7 @@ use ahash::AHashMap;
 use itertools::Itertools;
 use miette::{bail, Context, Diagnostic};
 use std::fmt::Display;
+use std::sync::Arc;
 use strum::EnumString;
 use thiserror::Error;
 use ustr::{Ustr, UstrMap};
@@ -44,7 +45,6 @@ impl ThingItem {
     pub fn into_item(
         self,
         registry: &mut ETypesRegistry,
-        type_id: ETypeId,
         generic_arguments: &[Ustr],
     ) -> miette::Result<(Ustr, EItemInfo)> {
         let no_args = || {
@@ -80,7 +80,7 @@ impl ThingItem {
                     //             .join(", ")
                     //     )
                     // }
-                    arg.into_item(registry, type_id, generic_arguments)
+                    arg.into_item(registry, generic_arguments)
                 })
                 .with_context(|| {
                     format!("failed to parse generic child at position {i} with name {name}")
@@ -147,11 +147,11 @@ impl ThingItem {
                 let arg = generic_name(arg, 0, generic_arguments)?;
                 return Ok((
                     self.name,
-                    EItemInfo::Generic(EItemInfoGeneric {
+                    EItemInfo::Generic(Arc::new(EItemInfoGeneric {
                         argument_name: arg,
                         extra_properties: self.extra_properties,
                         validators: vec![],
-                    }),
+                    })),
                 ));
             }
         };
@@ -160,11 +160,11 @@ impl ThingItem {
 
         Ok((
             self.name,
-            EItemInfo::Specific(EItemInfoSpecific {
+            EItemInfo::Specific(Arc::new(EItemInfoSpecific {
                 ty,
                 extra_properties: self.extra_properties,
                 validators,
-            }),
+            })),
         ))
     }
 }

@@ -7,15 +7,22 @@ edition = "2021"
 [dependencies]
 ahash = { workspace = true, features = ["serde"] }
 atomic_refcell = { workspace = true }
-camino = { workspace = true }
+camino = { workspace = true, features = ["serde", "serde1"] }
+derive_more = { workspace = true, features = ["debug"] }
 diagnostic = { workspace = true }
+downcast-rs = { workspace = true }
+dyn-clone = { workspace = true }
+egui-snarl = { workspace = true, features = ["serde"] }
+emath = { workspace = true }
 fs-err = { workspace = true }
 itertools = { workspace = true }
-knuffel = { git = "https://github.com/TheLostLambda/knuffel.git", rev = "744bf56c1fc64b87f7c47d67470ff7898970dc70" }
+knuffel = { workspace = true }
 miette = { workspace = true }
 ordered-float = { workspace = true, features = ["serde"] }
 parking_lot = { workspace = true }
 paste = { workspace = true }
+path-clean = { workspace = true }
+sanitise-file-name = { workspace = true }
 serde = { workspace = true, features = ["derive"] }
 serde_json = { workspace = true }
 serde_json5 = { workspace = true }

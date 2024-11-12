@@ -2,7 +2,9 @@ use crate::diagnostics_list::diagnostics_tab;
 use crate::error::report_error;
 use crate::file_tree::file_tab;
 use crate::workspace::Tab;
+use ahash::AHashMap;
 use color_backtrace::{default_output_stream, BacktracePrinter};
+use dbe2::project::io::FilesystemIO;
 use dbe2::project::Project;
 use eframe::epaint::FontFamily;
 use eframe::{App, CreationContext, Frame, Storage};
@@ -27,6 +29,11 @@ mod widgets;
 mod workspace;
 
 fn main() -> eframe::Result<()> {
+    #[cfg(debug_assertions)]
+    unsafe {
+        backtrace_on_stack_overflow::enable();
+    }
+
     BacktracePrinter::new()
         .add_frame_filter(Box::new(|frame| {
             frame.retain(|frame| {
@@ -74,11 +81,18 @@ fn main() -> eframe::Result<()> {
     )
 }
 
+/// A function that can be called to show a modal
+///
+/// The function should return true if the modal is done and should no
+/// longer be called
+type ModalFn = Box<dyn FnMut(&mut DbeApp, &Context) -> bool>;
+
 struct DbeApp {
-    project: Option<Project>,
+    project: Option<Project<FilesystemIO>>,
     open_file_dialog: Option<FileDialog>,
     collector: EventCollector,
     toasts: Vec<Toast>,
+    modals: AHashMap<&'static str, ModalFn>,
     history: Vec<PathBuf>,
     tabs: DockState<Tab>,
 }
@@ -126,6 +140,7 @@ impl DbeApp {
             open_file_dialog: None,
             collector,
             toasts: vec![],
+            modals: Default::default(),
             history: vec![],
             tabs: DockState::new(vec![]),
         };
@@ -268,7 +283,7 @@ impl App for DbeApp {
                 });
                 ui.add_space(16.0);
 
-                egui::widgets::global_dark_light_mode_switch(ui);
+                egui::widgets::global_theme_preference_switch(ui);
 
                 if ui.button("Clear All").clicked() {
                     // self.snarl = Default::default();
@@ -314,6 +329,12 @@ impl App for DbeApp {
             toasts.add(toast);
         }
         toasts.show(ctx);
+
+        let mut modals = std::mem::take(&mut self.modals);
+        for (_, modal) in &mut modals {
+            modal(self, ctx);
+        }
+        self.modals = modals;
     }
 
     fn save(&mut self, storage: &mut dyn Storage) {

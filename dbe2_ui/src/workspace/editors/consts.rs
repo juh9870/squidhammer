@@ -14,14 +14,15 @@ pub struct ConstEditor;
 
 impl Editor for ConstEditor {
     fn props(&self, _reg: &ETypesRegistry, item: Option<&EItemInfo>) -> miette::Result<DynProps> {
-        let Some(ty) = item.map(|i| i.ty()) else {
-            bail!("!!INTERNAL ERROR!! const editor can't be used without providing EItemType");
-        };
-        let EDataType::Const { value } = ty else {
-            bail!("unsupported item. Expected const")
-        };
+        if let Some(ty) = item.map(|i| i.ty()) {
+            let EDataType::Const { value } = ty else {
+                bail!("unsupported item. Expected const")
+            };
 
-        Ok(ConstEditorProps { item: value }.pack())
+            Ok(ConstEditorProps { item: Some(value) }.pack())
+        } else {
+            Ok(ConstEditorProps { item: None }.pack())
+        }
     }
 
     fn size(&self, _props: &DynProps) -> EditorSize {
@@ -38,9 +39,11 @@ impl Editor for ConstEditor {
         props: &DynProps,
     ) -> EditorResponse {
         let props = cast_props::<ConstEditorProps>(props);
-        let const_value = props.item.default_value();
-        if value != &const_value {
-            labeled_error(ui, field_name, miette!("{}", ("dbe.editor.bad_const")))
+        if let Some(item) = props.item {
+            let const_value = item.default_value();
+            if value != &const_value {
+                labeled_error(ui, field_name, miette!("{}", ("dbe.editor.bad_const")))
+            }
         }
 
         labeled_field(ui, field_name, |ui| ui.label(value.to_string()));
@@ -51,7 +54,7 @@ impl Editor for ConstEditor {
 
 #[derive(Debug, Clone)]
 struct ConstEditorProps {
-    item: ETypeConst,
+    item: Option<ETypeConst>,
 }
 
 impl EditorProps for ConstEditorProps {}

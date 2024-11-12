@@ -186,11 +186,15 @@ fn config(reg: &ETypesRegistry) -> miette::Result<Arc<ReservedIdConfig>> {
 #[derive(Debug)]
 pub struct Id;
 
-const MAX_DEPTH: usize = 16;
-
 impl DataValidator for Id {
     fn name(&self) -> Cow<'static, str> {
         "ids/numeric".into()
+    }
+
+    fn clear_cache(&self, registry: &ETypesRegistry) {
+        let ids = registry.extra_data::<Data>();
+        let mut ids = ids.write();
+        ids.ids.clear();
     }
 
     fn validate(
@@ -298,6 +302,10 @@ pub struct Ref;
 impl DataValidator for Ref {
     fn name(&self) -> Cow<'static, str> {
         "ids/numeric_ref".into()
+    }
+
+    fn clear_cache(&self, _registry: &ETypesRegistry) {
+        // cache is cleared by the `Id` validator
     }
 
     fn validate(

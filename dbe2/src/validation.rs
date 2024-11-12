@@ -25,6 +25,8 @@ fn default_validators() -> impl Iterator<Item = (Ustr, Arc<dyn DataValidator>)> 
 pub trait DataValidator: Send + Sync + Debug {
     fn name(&self) -> Cow<'static, str>;
 
+    fn clear_cache(&self, registry: &ETypesRegistry);
+
     fn validate(
         &self,
         registry: &ETypesRegistry,
@@ -48,6 +50,10 @@ impl DataValidator for Validator {
         self.0.name()
     }
 
+    fn clear_cache(&self, registry: &ETypesRegistry) {
+        self.0.clear_cache(registry)
+    }
+
     fn validate(
         &self,
         registry: &ETypesRegistry,
@@ -56,6 +62,12 @@ impl DataValidator for Validator {
         data: &EValue,
     ) -> miette::Result<()> {
         self.0.validate(registry, ctx, item, data)
+    }
+}
+
+pub fn clear_validation_cache(registry: &ETypesRegistry) {
+    for validator in VALIDATORS.borrow().values() {
+        validator.clear_cache(registry)
     }
 }
 

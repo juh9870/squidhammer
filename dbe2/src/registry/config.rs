@@ -14,12 +14,9 @@ pub struct ExtraConfig<'a>(pub(super) &'a ETypesRegistry);
 
 impl ExtraConfig<'_> {
     /// Get a value from the extra configuration, caching the result
-    pub fn get<T: ConfigMerge + Default + Send + Sync + 'static>(
-        &self,
-        key: &str,
-    ) -> miette::Result<Arc<T>>
+    pub fn get<T>(&self, key: &str) -> miette::Result<Arc<T>>
     where
-        for<'b> T: Deserialize<'b>,
+        for<'b> T: Deserialize<'b> + ConfigMerge + Default + Send + Sync + 'static,
     {
         let mut cache = self.0.cache.write();
         if !cache.contains_key(key) {
@@ -56,9 +53,9 @@ impl ExtraConfig<'_> {
     }
 
     /// Merges all occurrences of a config option into a single value
-    pub fn get_uncached<T: ConfigMerge + Default>(&self, key: &str) -> miette::Result<T>
+    pub fn get_uncached<T>(&self, key: &str) -> miette::Result<T>
     where
-        for<'b> T: Deserialize<'b>,
+        for<'b> T: Deserialize<'b> + ConfigMerge + Default,
     {
         let Some(vec) = self.0.extra_config.get(key) else {
             return Ok(Default::default());
@@ -93,9 +90,9 @@ impl ExtraConfig<'_> {
 pub struct ExtraConfigsInCache<'a>(&'a ExtraConfig<'a>);
 
 impl ExtraConfigsInCache<'_> {
-    pub fn get<T: ConfigMerge + Default>(&self, key: &str) -> miette::Result<T>
+    pub fn get<T>(&self, key: &str) -> miette::Result<T>
     where
-        for<'b> T: Deserialize<'b>,
+        for<'b> T: Deserialize<'b> + ConfigMerge + Default,
     {
         self.0.get_uncached(key)
     }

@@ -1,6 +1,6 @@
-struct editor="rgba" repr="argb" color="#c7c729" {
-    number "r"
-    number "g"
-    number "b"
-    number "a"
+struct editor="rgba" repr="argb" pin_color="#c7c729" graph_inline=true {
+    number "r" min=0 max=1
+    number "g" min=0 max=1
+    number "b" min=0 max=1
+    number "a" min=0 max=1
 }

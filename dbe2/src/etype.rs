@@ -12,6 +12,7 @@ use std::borrow::Cow;
 use std::collections::BTreeMap;
 use strum::EnumIs;
 
+pub mod conversion;
 pub mod default;
 pub mod econst;
 pub mod eenum;

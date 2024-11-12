@@ -41,7 +41,7 @@ impl DiagnosticContext {
     }
 
     pub fn enter_new<'a>(&'a mut self, ident: &'a str) -> DiagnosticContextMut<'a> {
-        if self.diagnostics.contains_key(&ident.to_string()) {
+        if self.diagnostics.contains_key(ident) {
             panic!("Diagnostic context already exists for {}", ident);
         }
 
@@ -96,6 +96,7 @@ pub type DiagnosticContextRef<'a> =
 pub type DiagnosticContextMut<'a> =
     DiagnosticContextRefHolder<'a, &'a mut BTreeMap<DiagnosticPath, SmallVec<[Diagnostic; 1]>>>;
 
+#[derive(Debug)]
 pub struct DiagnosticContextRefHolder<'a, T: 'a + ContextLike> {
     diagnostics: T,
     path: &'a mut DiagnosticPath,

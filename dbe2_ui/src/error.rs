@@ -44,8 +44,10 @@ pub fn format_error(err: &miette::Report, strip_ansi: bool) -> String {
 
 pub fn render_ansi(ui: &mut Ui, ansi: &str) {
     let slices = categorise_text(ansi);
-    let mut job = LayoutJob::default();
-    job.break_on_newline = true;
+    let mut job = LayoutJob {
+        break_on_newline: true,
+        ..Default::default()
+    };
     for CategorisedSlice {
         text,
         bg,

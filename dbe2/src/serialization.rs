@@ -89,7 +89,7 @@ impl ThingStruct {
         for e in self.fields {
             let field_name = e.name;
             m_try(|| {
-                let (name, item) = e.into_item(registry, id, &data.generic_arguments)?;
+                let (name, item) = e.into_item(registry, &data.generic_arguments)?;
                 data.add_field(EStructField { name, ty: item })?;
 
                 Ok(())
@@ -132,7 +132,7 @@ impl ThingEnum {
             self.extra_properties,
         );
         for e in self.variants {
-            let (name, item) = e.into_item(registry, id, &data.generic_arguments)?;
+            let (name, item) = e.into_item(registry, &data.generic_arguments)?;
             data.add_variant(EEnumVariant::from_eitem(item, name, registry, repr, name)?);
         }
         Ok(data)
