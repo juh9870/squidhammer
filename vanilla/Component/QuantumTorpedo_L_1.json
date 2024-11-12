@@ -1,19 +1,21 @@
 {
-  "ItemType": 1,
-  "Id": 155,
-  "Name": "$QuantumTorpedo_L_1",
-  "DisplayCategory": 1,
-  "Availability": 1,
-  "ComponentStatsId": 1,
-  "Faction": 6,
-  "Level": 65,
-  "Icon": "torpedo3",
-  "Color": "#FFC0C0",
-  "Layout": "110110110",
-  "CellType": "4",
-  "WeaponId": 69,
   "AmmunitionId": 69,
-  "WeaponSlotType": "T",
+  "Availability": 1,
+  "CellType": "4",
+  "Color": "#FFC0C0",
+  "ComponentStatsId": 1,
+  "Description": "",
+  "DeviceId": null,
+  "DisplayCategory": 1,
+  "DroneBayId": null,
+  "DroneId": null,
+  "Faction": 6,
+  "Icon": "torpedo3",
+  "Id": 155,
+  "ItemType": 1,
+  "Layout": "110110110",
+  "Level": 65,
+  "Name": "$QuantumTorpedo_L_1",
   "PossibleModifications": [
     14,
     13,
@@ -25,5 +27,15 @@
     2,
     7,
     1
-  ]
+  ],
+  "Restrictions": {
+    "ComponentGroupTag": null,
+    "MaxComponentAmount": 0,
+    "NotForMechanicShips": false,
+    "NotForOrganicShips": false,
+    "ShipSizes": [],
+    "UniqueComponentTag": ""
+  },
+  "WeaponId": 69,
+  "WeaponSlotType": "T"
 }

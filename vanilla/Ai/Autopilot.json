@@ -1,17 +1,26 @@
 {
-  "ItemType": 28,
   "Id": 7,
+  "ItemType": 28,
   "RootNode": {
-    "Type": 3,
     "Nodes": [
       {
-        "Type": 52,
-        "Cooldown": 2.0
+        "Cooldown": 2,
+        "Requirement": {
+          "Type": 0
+        },
+        "Type": 52
       },
       {
-        "Type": 1,
-        "ItemId": 24
+        "ItemId": 24,
+        "Requirement": {
+          "Type": 0
+        },
+        "Type": 1
       }
-    ]
+    ],
+    "Requirement": {
+      "Type": 0
+    },
+    "Type": 3
   }
 }

@@ -1,16 +1,33 @@
 {
-  "ItemType": 1,
-  "Id": 12,
-  "Name": "$TitaniumArmor_S",
-  "DisplayCategory": 2,
+  "AmmunitionId": null,
   "Availability": 1,
+  "CellType": "1",
+  "Color": "#00000000",
   "ComponentStatsId": 12,
+  "Description": "",
+  "DeviceId": null,
+  "DisplayCategory": 2,
+  "DroneBayId": null,
+  "DroneId": null,
   "Faction": -1,
   "Icon": "armor11",
+  "Id": 12,
+  "ItemType": 1,
   "Layout": "1",
-  "CellType": "1",
+  "Level": 0,
+  "Name": "$TitaniumArmor_S",
   "PossibleModifications": [
     1,
     3
-  ]
+  ],
+  "Restrictions": {
+    "ComponentGroupTag": null,
+    "MaxComponentAmount": 0,
+    "NotForMechanicShips": false,
+    "NotForOrganicShips": false,
+    "ShipSizes": [],
+    "UniqueComponentTag": ""
+  },
+  "WeaponId": null,
+  "WeaponSlotType": ""
 }

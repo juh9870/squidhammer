@@ -1,21 +1,57 @@
 {
-  "ItemType": 6,
-  "Id": 83,
-  "ShipType": 3,
-  "Name": "$Mothership",
-  "Faction": 1,
-  "IconImage": "mothership",
-  "IconScale": 1.0,
-  "ModelImage": "mothership",
-  "ModelScale": 5.0,
+  "Barrels": [],
+  "BaseWeightModifier": 0,
+  "BuiltinDevices": [],
+  "CellsExpansions": 0,
+  "ColliderTolerance": 0.02,
+  "Description": "",
+  "EnergyResistance": 0,
   "EngineColor": "#40FFF096",
+  "EnginePosition": {
+    "x": 0,
+    "y": 0
+  },
+  "EngineSize": 0,
   "Engines": [
     {
       "Position": {
-        "x": -0.95
+        "x": -0.95,
+        "y": 0
       },
       "Size": 0.4
     }
   ],
-  "Layout": "0000220000000222200000022220000002222000010222201001022220100102222010010222201001025520100100550010"
+  "Faction": 1,
+  "Features": {
+    "ArmorBonus": 0,
+    "BuiltinDevices": [],
+    "DroneAttackBonus": 0,
+    "DroneBuildSpeedBonus": 0,
+    "DroneDefenseBonus": 0,
+    "EnergyBonus": 0,
+    "EnergyResistance": 0,
+    "EquipmentWeightBonus": 0,
+    "HeatResistance": 0,
+    "KineticResistance": 0,
+    "Regeneration": false,
+    "ShieldBonus": 0,
+    "ShipWeightBonus": 0,
+    "TurnRateBonus": 0,
+    "VelocityBonus": 0
+  },
+  "HeatResistance": 0,
+  "IconImage": "mothership",
+  "IconScale": 1,
+  "Id": 83,
+  "ItemType": 6,
+  "KineticResistance": 0,
+  "Layout": "0000220000000222200000022220000002222000010222201001022220100102222010010222201001025520100100550010",
+  "ModelImage": "mothership",
+  "ModelScale": 5,
+  "Name": "$Mothership",
+  "Regeneration": false,
+  "ShipCategory": 0,
+  "ShipRarity": 0,
+  "ShipType": 3,
+  "SizeClass": -1
 }

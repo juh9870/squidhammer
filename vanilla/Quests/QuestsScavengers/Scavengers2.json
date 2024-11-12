@@ -1,109 +1,132 @@
 {
-  "ItemType": 15,
   "Id": 106,
-  "Name": "$Quest_ScavengerShip",
-  "QuestType": 2,
-  "StartCondition": 1,
-  "Weight": 0.1,
-  "Requirement": {
-    "Type": 25,
-    "ItemId": 30
-  },
+  "ItemType": 15,
   "Level": 200,
+  "Name": "$Quest_ScavengerShip",
   "Nodes": [
     {
-      "Id": 1,
-      "Type": 10,
-      "Message": "$Scavengers_2_Intro",
       "Actions": [
         {
-          "TargetNode": 8,
-          "ButtonText": "$Continue"
-        }
-      ]
-    },
-    {
-      "Id": 8,
-      "Type": 10,
-      "Message": "$Scavengers_2_Message",
-      "Character": 7,
-      "Actions": [
-        {
-          "TargetNode": 9,
+          "ButtonText": "$Continue",
           "Requirement": {
-            "Type": 25,
-            "ItemId": 30
+            "Type": 0
           },
-          "ButtonText": "$Action_UseArtifact"
-        },
-        {
-          "TargetNode": 7,
-          "ButtonText": "$Action_Ignore"
+          "TargetNode": 8
         }
-      ]
+      ],
+      "Character": null,
+      "Enemy": null,
+      "Id": 1,
+      "Loot": null,
+      "Message": "$Scavengers_2_Intro",
+      "RequiredView": 0,
+      "Type": 10
     },
     {
-      "Id": 9,
-      "Type": 10,
-      "Message": "$Scavengers_2_Message2",
-      "Loot": 18,
-      "Character": 7,
       "Actions": [
         {
-          "TargetNode": 2,
-          "ButtonText": "$Action_Accept"
+          "ButtonText": "$Action_UseArtifact",
+          "Requirement": {
+            "ItemId": 30,
+            "MinValue": 0,
+            "Type": 25
+          },
+          "TargetNode": 9
         },
         {
-          "TargetNode": 7,
-          "ButtonText": "$Action_Decline"
+          "ButtonText": "$Action_Ignore",
+          "Requirement": {
+            "Type": 0
+          },
+          "TargetNode": 7
         }
-      ]
+      ],
+      "Character": 7,
+      "Enemy": null,
+      "Id": 8,
+      "Loot": null,
+      "Message": "$Scavengers_2_Message",
+      "RequiredView": 0,
+      "Type": 10
+    },
+    {
+      "Actions": [
+        {
+          "ButtonText": "$Action_Accept",
+          "Requirement": {
+            "Type": 0
+          },
+          "TargetNode": 2
+        },
+        {
+          "ButtonText": "$Action_Decline",
+          "Requirement": {
+            "Type": 0
+          },
+          "TargetNode": 7
+        }
+      ],
+      "Character": 7,
+      "Enemy": null,
+      "Id": 9,
+      "Loot": 18,
+      "Message": "$Scavengers_2_Message2",
+      "RequiredView": 0,
+      "Type": 10
     },
     {
       "Id": 2,
-      "Type": 17,
+      "Message": "",
       "Transitions": [
         {
-          "TargetNode": 3,
           "Requirement": {
-            "Type": 2,
             "Requirements": [
               {
-                "Type": 27,
-                "ItemId": 18
+                "ItemId": 18,
+                "Type": 27
               },
               {
+                "BoolValue": false,
                 "Type": 30
               }
-            ]
-          }
+            ],
+            "Type": 2
+          },
+          "TargetNode": 3,
+          "Weight": 0
         }
-      ]
+      ],
+      "Type": 17
     },
     {
-      "Id": 3,
-      "Type": 36,
       "DefaultTransition": 4,
-      "Loot": 18
+      "Id": 3,
+      "Loot": 18,
+      "Type": 36
     },
     {
-      "Id": 4,
-      "Type": 10,
-      "Message": "$Scavengers_2_Completed",
-      "Loot": 19,
-      "Character": 7,
       "Actions": [
         {
-          "TargetNode": 5,
-          "ButtonText": "$Continue"
+          "ButtonText": "$Continue",
+          "Requirement": {
+            "Type": 0
+          },
+          "TargetNode": 5
         }
-      ]
+      ],
+      "Character": 7,
+      "Enemy": null,
+      "Id": 4,
+      "Loot": 19,
+      "Message": "$Scavengers_2_Completed",
+      "RequiredView": 0,
+      "Type": 10
     },
     {
-      "Id": 5,
-      "Type": 35,
       "DefaultTransition": 6,
-      "Loot": 19
+      "Id": 5,
+      "Loot": 19,
+      "Type": 35
     },
     {
       "Id": 6,
@@ -113,5 +136,25 @@
       "Id": 7,
       "Type": 41
     }
-  ]
+  ],
+  "Origin": {
+    "Factions": {
+      "List": [],
+      "Type": 0
+    },
+    "MaxDistance": 0,
+    "MaxRelations": 0,
+    "MinDistance": 0,
+    "MinRelations": 0,
+    "Type": 0
+  },
+  "QuestType": 2,
+  "Requirement": {
+    "ItemId": 30,
+    "MinValue": 0,
+    "Type": 25
+  },
+  "StartCondition": 1,
+  "UseRandomSeed": false,
+  "Weight": 0.1
 }

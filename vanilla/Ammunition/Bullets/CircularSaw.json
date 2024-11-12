@@ -1,8 +1,13 @@
 {
-  "ItemType": 27,
+  "Deformation": 10,
   "Id": 18,
-  "Shape": 10,
   "Image": "saw256",
-  "Size": 1.0,
-  "Deformation": 10.0
+  "ItemType": 27,
+  "MainColor": "#00000000",
+  "MainColorMode": 0,
+  "Margins": 0,
+  "SecondColor": "#00000000",
+  "SecondColorMode": 0,
+  "Shape": 10,
+  "Size": 1
 }

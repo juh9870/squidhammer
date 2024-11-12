@@ -1,20 +1,34 @@
 {
-  "ItemType": 1,
-  "Id": 29,
-  "Name": "$StealthField",
-  "DisplayCategory": 6,
+  "AmmunitionId": null,
   "Availability": 1,
-  "ComponentStatsId": 3,
-  "Faction": 3,
-  "Level": 75,
-  "Icon": "shield2",
-  "Color": "#C0C0FF",
-  "Layout": "101111101",
   "CellType": "2",
+  "Color": "#C0C0FF",
+  "ComponentStatsId": 3,
+  "Description": "",
   "DeviceId": 13,
+  "DisplayCategory": 6,
+  "DroneBayId": null,
+  "DroneId": null,
+  "Faction": 3,
+  "Icon": "shield2",
+  "Id": 29,
+  "ItemType": 1,
+  "Layout": "101111101",
+  "Level": 75,
+  "Name": "$StealthField",
   "PossibleModifications": [
     2,
     1,
     6
-  ]
+  ],
+  "Restrictions": {
+    "ComponentGroupTag": null,
+    "MaxComponentAmount": 0,
+    "NotForMechanicShips": false,
+    "NotForOrganicShips": false,
+    "ShipSizes": [],
+    "UniqueComponentTag": ""
+  },
+  "WeaponId": null,
+  "WeaponSlotType": ""
 }

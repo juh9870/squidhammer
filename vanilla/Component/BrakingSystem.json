@@ -1,19 +1,33 @@
 {
-  "ItemType": 1,
-  "Id": 89,
-  "Name": "$BrakingSystem",
-  "DisplayCategory": 4,
+  "AmmunitionId": null,
   "Availability": 1,
-  "ComponentStatsId": 3,
-  "Faction": 10,
-  "Level": 25,
-  "Icon": "engine3",
-  "Color": "#E179FF",
-  "Layout": "1100",
   "CellType": "5",
+  "Color": "#E179FF",
+  "ComponentStatsId": 3,
+  "Description": "",
   "DeviceId": 2,
+  "DisplayCategory": 4,
+  "DroneBayId": null,
+  "DroneId": null,
+  "Faction": 10,
+  "Icon": "engine3",
+  "Id": 89,
+  "ItemType": 1,
+  "Layout": "1100",
+  "Level": 25,
+  "Name": "$BrakingSystem",
   "PossibleModifications": [
     2,
     1
-  ]
+  ],
+  "Restrictions": {
+    "ComponentGroupTag": null,
+    "MaxComponentAmount": 0,
+    "NotForMechanicShips": false,
+    "NotForOrganicShips": false,
+    "ShipSizes": [],
+    "UniqueComponentTag": ""
+  },
+  "WeaponId": null,
+  "WeaponSlotType": ""
 }

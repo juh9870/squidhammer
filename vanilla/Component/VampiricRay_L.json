@@ -1,21 +1,35 @@
 {
-  "ItemType": 1,
-  "Id": 27,
-  "Name": "$VampiricRay_L",
-  "DisplayCategory": 1,
+  "AmmunitionId": 86,
+  "Availability": 0,
+  "CellType": "4",
+  "Color": "#FF0000",
   "ComponentStatsId": 1,
+  "Description": "",
+  "DeviceId": null,
+  "DisplayCategory": 1,
+  "DroneBayId": null,
+  "DroneId": null,
   "Faction": -1,
   "Icon": "reactor3",
-  "Color": "#FF0000",
+  "Id": 27,
+  "ItemType": 1,
   "Layout": "010111010",
-  "CellType": "4",
-  "WeaponId": 86,
-  "AmmunitionId": 86,
-  "WeaponSlotType": "L",
+  "Level": 0,
+  "Name": "$VampiricRay_L",
   "PossibleModifications": [
     5,
     2,
     7,
     1
-  ]
+  ],
+  "Restrictions": {
+    "ComponentGroupTag": null,
+    "MaxComponentAmount": 0,
+    "NotForMechanicShips": false,
+    "NotForOrganicShips": false,
+    "ShipSizes": [],
+    "UniqueComponentTag": ""
+  },
+  "WeaponId": 86,
+  "WeaponSlotType": "L"
 }

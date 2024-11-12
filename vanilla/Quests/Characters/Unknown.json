@@ -1,5 +1,11 @@
 {
-  "ItemType": 19,
+  "AvatarIcon": "",
+  "Faction": null,
+  "Fleet": null,
   "Id": 3,
-  "Name": "$CharacterUnknown"
+  "Inventory": null,
+  "IsUnique": false,
+  "ItemType": 19,
+  "Name": "$CharacterUnknown",
+  "Relations": 0
 }

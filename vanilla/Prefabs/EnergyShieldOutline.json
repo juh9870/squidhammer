@@ -1,7 +1,9 @@
 {
-  "ItemType": 29,
+  "AspectRatio": 1,
   "Id": 3,
-  "Type": 3,
   "Image1": "wave",
-  "ImageScale": 1.01
+  "ImageScale": 1.01,
+  "ItemType": 29,
+  "Thickness": 0.1,
+  "Type": 3
 }

@@ -1,16 +1,25 @@
 {
-  "ItemType": 2,
-  "Id": 10,
-  "DeviceClass": 6,
-  "EnergyConsumption": 1.0,
-  "PassiveEnergyConsumption": 3.0,
-  "Power": 3.0,
-  "Size": 3.0,
-  "Cooldown": 0.3,
-  "Lifetime": 0.1,
   "ActivationType": 2,
   "Color": "#FF8080",
-  "Sound": "shot_11",
+  "ControlButtonIcon": "controls_shield",
+  "Cooldown": 0.3,
+  "DeviceClass": 6,
   "EffectPrefab": "Lightning",
-  "ControlButtonIcon": "controls_shield"
+  "EnergyConsumption": 1,
+  "Id": 10,
+  "ItemType": 2,
+  "Lifetime": 0.1,
+  "ObjectPrefab": "",
+  "Offset": {
+    "x": 0,
+    "y": 0
+  },
+  "PassiveEnergyConsumption": 3,
+  "Power": 3,
+  "Prefab": null,
+  "Range": 0,
+  "ScaleEnergyWithShipSize": true,
+  "Size": 3,
+  "Sound": "shot_11",
+  "VisualEffect": null
 }

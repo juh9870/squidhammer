@@ -1,77 +1,134 @@
 {
-  "ItemType": 28,
   "Id": 10,
+  "ItemType": 28,
   "RootNode": {
-    "Type": 4,
     "Nodes": [
       {
+        "Requirement": {
+          "Type": 0
+        },
         "Type": 123
       },
       {
+        "Requirement": {
+          "Type": 0
+        },
         "Type": 117
       },
       {
-        "Type": 3,
         "Nodes": [
           {
-            "Type": 115,
-            "MaxValue": 0.5
+            "MaxValue": 0.5,
+            "MinValue": 0.1,
+            "Requirement": {
+              "Type": 0
+            },
+            "Type": 115
           },
           {
+            "Requirement": {
+              "Type": 0
+            },
             "Type": 104
           }
-        ]
+        ],
+        "Requirement": {
+          "Type": 0
+        },
+        "Type": 3
       },
       {
-        "Type": 3,
         "Nodes": [
           {
-            "Type": 115,
-            "MaxValue": 0.5
+            "MaxValue": 0.5,
+            "MinValue": 0.1,
+            "Requirement": {
+              "Type": 0
+            },
+            "Type": 115
           },
           {
+            "Requirement": {
+              "Type": 0
+            },
             "Type": 131
           }
-        ]
+        ],
+        "Requirement": {
+          "Type": 0
+        },
+        "Type": 3
       },
       {
-        "Type": 3,
         "Nodes": [
           {
-            "Type": 51,
-            "MinValue": 0.5
+            "MinValue": 0.5,
+            "Requirement": {
+              "Type": 0
+            },
+            "Type": 51
           },
           {
-            "Type": 1,
-            "ItemId": 125
+            "ItemId": 125,
+            "Requirement": {
+              "Type": 0
+            },
+            "Type": 1
           }
-        ]
+        ],
+        "Requirement": {
+          "Type": 0
+        },
+        "Type": 3
       },
       {
-        "Type": 3,
         "Nodes": [
           {
-            "Type": 115,
-            "MaxValue": 0.5
+            "MaxValue": 0.5,
+            "MinValue": 0.1,
+            "Requirement": {
+              "Type": 0
+            },
+            "Type": 115
           },
           {
-            "Type": 111,
-            "Cooldown": 0.1
+            "Cooldown": 0.1,
+            "Requirement": {
+              "Type": 0
+            },
+            "Type": 111
           },
           {
-            "Type": 127,
-            "InRange": true
+            "InRange": true,
+            "Requirement": {
+              "Type": 0
+            },
+            "Type": 127
           }
-        ]
+        ],
+        "Requirement": {
+          "Type": 0
+        },
+        "Type": 3
       },
       {
-        "Type": 1,
-        "ItemId": 113
+        "ItemId": 113,
+        "Requirement": {
+          "Type": 0
+        },
+        "Type": 1
       },
       {
-        "Type": 114,
-        "DeviceClass": 2
+        "DeviceClass": 2,
+        "Requirement": {
+          "Type": 0
+        },
+        "Type": 114
       }
-    ]
+    ],
+    "Requirement": {
+      "Type": 0
+    },
+    "Type": 4
   }
 }

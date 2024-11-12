@@ -1,19 +1,27 @@
 {
-  "ItemType": 4,
-  "Id": 62,
-  "Impulse": 0.01,
-  "Recoil": 0.005,
-  "Size": 1.0,
-  "InitialPosition": {
-    "x": 0.5
-  },
-  "Damage": 7.5,
-  "Range": 30.0,
-  "Velocity": 15.0,
-  "EnergyCost": 3.0,
+  "AmmunitionClass": 0,
+  "AreaOfEffect": 0,
+  "BulletPrefab": "Plasma2",
   "Color": "#FF9494",
+  "CoupledAmmunitionId": null,
+  "Damage": 7.5,
+  "DamageType": 0,
+  "EnergyCost": 3,
   "FireSound": "shot_04",
-  "HitSound": "hit_01",
   "HitEffectPrefab": "FlashAdditive",
-  "BulletPrefab": "Plasma2"
+  "HitPoints": 0,
+  "HitSound": "hit_01",
+  "Id": 62,
+  "IgnoresShipVelocity": false,
+  "Impulse": 0.01,
+  "InitialPosition": {
+    "x": 0.5,
+    "y": 0
+  },
+  "ItemType": 4,
+  "LifeTime": 0,
+  "Range": 30,
+  "Recoil": 0.005,
+  "Size": 1,
+  "Velocity": 15
 }

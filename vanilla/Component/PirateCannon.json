@@ -1,19 +1,21 @@
 {
-  "ItemType": 1,
-  "Id": 193,
-  "Name": "$PirateCannon",
-  "DisplayCategory": 1,
-  "Availability": 5,
-  "ComponentStatsId": 1,
-  "Faction": 18,
-  "Level": 100,
-  "Icon": "cannon",
-  "Color": "#FFFFE0",
-  "Layout": "010010111",
-  "CellType": "4",
-  "WeaponId": 106,
   "AmmunitionId": 116,
-  "WeaponSlotType": "C",
+  "Availability": 5,
+  "CellType": "4",
+  "Color": "#FFFFE0",
+  "ComponentStatsId": 1,
+  "Description": "",
+  "DeviceId": null,
+  "DisplayCategory": 1,
+  "DroneBayId": null,
+  "DroneId": null,
+  "Faction": 18,
+  "Icon": "cannon",
+  "Id": 193,
+  "ItemType": 1,
+  "Layout": "010010111",
+  "Level": 100,
+  "Name": "$PirateCannon",
   "PossibleModifications": [
     6,
     5,
@@ -22,5 +24,15 @@
     7,
     1,
     14
-  ]
+  ],
+  "Restrictions": {
+    "ComponentGroupTag": null,
+    "MaxComponentAmount": 0,
+    "NotForMechanicShips": false,
+    "NotForOrganicShips": false,
+    "ShipSizes": [],
+    "UniqueComponentTag": ""
+  },
+  "WeaponId": 106,
+  "WeaponSlotType": "C"
 }

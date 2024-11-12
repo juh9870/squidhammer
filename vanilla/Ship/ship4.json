@@ -1,32 +1,72 @@
 {
-  "ItemType": 6,
-  "Id": 132,
-  "SizeClass": 3,
-  "Name": "$ship_4",
-  "Faction": 17,
-  "IconImage": "ship4",
-  "IconScale": 1.0,
-  "ModelImage": "ship4",
-  "ModelScale": 2.5,
+  "Barrels": [
+    {
+      "AutoAimingArc": 0,
+      "Image": "",
+      "Offset": 0,
+      "PlatformType": 0,
+      "Position": {
+        "x": 0.95,
+        "y": 0
+      },
+      "Rotation": 0,
+      "RotationSpeed": 0,
+      "Size": 0,
+      "WeaponClass": "SL"
+    }
+  ],
+  "BaseWeightModifier": 0,
+  "BuiltinDevices": [],
+  "CellsExpansions": 0,
+  "ColliderTolerance": 0.02,
+  "Description": "",
+  "EnergyResistance": 0,
   "EngineColor": "#408A1FCB",
+  "EnginePosition": {
+    "x": 0,
+    "y": 0
+  },
+  "EngineSize": 0,
   "Engines": [
     {
       "Position": {
-        "x": -0.9
+        "x": -0.9,
+        "y": 0
       },
       "Size": 0.3
     }
   ],
-  "Layout": "0000000440000000000000444400000000000144441000000000012222100000000001222210000000000122221000000000012222100000111111222211111111111122221111111111112222111111111111222211111100110122221011000000022222200000000000255200000000000055550000000000000550000000",
-  "Barrels": [
-    {
-      "Position": {
-        "x": 0.95
-      },
-      "WeaponClass": "SL"
-    }
-  ],
+  "Faction": 17,
   "Features": {
-    "EnergyBonus": 0.25
-  }
+    "ArmorBonus": 0,
+    "BuiltinDevices": [],
+    "DroneAttackBonus": 0,
+    "DroneBuildSpeedBonus": 0,
+    "DroneDefenseBonus": 0,
+    "EnergyBonus": 0.25,
+    "EnergyResistance": 0,
+    "EquipmentWeightBonus": 0,
+    "HeatResistance": 0,
+    "KineticResistance": 0,
+    "Regeneration": false,
+    "ShieldBonus": 0,
+    "ShipWeightBonus": 0,
+    "TurnRateBonus": 0,
+    "VelocityBonus": 0
+  },
+  "HeatResistance": 0,
+  "IconImage": "ship4",
+  "IconScale": 1,
+  "Id": 132,
+  "ItemType": 6,
+  "KineticResistance": 0,
+  "Layout": "0000000440000000000000444400000000000144441000000000012222100000000001222210000000000122221000000000012222100000111111222211111111111122221111111111112222111111111111222211111100110122221011000000022222200000000000255200000000000055550000000000000550000000",
+  "ModelImage": "ship4",
+  "ModelScale": 2.5,
+  "Name": "$ship_4",
+  "Regeneration": false,
+  "ShipCategory": 0,
+  "ShipRarity": 0,
+  "ShipType": 0,
+  "SizeClass": 3
 }

@@ -1,19 +1,21 @@
 {
-  "ItemType": 1,
-  "Id": 146,
-  "Name": "$StasisField_M_1",
-  "DisplayCategory": 1,
-  "Availability": 1,
-  "ComponentStatsId": 3,
-  "Faction": 4,
-  "Level": 45,
-  "Icon": "torpedo3",
-  "Color": "#FFA0FF",
-  "Layout": "1111",
-  "CellType": "4",
-  "WeaponId": 80,
   "AmmunitionId": 80,
-  "WeaponSlotType": "S",
+  "Availability": 1,
+  "CellType": "4",
+  "Color": "#FFA0FF",
+  "ComponentStatsId": 3,
+  "Description": "",
+  "DeviceId": null,
+  "DisplayCategory": 1,
+  "DroneBayId": null,
+  "DroneId": null,
+  "Faction": 4,
+  "Icon": "torpedo3",
+  "Id": 146,
+  "ItemType": 1,
+  "Layout": "1111",
+  "Level": 45,
+  "Name": "$StasisField_M_1",
   "PossibleModifications": [
     13,
     8,
@@ -24,5 +26,15 @@
     2,
     7,
     1
-  ]
+  ],
+  "Restrictions": {
+    "ComponentGroupTag": null,
+    "MaxComponentAmount": 0,
+    "NotForMechanicShips": false,
+    "NotForOrganicShips": false,
+    "ShipSizes": [],
+    "UniqueComponentTag": ""
+  },
+  "WeaponId": 80,
+  "WeaponSlotType": "S"
 }

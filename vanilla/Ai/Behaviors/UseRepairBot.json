@@ -1,38 +1,61 @@
 {
-  "ItemType": 28,
   "Id": 113,
+  "ItemType": 28,
   "RootNode": {
-    "Type": 3,
-    "Requirement": {
-      "Type": 10,
-      "DeviceClass": 7
-    },
     "Nodes": [
       {
-        "Type": 51,
-        "MinValue": 0.99
+        "MinValue": 0.99,
+        "Requirement": {
+          "Type": 0
+        },
+        "Type": 51
       },
       {
-        "Type": 6,
         "Node": {
-          "Type": 60,
-          "MinValue": 1.0
-        }
+          "MinValue": 1,
+          "Requirement": {
+            "Type": 0
+          },
+          "Type": 60
+        },
+        "Requirement": {
+          "Type": 0
+        },
+        "Type": 6
       },
       {
-        "Type": 6,
         "Node": {
-          "Type": 53,
-          "Cooldown": 5.0
-        }
+          "Cooldown": 5,
+          "Requirement": {
+            "Type": 0
+          },
+          "Type": 53
+        },
+        "Requirement": {
+          "Type": 0
+        },
+        "Type": 6
       },
       {
+        "MaxValue": 0.9,
+        "MinValue": 0.1,
+        "Requirement": {
+          "Type": 0
+        },
         "Type": 115
       },
       {
-        "Type": 114,
-        "DeviceClass": 7
+        "DeviceClass": 7,
+        "Requirement": {
+          "Type": 0
+        },
+        "Type": 114
       }
-    ]
+    ],
+    "Requirement": {
+      "DeviceClass": 7,
+      "Type": 10
+    },
+    "Type": 3
   }
 }

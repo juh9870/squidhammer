@@ -1,21 +1,35 @@
 {
-  "ItemType": 1,
-  "Id": 79,
-  "Name": "$RepairBot_M",
-  "DisplayCategory": 6,
+  "AmmunitionId": null,
   "Availability": 1,
-  "ComponentStatsId": 3,
-  "Faction": 2,
-  "Level": 125,
-  "Icon": "repairbot2",
-  "Color": "#A0A0A0",
-  "Layout": "1111",
   "CellType": "2",
+  "Color": "#A0A0A0",
+  "ComponentStatsId": 3,
+  "Description": "",
   "DeviceId": 11,
+  "DisplayCategory": 6,
+  "DroneBayId": null,
+  "DroneId": null,
+  "Faction": 2,
+  "Icon": "repairbot2",
+  "Id": 79,
+  "ItemType": 1,
+  "Layout": "1111",
+  "Level": 125,
+  "Name": "$RepairBot_M",
   "PossibleModifications": [
     2,
     7,
     1,
     10
-  ]
+  ],
+  "Restrictions": {
+    "ComponentGroupTag": null,
+    "MaxComponentAmount": 0,
+    "NotForMechanicShips": false,
+    "NotForOrganicShips": false,
+    "ShipSizes": [],
+    "UniqueComponentTag": ""
+  },
+  "WeaponId": null,
+  "WeaponSlotType": ""
 }

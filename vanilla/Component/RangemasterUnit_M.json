@@ -1,18 +1,33 @@
 {
-  "ItemType": 1,
-  "Id": 160,
-  "Name": "$RangemasterUnit_M",
-  "DisplayCategory": 6,
+  "AmmunitionId": null,
   "Availability": 1,
-  "ComponentStatsId": 160,
-  "Faction": 8,
-  "Level": 90,
-  "Icon": "range1",
-  "Color": "#FFFFA0",
-  "Layout": "010110110",
   "CellType": "2",
+  "Color": "#FFFFA0",
+  "ComponentStatsId": 160,
+  "Description": "",
+  "DeviceId": null,
+  "DisplayCategory": 6,
+  "DroneBayId": null,
+  "DroneId": null,
+  "Faction": 8,
+  "Icon": "range1",
+  "Id": 160,
+  "ItemType": 1,
+  "Layout": "010110110",
+  "Level": 90,
+  "Name": "$RangemasterUnit_M",
   "PossibleModifications": [
     1,
     2
-  ]
+  ],
+  "Restrictions": {
+    "ComponentGroupTag": null,
+    "MaxComponentAmount": 0,
+    "NotForMechanicShips": false,
+    "NotForOrganicShips": false,
+    "ShipSizes": [],
+    "UniqueComponentTag": ""
+  },
+  "WeaponId": null,
+  "WeaponSlotType": ""
 }

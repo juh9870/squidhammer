@@ -1,17 +1,21 @@
 {
-  "ItemType": 1,
-  "Id": 85,
-  "Name": "$ProjectileCannon_L",
-  "DisplayCategory": 1,
+  "AmmunitionId": 82,
   "Availability": 1,
+  "CellType": "4",
+  "Color": "#C0C0C0",
   "ComponentStatsId": 1,
+  "Description": "",
+  "DeviceId": null,
+  "DisplayCategory": 1,
+  "DroneBayId": null,
+  "DroneId": null,
   "Faction": 1,
   "Icon": "gun6",
-  "Color": "#C0C0C0",
+  "Id": 85,
+  "ItemType": 1,
   "Layout": "1110111011101110",
-  "CellType": "4",
-  "WeaponId": 64,
-  "AmmunitionId": 82,
+  "Level": 0,
+  "Name": "$ProjectileCannon_L",
   "PossibleModifications": [
     13,
     8,
@@ -22,5 +26,15 @@
     2,
     7,
     1
-  ]
+  ],
+  "Restrictions": {
+    "ComponentGroupTag": null,
+    "MaxComponentAmount": 0,
+    "NotForMechanicShips": false,
+    "NotForOrganicShips": false,
+    "ShipSizes": [],
+    "UniqueComponentTag": ""
+  },
+  "WeaponId": 64,
+  "WeaponSlotType": ""
 }

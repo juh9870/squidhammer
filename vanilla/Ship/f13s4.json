@@ -1,40 +1,86 @@
 {
-  "ItemType": 6,
-  "Id": 108,
-  "SizeClass": 3,
-  "Name": "$f13_Battleship",
-  "Faction": 13,
-  "IconImage": "f13s4",
-  "IconScale": 0.8,
-  "ModelImage": "f13s4",
-  "ModelScale": 2.2,
-  "EngineColor": "#80FF8D00",
-  "Engines": [
-    {
-      "Position": {
-        "x": -0.9
-      },
-      "Size": 0.2
-    }
-  ],
-  "Layout": "0000000110000000000000111100000000000011110000000000001111000000000044222244000000014422224410000001442222441000000144222244100000014422224410000001122222211000000112222221100000011225522110000001125555211000000112555521100000011155551110000000110550110000",
   "Barrels": [
     {
+      "AutoAimingArc": 0,
+      "Image": "",
+      "Offset": 0,
+      "PlatformType": 0,
       "Position": {
         "x": 0.5,
         "y": 0.35
       },
+      "Rotation": 0,
+      "RotationSpeed": 0,
+      "Size": 0,
       "WeaponClass": "C"
     },
     {
+      "AutoAimingArc": 0,
+      "Image": "",
+      "Offset": 0,
+      "PlatformType": 0,
       "Position": {
         "x": 0.5,
         "y": -0.35
       },
+      "Rotation": 0,
+      "RotationSpeed": 0,
+      "Size": 0,
       "WeaponClass": "M"
     }
   ],
+  "BaseWeightModifier": 0,
+  "BuiltinDevices": [],
+  "CellsExpansions": 0,
+  "ColliderTolerance": 0.02,
+  "Description": "",
+  "EnergyResistance": 0,
+  "EngineColor": "#80FF8D00",
+  "EnginePosition": {
+    "x": 0,
+    "y": 0
+  },
+  "EngineSize": 0,
+  "Engines": [
+    {
+      "Position": {
+        "x": -0.9,
+        "y": 0
+      },
+      "Size": 0.2
+    }
+  ],
+  "Faction": 13,
   "Features": {
-    "EnergyResistance": 1.0
-  }
+    "ArmorBonus": 0,
+    "BuiltinDevices": [],
+    "DroneAttackBonus": 0,
+    "DroneBuildSpeedBonus": 0,
+    "DroneDefenseBonus": 0,
+    "EnergyBonus": 0,
+    "EnergyResistance": 1,
+    "EquipmentWeightBonus": 0,
+    "HeatResistance": 0,
+    "KineticResistance": 0,
+    "Regeneration": false,
+    "ShieldBonus": 0,
+    "ShipWeightBonus": 0,
+    "TurnRateBonus": 0,
+    "VelocityBonus": 0
+  },
+  "HeatResistance": 0,
+  "IconImage": "f13s4",
+  "IconScale": 0.8,
+  "Id": 108,
+  "ItemType": 6,
+  "KineticResistance": 0,
+  "Layout": "0000000110000000000000111100000000000011110000000000001111000000000044222244000000014422224410000001442222441000000144222244100000014422224410000001122222211000000112222221100000011225522110000001125555211000000112555521100000011155551110000000110550110000",
+  "ModelImage": "f13s4",
+  "ModelScale": 2.2,
+  "Name": "$f13_Battleship",
+  "Regeneration": false,
+  "ShipCategory": 0,
+  "ShipRarity": 0,
+  "ShipType": 0,
+  "SizeClass": 3
 }

@@ -1,44 +1,94 @@
 {
-  "ItemType": 6,
-  "Id": 123,
-  "SizeClass": 3,
-  "Name": "$f16_Battleship",
-  "Faction": 16,
-  "IconScale": 1.0,
-  "ModelImage": "devourer",
-  "ModelScale": 5.0,
-  "EngineColor": "#407F7F7F",
-  "Layout": "000000444000000000011444110000000111444111000001112222211100011122222221110011222222222110112222222222211112222222222211112222222222211444222222222444444222222222444444122555221444000115555511000000015555510000000000555000000",
   "Barrels": [
     {
-      "Offset": 0.8,
-      "AutoAimingArc": 60.0,
-      "WeaponClass": "L",
+      "AutoAimingArc": 60,
       "Image": "devourer_turret",
-      "Size": 0.2
+      "Offset": 0.8,
+      "PlatformType": 0,
+      "Position": {
+        "x": 0,
+        "y": 0
+      },
+      "Rotation": 0,
+      "RotationSpeed": 0,
+      "Size": 0.2,
+      "WeaponClass": "L"
     },
     {
-      "Rotation": 120.0,
-      "Offset": 0.8,
-      "AutoAimingArc": 60.0,
-      "WeaponClass": "L",
+      "AutoAimingArc": 60,
       "Image": "devourer_turret",
-      "Size": 0.2
+      "Offset": 0.8,
+      "PlatformType": 0,
+      "Position": {
+        "x": 0,
+        "y": 0
+      },
+      "Rotation": 120,
+      "RotationSpeed": 0,
+      "Size": 0.2,
+      "WeaponClass": "L"
     },
     {
-      "Rotation": -120.0,
-      "Offset": 0.8,
-      "AutoAimingArc": 60.0,
-      "WeaponClass": "L",
+      "AutoAimingArc": 60,
       "Image": "devourer_turret",
-      "Size": 0.2
+      "Offset": 0.8,
+      "PlatformType": 0,
+      "Position": {
+        "x": 0,
+        "y": 0
+      },
+      "Rotation": -120,
+      "RotationSpeed": 0,
+      "Size": 0.2,
+      "WeaponClass": "L"
     }
   ],
+  "BaseWeightModifier": 0,
+  "BuiltinDevices": [],
+  "CellsExpansions": 0,
+  "ColliderTolerance": 0.02,
+  "Description": "",
+  "EnergyResistance": 0,
+  "EngineColor": "#407F7F7F",
+  "EnginePosition": {
+    "x": 0,
+    "y": 0
+  },
+  "EngineSize": 0,
+  "Engines": [],
+  "Faction": 16,
   "Features": {
-    "ShipWeightBonus": -0.5,
-    "Regeneration": true,
+    "ArmorBonus": 0,
     "BuiltinDevices": [
       18
-    ]
-  }
+    ],
+    "DroneAttackBonus": 0,
+    "DroneBuildSpeedBonus": 0,
+    "DroneDefenseBonus": 0,
+    "EnergyBonus": 0,
+    "EnergyResistance": 0,
+    "EquipmentWeightBonus": 0,
+    "HeatResistance": 0,
+    "KineticResistance": 0,
+    "Regeneration": true,
+    "ShieldBonus": 0,
+    "ShipWeightBonus": -0.5,
+    "TurnRateBonus": 0,
+    "VelocityBonus": 0
+  },
+  "HeatResistance": 0,
+  "IconImage": "",
+  "IconScale": 1,
+  "Id": 123,
+  "ItemType": 6,
+  "KineticResistance": 0,
+  "Layout": "000000444000000000011444110000000111444111000001112222211100011122222221110011222222222110112222222222211112222222222211112222222222211444222222222444444222222222444444122555221444000115555511000000015555510000000000555000000",
+  "ModelImage": "devourer",
+  "ModelScale": 5,
+  "Name": "$f16_Battleship",
+  "Regeneration": false,
+  "ShipCategory": 0,
+  "ShipRarity": 0,
+  "ShipType": 0,
+  "SizeClass": 3
 }

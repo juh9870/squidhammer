@@ -1,22 +1,35 @@
 {
-  "ItemType": 1,
-  "Id": 263,
-  "Name": "$EcmDroneBay_S",
-  "DisplayCategory": 5,
+  "AmmunitionId": null,
   "Availability": 2,
-  "ComponentStatsId": 2,
-  "Faction": 17,
-  "Level": 50,
-  "Icon": "dronebay1",
-  "Color": "#808080",
-  "Layout": "110110110",
   "CellType": "1",
+  "Color": "#808080",
+  "ComponentStatsId": 2,
+  "Description": "",
+  "DeviceId": null,
+  "DisplayCategory": 5,
   "DroneBayId": 1,
   "DroneId": 290,
+  "Faction": 17,
+  "Icon": "dronebay1",
+  "Id": 263,
+  "ItemType": 1,
+  "Layout": "110110110",
+  "Level": 50,
+  "Name": "$EcmDroneBay_S",
   "PossibleModifications": [
     18,
     19,
     1,
     2
-  ]
+  ],
+  "Restrictions": {
+    "ComponentGroupTag": null,
+    "MaxComponentAmount": 0,
+    "NotForMechanicShips": false,
+    "NotForOrganicShips": false,
+    "ShipSizes": [],
+    "UniqueComponentTag": ""
+  },
+  "WeaponId": null,
+  "WeaponSlotType": ""
 }

@@ -1,13 +1,27 @@
 {
-  "ItemType": 4,
-  "Id": 83,
   "AmmunitionClass": 21,
-  "DamageType": 1,
-  "Size": 1.0,
-  "Range": 12.0,
-  "LifeTime": 0.05,
-  "EnergyCost": 1.0,
+  "AreaOfEffect": 0,
+  "BulletPrefab": "TractorBeam",
   "Color": "#208020",
+  "CoupledAmmunitionId": null,
+  "Damage": 0,
+  "DamageType": 1,
+  "EnergyCost": 1,
   "FireSound": "*flux_06",
-  "BulletPrefab": "TractorBeam"
+  "HitEffectPrefab": "",
+  "HitPoints": 0,
+  "HitSound": "",
+  "Id": 83,
+  "IgnoresShipVelocity": false,
+  "Impulse": 0,
+  "InitialPosition": {
+    "x": 0,
+    "y": 0
+  },
+  "ItemType": 4,
+  "LifeTime": 0.05,
+  "Range": 12,
+  "Recoil": 0,
+  "Size": 1,
+  "Velocity": 0
 }

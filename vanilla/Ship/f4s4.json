@@ -1,32 +1,72 @@
 {
-  "ItemType": 6,
-  "Id": 38,
-  "SizeClass": 3,
-  "Name": "$f4_Battleship",
-  "Faction": 4,
-  "IconImage": "f4s4",
-  "IconScale": 1.0,
-  "ModelImage": "f4s4",
-  "ModelScale": 2.2,
+  "Barrels": [
+    {
+      "AutoAimingArc": 0,
+      "Image": "",
+      "Offset": 0,
+      "PlatformType": 0,
+      "Position": {
+        "x": 0.8,
+        "y": 0
+      },
+      "Rotation": 0,
+      "RotationSpeed": 0,
+      "Size": 0,
+      "WeaponClass": "TS"
+    }
+  ],
+  "BaseWeightModifier": 0,
+  "BuiltinDevices": [],
+  "CellsExpansions": 0,
+  "ColliderTolerance": 0.02,
+  "Description": "",
+  "EnergyResistance": 0,
   "EngineColor": "#40B4FFB4",
+  "EnginePosition": {
+    "x": 0,
+    "y": 0
+  },
+  "EngineSize": 0,
   "Engines": [
     {
       "Position": {
-        "x": -0.5
+        "x": -0.5,
+        "y": 0
       },
       "Size": 0.4
     }
   ],
-  "Layout": "001000000000100001000000000100001100000001100000100101001000000114444411000000014444410000011334444433110000332222233000001332222233100011022222220110010115555511010000115505511000000100000001000000100000001000000000000000000",
-  "Barrels": [
-    {
-      "Position": {
-        "x": 0.8
-      },
-      "WeaponClass": "TS"
-    }
-  ],
+  "Faction": 4,
   "Features": {
-    "Regeneration": true
-  }
+    "ArmorBonus": 0,
+    "BuiltinDevices": [],
+    "DroneAttackBonus": 0,
+    "DroneBuildSpeedBonus": 0,
+    "DroneDefenseBonus": 0,
+    "EnergyBonus": 0,
+    "EnergyResistance": 0,
+    "EquipmentWeightBonus": 0,
+    "HeatResistance": 0,
+    "KineticResistance": 0,
+    "Regeneration": true,
+    "ShieldBonus": 0,
+    "ShipWeightBonus": 0,
+    "TurnRateBonus": 0,
+    "VelocityBonus": 0
+  },
+  "HeatResistance": 0,
+  "IconImage": "f4s4",
+  "IconScale": 1,
+  "Id": 38,
+  "ItemType": 6,
+  "KineticResistance": 0,
+  "Layout": "001000000000100001000000000100001100000001100000100101001000000114444411000000014444410000011334444433110000332222233000001332222233100011022222220110010115555511010000115505511000000100000001000000100000001000000000000000000",
+  "ModelImage": "f4s4",
+  "ModelScale": 2.2,
+  "Name": "$f4_Battleship",
+  "Regeneration": false,
+  "ShipCategory": 0,
+  "ShipRarity": 0,
+  "ShipType": 0,
+  "SizeClass": 3
 }

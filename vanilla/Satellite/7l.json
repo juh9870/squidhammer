@@ -1,10 +1,10 @@
 {
-  "ItemType": 7,
+  "Barrels": [],
   "Id": 19,
-  "Name": "$Companion_7l",
+  "ItemType": 7,
+  "Layout": "0111001110021200252005550",
   "ModelImage": "satellite7",
   "ModelScale": 0.8,
-  "SizeClass": -1,
-  "Layout": "0111001110021200252005550",
-  "Barrels": []
+  "Name": "$Companion_7l",
+  "SizeClass": -1
 }

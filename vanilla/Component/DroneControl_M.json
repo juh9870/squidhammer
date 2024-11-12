@@ -1,17 +1,21 @@
 {
-  "ItemType": 1,
-  "Id": 97,
-  "Name": "$DroneControl_M",
-  "DisplayCategory": 1,
-  "Availability": 1,
-  "ComponentStatsId": 1,
-  "Faction": 5,
-  "Level": 75,
-  "Icon": "torpedo1",
-  "Layout": "1010",
-  "CellType": "4",
-  "WeaponId": 12,
   "AmmunitionId": 12,
+  "Availability": 1,
+  "CellType": "4",
+  "Color": "#00000000",
+  "ComponentStatsId": 1,
+  "Description": "",
+  "DeviceId": null,
+  "DisplayCategory": 1,
+  "DroneBayId": null,
+  "DroneId": null,
+  "Faction": 5,
+  "Icon": "torpedo1",
+  "Id": 97,
+  "ItemType": 1,
+  "Layout": "1010",
+  "Level": 75,
+  "Name": "$DroneControl_M",
   "PossibleModifications": [
     13,
     8,
@@ -19,5 +23,15 @@
     2,
     7,
     1
-  ]
+  ],
+  "Restrictions": {
+    "ComponentGroupTag": null,
+    "MaxComponentAmount": 0,
+    "NotForMechanicShips": false,
+    "NotForOrganicShips": false,
+    "ShipSizes": [],
+    "UniqueComponentTag": ""
+  },
+  "WeaponId": 12,
+  "WeaponSlotType": ""
 }

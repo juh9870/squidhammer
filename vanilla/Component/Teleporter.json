@@ -1,20 +1,35 @@
 {
-  "ItemType": 1,
-  "Id": 92,
-  "Name": "$Teleporter",
-  "DisplayCategory": 6,
+  "AmmunitionId": null,
   "Availability": 1,
-  "ComponentStatsId": 3,
-  "Faction": 4,
-  "Level": 35,
-  "Icon": "teleporter",
-  "Layout": "010111010",
   "CellType": "2",
+  "Color": "#00000000",
+  "ComponentStatsId": 3,
+  "Description": "",
   "DeviceId": 32,
+  "DisplayCategory": 6,
+  "DroneBayId": null,
+  "DroneId": null,
+  "Faction": 4,
+  "Icon": "teleporter",
+  "Id": 92,
+  "ItemType": 1,
+  "Layout": "010111010",
+  "Level": 35,
+  "Name": "$Teleporter",
   "PossibleModifications": [
     2,
     7,
     1,
     6
-  ]
+  ],
+  "Restrictions": {
+    "ComponentGroupTag": null,
+    "MaxComponentAmount": 0,
+    "NotForMechanicShips": false,
+    "NotForOrganicShips": false,
+    "ShipSizes": [],
+    "UniqueComponentTag": ""
+  },
+  "WeaponId": null,
+  "WeaponSlotType": ""
 }

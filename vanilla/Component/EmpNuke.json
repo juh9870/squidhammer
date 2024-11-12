@@ -1,18 +1,21 @@
 {
-  "ItemType": 1,
-  "Id": 273,
-  "Name": "$EmpBomb",
-  "DisplayCategory": 1,
-  "Availability": 1,
-  "ComponentStatsId": 1,
-  "Level": 250,
-  "Icon": "rocket2x4",
-  "Color": "#84BFFF",
-  "Layout": "0110011001100110",
-  "CellType": "4",
-  "WeaponId": 125,
   "AmmunitionId": 126,
-  "WeaponSlotType": "M",
+  "Availability": 1,
+  "CellType": "4",
+  "Color": "#84BFFF",
+  "ComponentStatsId": 1,
+  "Description": "",
+  "DeviceId": null,
+  "DisplayCategory": 1,
+  "DroneBayId": null,
+  "DroneId": null,
+  "Faction": null,
+  "Icon": "rocket2x4",
+  "Id": 273,
+  "ItemType": 1,
+  "Layout": "0110011001100110",
+  "Level": 250,
+  "Name": "$EmpBomb",
   "PossibleModifications": [
     13,
     8,
@@ -23,5 +26,15 @@
     2,
     7,
     1
-  ]
+  ],
+  "Restrictions": {
+    "ComponentGroupTag": null,
+    "MaxComponentAmount": 0,
+    "NotForMechanicShips": false,
+    "NotForOrganicShips": false,
+    "ShipSizes": [],
+    "UniqueComponentTag": ""
+  },
+  "WeaponId": 125,
+  "WeaponSlotType": "M"
 }

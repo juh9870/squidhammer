@@ -1,25 +1,36 @@
 {
-  "ItemType": 1,
-  "Id": 257,
-  "Name": "$ClonningCenter_L",
-  "DisplayCategory": 6,
+  "AmmunitionId": null,
   "Availability": 2,
-  "ComponentStatsId": 3,
-  "Faction": 16,
-  "Level": 100,
-  "Icon": "zygote3",
-  "Layout": "0110111111110110",
   "CellType": "2",
+  "Color": "#00000000",
+  "ComponentStatsId": 3,
+  "Description": "",
   "DeviceId": 25,
-  "Restrictions": {
-    "ShipSizes": [
-      3
-    ],
-    "NotForMechanicShips": true
-  },
+  "DisplayCategory": 6,
+  "DroneBayId": null,
+  "DroneId": null,
+  "Faction": 16,
+  "Icon": "zygote3",
+  "Id": 257,
+  "ItemType": 1,
+  "Layout": "0110111111110110",
+  "Level": 100,
+  "Name": "$ClonningCenter_L",
   "PossibleModifications": [
     1,
     2,
     6
-  ]
+  ],
+  "Restrictions": {
+    "ComponentGroupTag": null,
+    "MaxComponentAmount": 0,
+    "NotForMechanicShips": true,
+    "NotForOrganicShips": false,
+    "ShipSizes": [
+      3
+    ],
+    "UniqueComponentTag": ""
+  },
+  "WeaponId": null,
+  "WeaponSlotType": ""
 }

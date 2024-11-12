@@ -1,10 +1,13 @@
 {
-  "ItemType": 27,
+  "Deformation": 0,
   "Id": 16,
-  "Shape": 1,
   "Image": "rocket3",
-  "Size": 1.0,
+  "ItemType": 27,
+  "MainColor": "#00000000",
+  "MainColorMode": 0,
   "Margins": 0.4,
   "SecondColor": "#FFCB2B",
-  "SecondColorMode": 2
+  "SecondColorMode": 2,
+  "Shape": 1,
+  "Size": 1
 }

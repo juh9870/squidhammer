@@ -1,8 +1,8 @@
 {
-  "ItemType": 16,
   "Id": 10,
+  "ItemType": 16,
   "Loot": {
     "Type": 1,
-    "ValueRatio": 5.0
+    "ValueRatio": 5
   }
 }

@@ -1,19 +1,21 @@
 {
-  "ItemType": 1,
-  "Id": 139,
-  "Name": "$AntiMatterBomb_L_2",
-  "DisplayCategory": 1,
-  "Availability": 3,
-  "ComponentStatsId": 1,
-  "Faction": 4,
-  "Level": 100,
-  "Icon": "doom1",
-  "Color": "#C0C0C1",
-  "Layout": "111111111",
-  "CellType": "4",
-  "WeaponId": 4,
   "AmmunitionId": 4,
-  "WeaponSlotType": "S",
+  "Availability": 3,
+  "CellType": "4",
+  "Color": "#C0C0C1",
+  "ComponentStatsId": 1,
+  "Description": "",
+  "DeviceId": null,
+  "DisplayCategory": 1,
+  "DroneBayId": null,
+  "DroneId": null,
+  "Faction": 4,
+  "Icon": "doom1",
+  "Id": 139,
+  "ItemType": 1,
+  "Layout": "111111111",
+  "Level": 100,
+  "Name": "$AntiMatterBomb_L_2",
   "PossibleModifications": [
     14,
     6,
@@ -21,5 +23,15 @@
     5,
     2,
     1
-  ]
+  ],
+  "Restrictions": {
+    "ComponentGroupTag": null,
+    "MaxComponentAmount": 0,
+    "NotForMechanicShips": false,
+    "NotForOrganicShips": false,
+    "ShipSizes": [],
+    "UniqueComponentTag": ""
+  },
+  "WeaponId": 4,
+  "WeaponSlotType": "S"
 }

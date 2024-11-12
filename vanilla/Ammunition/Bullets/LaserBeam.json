@@ -1,8 +1,13 @@
 {
-  "ItemType": 27,
+  "Deformation": 0,
   "Id": 2,
-  "Shape": 2,
   "Image": "laser",
-  "Size": 1.5,
-  "Margins": 0.3
+  "ItemType": 27,
+  "MainColor": "#00000000",
+  "MainColorMode": 0,
+  "Margins": 0.3,
+  "SecondColor": "#00000000",
+  "SecondColorMode": 0,
+  "Shape": 2,
+  "Size": 1.5
 }

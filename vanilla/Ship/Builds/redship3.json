@@ -1,60 +1,122 @@
 {
-  "ItemType": 8,
-  "Id": 349,
-  "ShipId": 147,
   "AvailableForEnemy": false,
+  "AvailableForPlayer": true,
+  "BuildFaction": null,
   "Components": [
     {
+      "BarrelId": 0,
+      "Behaviour": 0,
       "ComponentId": 61,
+      "KeyBinding": 0,
+      "Modification": null,
+      "Quality": 0,
       "X": 5,
       "Y": 9
     },
     {
+      "BarrelId": 0,
+      "Behaviour": 0,
       "ComponentId": 75,
+      "KeyBinding": 0,
+      "Modification": null,
+      "Quality": 0,
       "X": 4,
       "Y": 4
     },
     {
+      "BarrelId": 1,
+      "Behaviour": 0,
       "ComponentId": 274,
+      "KeyBinding": 0,
+      "Modification": null,
+      "Quality": 0,
       "X": 10,
-      "Y": 4,
-      "BarrelId": 1
+      "Y": 4
     },
     {
+      "BarrelId": 0,
+      "Behaviour": 0,
       "ComponentId": 271,
+      "KeyBinding": 0,
+      "Modification": null,
+      "Quality": 0,
       "X": -1,
       "Y": 4
     },
     {
+      "BarrelId": 0,
+      "Behaviour": 0,
       "ComponentId": 63,
+      "KeyBinding": 0,
+      "Modification": null,
+      "Quality": 0,
       "X": 2,
       "Y": 8
     },
     {
+      "BarrelId": 0,
+      "Behaviour": 0,
       "ComponentId": 63,
+      "KeyBinding": 0,
+      "Modification": null,
+      "Quality": 0,
       "X": 2,
       "Y": 6
     },
     {
+      "BarrelId": 0,
+      "Behaviour": 0,
       "ComponentId": 63,
+      "KeyBinding": 0,
+      "Modification": null,
+      "Quality": 0,
       "X": 9,
       "Y": 8
     },
     {
+      "BarrelId": 0,
+      "Behaviour": 0,
       "ComponentId": 63,
+      "KeyBinding": 0,
+      "Modification": null,
+      "Quality": 0,
       "X": 9,
       "Y": 6
     },
     {
+      "BarrelId": 0,
+      "Behaviour": 0,
       "ComponentId": 62,
+      "KeyBinding": 0,
+      "Modification": null,
+      "Quality": 0,
       "X": 5,
       "Y": 1
     },
     {
+      "BarrelId": 0,
+      "Behaviour": 0,
       "ComponentId": 57,
+      "KeyBinding": 0,
+      "Modification": null,
+      "Quality": 0,
       "X": 6,
       "Y": 12
     }
   ],
-  "Perks": {}
+  "CustomAI": null,
+  "DifficultyClass": 0,
+  "ExtendedLayout": false,
+  "Id": 349,
+  "ItemType": 8,
+  "LeftSatelliteBuild": null,
+  "NotAvailableInGame": false,
+  "Perks": {
+    "Perk1": 0,
+    "Perk2": 0,
+    "Perk3": 0
+  },
+  "RandomColor": false,
+  "RightSatelliteBuild": null,
+  "ShipId": 147
 }

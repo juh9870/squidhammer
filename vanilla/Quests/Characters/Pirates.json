@@ -1,6 +1,11 @@
 {
-  "ItemType": 19,
+  "AvatarIcon": "K_07",
+  "Faction": null,
+  "Fleet": null,
   "Id": 4,
+  "Inventory": null,
+  "IsUnique": false,
+  "ItemType": 19,
   "Name": "$CharacterPirate",
-  "AvatarIcon": "K_07"
+  "Relations": 0
 }

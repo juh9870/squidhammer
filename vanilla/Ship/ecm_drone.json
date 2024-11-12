@@ -1,17 +1,51 @@
 {
-  "ItemType": 6,
-  "Id": 125,
-  "ShipType": 3,
-  "SizeClass": -1,
-  "Name": "Drone",
-  "IconImage": "ecm_drone",
-  "IconScale": 0.5,
-  "ModelImage": "ecm_drone",
-  "ModelScale": 0.75,
-  "Layout": "5335333333333333",
+  "Barrels": [],
+  "BaseWeightModifier": 0,
+  "BuiltinDevices": [],
+  "CellsExpansions": 0,
+  "ColliderTolerance": 0.02,
+  "Description": "",
+  "EnergyResistance": 0,
+  "EngineColor": "#00000000",
+  "EnginePosition": {
+    "x": 0,
+    "y": 0
+  },
+  "EngineSize": 0,
+  "Engines": [],
+  "Faction": null,
   "Features": {
+    "ArmorBonus": 0,
     "BuiltinDevices": [
       24
-    ]
-  }
+    ],
+    "DroneAttackBonus": 0,
+    "DroneBuildSpeedBonus": 0,
+    "DroneDefenseBonus": 0,
+    "EnergyBonus": 0,
+    "EnergyResistance": 0,
+    "EquipmentWeightBonus": 0,
+    "HeatResistance": 0,
+    "KineticResistance": 0,
+    "Regeneration": false,
+    "ShieldBonus": 0,
+    "ShipWeightBonus": 0,
+    "TurnRateBonus": 0,
+    "VelocityBonus": 0
+  },
+  "HeatResistance": 0,
+  "IconImage": "ecm_drone",
+  "IconScale": 0.5,
+  "Id": 125,
+  "ItemType": 6,
+  "KineticResistance": 0,
+  "Layout": "5335333333333333",
+  "ModelImage": "ecm_drone",
+  "ModelScale": 0.75,
+  "Name": "Drone",
+  "Regeneration": false,
+  "ShipCategory": 0,
+  "ShipRarity": 0,
+  "ShipType": 3,
+  "SizeClass": -1
 }

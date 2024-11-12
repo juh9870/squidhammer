@@ -1,60 +1,78 @@
 {
-  "ItemType": 15,
   "Id": 6,
-  "StartCondition": 1,
-  "Weight": 0.7,
+  "ItemType": 15,
+  "Level": 0,
+  "Name": "",
   "Nodes": [
     {
-      "Id": 1,
-      "Type": 10,
-      "Message": "$MERCHANT_Message",
-      "Enemy": 2,
+      "Actions": [
+        {
+          "ButtonText": "$MERCHANT_ACTION_Trade",
+          "Requirement": {
+            "Type": 0
+          },
+          "TargetNode": 2
+        },
+        {
+          "ButtonText": "$MERCHANT_ACTION_Attack",
+          "Requirement": {
+            "Type": 0
+          },
+          "TargetNode": 3
+        },
+        {
+          "ButtonText": "$MERCHANT_ACTION_Ignore",
+          "Requirement": {
+            "Type": 0
+          },
+          "TargetNode": 6
+        }
+      ],
       "Character": 1,
-      "Actions": [
-        {
-          "TargetNode": 2,
-          "ButtonText": "$MERCHANT_ACTION_Trade"
-        },
-        {
-          "TargetNode": 3,
-          "ButtonText": "$MERCHANT_ACTION_Attack"
-        },
-        {
-          "TargetNode": 6,
-          "ButtonText": "$MERCHANT_ACTION_Ignore"
-        }
-      ]
+      "Enemy": 2,
+      "Id": 1,
+      "Loot": null,
+      "Message": "$MERCHANT_Message",
+      "RequiredView": 0,
+      "Type": 10
     },
     {
+      "DefaultTransition": 6,
       "Id": 2,
-      "Type": 37,
-      "DefaultTransition": 6,
-      "Loot": 6
+      "Loot": 6,
+      "Type": 37
     },
     {
-      "Id": 3,
-      "Type": 20,
       "DefaultTransition": 4,
+      "Enemy": 2,
       "FailureTransition": 7,
-      "Enemy": 2
+      "Id": 3,
+      "Loot": null,
+      "Type": 20
     },
     {
-      "Id": 4,
-      "Type": 10,
-      "Message": "$Beacon_Merchant_Loot",
-      "Loot": 5,
       "Actions": [
         {
-          "TargetNode": 5,
-          "ButtonText": "$ACTION_Continue"
+          "ButtonText": "$ACTION_Continue",
+          "Requirement": {
+            "Type": 0
+          },
+          "TargetNode": 5
         }
-      ]
+      ],
+      "Character": null,
+      "Enemy": null,
+      "Id": 4,
+      "Loot": 5,
+      "Message": "$Beacon_Merchant_Loot",
+      "RequiredView": 0,
+      "Type": 10
     },
     {
-      "Id": 5,
-      "Type": 35,
       "DefaultTransition": 6,
-      "Loot": 5
+      "Id": 5,
+      "Loot": 5,
+      "Type": 35
     },
     {
       "Id": 6,
@@ -64,5 +82,23 @@
       "Id": 7,
       "Type": 41
     }
-  ]
+  ],
+  "Origin": {
+    "Factions": {
+      "List": [],
+      "Type": 0
+    },
+    "MaxDistance": 0,
+    "MaxRelations": 0,
+    "MinDistance": 0,
+    "MinRelations": 0,
+    "Type": 0
+  },
+  "QuestType": 0,
+  "Requirement": {
+    "Type": 0
+  },
+  "StartCondition": 1,
+  "UseRandomSeed": false,
+  "Weight": 0.7
 }

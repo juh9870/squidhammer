@@ -1,18 +1,34 @@
 {
-  "ItemType": 1,
-  "Id": 64,
-  "Name": "$ArmoredFuelCell_S",
-  "DisplayCategory": 3,
+  "AmmunitionId": null,
   "Availability": 1,
-  "ComponentStatsId": 64,
-  "Faction": 1,
-  "Level": 55,
-  "Icon": "fueltank21",
-  "Layout": "1",
   "CellType": "1",
+  "Color": "#00000000",
+  "ComponentStatsId": 64,
+  "Description": "",
+  "DeviceId": null,
+  "DisplayCategory": 3,
+  "DroneBayId": null,
+  "DroneId": null,
+  "Faction": 1,
+  "Icon": "fueltank21",
+  "Id": 64,
+  "ItemType": 1,
+  "Layout": "1",
+  "Level": 55,
+  "Name": "$ArmoredFuelCell_S",
   "PossibleModifications": [
     9,
     3,
     1
-  ]
+  ],
+  "Restrictions": {
+    "ComponentGroupTag": null,
+    "MaxComponentAmount": 0,
+    "NotForMechanicShips": false,
+    "NotForOrganicShips": false,
+    "ShipSizes": [],
+    "UniqueComponentTag": ""
+  },
+  "WeaponId": null,
+  "WeaponSlotType": ""
 }

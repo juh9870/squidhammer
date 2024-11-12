@@ -1,7 +1,9 @@
 {
+  "GasCloudDPS": "MIN(level*2,500)",
+  "HiveShipBuild": 275,
+  "Id": 0,
+  "InfectedPlanetFaction": 16,
   "ItemType": 103,
   "OutpostShip": 101,
-  "TurretShip": 100,
-  "InfectedPlanetFaction": 16,
-  "HiveShipBuild": 275
+  "TurretShip": 100
 }

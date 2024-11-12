@@ -1,9 +1,17 @@
 {
-  "ItemType": 14,
-  "Id": 12,
-  "Name": "$Faction12",
   "Color": "#947D43",
+  "Hidden": false,
+  "HideFromMerchants": false,
+  "HideResearchTree": false,
   "HomeStarDistance": 250,
+  "HomeStarDistanceMax": 0,
+  "Hostile": false,
+  "Id": 12,
+  "ItemType": 14,
+  "Name": "$Faction12",
+  "NoMissions": true,
+  "NoTerritories": false,
+  "NoWanderingShips": false,
   "WanderingShipsDistance": 200,
-  "NoMissions": true
+  "WanderingShipsDistanceMax": 0
 }

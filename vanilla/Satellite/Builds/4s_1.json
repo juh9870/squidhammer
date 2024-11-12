@@ -1,30 +1,49 @@
 {
-  "ItemType": 9,
-  "Id": 16,
-  "SatelliteId": 12,
-  "DifficultyClass": 1,
   "Components": [
     {
+      "BarrelId": 0,
+      "Behaviour": 0,
       "ComponentId": 154,
+      "KeyBinding": 2,
+      "Modification": null,
+      "Quality": 0,
       "X": 1,
-      "KeyBinding": 2
+      "Y": 0
     },
     {
+      "BarrelId": -1,
+      "Behaviour": 0,
       "ComponentId": 78,
+      "KeyBinding": 0,
+      "Modification": null,
+      "Quality": 0,
       "X": 1,
-      "Y": 2,
-      "BarrelId": -1
+      "Y": 2
     },
     {
+      "BarrelId": -1,
+      "Behaviour": 0,
       "ComponentId": 67,
+      "KeyBinding": 0,
+      "Modification": null,
+      "Quality": 0,
       "X": 2,
-      "Y": 2,
-      "BarrelId": -1
+      "Y": 2
     },
     {
+      "BarrelId": -1,
+      "Behaviour": 0,
       "ComponentId": 67,
-      "Y": 2,
-      "BarrelId": -1
+      "KeyBinding": 0,
+      "Modification": null,
+      "Quality": 0,
+      "X": 0,
+      "Y": 2
     }
-  ]
+  ],
+  "DifficultyClass": 1,
+  "Id": 16,
+  "ItemType": 9,
+  "NotAvailableInGame": false,
+  "SatelliteId": 12
 }

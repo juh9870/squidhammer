@@ -1,18 +1,31 @@
 {
-  "ItemType": 1,
-  "Id": 268,
-  "Name": "$MissileCamouflage",
-  "DisplayCategory": 2,
+  "AmmunitionId": null,
   "Availability": 2,
-  "ComponentStatsId": 3,
-  "Faction": 18,
-  "Level": 100,
-  "Icon": "camouflage",
-  "Color": "#B7B9FB",
-  "Layout": "111101111",
   "CellType": "2",
+  "Color": "#B7B9FB",
+  "ComponentStatsId": 3,
+  "Description": "",
   "DeviceId": 28,
+  "DisplayCategory": 2,
+  "DroneBayId": null,
+  "DroneId": null,
+  "Faction": 18,
+  "Icon": "camouflage",
+  "Id": 268,
+  "ItemType": 1,
+  "Layout": "111101111",
+  "Level": 100,
+  "Name": "$MissileCamouflage",
+  "PossibleModifications": [
+    2,
+    1,
+    6
+  ],
   "Restrictions": {
+    "ComponentGroupTag": null,
+    "MaxComponentAmount": 0,
+    "NotForMechanicShips": false,
+    "NotForOrganicShips": false,
     "ShipSizes": [
       0,
       1,
@@ -21,9 +34,6 @@
     ],
     "UniqueComponentTag": "camouflage"
   },
-  "PossibleModifications": [
-    2,
-    1,
-    6
-  ]
+  "WeaponId": null,
+  "WeaponSlotType": ""
 }

@@ -1,19 +1,21 @@
 {
-  "ItemType": 1,
-  "Id": 118,
-  "Name": "$ChargedLaser_L_2",
-  "DisplayCategory": 1,
-  "Availability": 2,
-  "ComponentStatsId": 1,
-  "Faction": 10,
-  "Level": 400,
-  "Icon": "firework",
-  "Color": "#FF8000",
-  "Layout": "0111001110011100111001110",
-  "CellType": "4",
-  "WeaponId": 8,
   "AmmunitionId": 141,
-  "WeaponSlotType": "L",
+  "Availability": 2,
+  "CellType": "4",
+  "Color": "#FF8000",
+  "ComponentStatsId": 1,
+  "Description": "",
+  "DeviceId": null,
+  "DisplayCategory": 1,
+  "DroneBayId": null,
+  "DroneId": null,
+  "Faction": 10,
+  "Icon": "firework",
+  "Id": 118,
+  "ItemType": 1,
+  "Layout": "0111001110011100111001110",
+  "Level": 400,
+  "Name": "$ChargedLaser_L_2",
   "PossibleModifications": [
     6,
     16,
@@ -21,5 +23,15 @@
     2,
     7,
     1
-  ]
+  ],
+  "Restrictions": {
+    "ComponentGroupTag": null,
+    "MaxComponentAmount": 0,
+    "NotForMechanicShips": false,
+    "NotForOrganicShips": false,
+    "ShipSizes": [],
+    "UniqueComponentTag": ""
+  },
+  "WeaponId": 8,
+  "WeaponSlotType": "L"
 }

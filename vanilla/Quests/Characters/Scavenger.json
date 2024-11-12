@@ -1,6 +1,11 @@
 {
-  "ItemType": 19,
+  "AvatarIcon": "A_12",
+  "Faction": null,
+  "Fleet": null,
   "Id": 5,
+  "Inventory": null,
+  "IsUnique": false,
+  "ItemType": 19,
   "Name": "$CharacterScavenger",
-  "AvatarIcon": "A_12"
+  "Relations": 0
 }

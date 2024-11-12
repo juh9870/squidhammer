@@ -1,18 +1,25 @@
 {
-  "ItemType": 2,
-  "Id": 11,
-  "DeviceClass": 7,
-  "EnergyConsumption": 2.0,
-  "PassiveEnergyConsumption": 2.0,
-  "Power": 10.0,
-  "Range": 1.5,
-  "Size": 0.5,
-  "Cooldown": 1.0,
-  "Lifetime": 15.0,
   "ActivationType": 1,
   "Color": "#C07FDBDB",
-  "Sound": "*flux_01",
+  "ControlButtonIcon": "controls_repair",
+  "Cooldown": 1,
+  "DeviceClass": 7,
   "EffectPrefab": "Laser2",
+  "EnergyConsumption": 2,
+  "Id": 11,
+  "ItemType": 2,
+  "Lifetime": 15,
   "ObjectPrefab": "RepairBot",
-  "ControlButtonIcon": "controls_repair"
+  "Offset": {
+    "x": 0,
+    "y": 0
+  },
+  "PassiveEnergyConsumption": 2,
+  "Power": 10,
+  "Prefab": null,
+  "Range": 1.5,
+  "ScaleEnergyWithShipSize": true,
+  "Size": 0.5,
+  "Sound": "*flux_01",
+  "VisualEffect": null
 }

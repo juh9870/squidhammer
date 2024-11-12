@@ -1,22 +1,21 @@
 {
-  "ItemType": 1,
-  "Id": 269,
-  "Name": "$Parasite",
-  "DisplayCategory": 1,
-  "Availability": 5,
-  "ComponentStatsId": 1,
-  "Faction": 12,
-  "Level": 150,
-  "Icon": "biogun",
-  "Color": "#C0FFC0",
-  "Layout": "010111111",
-  "CellType": "4",
-  "WeaponId": 110,
   "AmmunitionId": 122,
-  "WeaponSlotType": "S",
-  "Restrictions": {
-    "NotForMechanicShips": true
-  },
+  "Availability": 5,
+  "CellType": "4",
+  "Color": "#C0FFC0",
+  "ComponentStatsId": 1,
+  "Description": "",
+  "DeviceId": null,
+  "DisplayCategory": 1,
+  "DroneBayId": null,
+  "DroneId": null,
+  "Faction": 12,
+  "Icon": "biogun",
+  "Id": 269,
+  "ItemType": 1,
+  "Layout": "010111111",
+  "Level": 150,
+  "Name": "$Parasite",
   "PossibleModifications": [
     14,
     13,
@@ -27,5 +26,15 @@
     5,
     2,
     1
-  ]
+  ],
+  "Restrictions": {
+    "ComponentGroupTag": null,
+    "MaxComponentAmount": 0,
+    "NotForMechanicShips": true,
+    "NotForOrganicShips": false,
+    "ShipSizes": [],
+    "UniqueComponentTag": ""
+  },
+  "WeaponId": 110,
+  "WeaponSlotType": "S"
 }

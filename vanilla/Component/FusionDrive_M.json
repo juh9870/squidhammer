@@ -1,19 +1,34 @@
 {
-  "ItemType": 1,
-  "Id": 56,
-  "Name": "$FusionDrive_M",
-  "DisplayCategory": 4,
+  "AmmunitionId": null,
   "Availability": 1,
-  "ComponentStatsId": 56,
-  "Faction": -1,
-  "Level": 25,
-  "Icon": "engine2",
-  "Color": "#C0DCFF",
-  "Layout": "1010",
   "CellType": "5",
+  "Color": "#C0DCFF",
+  "ComponentStatsId": 56,
+  "Description": "",
+  "DeviceId": null,
+  "DisplayCategory": 4,
+  "DroneBayId": null,
+  "DroneId": null,
+  "Faction": -1,
+  "Icon": "engine2",
+  "Id": 56,
+  "ItemType": 1,
+  "Layout": "1010",
+  "Level": 25,
+  "Name": "$FusionDrive_M",
   "PossibleModifications": [
     1,
     11,
     2
-  ]
+  ],
+  "Restrictions": {
+    "ComponentGroupTag": null,
+    "MaxComponentAmount": 0,
+    "NotForMechanicShips": false,
+    "NotForOrganicShips": false,
+    "ShipSizes": [],
+    "UniqueComponentTag": ""
+  },
+  "WeaponId": null,
+  "WeaponSlotType": ""
 }

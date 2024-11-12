@@ -1,43 +1,100 @@
 {
-  "ItemType": 6,
-  "Id": 32,
-  "SizeClass": 2,
-  "Name": "$f3_Cruiser",
-  "Faction": 3,
-  "IconImage": "f3s3",
-  "IconScale": 0.9,
-  "ModelImage": "f3s3",
-  "ModelScale": 1.5,
-  "EngineColor": "#4098E5FF",
-  "Engines": [
-    {
-      "Position": {
-        "x": -0.9
-      },
-      "Size": 0.3
-    }
-  ],
-  "Layout": "000004400000000004400000000001100000000001100000000003300000000003300000000002200000440022220044441222222144441222222144041155551140000155551000",
   "Barrels": [
     {
+      "AutoAimingArc": 0,
+      "Image": "",
+      "Offset": 0,
+      "PlatformType": 0,
       "Position": {
-        "x": 1.0
+        "x": 1,
+        "y": 0
       },
+      "Rotation": 0,
+      "RotationSpeed": 0,
+      "Size": 0,
       "WeaponClass": "L"
     },
     {
+      "AutoAimingArc": 0,
+      "Image": "",
+      "Offset": 0,
+      "PlatformType": 0,
       "Position": {
         "x": -0.2,
         "y": 0.85
       },
+      "Rotation": 0,
+      "RotationSpeed": 0,
+      "Size": 0,
       "WeaponClass": "C"
     },
     {
+      "AutoAimingArc": 0,
+      "Image": "",
+      "Offset": 0,
+      "PlatformType": 0,
       "Position": {
         "x": -0.2,
         "y": -0.85
       },
+      "Rotation": 0,
+      "RotationSpeed": 0,
+      "Size": 0,
       "WeaponClass": "C"
     }
-  ]
+  ],
+  "BaseWeightModifier": 0,
+  "BuiltinDevices": [],
+  "CellsExpansions": 0,
+  "ColliderTolerance": 0.02,
+  "Description": "",
+  "EnergyResistance": 0,
+  "EngineColor": "#4098E5FF",
+  "EnginePosition": {
+    "x": 0,
+    "y": 0
+  },
+  "EngineSize": 0,
+  "Engines": [
+    {
+      "Position": {
+        "x": -0.9,
+        "y": 0
+      },
+      "Size": 0.3
+    }
+  ],
+  "Faction": 3,
+  "Features": {
+    "ArmorBonus": 0,
+    "BuiltinDevices": [],
+    "DroneAttackBonus": 0,
+    "DroneBuildSpeedBonus": 0,
+    "DroneDefenseBonus": 0,
+    "EnergyBonus": 0,
+    "EnergyResistance": 0,
+    "EquipmentWeightBonus": 0,
+    "HeatResistance": 0,
+    "KineticResistance": 0,
+    "Regeneration": false,
+    "ShieldBonus": 0,
+    "ShipWeightBonus": 0,
+    "TurnRateBonus": 0,
+    "VelocityBonus": 0
+  },
+  "HeatResistance": 0,
+  "IconImage": "f3s3",
+  "IconScale": 0.9,
+  "Id": 32,
+  "ItemType": 6,
+  "KineticResistance": 0,
+  "Layout": "000004400000000004400000000001100000000001100000000003300000000003300000000002200000440022220044441222222144441222222144041155551140000155551000",
+  "ModelImage": "f3s3",
+  "ModelScale": 1.5,
+  "Name": "$f3_Cruiser",
+  "Regeneration": false,
+  "ShipCategory": 0,
+  "ShipRarity": 0,
+  "ShipType": 0,
+  "SizeClass": 2
 }

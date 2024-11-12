@@ -1,27 +1,30 @@
 {
-  "ItemType": 16,
   "Id": 7,
+  "ItemType": 16,
   "Loot": {
-    "Type": 21,
     "Items": [
       {
         "Loot": {
-          "Type": 4,
+          "MaxAmount": 5,
           "MinAmount": 1,
-          "MaxAmount": 5
-        }
+          "Type": 4
+        },
+        "Weight": 0
       },
       {
         "Loot": {
-          "Type": 10,
-          "MinAmount": 2,
-          "MaxAmount": 4,
-          "ValueRatio": 2.0,
           "Factions": {
+            "List": [],
             "Type": 3
-          }
-        }
+          },
+          "MaxAmount": 4,
+          "MinAmount": 2,
+          "Type": 10,
+          "ValueRatio": 2
+        },
+        "Weight": 0
       }
-    ]
+    ],
+    "Type": 21
   }
 }

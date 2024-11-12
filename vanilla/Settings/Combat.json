@@ -1,10 +1,11 @@
 {
-  "ItemType": 109,
-  "EnemyAI": 1,
   "AutopilotAI": 7,
   "CloneAI": 4,
+  "DefaultCombatRules": 1,
   "DefensiveDroneAI": 3,
+  "EnemyAI": 1,
+  "Id": 0,
+  "ItemType": 109,
   "OffensiveDroneAI": 2,
-  "StarbaseAI": 10,
-  "DefaultCombatRules": 1
+  "StarbaseAI": 10
 }

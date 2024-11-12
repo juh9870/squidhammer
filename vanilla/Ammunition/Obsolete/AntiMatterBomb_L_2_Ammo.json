@@ -1,14 +1,27 @@
 {
-  "ItemType": 4,
-  "Id": 4,
   "AmmunitionClass": 11,
-  "DamageType": 2,
-  "Size": 4.0,
-  "AreaOfEffect": 15.0,
-  "Damage": 150.0,
-  "LifeTime": 0.5,
-  "EnergyCost": 25.0,
+  "AreaOfEffect": 15,
+  "BulletPrefab": "Empty",
   "Color": "#401080",
+  "CoupledAmmunitionId": null,
+  "Damage": 150,
+  "DamageType": 2,
+  "EnergyCost": 25,
   "FireSound": "explosion_03",
-  "BulletPrefab": "Empty"
+  "HitEffectPrefab": "",
+  "HitPoints": 0,
+  "HitSound": "",
+  "Id": 4,
+  "IgnoresShipVelocity": false,
+  "Impulse": 0,
+  "InitialPosition": {
+    "x": 0,
+    "y": 0
+  },
+  "ItemType": 4,
+  "LifeTime": 0.5,
+  "Range": 0,
+  "Recoil": 0,
+  "Size": 4,
+  "Velocity": 0
 }

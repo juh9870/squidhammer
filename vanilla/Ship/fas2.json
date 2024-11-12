@@ -1,14 +1,60 @@
 {
-  "ItemType": 6,
-  "Id": 65,
-  "SizeClass": 2,
-  "Name": "$fa_Cruiser",
-  "Faction": 9,
-  "IconImage": "fas3",
-  "IconScale": 0.9,
-  "ModelImage": "fas3",
-  "ModelScale": 1.7,
+  "Barrels": [
+    {
+      "AutoAimingArc": 0,
+      "Image": "",
+      "Offset": 0,
+      "PlatformType": 0,
+      "Position": {
+        "x": 1,
+        "y": 0
+      },
+      "Rotation": 0,
+      "RotationSpeed": 0,
+      "Size": 0,
+      "WeaponClass": "M"
+    },
+    {
+      "AutoAimingArc": 0,
+      "Image": "",
+      "Offset": 0,
+      "PlatformType": 0,
+      "Position": {
+        "x": 0.3,
+        "y": 0.5
+      },
+      "Rotation": 0,
+      "RotationSpeed": 0,
+      "Size": 0,
+      "WeaponClass": "M"
+    },
+    {
+      "AutoAimingArc": 0,
+      "Image": "",
+      "Offset": 0,
+      "PlatformType": 0,
+      "Position": {
+        "x": 0.3,
+        "y": -0.5
+      },
+      "Rotation": 0,
+      "RotationSpeed": 0,
+      "Size": 0,
+      "WeaponClass": "M"
+    }
+  ],
+  "BaseWeightModifier": 0,
+  "BuiltinDevices": [],
+  "CellsExpansions": 0,
+  "ColliderTolerance": 0.02,
+  "Description": "",
+  "EnergyResistance": 0,
   "EngineColor": "#40FFFFFF",
+  "EnginePosition": {
+    "x": 0,
+    "y": 0
+  },
+  "EngineSize": 0,
   "Engines": [
     {
       "Position": {
@@ -25,27 +71,37 @@
       "Size": 0.2
     }
   ],
+  "Faction": 9,
+  "Features": {
+    "ArmorBonus": 0,
+    "BuiltinDevices": [],
+    "DroneAttackBonus": 0,
+    "DroneBuildSpeedBonus": 0,
+    "DroneDefenseBonus": 0,
+    "EnergyBonus": 0,
+    "EnergyResistance": 0,
+    "EquipmentWeightBonus": 0,
+    "HeatResistance": 0,
+    "KineticResistance": 0,
+    "Regeneration": false,
+    "ShieldBonus": 0,
+    "ShipWeightBonus": 0,
+    "TurnRateBonus": 0,
+    "VelocityBonus": 0
+  },
+  "HeatResistance": 0,
+  "IconImage": "fas3",
+  "IconScale": 0.9,
+  "Id": 65,
+  "ItemType": 6,
+  "KineticResistance": 0,
   "Layout": "000004400000000014410000000014410000000022220000004422224400111222222111111222222111111222222111111222222111001155551100000055550000000005500000",
-  "Barrels": [
-    {
-      "Position": {
-        "x": 1.0
-      },
-      "WeaponClass": "M"
-    },
-    {
-      "Position": {
-        "x": 0.3,
-        "y": 0.5
-      },
-      "WeaponClass": "M"
-    },
-    {
-      "Position": {
-        "x": 0.3,
-        "y": -0.5
-      },
-      "WeaponClass": "M"
-    }
-  ]
+  "ModelImage": "fas3",
+  "ModelScale": 1.7,
+  "Name": "$fa_Cruiser",
+  "Regeneration": false,
+  "ShipCategory": 0,
+  "ShipRarity": 0,
+  "ShipType": 0,
+  "SizeClass": 2
 }

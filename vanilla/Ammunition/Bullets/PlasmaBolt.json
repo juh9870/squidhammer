@@ -1,6 +1,13 @@
 {
-  "ItemType": 27,
+  "Deformation": 0,
   "Id": 1,
   "Image": "plasma2",
-  "Size": 1.0
+  "ItemType": 27,
+  "MainColor": "#00000000",
+  "MainColorMode": 0,
+  "Margins": 0,
+  "SecondColor": "#00000000",
+  "SecondColorMode": 0,
+  "Shape": 0,
+  "Size": 1
 }

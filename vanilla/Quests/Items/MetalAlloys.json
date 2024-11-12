@@ -1,8 +1,9 @@
 {
-  "ItemType": 20,
-  "Id": 13,
-  "Name": "$Commodity_Alloys",
-  "Icon": "tubes",
   "Color": "#9AC2CD",
+  "Description": "",
+  "Icon": "tubes",
+  "Id": 13,
+  "ItemType": 20,
+  "Name": "$Commodity_Alloys",
   "Price": 25
 }

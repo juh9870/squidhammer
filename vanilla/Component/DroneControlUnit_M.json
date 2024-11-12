@@ -1,19 +1,34 @@
 {
-  "ItemType": 1,
-  "Id": 183,
-  "Name": "$DroneControlUnit_M",
-  "DisplayCategory": 5,
+  "AmmunitionId": null,
   "Availability": 1,
-  "ComponentStatsId": 183,
-  "Faction": 5,
-  "Level": 100,
-  "Icon": "drone_power2",
-  "Color": "#FFFFC0",
-  "Layout": "110111111",
   "CellType": "2",
+  "Color": "#FFFFC0",
+  "ComponentStatsId": 183,
+  "Description": "",
+  "DeviceId": null,
+  "DisplayCategory": 5,
+  "DroneBayId": null,
+  "DroneId": null,
+  "Faction": 5,
+  "Icon": "drone_power2",
+  "Id": 183,
+  "ItemType": 1,
+  "Layout": "110111111",
+  "Level": 100,
+  "Name": "$DroneControlUnit_M",
   "PossibleModifications": [
     19,
     1,
     2
-  ]
+  ],
+  "Restrictions": {
+    "ComponentGroupTag": null,
+    "MaxComponentAmount": 0,
+    "NotForMechanicShips": false,
+    "NotForOrganicShips": false,
+    "ShipSizes": [],
+    "UniqueComponentTag": ""
+  },
+  "WeaponId": null,
+  "WeaponSlotType": ""
 }

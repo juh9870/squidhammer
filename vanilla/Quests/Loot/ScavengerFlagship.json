@@ -1,8 +1,8 @@
 {
-  "ItemType": 16,
   "Id": 19,
+  "ItemType": 16,
   "Loot": {
-    "Type": 31,
-    "ItemId": 113
+    "ItemId": 113,
+    "Type": 31
   }
 }

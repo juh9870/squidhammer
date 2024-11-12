@@ -1,102 +1,127 @@
 {
-  "ItemType": 15,
   "Id": 21,
+  "ItemType": 15,
+  "Level": 0,
   "Name": "$Mission_Resources",
-  "StartCondition": 3,
-  "Weight": 1.0,
   "Nodes": [
     {
-      "Id": 1,
-      "Type": 15,
       "DefaultTransition": 3,
+      "Id": 1,
+      "Message": "",
       "Transitions": [
         {
-          "TargetNode": 2,
           "Requirement": {
-            "Type": 27,
-            "ItemId": 8
-          }
+            "ItemId": 8,
+            "Type": 27
+          },
+          "TargetNode": 2,
+          "Weight": 0
         }
-      ]
+      ],
+      "Type": 15
     },
     {
+      "Actions": [
+        {
+          "ButtonText": "$Actions_GiveResources",
+          "Requirement": {
+            "Type": 0
+          },
+          "TargetNode": 5
+        },
+        {
+          "ButtonText": "$Action_Decline",
+          "Requirement": {
+            "Type": 0
+          },
+          "TargetNode": 9
+        }
+      ],
+      "Character": 3,
+      "Enemy": null,
       "Id": 2,
-      "Type": 10,
-      "Message": "$Mission_Resources_Intro",
       "Loot": 8,
-      "Character": 3,
-      "Actions": [
-        {
-          "TargetNode": 5,
-          "ButtonText": "$Actions_GiveResources"
-        },
-        {
-          "TargetNode": 9,
-          "ButtonText": "$Action_Decline"
-        }
-      ]
+      "Message": "$Mission_Resources_Intro",
+      "RequiredView": 0,
+      "Type": 10
     },
     {
-      "Id": 3,
-      "Type": 10,
-      "Message": "$Mission_Resources_Intro",
-      "Loot": 8,
-      "Character": 3,
       "Actions": [
         {
-          "TargetNode": 4,
-          "ButtonText": "$Action_Accept"
+          "ButtonText": "$Action_Accept",
+          "Requirement": {
+            "Type": 0
+          },
+          "TargetNode": 4
         },
         {
-          "TargetNode": 9,
-          "ButtonText": "$Action_Decline"
+          "ButtonText": "$Action_Decline",
+          "Requirement": {
+            "Type": 0
+          },
+          "TargetNode": 9
         }
-      ]
+      ],
+      "Character": 3,
+      "Enemy": null,
+      "Id": 3,
+      "Loot": 8,
+      "Message": "$Mission_Resources_Intro",
+      "RequiredView": 0,
+      "Type": 10
     },
     {
       "Id": 4,
-      "Type": 17,
+      "Message": "",
       "Transitions": [
         {
-          "TargetNode": 5,
           "Requirement": {
-            "Type": 2,
             "Requirements": [
               {
-                "Type": 27,
-                "ItemId": 8
+                "ItemId": 8,
+                "Type": 27
               },
               {
+                "BoolValue": false,
                 "Type": 30
               }
-            ]
-          }
+            ],
+            "Type": 2
+          },
+          "TargetNode": 5,
+          "Weight": 0
         }
-      ]
+      ],
+      "Type": 17
     },
     {
-      "Id": 5,
-      "Type": 10,
-      "Message": "$Mission_Resources_Completed",
-      "Loot": 8,
-      "Character": 3,
       "Actions": [
         {
-          "TargetNode": 6,
-          "ButtonText": "$Continue"
+          "ButtonText": "$Continue",
+          "Requirement": {
+            "Type": 0
+          },
+          "TargetNode": 6
         }
-      ]
+      ],
+      "Character": 3,
+      "Enemy": null,
+      "Id": 5,
+      "Loot": 8,
+      "Message": "$Mission_Resources_Completed",
+      "RequiredView": 0,
+      "Type": 10
     },
     {
-      "Id": 6,
-      "Type": 36,
       "DefaultTransition": 7,
-      "Loot": 8
+      "Id": 6,
+      "Loot": 8,
+      "Type": 36
     },
     {
+      "DefaultTransition": 8,
       "Id": 7,
       "Type": 56,
-      "DefaultTransition": 8,
       "Value": 10
     },
     {
@@ -107,5 +132,23 @@
       "Id": 9,
       "Type": 42
     }
-  ]
+  ],
+  "Origin": {
+    "Factions": {
+      "List": [],
+      "Type": 0
+    },
+    "MaxDistance": 0,
+    "MaxRelations": 0,
+    "MinDistance": 0,
+    "MinRelations": 0,
+    "Type": 0
+  },
+  "QuestType": 0,
+  "Requirement": {
+    "Type": 0
+  },
+  "StartCondition": 3,
+  "UseRandomSeed": false,
+  "Weight": 1
 }

@@ -1,34 +1,83 @@
 {
-  "ItemType": 28,
   "Id": 143,
+  "ItemType": 28,
   "RootNode": {
-    "Type": 5,
+    "Cooldown": 0,
     "Nodes": [
       {
-        "Type": 300,
-        "Text": "$Provoking1"
+        "Color": "#00000000",
+        "Requirement": {
+          "Type": 0
+        },
+        "Text": "$Provoking1",
+        "Type": 300
       },
       {
-        "Type": 300,
-        "Text": "$Provoking2"
+        "Color": "#00000000",
+        "Requirement": {
+          "Type": 0
+        },
+        "Text": "$Provoking2",
+        "Type": 300
       },
       {
-        "Type": 300,
-        "Text": "$Provoking3"
+        "Color": "#00000000",
+        "Requirement": {
+          "Type": 0
+        },
+        "Text": "$Provoking3",
+        "Type": 300
       },
       {
-        "Type": 300,
-        "Text": "$Provoking4"
+        "Color": "#00000000",
+        "Requirement": {
+          "Type": 0
+        },
+        "Text": "$Provoking4",
+        "Type": 300
       },
       {
-        "Type": 300,
-        "Text": "$Provoking5"
+        "Color": "#00000000",
+        "Requirement": {
+          "Type": 0
+        },
+        "Text": "$Provoking5",
+        "Type": 300
       },
-      {},
-      {},
-      {},
-      {},
-      {}
-    ]
+      {
+        "Requirement": {
+          "Type": 0
+        },
+        "Type": 0
+      },
+      {
+        "Requirement": {
+          "Type": 0
+        },
+        "Type": 0
+      },
+      {
+        "Requirement": {
+          "Type": 0
+        },
+        "Type": 0
+      },
+      {
+        "Requirement": {
+          "Type": 0
+        },
+        "Type": 0
+      },
+      {
+        "Requirement": {
+          "Type": 0
+        },
+        "Type": 0
+      }
+    ],
+    "Requirement": {
+      "Type": 0
+    },
+    "Type": 5
   }
 }

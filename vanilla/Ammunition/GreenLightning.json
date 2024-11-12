@@ -1,43 +1,67 @@
 {
-  "ItemType": 25,
-  "Id": 114,
   "Body": {
-    "Size": 2.0,
-    "AttachedToParent": true,
-    "Range": 15.0,
-    "Lifetime": 0.1,
-    "Color": "#00FF26",
-    "BulletPrefab": 5,
-    "EnergyCost": 20.0,
     "AiBulletBehavior": 2,
-    "Type": 3
+    "AttachedToParent": true,
+    "BulletPrefab": 5,
+    "CanBeDisarmed": false,
+    "Color": "#00FF26",
+    "EnergyCost": 20,
+    "FriendlyFire": false,
+    "HitPoints": 0,
+    "Length": 0,
+    "Lifetime": 0.1,
+    "ParentVelocityEffect": 1,
+    "Range": 15,
+    "Size": 2,
+    "Type": 3,
+    "Velocity": 0,
+    "Weight": 0
   },
   "Controller": {
     "Type": 2
   },
-  "Triggers": [
-    {
-      "Condition": 3,
-      "EffectType": 2,
-      "Ammunition": 115,
-      "Size": 5.0,
-      "Cooldown": 1.0,
-      "PowerMultiplier": 15.0
-    },
-    {
-      "Condition": 3,
-      "EffectType": 1,
-      "VisualEffect": 1,
-      "Color": "#00000000",
-      "Size": 2.0
-    }
-  ],
-  "ImpactType": 2,
   "Effects": [
     {
       "DamageType": 3,
-      "Power": 100.0,
-      "Factor": 1.0
+      "Factor": 1,
+      "Power": 100,
+      "Type": 0
+    }
+  ],
+  "Id": 114,
+  "ImpactType": 2,
+  "ItemType": 25,
+  "Triggers": [
+    {
+      "Ammunition": 115,
+      "AudioClip": "",
+      "Color": "#00000000",
+      "ColorMode": 0,
+      "Condition": 3,
+      "Cooldown": 1,
+      "EffectType": 2,
+      "MaxNestingLevel": 0,
+      "OffsetX": "IF(Quantity <= 1, 0, Size / 2)",
+      "OffsetY": "0",
+      "PowerMultiplier": 15,
+      "Quantity": 0,
+      "RandomFactor": 0,
+      "Rotation": "IF(Quantity <= 1, 0, RANDOM(0, 360))",
+      "Size": 5
+    },
+    {
+      "AudioClip": "",
+      "Color": "#00000000",
+      "ColorMode": 0,
+      "Condition": 3,
+      "Cooldown": 0,
+      "EffectType": 1,
+      "Lifetime": 0,
+      "OncePerCollision": false,
+      "Size": 2,
+      "SyncLifetimeWithBullet": false,
+      "UseBulletPosition": false,
+      "VisualEffect": 1
     }
   ]
 }

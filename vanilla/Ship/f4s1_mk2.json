@@ -1,34 +1,72 @@
 {
-  "ItemType": 6,
-  "Id": 35,
-  "ShipRarity": 1,
-  "Name": "$f4_Scout2",
-  "Faction": 4,
-  "IconImage": "f4s1_2",
-  "IconScale": 0.5,
-  "ModelImage": "f4s1_2",
-  "ModelScale": 1.0,
+  "Barrels": [
+    {
+      "AutoAimingArc": 80,
+      "Image": "",
+      "Offset": 0.1,
+      "PlatformType": 0,
+      "Position": {
+        "x": 0.8,
+        "y": 0
+      },
+      "Rotation": 0,
+      "RotationSpeed": 0,
+      "Size": 0,
+      "WeaponClass": "L"
+    }
+  ],
+  "BaseWeightModifier": 0,
+  "BuiltinDevices": [],
+  "CellsExpansions": 0,
+  "ColliderTolerance": 0.02,
+  "Description": "",
+  "EnergyResistance": 0,
   "EngineColor": "#40B4B4FF",
+  "EnginePosition": {
+    "x": 0,
+    "y": 0
+  },
+  "EngineSize": 0,
   "Engines": [
     {
       "Position": {
-        "x": -0.85
+        "x": -0.85,
+        "y": 0
       },
       "Size": 0.1
     }
   ],
-  "Layout": "0100010014441001141100322230032223000222000052500",
-  "Barrels": [
-    {
-      "Position": {
-        "x": 0.8
-      },
-      "Offset": 0.1,
-      "AutoAimingArc": 80.0,
-      "WeaponClass": "L"
-    }
-  ],
+  "Faction": 4,
   "Features": {
-    "Regeneration": true
-  }
+    "ArmorBonus": 0,
+    "BuiltinDevices": [],
+    "DroneAttackBonus": 0,
+    "DroneBuildSpeedBonus": 0,
+    "DroneDefenseBonus": 0,
+    "EnergyBonus": 0,
+    "EnergyResistance": 0,
+    "EquipmentWeightBonus": 0,
+    "HeatResistance": 0,
+    "KineticResistance": 0,
+    "Regeneration": true,
+    "ShieldBonus": 0,
+    "ShipWeightBonus": 0,
+    "TurnRateBonus": 0,
+    "VelocityBonus": 0
+  },
+  "HeatResistance": 0,
+  "IconImage": "f4s1_2",
+  "IconScale": 0.5,
+  "Id": 35,
+  "ItemType": 6,
+  "KineticResistance": 0,
+  "Layout": "0100010014441001141100322230032223000222000052500",
+  "ModelImage": "f4s1_2",
+  "ModelScale": 1,
+  "Name": "$f4_Scout2",
+  "Regeneration": false,
+  "ShipCategory": 0,
+  "ShipRarity": 1,
+  "ShipType": 0,
+  "SizeClass": -1
 }

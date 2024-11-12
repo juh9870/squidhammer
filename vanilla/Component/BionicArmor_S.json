@@ -1,17 +1,33 @@
 {
-  "ItemType": 1,
-  "Id": 260,
-  "Name": "$BionicArmor_S",
-  "DisplayCategory": 2,
+  "AmmunitionId": null,
   "Availability": 1,
-  "ComponentStatsId": 260,
-  "Faction": 16,
-  "Level": 5,
-  "Icon": "armor61",
-  "Layout": "1",
   "CellType": "1",
+  "Color": "#00000000",
+  "ComponentStatsId": 260,
+  "Description": "",
+  "DeviceId": null,
+  "DisplayCategory": 2,
+  "DroneBayId": null,
+  "DroneId": null,
+  "Faction": 16,
+  "Icon": "armor61",
+  "Id": 260,
+  "ItemType": 1,
+  "Layout": "1",
+  "Level": 5,
+  "Name": "$BionicArmor_S",
   "PossibleModifications": [
     3,
     1
-  ]
+  ],
+  "Restrictions": {
+    "ComponentGroupTag": null,
+    "MaxComponentAmount": 0,
+    "NotForMechanicShips": false,
+    "NotForOrganicShips": false,
+    "ShipSizes": [],
+    "UniqueComponentTag": ""
+  },
+  "WeaponId": null,
+  "WeaponSlotType": ""
 }

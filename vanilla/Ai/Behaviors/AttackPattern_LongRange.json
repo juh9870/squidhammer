@@ -1,21 +1,34 @@
 {
-  "ItemType": 28,
   "Id": 130,
+  "ItemType": 28,
   "RootNode": {
-    "Type": 10,
     "Nodes": [
       {
-        "Type": 101,
-        "MinValue": 1.0
+        "MaxValue": 1,
+        "MinValue": 1,
+        "Requirement": {
+          "Type": 0
+        },
+        "Type": 101
       },
       {
-        "Type": 1,
-        "ItemId": 137
+        "ItemId": 137,
+        "Requirement": {
+          "Type": 0
+        },
+        "Type": 1
       },
       {
-        "Type": 113,
-        "MaxValue": 0.1
+        "MaxValue": 0.1,
+        "Requirement": {
+          "Type": 0
+        },
+        "Type": 113
       }
-    ]
+    ],
+    "Requirement": {
+      "Type": 0
+    },
+    "Type": 10
   }
 }

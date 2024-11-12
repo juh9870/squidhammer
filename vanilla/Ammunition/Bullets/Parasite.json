@@ -1,8 +1,13 @@
 {
-  "ItemType": 27,
+  "Deformation": 0,
   "Id": 15,
-  "Shape": 5,
   "Image": "parasite",
-  "Size": 1.0,
-  "Margins": 0.5
+  "ItemType": 27,
+  "MainColor": "#00000000",
+  "MainColorMode": 0,
+  "Margins": 0.5,
+  "SecondColor": "#00000000",
+  "SecondColorMode": 0,
+  "Shape": 5,
+  "Size": 1
 }

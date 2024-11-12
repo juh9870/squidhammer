@@ -1,56 +1,74 @@
 {
-  "ItemType": 15,
   "Id": 4,
+  "ItemType": 15,
+  "Level": 0,
   "Name": "$Beacon_EscapePod",
-  "StartCondition": 1,
-  "Weight": 0.5,
   "Nodes": [
     {
-      "Id": 1,
-      "Type": 10,
-      "Message": "$Beacon_EscapePod_Intro",
       "Actions": [
         {
-          "TargetNode": 2,
-          "ButtonText": "$Action_Accept"
+          "ButtonText": "$Action_Accept",
+          "Requirement": {
+            "Type": 0
+          },
+          "TargetNode": 2
         },
         {
-          "TargetNode": 6,
-          "ButtonText": "$Action_Decline"
+          "ButtonText": "$Action_Decline",
+          "Requirement": {
+            "Type": 0
+          },
+          "TargetNode": 6
         }
-      ]
+      ],
+      "Character": null,
+      "Enemy": null,
+      "Id": 1,
+      "Loot": null,
+      "Message": "$Beacon_EscapePod_Intro",
+      "RequiredView": 0,
+      "Type": 10
     },
     {
       "Id": 2,
-      "Type": 17,
+      "Message": "",
       "Transitions": [
         {
-          "TargetNode": 3,
           "Requirement": {
-            "Type": 7,
+            "BoolValue": false,
+            "MaxValue": 5,
             "MinValue": 3,
-            "MaxValue": 5
-          }
+            "Type": 7
+          },
+          "TargetNode": 3,
+          "Weight": 0
         }
-      ]
+      ],
+      "Type": 17
     },
     {
-      "Id": 3,
-      "Type": 10,
-      "Message": "$Beacon_EscapePod_Completed",
-      "Loot": 1,
       "Actions": [
         {
-          "TargetNode": 4,
-          "ButtonText": "$ACTION_Continue"
+          "ButtonText": "$ACTION_Continue",
+          "Requirement": {
+            "Type": 0
+          },
+          "TargetNode": 4
         }
-      ]
+      ],
+      "Character": null,
+      "Enemy": null,
+      "Id": 3,
+      "Loot": 1,
+      "Message": "$Beacon_EscapePod_Completed",
+      "RequiredView": 0,
+      "Type": 10
     },
     {
-      "Id": 4,
-      "Type": 35,
       "DefaultTransition": 5,
-      "Loot": 1
+      "Id": 4,
+      "Loot": 1,
+      "Type": 35
     },
     {
       "Id": 5,
@@ -60,5 +78,23 @@
       "Id": 6,
       "Type": 41
     }
-  ]
+  ],
+  "Origin": {
+    "Factions": {
+      "List": [],
+      "Type": 0
+    },
+    "MaxDistance": 0,
+    "MaxRelations": 0,
+    "MinDistance": 0,
+    "MinRelations": 0,
+    "Type": 0
+  },
+  "QuestType": 0,
+  "Requirement": {
+    "Type": 0
+  },
+  "StartCondition": 1,
+  "UseRandomSeed": false,
+  "Weight": 0.5
 }

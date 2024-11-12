@@ -1,15 +1,32 @@
 {
-  "ItemType": 1,
-  "Id": 72,
-  "Name": "$NanofiberStructures",
-  "DisplayCategory": 6,
+  "AmmunitionId": null,
   "Availability": 1,
+  "CellType": "",
+  "Color": "#C0FFC0",
   "ComponentStatsId": 72,
+  "Description": "",
+  "DeviceId": null,
+  "DisplayCategory": 6,
+  "DroneBayId": null,
+  "DroneId": null,
   "Faction": -1,
   "Icon": "lightweight1",
-  "Color": "#C0FFC0",
+  "Id": 72,
+  "ItemType": 1,
   "Layout": "1",
+  "Level": 0,
+  "Name": "$NanofiberStructures",
   "PossibleModifications": [
     4
-  ]
+  ],
+  "Restrictions": {
+    "ComponentGroupTag": null,
+    "MaxComponentAmount": 0,
+    "NotForMechanicShips": false,
+    "NotForOrganicShips": false,
+    "ShipSizes": [],
+    "UniqueComponentTag": ""
+  },
+  "WeaponId": null,
+  "WeaponSlotType": ""
 }

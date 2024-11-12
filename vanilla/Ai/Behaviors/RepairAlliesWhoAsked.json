@@ -1,39 +1,60 @@
 {
-  "ItemType": 28,
   "Id": 127,
+  "ItemType": 28,
   "RootNode": {
-    "Type": 2,
-    "Requirement": {
-      "Type": 13
-    },
     "Nodes": [
       {
-        "Type": 1,
-        "ItemId": 126
+        "ItemId": 126,
+        "Requirement": {
+          "Type": 0
+        },
+        "Type": 1
       },
       {
-        "Type": 3,
         "Nodes": [
           {
-            "Type": 305,
-            "Text": "need_repair"
+            "Requirement": {
+              "Type": 0
+            },
+            "Text": "need_repair",
+            "Type": 305
           },
           {
+            "Requirement": {
+              "Type": 0
+            },
             "Type": 306
           }
-        ]
+        ],
+        "Requirement": {
+          "Type": 0
+        },
+        "Type": 3
       },
       {
-        "Type": 3,
         "Nodes": [
           {
+            "Requirement": {
+              "Type": 0
+            },
             "Type": 57
           },
           {
+            "Requirement": {
+              "Type": 0
+            },
             "Type": 125
           }
-        ]
+        ],
+        "Requirement": {
+          "Type": 0
+        },
+        "Type": 3
       }
-    ]
+    ],
+    "Requirement": {
+      "Type": 13
+    },
+    "Type": 2
   }
 }

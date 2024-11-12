@@ -1,19 +1,48 @@
 {
-  "ItemType": 26,
-  "Id": 12,
   "Elements": [
     {
-      "Type": 1,
-      "Image": "cloud",
+      "Color": "#00000000",
       "ColorMode": 2,
-      "Size": 0.1
+      "GrowthRate": 0,
+      "Image": "cloud",
+      "Inverse": false,
+      "Lifetime": 1,
+      "Loop": false,
+      "Offset": {
+        "x": 0,
+        "y": 0
+      },
+      "ParticleSize": 1,
+      "Quantity": 1,
+      "Rotation": 0,
+      "Size": 0.1,
+      "StartTime": 0,
+      "TurnRate": 0,
+      "Type": 1,
+      "UseRealTime": false
     },
     {
-      "Type": 7,
-      "Image": "beam",
+      "Color": "#00000000",
       "ColorMode": 2,
+      "GrowthRate": 0,
+      "Image": "beam",
+      "Inverse": false,
+      "Lifetime": 1,
+      "Loop": false,
+      "Offset": {
+        "x": 0,
+        "y": 0
+      },
+      "ParticleSize": 2,
       "Quantity": 2,
-      "ParticleSize": 2.0
+      "Rotation": 0,
+      "Size": 1,
+      "StartTime": 0,
+      "TurnRate": 0,
+      "Type": 7,
+      "UseRealTime": false
     }
-  ]
+  ],
+  "Id": 12,
+  "ItemType": 26
 }

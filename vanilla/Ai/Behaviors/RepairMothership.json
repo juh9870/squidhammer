@@ -1,30 +1,47 @@
 {
-  "ItemType": 28,
   "Id": 105,
+  "ItemType": 28,
   "RootNode": {
-    "Type": 3,
-    "Requirement": {
-      "Type": 13
-    },
     "Nodes": [
       {
-        "Type": 205,
-        "MinValue": 0.99
+        "MinValue": 0.99,
+        "Requirement": {
+          "Type": 0
+        },
+        "Type": 205
       },
       {
+        "MaxValue": 0.9,
+        "MinValue": 0.1,
+        "Requirement": {
+          "Type": 0
+        },
         "Type": 115
       },
       {
+        "Requirement": {
+          "Type": 0
+        },
         "Type": 204
       },
       {
+        "Requirement": {
+          "Type": 0
+        },
         "Type": 103,
         "WeaponType": 1
       },
       {
-        "Type": 1,
-        "ItemId": 104
+        "ItemId": 104,
+        "Requirement": {
+          "Type": 0
+        },
+        "Type": 1
       }
-    ]
+    ],
+    "Requirement": {
+      "Type": 13
+    },
+    "Type": 3
   }
 }

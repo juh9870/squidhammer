@@ -1,16 +1,25 @@
 {
-  "ItemType": 2,
-  "Id": 9,
-  "DeviceClass": 4,
-  "EnergyConsumption": 0.5,
-  "PassiveEnergyConsumption": 2.0,
-  "Power": 0.3,
-  "Range": 50.0,
-  "Size": 1.5,
-  "Cooldown": 1.0,
   "ActivationType": 1,
   "Color": "#65FF0000",
-  "Sound": "launch_03",
+  "ControlButtonIcon": "controls_gear",
+  "Cooldown": 1,
+  "DeviceClass": 4,
   "EffectPrefab": "ForceField",
-  "ControlButtonIcon": "controls_gear"
+  "EnergyConsumption": 0.5,
+  "Id": 9,
+  "ItemType": 2,
+  "Lifetime": 0,
+  "ObjectPrefab": "",
+  "Offset": {
+    "x": 0,
+    "y": 0
+  },
+  "PassiveEnergyConsumption": 2,
+  "Power": 0.3,
+  "Prefab": null,
+  "Range": 50,
+  "ScaleEnergyWithShipSize": true,
+  "Size": 1.5,
+  "Sound": "launch_03",
+  "VisualEffect": null
 }

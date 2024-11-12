@@ -1,13 +1,25 @@
 {
-  "ItemType": 2,
-  "Id": 25,
-  "DeviceClass": 16,
-  "PassiveEnergyConsumption": 2.0,
-  "Size": 2.0,
-  "Cooldown": 60.0,
   "ActivationType": 2,
   "Color": "#FFC6F4",
-  "Sound": "launch_08",
+  "ControlButtonIcon": "controls_drone",
+  "Cooldown": 60,
+  "DeviceClass": 16,
   "EffectPrefab": "OrbAdditive",
-  "ControlButtonIcon": "controls_drone"
+  "EnergyConsumption": 0,
+  "Id": 25,
+  "ItemType": 2,
+  "Lifetime": 0,
+  "ObjectPrefab": "",
+  "Offset": {
+    "x": 0,
+    "y": 0
+  },
+  "PassiveEnergyConsumption": 2,
+  "Power": 0,
+  "Prefab": null,
+  "Range": 0,
+  "ScaleEnergyWithShipSize": true,
+  "Size": 2,
+  "Sound": "launch_08",
+  "VisualEffect": null
 }

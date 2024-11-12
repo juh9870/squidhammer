@@ -1,19 +1,21 @@
 {
-  "ItemType": 1,
-  "Id": 82,
-  "Name": "$MissileLauncher_T_1",
-  "DisplayCategory": 1,
-  "Availability": 1,
-  "ComponentStatsId": 1,
-  "Faction": 13,
-  "Level": 200,
-  "Icon": "rocket1",
-  "Color": "#BCA2FF",
-  "Layout": "0110011001100110",
-  "CellType": "4",
-  "WeaponId": 38,
   "AmmunitionId": 75,
-  "WeaponSlotType": "M",
+  "Availability": 1,
+  "CellType": "4",
+  "Color": "#BCA2FF",
+  "ComponentStatsId": 1,
+  "Description": "",
+  "DeviceId": null,
+  "DisplayCategory": 1,
+  "DroneBayId": null,
+  "DroneId": null,
+  "Faction": 13,
+  "Icon": "rocket1",
+  "Id": 82,
+  "ItemType": 1,
+  "Layout": "0110011001100110",
+  "Level": 200,
+  "Name": "$MissileLauncher_T_1",
   "PossibleModifications": [
     14,
     13,
@@ -25,5 +27,15 @@
     2,
     7,
     1
-  ]
+  ],
+  "Restrictions": {
+    "ComponentGroupTag": null,
+    "MaxComponentAmount": 0,
+    "NotForMechanicShips": false,
+    "NotForOrganicShips": false,
+    "ShipSizes": [],
+    "UniqueComponentTag": ""
+  },
+  "WeaponId": 38,
+  "WeaponSlotType": "M"
 }

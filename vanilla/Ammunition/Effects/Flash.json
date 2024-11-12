@@ -1,11 +1,27 @@
 {
-  "ItemType": 26,
-  "Id": 1,
   "Elements": [
     {
-      "Type": 1,
+      "Color": "#00000000",
+      "ColorMode": 0,
+      "GrowthRate": 0,
       "Image": "star",
-      "Lifetime": 0.2
+      "Inverse": false,
+      "Lifetime": 0.2,
+      "Loop": false,
+      "Offset": {
+        "x": 0,
+        "y": 0
+      },
+      "ParticleSize": 1,
+      "Quantity": 1,
+      "Rotation": 0,
+      "Size": 1,
+      "StartTime": 0,
+      "TurnRate": 0,
+      "Type": 1,
+      "UseRealTime": false
     }
-  ]
+  ],
+  "Id": 1,
+  "ItemType": 26
 }

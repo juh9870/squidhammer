@@ -1,19 +1,21 @@
 {
-  "ItemType": 1,
-  "Id": 109,
-  "Name": "$NeutronBlaster_M_2",
-  "DisplayCategory": 1,
-  "Availability": 1,
-  "ComponentStatsId": 1,
-  "Faction": 7,
-  "Level": 30,
-  "Icon": "gun7",
-  "Color": "#C0FFC0",
-  "Layout": "0100010001000100",
-  "CellType": "4",
-  "WeaponId": 47,
   "AmmunitionId": 47,
-  "WeaponSlotType": "C",
+  "Availability": 1,
+  "CellType": "4",
+  "Color": "#C0FFC0",
+  "ComponentStatsId": 1,
+  "Description": "",
+  "DeviceId": null,
+  "DisplayCategory": 1,
+  "DroneBayId": null,
+  "DroneId": null,
+  "Faction": 7,
+  "Icon": "gun7",
+  "Id": 109,
+  "ItemType": 1,
+  "Layout": "0100010001000100",
+  "Level": 30,
+  "Name": "$NeutronBlaster_M_2",
   "PossibleModifications": [
     13,
     8,
@@ -24,5 +26,15 @@
     2,
     7,
     1
-  ]
+  ],
+  "Restrictions": {
+    "ComponentGroupTag": null,
+    "MaxComponentAmount": 0,
+    "NotForMechanicShips": false,
+    "NotForOrganicShips": false,
+    "ShipSizes": [],
+    "UniqueComponentTag": ""
+  },
+  "WeaponId": 47,
+  "WeaponSlotType": "C"
 }

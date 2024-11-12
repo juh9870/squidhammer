@@ -1,19 +1,33 @@
 {
-  "ItemType": 1,
-  "Id": 84,
-  "Name": "$FrontalShield",
-  "DisplayCategory": 2,
+  "AmmunitionId": null,
   "Availability": 1,
-  "ComponentStatsId": 3,
-  "Faction": 2,
-  "Level": 15,
-  "Icon": "shield1",
-  "Color": "#C0FFC0",
-  "Layout": "111010000",
   "CellType": "2",
+  "Color": "#C0FFC0",
+  "ComponentStatsId": 3,
+  "Description": "",
   "DeviceId": 8,
+  "DisplayCategory": 2,
+  "DroneBayId": null,
+  "DroneId": null,
+  "Faction": 2,
+  "Icon": "shield1",
+  "Id": 84,
+  "ItemType": 1,
+  "Layout": "111010000",
+  "Level": 15,
+  "Name": "$FrontalShield",
   "PossibleModifications": [
     2,
     1
-  ]
+  ],
+  "Restrictions": {
+    "ComponentGroupTag": null,
+    "MaxComponentAmount": 0,
+    "NotForMechanicShips": false,
+    "NotForOrganicShips": false,
+    "ShipSizes": [],
+    "UniqueComponentTag": ""
+  },
+  "WeaponId": null,
+  "WeaponSlotType": ""
 }

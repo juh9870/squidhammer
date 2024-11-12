@@ -1,15 +1,27 @@
 {
-  "ItemType": 4,
-  "Id": 32,
   "AmmunitionClass": 18,
-  "DamageType": 1,
-  "Size": 0.5,
-  "Damage": 80.0,
-  "Range": 3.0,
-  "LifeTime": 0.1,
-  "EnergyCost": 1.0,
+  "AreaOfEffect": 0,
+  "BulletPrefab": "Lightning",
   "Color": "#B4B4FFB4",
+  "CoupledAmmunitionId": null,
+  "Damage": 80,
+  "DamageType": 1,
+  "EnergyCost": 1,
   "FireSound": "shot_11",
   "HitEffectPrefab": "FlashAdditive",
-  "BulletPrefab": "Lightning"
+  "HitPoints": 0,
+  "HitSound": "",
+  "Id": 32,
+  "IgnoresShipVelocity": false,
+  "Impulse": 0,
+  "InitialPosition": {
+    "x": 0,
+    "y": 0
+  },
+  "ItemType": 4,
+  "LifeTime": 0.1,
+  "Range": 3,
+  "Recoil": 0,
+  "Size": 0.5,
+  "Velocity": 0
 }

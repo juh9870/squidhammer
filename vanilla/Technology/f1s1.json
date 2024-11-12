@@ -1,8 +1,12 @@
 {
-  "ItemType": 10,
-  "Id": 19,
-  "Type": 1,
-  "ItemId": 17,
+  "CustomCraftingLevel": 0,
+  "Dependencies": [],
   "Faction": 1,
-  "Dependencies": []
+  "Hidden": false,
+  "Id": 19,
+  "ItemId": 17,
+  "ItemType": 10,
+  "Price": 0,
+  "Special": false,
+  "Type": 1
 }

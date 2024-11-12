@@ -1,19 +1,21 @@
 {
-  "ItemType": 1,
-  "Id": 258,
-  "Name": "$GreenLightning",
-  "DisplayCategory": 1,
-  "Availability": 1,
-  "ComponentStatsId": 1,
-  "Faction": 16,
-  "Level": 200,
-  "Icon": "shock1",
-  "Color": "#15FF00",
-  "Layout": "111111111",
-  "CellType": "4",
-  "WeaponId": 105,
   "AmmunitionId": 114,
-  "WeaponSlotType": "L",
+  "Availability": 1,
+  "CellType": "4",
+  "Color": "#15FF00",
+  "ComponentStatsId": 1,
+  "Description": "",
+  "DeviceId": null,
+  "DisplayCategory": 1,
+  "DroneBayId": null,
+  "DroneId": null,
+  "Faction": 16,
+  "Icon": "shock1",
+  "Id": 258,
+  "ItemType": 1,
+  "Layout": "111111111",
+  "Level": 200,
+  "Name": "$GreenLightning",
   "PossibleModifications": [
     6,
     5,
@@ -21,5 +23,15 @@
     2,
     7,
     1
-  ]
+  ],
+  "Restrictions": {
+    "ComponentGroupTag": null,
+    "MaxComponentAmount": 0,
+    "NotForMechanicShips": false,
+    "NotForOrganicShips": false,
+    "ShipSizes": [],
+    "UniqueComponentTag": ""
+  },
+  "WeaponId": 105,
+  "WeaponSlotType": "L"
 }

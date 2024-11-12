@@ -1,18 +1,21 @@
 {
-  "ItemType": 1,
-  "Id": 201,
-  "Name": "$PixieTorpedo",
-  "DisplayCategory": 1,
-  "Availability": 5,
-  "ComponentStatsId": 1,
-  "Faction": 18,
-  "Level": 200,
-  "Icon": "cannon_1x4",
-  "Layout": "0100010001000100",
-  "CellType": "4",
-  "WeaponId": 109,
   "AmmunitionId": 120,
-  "WeaponSlotType": "T",
+  "Availability": 5,
+  "CellType": "4",
+  "Color": "#00000000",
+  "ComponentStatsId": 1,
+  "Description": "",
+  "DeviceId": null,
+  "DisplayCategory": 1,
+  "DroneBayId": null,
+  "DroneId": null,
+  "Faction": 18,
+  "Icon": "cannon_1x4",
+  "Id": 201,
+  "ItemType": 1,
+  "Layout": "0100010001000100",
+  "Level": 200,
+  "Name": "$PixieTorpedo",
   "PossibleModifications": [
     6,
     5,
@@ -21,5 +24,15 @@
     7,
     1,
     14
-  ]
+  ],
+  "Restrictions": {
+    "ComponentGroupTag": null,
+    "MaxComponentAmount": 0,
+    "NotForMechanicShips": false,
+    "NotForOrganicShips": false,
+    "ShipSizes": [],
+    "UniqueComponentTag": ""
+  },
+  "WeaponId": 109,
+  "WeaponSlotType": "T"
 }

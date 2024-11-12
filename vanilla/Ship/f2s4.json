@@ -1,39 +1,86 @@
 {
-  "ItemType": 6,
-  "Id": 27,
-  "SizeClass": 3,
-  "Name": "$f2_Battleship",
-  "Faction": 2,
-  "IconImage": "f2s4",
-  "IconScale": 1.0,
-  "ModelImage": "f2s4",
-  "ModelScale": 2.0,
-  "EngineColor": "#40FFBABA",
-  "Engines": [
-    {
-      "Position": {
-        "x": -0.7
-      },
-      "Size": 0.4
-    }
-  ],
-  "Layout": "000000121000000000000222000000000000222000000000000222000000000000121000000000000020000000000000121000000000000222000000000000222000000000000222000000444132222231444444132252231444044115555511440000000555000000000000050000000",
   "Barrels": [
     {
+      "AutoAimingArc": 0,
+      "Image": "",
+      "Offset": 0,
+      "PlatformType": 0,
       "Position": {
         "x": -0.4,
         "y": 0.7
       },
-      "Rotation": 10.0,
+      "Rotation": 10,
+      "RotationSpeed": 0,
+      "Size": 0,
       "WeaponClass": "M"
     },
     {
+      "AutoAimingArc": 0,
+      "Image": "",
+      "Offset": 0,
+      "PlatformType": 0,
       "Position": {
         "x": -0.4,
         "y": -0.7
       },
-      "Rotation": -10.0,
+      "Rotation": -10,
+      "RotationSpeed": 0,
+      "Size": 0,
       "WeaponClass": "M"
     }
-  ]
+  ],
+  "BaseWeightModifier": 0,
+  "BuiltinDevices": [],
+  "CellsExpansions": 0,
+  "ColliderTolerance": 0.02,
+  "Description": "",
+  "EnergyResistance": 0,
+  "EngineColor": "#40FFBABA",
+  "EnginePosition": {
+    "x": 0,
+    "y": 0
+  },
+  "EngineSize": 0,
+  "Engines": [
+    {
+      "Position": {
+        "x": -0.7,
+        "y": 0
+      },
+      "Size": 0.4
+    }
+  ],
+  "Faction": 2,
+  "Features": {
+    "ArmorBonus": 0,
+    "BuiltinDevices": [],
+    "DroneAttackBonus": 0,
+    "DroneBuildSpeedBonus": 0,
+    "DroneDefenseBonus": 0,
+    "EnergyBonus": 0,
+    "EnergyResistance": 0,
+    "EquipmentWeightBonus": 0,
+    "HeatResistance": 0,
+    "KineticResistance": 0,
+    "Regeneration": false,
+    "ShieldBonus": 0,
+    "ShipWeightBonus": 0,
+    "TurnRateBonus": 0,
+    "VelocityBonus": 0
+  },
+  "HeatResistance": 0,
+  "IconImage": "f2s4",
+  "IconScale": 1,
+  "Id": 27,
+  "ItemType": 6,
+  "KineticResistance": 0,
+  "Layout": "000000121000000000000222000000000000222000000000000222000000000000121000000000000020000000000000121000000000000222000000000000222000000000000222000000444132222231444444132252231444044115555511440000000555000000000000050000000",
+  "ModelImage": "f2s4",
+  "ModelScale": 2,
+  "Name": "$f2_Battleship",
+  "Regeneration": false,
+  "ShipCategory": 0,
+  "ShipRarity": 0,
+  "ShipType": 0,
+  "SizeClass": 3
 }

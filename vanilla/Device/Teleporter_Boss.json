@@ -1,14 +1,25 @@
 {
-  "ItemType": 2,
-  "Id": 16,
-  "DeviceClass": 10,
-  "Power": 1.0,
-  "Range": 20.0,
-  "Size": 4.0,
-  "Cooldown": 15.0,
   "ActivationType": 1,
   "Color": "#FF0000",
-  "Sound": "launch_06",
+  "ControlButtonIcon": "controls_gear",
+  "Cooldown": 15,
+  "DeviceClass": 10,
   "EffectPrefab": "FlashAdditive",
-  "ControlButtonIcon": "controls_gear"
+  "EnergyConsumption": 0,
+  "Id": 16,
+  "ItemType": 2,
+  "Lifetime": 0,
+  "ObjectPrefab": "",
+  "Offset": {
+    "x": 0,
+    "y": 0
+  },
+  "PassiveEnergyConsumption": 0,
+  "Power": 1,
+  "Prefab": null,
+  "Range": 20,
+  "ScaleEnergyWithShipSize": true,
+  "Size": 4,
+  "Sound": "launch_06",
+  "VisualEffect": null
 }

@@ -1,9 +1,18 @@
 {
-  "ItemType": 18,
-  "Id": 1,
-  "NoRandomShips": true,
-  "LootCondition": 2,
+  "CombatRules": null,
+  "CombatTimeLimit": 0,
   "ExpCondition": 2,
+  "Factions": {
+    "List": [],
+    "Type": 0
+  },
+  "Id": 1,
+  "ItemType": 18,
+  "LevelBonus": 0,
+  "LootCondition": 2,
+  "NoRandomShips": true,
+  "NoShipChanging": false,
+  "PlayerHasOneShip": false,
   "SpecificShips": [
     214,
     215,

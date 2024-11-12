@@ -1,17 +1,33 @@
 {
-  "ItemType": 1,
-  "Id": 75,
-  "Name": "$AntiMatterReactor_L",
-  "DisplayCategory": 3,
+  "AmmunitionId": null,
   "Availability": 1,
-  "ComponentStatsId": 75,
-  "Faction": 9,
-  "Level": 200,
-  "Icon": "reactor22",
-  "Layout": "0101011111011101111101010",
   "CellType": "2",
+  "Color": "#00000000",
+  "ComponentStatsId": 75,
+  "Description": "",
+  "DeviceId": null,
+  "DisplayCategory": 3,
+  "DroneBayId": null,
+  "DroneId": null,
+  "Faction": 9,
+  "Icon": "reactor22",
+  "Id": 75,
+  "ItemType": 1,
+  "Layout": "0101011111011101111101010",
+  "Level": 200,
+  "Name": "$AntiMatterReactor_L",
   "PossibleModifications": [
     12,
     1
-  ]
+  ],
+  "Restrictions": {
+    "ComponentGroupTag": null,
+    "MaxComponentAmount": 0,
+    "NotForMechanicShips": false,
+    "NotForOrganicShips": false,
+    "ShipSizes": [],
+    "UniqueComponentTag": ""
+  },
+  "WeaponId": null,
+  "WeaponSlotType": ""
 }

@@ -1,9 +1,18 @@
 {
+  "ConvertCreditsToSnowflakes": "1 + credits/500",
+  "EasterDaysAfter": 0,
+  "EasterDaysBefore": 0,
+  "EasterQuest": 10,
+  "EnableEasterEvent": true,
+  "EnableHalloweenEvent": true,
+  "EnableXmasEvent": true,
+  "HalloweenDaysAfter": 1,
+  "HalloweenDaysBefore": 5,
+  "HalloweenQuest": null,
+  "Id": 0,
   "ItemType": 106,
   "XmasCombatRules": 8,
-  "EnableEasterEvent": true,
-  "EasterQuest": 10,
-  "EnableHalloweenEvent": true,
-  "HalloweenDaysBefore": 5,
-  "HalloweenDaysAfter": 1
+  "XmasDaysAfter": 15,
+  "XmasDaysBefore": 24,
+  "XmasQuest": null
 }

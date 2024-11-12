@@ -1,44 +1,86 @@
 {
-  "ItemType": 6,
-  "Id": 130,
-  "SizeClass": 1,
-  "Name": "$ship_3",
-  "Faction": 17,
-  "IconImage": "ship3",
-  "IconScale": 1.0,
-  "ModelImage": "ship3",
-  "ModelScale": 2.5,
-  "EngineColor": "#40FF00CB",
-  "Engines": [
-    {
-      "Position": {
-        "x": -0.8
-      },
-      "Size": 0.3
-    }
-  ],
-  "Layout": "000000020000000000000020000000000000020000000000000222000000000000222000000000000222000000000001222100000000011222110000044111222111440044111222111440044100020001440000005555500000000005555500000000005050500000000005000500000",
   "Barrels": [
     {
+      "AutoAimingArc": 0,
+      "Image": "",
+      "Offset": 0,
+      "PlatformType": 0,
       "Position": {
         "x": -0.25,
         "y": 0.75
       },
-      "Rotation": 10.0,
+      "Rotation": 10,
+      "RotationSpeed": 0,
+      "Size": 0,
       "WeaponClass": "M"
     },
     {
+      "AutoAimingArc": 0,
+      "Image": "",
+      "Offset": 0,
+      "PlatformType": 0,
       "Position": {
         "x": -0.25,
         "y": -0.75
       },
-      "Rotation": -10.0,
+      "Rotation": -10,
+      "RotationSpeed": 0,
+      "Size": 0,
       "WeaponClass": "M"
     }
   ],
+  "BaseWeightModifier": 0,
+  "BuiltinDevices": [],
+  "CellsExpansions": 0,
+  "ColliderTolerance": 0.02,
+  "Description": "",
+  "EnergyResistance": 0,
+  "EngineColor": "#40FF00CB",
+  "EnginePosition": {
+    "x": 0,
+    "y": 0
+  },
+  "EngineSize": 0,
+  "Engines": [
+    {
+      "Position": {
+        "x": -0.8,
+        "y": 0
+      },
+      "Size": 0.3
+    }
+  ],
+  "Faction": 17,
   "Features": {
-    "ShipWeightBonus": -0.5,
+    "ArmorBonus": 0,
+    "BuiltinDevices": [],
+    "DroneAttackBonus": 0,
+    "DroneBuildSpeedBonus": 0,
+    "DroneDefenseBonus": 0,
+    "EnergyBonus": 0,
+    "EnergyResistance": 0,
     "EquipmentWeightBonus": -0.5,
-    "VelocityBonus": 2.0
-  }
+    "HeatResistance": 0,
+    "KineticResistance": 0,
+    "Regeneration": false,
+    "ShieldBonus": 0,
+    "ShipWeightBonus": -0.5,
+    "TurnRateBonus": 0,
+    "VelocityBonus": 2
+  },
+  "HeatResistance": 0,
+  "IconImage": "ship3",
+  "IconScale": 1,
+  "Id": 130,
+  "ItemType": 6,
+  "KineticResistance": 0,
+  "Layout": "000000020000000000000020000000000000020000000000000222000000000000222000000000000222000000000001222100000000011222110000044111222111440044111222111440044100020001440000005555500000000005555500000000005050500000000005000500000",
+  "ModelImage": "ship3",
+  "ModelScale": 2.5,
+  "Name": "$ship_3",
+  "Regeneration": false,
+  "ShipCategory": 0,
+  "ShipRarity": 0,
+  "ShipType": 0,
+  "SizeClass": 1
 }

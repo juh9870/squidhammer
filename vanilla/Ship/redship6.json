@@ -1,36 +1,72 @@
 {
-  "ItemType": 6,
-  "Id": 151,
-  "ShipRarity": 1,
-  "SizeClass": 2,
-  "Name": "$redship6",
-  "Faction": 19,
-  "IconImage": "red_ship6",
-  "IconScale": 1.0,
-  "ModelImage": "red_ship6",
-  "ModelScale": 3.0,
+  "Barrels": [
+    {
+      "AutoAimingArc": 0,
+      "Image": "",
+      "Offset": 0,
+      "PlatformType": 0,
+      "Position": {
+        "x": 0.9,
+        "y": 0
+      },
+      "Rotation": 0,
+      "RotationSpeed": 0,
+      "Size": 0,
+      "WeaponClass": "ST"
+    }
+  ],
+  "BaseWeightModifier": 0,
+  "BuiltinDevices": [],
+  "CellsExpansions": 0,
+  "ColliderTolerance": 0.02,
+  "Description": "",
+  "EnergyResistance": 0,
   "EngineColor": "#40FF1000",
+  "EnginePosition": {
+    "x": 0,
+    "y": 0
+  },
+  "EngineSize": 0,
   "Engines": [
     {
       "Position": {
-        "x": -0.83
+        "x": -0.83,
+        "y": 0
       },
       "Size": 0.5
     }
   ],
-  "Layout": "000000444000000000000444000000000000444000000000000444000000000000444000000010013333310010111013333310111111113333311111011113333311110001113333311100000113333311000001115555511100011115555511110001115555511100000000505000000",
-  "Barrels": [
-    {
-      "Position": {
-        "x": 0.9
-      },
-      "WeaponClass": "ST"
-    }
-  ],
+  "Faction": 19,
   "Features": {
-    "ShipWeightBonus": 0.3,
+    "ArmorBonus": 1,
+    "BuiltinDevices": [],
+    "DroneAttackBonus": 0,
+    "DroneBuildSpeedBonus": 0,
+    "DroneDefenseBonus": 0,
+    "EnergyBonus": 0,
+    "EnergyResistance": 0,
     "EquipmentWeightBonus": 0.3,
-    "TurnRateBonus": 1.0,
-    "ArmorBonus": 1.0
-  }
+    "HeatResistance": 0,
+    "KineticResistance": 0,
+    "Regeneration": false,
+    "ShieldBonus": 0,
+    "ShipWeightBonus": 0.3,
+    "TurnRateBonus": 1,
+    "VelocityBonus": 0
+  },
+  "HeatResistance": 0,
+  "IconImage": "red_ship6",
+  "IconScale": 1,
+  "Id": 151,
+  "ItemType": 6,
+  "KineticResistance": 0,
+  "Layout": "000000444000000000000444000000000000444000000000000444000000000000444000000010013333310010111013333310111111113333311111011113333311110001113333311100000113333311000001115555511100011115555511110001115555511100000000505000000",
+  "ModelImage": "red_ship6",
+  "ModelScale": 3,
+  "Name": "$redship6",
+  "Regeneration": false,
+  "ShipCategory": 0,
+  "ShipRarity": 1,
+  "ShipType": 0,
+  "SizeClass": 2
 }

@@ -1,19 +1,21 @@
 {
-  "ItemType": 1,
-  "Id": 274,
-  "Name": "$QuantumRiftTorpedo",
-  "DisplayCategory": 1,
-  "Availability": 2,
-  "ComponentStatsId": 1,
-  "Faction": 19,
-  "Level": 200,
-  "Icon": "accelerator1",
-  "Color": "#39B9FF",
-  "Layout": "0110011001100110",
-  "CellType": "4",
-  "WeaponId": 126,
   "AmmunitionId": 129,
-  "WeaponSlotType": "T",
+  "Availability": 2,
+  "CellType": "4",
+  "Color": "#39B9FF",
+  "ComponentStatsId": 1,
+  "Description": "",
+  "DeviceId": null,
+  "DisplayCategory": 1,
+  "DroneBayId": null,
+  "DroneId": null,
+  "Faction": 19,
+  "Icon": "accelerator1",
+  "Id": 274,
+  "ItemType": 1,
+  "Layout": "0110011001100110",
+  "Level": 200,
+  "Name": "$QuantumRiftTorpedo",
   "PossibleModifications": [
     14,
     13,
@@ -25,5 +27,15 @@
     2,
     7,
     1
-  ]
+  ],
+  "Restrictions": {
+    "ComponentGroupTag": null,
+    "MaxComponentAmount": 0,
+    "NotForMechanicShips": false,
+    "NotForOrganicShips": false,
+    "ShipSizes": [],
+    "UniqueComponentTag": ""
+  },
+  "WeaponId": 126,
+  "WeaponSlotType": "T"
 }

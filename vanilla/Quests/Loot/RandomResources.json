@@ -1,65 +1,65 @@
 {
-  "ItemType": 16,
   "Id": 8,
+  "ItemType": 16,
   "Loot": {
-    "Type": 20,
-    "MinAmount": 2,
-    "MaxAmount": 4,
     "Items": [
       {
-        "Weight": 1.0,
         "Loot": {
-          "Type": 25,
           "ItemId": 11,
+          "MaxAmount": 25,
           "MinAmount": 5,
-          "MaxAmount": 25
-        }
+          "Type": 25
+        },
+        "Weight": 1
       },
       {
-        "Weight": 1.0,
         "Loot": {
-          "Type": 25,
           "ItemId": 6,
+          "MaxAmount": 25,
           "MinAmount": 5,
-          "MaxAmount": 25
-        }
+          "Type": 25
+        },
+        "Weight": 1
       },
       {
-        "Weight": 0.3,
         "Loot": {
-          "Type": 25,
           "ItemId": 7,
+          "MaxAmount": 15,
           "MinAmount": 5,
-          "MaxAmount": 15
-        }
+          "Type": 25
+        },
+        "Weight": 0.3
       },
       {
-        "Weight": 0.3,
         "Loot": {
-          "Type": 25,
           "ItemId": 13,
+          "MaxAmount": 15,
           "MinAmount": 5,
-          "MaxAmount": 15
-        }
+          "Type": 25
+        },
+        "Weight": 0.3
       },
       {
-        "Weight": 0.15,
         "Loot": {
-          "Type": 25,
           "ItemId": 14,
+          "MaxAmount": 10,
           "MinAmount": 2,
-          "MaxAmount": 10
-        }
+          "Type": 25
+        },
+        "Weight": 0.15
       },
       {
-        "Weight": 0.15,
         "Loot": {
-          "Type": 25,
           "ItemId": 12,
+          "MaxAmount": 10,
           "MinAmount": 2,
-          "MaxAmount": 10
-        }
+          "Type": 25
+        },
+        "Weight": 0.15
       }
-    ]
+    ],
+    "MaxAmount": 4,
+    "MinAmount": 2,
+    "Type": 20
   }
 }

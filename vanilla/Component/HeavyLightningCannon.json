@@ -1,19 +1,21 @@
 {
-  "ItemType": 1,
-  "Id": 250,
-  "Name": "$HeavyLightningCannon",
-  "DisplayCategory": 1,
-  "Availability": 2,
-  "ComponentStatsId": 1,
-  "Faction": 15,
-  "Level": 200,
-  "Icon": "shock1",
-  "Color": "#3FE9FF",
-  "Layout": "0110011001100110",
-  "CellType": "4",
-  "WeaponId": 100,
   "AmmunitionId": 102,
-  "WeaponSlotType": "L",
+  "Availability": 2,
+  "CellType": "4",
+  "Color": "#3FE9FF",
+  "ComponentStatsId": 1,
+  "Description": "",
+  "DeviceId": null,
+  "DisplayCategory": 1,
+  "DroneBayId": null,
+  "DroneId": null,
+  "Faction": 15,
+  "Icon": "shock1",
+  "Id": 250,
+  "ItemType": 1,
+  "Layout": "0110011001100110",
+  "Level": 200,
+  "Name": "$HeavyLightningCannon",
   "PossibleModifications": [
     6,
     5,
@@ -21,5 +23,15 @@
     2,
     7,
     1
-  ]
+  ],
+  "Restrictions": {
+    "ComponentGroupTag": null,
+    "MaxComponentAmount": 0,
+    "NotForMechanicShips": false,
+    "NotForOrganicShips": false,
+    "ShipSizes": [],
+    "UniqueComponentTag": ""
+  },
+  "WeaponId": 100,
+  "WeaponSlotType": "L"
 }

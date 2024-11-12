@@ -1,5 +1,19 @@
 {
-  "ItemType": 30,
+  "BattleMapSize": 200,
+  "CustomSoundtrack": [],
+  "DisableAsteroids": false,
+  "DisablePlanet": false,
+  "DisableRandomLoot": false,
+  "DisableSkillBonuses": false,
+  "ExpCondition": 0,
   "Id": 5,
-  "InitialEnemyShips": "3"
+  "InitialEnemyShips": "3",
+  "ItemType": 30,
+  "KillThemAllButton": false,
+  "LootCondition": 0,
+  "MaxEnemyShips": "12",
+  "NextEnemyButton": true,
+  "ShipSelection": 0,
+  "TimeLimit": "MAX(40, 100 - level)",
+  "TimeOutMode": 0
 }

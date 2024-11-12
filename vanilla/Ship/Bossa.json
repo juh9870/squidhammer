@@ -1,28 +1,72 @@
 {
-  "ItemType": 6,
-  "Id": 11,
-  "ShipType": 4,
-  "SizeClass": 4,
-  "Name": "$fa_Flagship",
-  "Faction": 9,
-  "IconImage": "flagshipa",
-  "IconScale": 1.1,
-  "ModelImage": "flagshipa",
-  "ModelScale": 8.0,
+  "Barrels": [
+    {
+      "AutoAimingArc": 360,
+      "Image": "",
+      "Offset": 0,
+      "PlatformType": 0,
+      "Position": {
+        "x": 0,
+        "y": 0
+      },
+      "Rotation": 0,
+      "RotationSpeed": 0,
+      "Size": 0,
+      "WeaponClass": "L"
+    }
+  ],
+  "BaseWeightModifier": 0,
+  "BuiltinDevices": [],
+  "CellsExpansions": 0,
+  "ColliderTolerance": 0.02,
+  "Description": "",
+  "EnergyResistance": 0,
   "EngineColor": "#40FF0000",
+  "EnginePosition": {
+    "x": 0,
+    "y": 0
+  },
+  "EngineSize": 0,
   "Engines": [
     {
       "Position": {
-        "x": -0.55
+        "x": -0.55,
+        "y": 0
       },
       "Size": 0.5
     }
   ],
+  "Faction": 9,
+  "Features": {
+    "ArmorBonus": 0,
+    "BuiltinDevices": [],
+    "DroneAttackBonus": 0,
+    "DroneBuildSpeedBonus": 0,
+    "DroneDefenseBonus": 0,
+    "EnergyBonus": 0,
+    "EnergyResistance": 0,
+    "EquipmentWeightBonus": 0,
+    "HeatResistance": 0,
+    "KineticResistance": 0,
+    "Regeneration": false,
+    "ShieldBonus": 0,
+    "ShipWeightBonus": 0,
+    "TurnRateBonus": 0,
+    "VelocityBonus": 0
+  },
+  "HeatResistance": 0,
+  "IconImage": "flagshipa",
+  "IconScale": 1.1,
+  "Id": 11,
+  "ItemType": 6,
+  "KineticResistance": 0,
   "Layout": "000000000333000000000000000000333000000000000000003333300000000000000033333330000000000000033333330000000000000222222222000000000000222222222000000000003222222222300000000033222222222330000000033222242222330000000333222444222333000000333222242222333000003333222222222333300003333222222222333300033333555555555333330033333555555555333330003333555555555333300000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
-  "Barrels": [
-    {
-      "AutoAimingArc": 360.0,
-      "WeaponClass": "L"
-    }
-  ]
+  "ModelImage": "flagshipa",
+  "ModelScale": 8,
+  "Name": "$fa_Flagship",
+  "Regeneration": false,
+  "ShipCategory": 0,
+  "ShipRarity": 0,
+  "ShipType": 4,
+  "SizeClass": 4
 }

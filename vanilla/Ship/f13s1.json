@@ -1,40 +1,86 @@
 {
-  "ItemType": 6,
-  "Id": 105,
-  "SizeClass": 1,
-  "Name": "$f13_Destroyer",
-  "Faction": 13,
-  "IconImage": "f13s1",
-  "IconScale": 0.6,
-  "ModelImage": "f13s1",
-  "ModelScale": 1.2,
+  "Barrels": [
+    {
+      "AutoAimingArc": 0,
+      "Image": "",
+      "Offset": 0,
+      "PlatformType": 0,
+      "Position": {
+        "x": 1,
+        "y": 0.15
+      },
+      "Rotation": 0,
+      "RotationSpeed": 0,
+      "Size": 0,
+      "WeaponClass": "C"
+    },
+    {
+      "AutoAimingArc": 0,
+      "Image": "",
+      "Offset": 0,
+      "PlatformType": 0,
+      "Position": {
+        "x": 1,
+        "y": -0.15
+      },
+      "Rotation": 0,
+      "RotationSpeed": 0,
+      "Size": 0,
+      "WeaponClass": "M"
+    }
+  ],
+  "BaseWeightModifier": 0,
+  "BuiltinDevices": [],
+  "CellsExpansions": 0,
+  "ColliderTolerance": 0.02,
+  "Description": "",
+  "EnergyResistance": 0,
   "EngineColor": "#80FF8D00",
+  "EnginePosition": {
+    "x": 0,
+    "y": 0
+  },
+  "EngineSize": 0,
   "Engines": [
     {
       "Position": {
-        "x": -0.9
+        "x": -0.9,
+        "y": 0
       },
       "Size": 0.2
     }
   ],
-  "Layout": "000404000000414000001424100001424100002424200022222220012222210115525511005515500",
-  "Barrels": [
-    {
-      "Position": {
-        "x": 1.0,
-        "y": 0.15
-      },
-      "WeaponClass": "C"
-    },
-    {
-      "Position": {
-        "x": 1.0,
-        "y": -0.15
-      },
-      "WeaponClass": "M"
-    }
-  ],
+  "Faction": 13,
   "Features": {
-    "EnergyResistance": 1.0
-  }
+    "ArmorBonus": 0,
+    "BuiltinDevices": [],
+    "DroneAttackBonus": 0,
+    "DroneBuildSpeedBonus": 0,
+    "DroneDefenseBonus": 0,
+    "EnergyBonus": 0,
+    "EnergyResistance": 1,
+    "EquipmentWeightBonus": 0,
+    "HeatResistance": 0,
+    "KineticResistance": 0,
+    "Regeneration": false,
+    "ShieldBonus": 0,
+    "ShipWeightBonus": 0,
+    "TurnRateBonus": 0,
+    "VelocityBonus": 0
+  },
+  "HeatResistance": 0,
+  "IconImage": "f13s1",
+  "IconScale": 0.6,
+  "Id": 105,
+  "ItemType": 6,
+  "KineticResistance": 0,
+  "Layout": "000404000000414000001424100001424100002424200022222220012222210115525511005515500",
+  "ModelImage": "f13s1",
+  "ModelScale": 1.2,
+  "Name": "$f13_Destroyer",
+  "Regeneration": false,
+  "ShipCategory": 0,
+  "ShipRarity": 0,
+  "ShipType": 0,
+  "SizeClass": 1
 }

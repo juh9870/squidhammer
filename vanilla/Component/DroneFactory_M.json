@@ -1,17 +1,33 @@
 {
-  "ItemType": 1,
-  "Id": 187,
-  "Name": "$DroneFactory_M",
-  "DisplayCategory": 5,
+  "AmmunitionId": null,
   "Availability": 1,
-  "ComponentStatsId": 187,
-  "Faction": 3,
-  "Level": 60,
-  "Icon": "drone_replicator2",
-  "Layout": "111111011",
   "CellType": "2",
+  "Color": "#00000000",
+  "ComponentStatsId": 187,
+  "Description": "",
+  "DeviceId": null,
+  "DisplayCategory": 5,
+  "DroneBayId": null,
+  "DroneId": null,
+  "Faction": 3,
+  "Icon": "drone_replicator2",
+  "Id": 187,
+  "ItemType": 1,
+  "Layout": "111111011",
+  "Level": 60,
+  "Name": "$DroneFactory_M",
   "PossibleModifications": [
     1,
     2
-  ]
+  ],
+  "Restrictions": {
+    "ComponentGroupTag": null,
+    "MaxComponentAmount": 0,
+    "NotForMechanicShips": false,
+    "NotForOrganicShips": false,
+    "ShipSizes": [],
+    "UniqueComponentTag": ""
+  },
+  "WeaponId": null,
+  "WeaponSlotType": ""
 }

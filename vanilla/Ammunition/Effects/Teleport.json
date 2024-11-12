@@ -1,15 +1,48 @@
 {
-  "ItemType": 26,
-  "Id": 17,
   "Elements": [
     {
+      "Color": "#00000000",
+      "ColorMode": 0,
+      "GrowthRate": 2,
       "Image": "twirl",
-      "GrowthRate": 2.0,
-      "TurnRate": -360.0
+      "Inverse": false,
+      "Lifetime": 1,
+      "Loop": false,
+      "Offset": {
+        "x": 0,
+        "y": 0
+      },
+      "ParticleSize": 1,
+      "Quantity": 1,
+      "Rotation": 0,
+      "Size": 1,
+      "StartTime": 0,
+      "TurnRate": -360,
+      "Type": 0,
+      "UseRealTime": false
     },
     {
+      "Color": "#00000000",
+      "ColorMode": 0,
+      "GrowthRate": 0,
       "Image": "star",
-      "Size": 1.5
+      "Inverse": false,
+      "Lifetime": 1,
+      "Loop": false,
+      "Offset": {
+        "x": 0,
+        "y": 0
+      },
+      "ParticleSize": 1,
+      "Quantity": 1,
+      "Rotation": 0,
+      "Size": 1.5,
+      "StartTime": 0,
+      "TurnRate": 0,
+      "Type": 0,
+      "UseRealTime": false
     }
-  ]
+  ],
+  "Id": 17,
+  "ItemType": 26
 }

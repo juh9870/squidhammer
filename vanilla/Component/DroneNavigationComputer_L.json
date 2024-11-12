@@ -1,19 +1,34 @@
 {
-  "ItemType": 1,
-  "Id": 188,
-  "Name": "$DroneNavigationComputer_L",
-  "DisplayCategory": 5,
+  "AmmunitionId": null,
   "Availability": 1,
-  "ComponentStatsId": 188,
-  "Faction": 5,
-  "Level": 80,
-  "Icon": "drone_power3",
-  "Color": "#C0C0FF",
-  "Layout": "0110111111110110",
   "CellType": "2",
+  "Color": "#C0C0FF",
+  "ComponentStatsId": 188,
+  "Description": "",
+  "DeviceId": null,
+  "DisplayCategory": 5,
+  "DroneBayId": null,
+  "DroneId": null,
+  "Faction": 5,
+  "Icon": "drone_power3",
+  "Id": 188,
+  "ItemType": 1,
+  "Layout": "0110111111110110",
+  "Level": 80,
+  "Name": "$DroneNavigationComputer_L",
   "PossibleModifications": [
     20,
     1,
     2
-  ]
+  ],
+  "Restrictions": {
+    "ComponentGroupTag": null,
+    "MaxComponentAmount": 0,
+    "NotForMechanicShips": false,
+    "NotForOrganicShips": false,
+    "ShipSizes": [],
+    "UniqueComponentTag": ""
+  },
+  "WeaponId": null,
+  "WeaponSlotType": ""
 }

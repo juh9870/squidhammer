@@ -1,19 +1,21 @@
 {
-  "ItemType": 1,
-  "Id": 127,
-  "Name": "$LightningCannon_S_2",
-  "DisplayCategory": 1,
-  "Availability": 1,
-  "ComponentStatsId": 1,
-  "Faction": 4,
-  "Level": 5,
-  "Icon": "shock1",
-  "Color": "#40FF40",
-  "Layout": "1010",
-  "CellType": "4",
-  "WeaponId": 33,
   "AmmunitionId": 33,
-  "WeaponSlotType": "L",
+  "Availability": 1,
+  "CellType": "4",
+  "Color": "#40FF40",
+  "ComponentStatsId": 1,
+  "Description": "",
+  "DeviceId": null,
+  "DisplayCategory": 1,
+  "DroneBayId": null,
+  "DroneId": null,
+  "Faction": 4,
+  "Icon": "shock1",
+  "Id": 127,
+  "ItemType": 1,
+  "Layout": "1010",
+  "Level": 5,
+  "Name": "$LightningCannon_S_2",
   "PossibleModifications": [
     6,
     16,
@@ -21,5 +23,15 @@
     2,
     7,
     1
-  ]
+  ],
+  "Restrictions": {
+    "ComponentGroupTag": null,
+    "MaxComponentAmount": 0,
+    "NotForMechanicShips": false,
+    "NotForOrganicShips": false,
+    "ShipSizes": [],
+    "UniqueComponentTag": ""
+  },
+  "WeaponId": 33,
+  "WeaponSlotType": "L"
 }

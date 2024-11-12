@@ -1,79 +1,88 @@
 {
-  "ItemType": 16,
   "Id": 12,
+  "ItemType": 16,
   "Loot": {
-    "Type": 21,
     "Items": [
       {
         "Loot": {
-          "Type": 35,
           "ItemId": 9,
+          "MaxAmount": 5,
           "MinAmount": 5,
-          "MaxAmount": 5
-        }
+          "Type": 35
+        },
+        "Weight": 0
       },
       {
         "Loot": {
-          "Type": 35,
           "ItemId": 67,
+          "MaxAmount": 5,
           "MinAmount": 5,
-          "MaxAmount": 5
-        }
+          "Type": 35
+        },
+        "Weight": 0
       },
       {
         "Loot": {
-          "Type": 35,
           "ItemId": 78,
+          "MaxAmount": 3,
           "MinAmount": 3,
-          "MaxAmount": 3
-        }
+          "Type": 35
+        },
+        "Weight": 0
       },
       {
         "Loot": {
-          "Type": 35,
           "ItemId": 110,
+          "MaxAmount": 1,
           "MinAmount": 1,
-          "MaxAmount": 1
-        }
+          "Type": 35
+        },
+        "Weight": 0
       },
       {
         "Loot": {
-          "Type": 35,
           "ItemId": 114,
+          "MaxAmount": 1,
           "MinAmount": 1,
-          "MaxAmount": 1
-        }
+          "Type": 35
+        },
+        "Weight": 0
       },
       {
         "Loot": {
-          "Type": 45,
           "ItemId": 3,
+          "MaxAmount": 1,
           "MinAmount": 1,
-          "MaxAmount": 1
-        }
+          "Type": 45
+        },
+        "Weight": 0
       },
       {
         "Loot": {
-          "Type": 45,
           "ItemId": 6,
+          "MaxAmount": 1,
           "MinAmount": 1,
-          "MaxAmount": 1
-        }
+          "Type": 45
+        },
+        "Weight": 0
       },
       {
         "Loot": {
-          "Type": 3,
+          "MaxAmount": 100,
           "MinAmount": 100,
-          "MaxAmount": 100
-        }
+          "Type": 3
+        },
+        "Weight": 0
       },
       {
         "Loot": {
-          "Type": 4,
+          "MaxAmount": 20,
           "MinAmount": 20,
-          "MaxAmount": 20
-        }
+          "Type": 4
+        },
+        "Weight": 0
       }
-    ]
+    ],
+    "Type": 21
   }
 }

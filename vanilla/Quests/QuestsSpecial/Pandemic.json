@@ -1,120 +1,151 @@
 {
-  "ItemType": 15,
   "Id": 200,
+  "ItemType": 15,
+  "Level": 50,
   "Name": "$Quest_Covid",
-  "QuestType": 4,
-  "StartCondition": 7,
-  "Weight": 0.3,
+  "Nodes": [
+    {
+      "Actions": [
+        {
+          "ButtonText": "$ACTION_Continue",
+          "Requirement": {
+            "Type": 0
+          },
+          "TargetNode": 2
+        }
+      ],
+      "Character": 3,
+      "Enemy": null,
+      "Id": 1,
+      "Loot": null,
+      "Message": "$Covidr_Message1",
+      "RequiredView": 0,
+      "Type": 10
+    },
+    {
+      "DefaultTransition": 0,
+      "Id": 2,
+      "Message": "",
+      "Transitions": [
+        {
+          "Requirement": {
+            "BoolValue": false,
+            "Type": 30
+          },
+          "TargetNode": 3,
+          "Weight": 0
+        },
+        {
+          "Requirement": {
+            "MaxValue": 3,
+            "MinValue": 0,
+            "Type": 40
+          },
+          "TargetNode": 10,
+          "Weight": 0
+        }
+      ],
+      "Type": 15
+    },
+    {
+      "Actions": [
+        {
+          "ButtonText": "$ACTION_Continue",
+          "Requirement": {
+            "Type": 0
+          },
+          "TargetNode": 5
+        }
+      ],
+      "Character": null,
+      "Enemy": 15,
+      "Id": 3,
+      "Loot": null,
+      "Message": "$Covidr_Message2",
+      "RequiredView": 0,
+      "Type": 10
+    },
+    {
+      "DefaultTransition": 13,
+      "Enemy": 15,
+      "FailureTransition": 10,
+      "Id": 5,
+      "Loot": null,
+      "Type": 20
+    },
+    {
+      "DefaultTransition": 11,
+      "Id": 10,
+      "Type": 61
+    },
+    {
+      "DefaultTransition": 12,
+      "Faction": 16,
+      "Id": 11,
+      "Type": 62
+    },
+    {
+      "DefaultTransition": 100,
+      "Id": 12,
+      "Type": 51,
+      "Value": -100
+    },
+    {
+      "DefaultTransition": 14,
+      "Id": 13,
+      "Type": 56,
+      "Value": 50
+    },
+    {
+      "Actions": [
+        {
+          "ButtonText": "$ACTION_Continue",
+          "Requirement": {
+            "Type": 0
+          },
+          "TargetNode": 15
+        }
+      ],
+      "Character": 3,
+      "Enemy": null,
+      "Id": 14,
+      "Loot": 21,
+      "Message": "$Covidr_Message3",
+      "RequiredView": 0,
+      "Type": 10
+    },
+    {
+      "DefaultTransition": 100,
+      "Id": 15,
+      "Loot": 21,
+      "Type": 35
+    },
+    {
+      "Id": 100,
+      "Type": 40
+    }
+  ],
   "Origin": {
-    "Type": 2,
     "Factions": {
       "List": [
         16,
         12,
         4,
         6
-      ]
+      ],
+      "Type": 0
     },
+    "MaxDistance": 40,
+    "MaxRelations": 0,
     "MinDistance": 10,
-    "MaxDistance": 40
+    "MinRelations": 0,
+    "Type": 2
   },
-  "Level": 50,
-  "Nodes": [
-    {
-      "Id": 1,
-      "Type": 10,
-      "Message": "$Covidr_Message1",
-      "Character": 3,
-      "Actions": [
-        {
-          "TargetNode": 2,
-          "ButtonText": "$ACTION_Continue"
-        }
-      ]
-    },
-    {
-      "Id": 2,
-      "Type": 15,
-      "Transitions": [
-        {
-          "TargetNode": 3,
-          "Requirement": {
-            "Type": 30
-          }
-        },
-        {
-          "TargetNode": 10,
-          "Requirement": {
-            "Type": 40,
-            "MaxValue": 3
-          }
-        }
-      ]
-    },
-    {
-      "Id": 3,
-      "Type": 10,
-      "Message": "$Covidr_Message2",
-      "Enemy": 15,
-      "Actions": [
-        {
-          "TargetNode": 5,
-          "ButtonText": "$ACTION_Continue"
-        }
-      ]
-    },
-    {
-      "Id": 5,
-      "Type": 20,
-      "DefaultTransition": 13,
-      "FailureTransition": 10,
-      "Enemy": 15
-    },
-    {
-      "Id": 10,
-      "Type": 61,
-      "DefaultTransition": 11
-    },
-    {
-      "Id": 11,
-      "Type": 62,
-      "DefaultTransition": 12,
-      "Faction": 16
-    },
-    {
-      "Id": 12,
-      "Type": 51,
-      "DefaultTransition": 100,
-      "Value": -100
-    },
-    {
-      "Id": 13,
-      "Type": 56,
-      "DefaultTransition": 14,
-      "Value": 50
-    },
-    {
-      "Id": 14,
-      "Type": 10,
-      "Message": "$Covidr_Message3",
-      "Loot": 21,
-      "Character": 3,
-      "Actions": [
-        {
-          "TargetNode": 15,
-          "ButtonText": "$ACTION_Continue"
-        }
-      ]
-    },
-    {
-      "Id": 15,
-      "Type": 35,
-      "DefaultTransition": 100,
-      "Loot": 21
-    },
-    {
-      "Id": 100,
-      "Type": 40
-    }
-  ]
+  "QuestType": 4,
+  "Requirement": {
+    "Type": 0
+  },
+  "StartCondition": 7,
+  "UseRandomSeed": false,
+  "Weight": 0.3
 }

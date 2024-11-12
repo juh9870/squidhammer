@@ -1,14 +1,27 @@
 {
-  "ItemType": 4,
-  "Id": 5,
   "AmmunitionClass": 14,
+  "AreaOfEffect": 0,
+  "BulletPrefab": "Fragment",
+  "Color": "#00000000",
+  "CoupledAmmunitionId": null,
+  "Damage": 0,
+  "DamageType": 0,
+  "EnergyCost": 0,
+  "FireSound": "",
+  "HitEffectPrefab": "OrbAdditive",
+  "HitPoints": 0,
+  "HitSound": "explosion_08",
+  "Id": 5,
+  "IgnoresShipVelocity": false,
   "Impulse": 0.1,
+  "InitialPosition": {
+    "x": 0,
+    "y": 0
+  },
+  "ItemType": 4,
+  "LifeTime": 1.6,
+  "Range": 10,
   "Recoil": 0.1,
   "Size": 0.4,
-  "Range": 10.0,
-  "Velocity": 8.0,
-  "LifeTime": 1.6,
-  "HitSound": "explosion_08",
-  "HitEffectPrefab": "OrbAdditive",
-  "BulletPrefab": "Fragment"
+  "Velocity": 8
 }

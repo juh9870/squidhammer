@@ -1,83 +1,119 @@
 {
-  "ItemType": 9,
-  "Id": 36,
-  "SatelliteId": 23,
-  "DifficultyClass": 3,
   "Components": [
     {
+      "BarrelId": 0,
+      "Behaviour": 0,
       "ComponentId": 75,
+      "KeyBinding": 0,
       "Modification": 12,
       "Quality": 5,
-      "X": 1
+      "X": 1,
+      "Y": 0
     },
     {
+      "BarrelId": 0,
+      "Behaviour": 0,
       "ComponentId": 74,
+      "KeyBinding": 0,
       "Modification": 12,
       "Quality": 5,
       "X": 2,
       "Y": 4
     },
     {
+      "BarrelId": 0,
+      "Behaviour": 0,
       "ComponentId": 78,
+      "KeyBinding": 0,
       "Modification": 12,
       "Quality": 5,
-      "X": 3
+      "X": 3,
+      "Y": 0
     },
     {
+      "BarrelId": 0,
+      "Behaviour": 0,
       "ComponentId": 78,
+      "KeyBinding": 0,
       "Modification": 12,
       "Quality": 5,
       "X": 4,
       "Y": 6
     },
     {
+      "BarrelId": 0,
+      "Behaviour": 0,
       "ComponentId": 78,
+      "KeyBinding": 0,
       "Modification": 12,
       "Quality": 5,
       "X": 2,
       "Y": 6
     },
     {
+      "BarrelId": 0,
+      "Behaviour": 0,
       "ComponentId": 78,
+      "KeyBinding": 0,
       "Modification": 12,
       "Quality": 5,
       "X": 1,
       "Y": 5
     },
     {
+      "BarrelId": 0,
+      "Behaviour": 0,
       "ComponentId": 78,
+      "KeyBinding": 0,
       "Modification": 12,
       "Quality": 5,
       "X": 5,
       "Y": 5
     },
     {
+      "BarrelId": 0,
+      "Behaviour": 0,
       "ComponentId": 64,
+      "KeyBinding": 0,
       "Modification": 9,
       "Quality": 5,
       "X": 5,
       "Y": 2
     },
     {
+      "BarrelId": 0,
+      "Behaviour": 0,
       "ComponentId": 64,
+      "KeyBinding": 0,
       "Modification": 9,
       "Quality": 5,
       "X": 5,
       "Y": 4
     },
     {
+      "BarrelId": 0,
+      "Behaviour": 0,
       "ComponentId": 64,
+      "KeyBinding": 0,
       "Modification": 9,
       "Quality": 5,
       "X": 1,
       "Y": 4
     },
     {
+      "BarrelId": 0,
+      "Behaviour": 0,
       "ComponentId": 64,
+      "KeyBinding": 0,
       "Modification": 9,
       "Quality": 5,
       "X": 1,
       "Y": 2
     }
-  ]
+  ],
+  "DifficultyClass": 3,
+  "Id": 36,
+  "ItemType": 9,
+  "NotAvailableInGame": false,
+  "SatelliteId": 23
 }

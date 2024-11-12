@@ -1,23 +1,69 @@
 {
-  "ItemType": 26,
-  "Id": 7,
   "Elements": [
     {
-      "Type": 1,
+      "Color": "#00000000",
+      "ColorMode": 2,
+      "GrowthRate": 0,
       "Image": "star",
-      "ColorMode": 2,
-      "Size": 2.0
+      "Inverse": false,
+      "Lifetime": 1,
+      "Loop": false,
+      "Offset": {
+        "x": 0,
+        "y": 0
+      },
+      "ParticleSize": 1,
+      "Quantity": 1,
+      "Rotation": 0,
+      "Size": 2,
+      "StartTime": 0,
+      "TurnRate": 0,
+      "Type": 1,
+      "UseRealTime": false
     },
     {
-      "Type": 3,
-      "Image": "CloudWhite",
+      "Color": "#00000000",
       "ColorMode": 2,
-      "Quantity": 3,
       "GrowthRate": 0.5,
-      "Lifetime": 0.5
+      "Image": "CloudWhite",
+      "Inverse": false,
+      "Lifetime": 0.5,
+      "Loop": false,
+      "Offset": {
+        "x": 0,
+        "y": 0
+      },
+      "ParticleSize": 1,
+      "Quantity": 3,
+      "Rotation": 0,
+      "Size": 1,
+      "StartTime": 0,
+      "TurnRate": 0,
+      "Type": 3,
+      "UseRealTime": false
     },
     {
-      "Type": 5
+      "Color": "#00000000",
+      "ColorMode": 0,
+      "GrowthRate": 0,
+      "Image": "",
+      "Inverse": false,
+      "Lifetime": 1,
+      "Loop": false,
+      "Offset": {
+        "x": 0,
+        "y": 0
+      },
+      "ParticleSize": 1,
+      "Quantity": 1,
+      "Rotation": 0,
+      "Size": 1,
+      "StartTime": 0,
+      "TurnRate": 0,
+      "Type": 5,
+      "UseRealTime": false
     }
-  ]
+  ],
+  "Id": 7,
+  "ItemType": 26
 }

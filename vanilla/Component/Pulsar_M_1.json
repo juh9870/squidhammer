@@ -1,19 +1,21 @@
 {
-  "ItemType": 1,
-  "Id": 140,
-  "Name": "$Pulsar_M_1",
-  "DisplayCategory": 1,
-  "Availability": 1,
-  "ComponentStatsId": 1,
-  "Faction": 6,
-  "Level": 20,
-  "Icon": "doom1",
-  "Color": "#F0FFFF",
-  "Layout": "1111",
-  "CellType": "4",
-  "WeaponId": 59,
   "AmmunitionId": 59,
-  "WeaponSlotType": "S",
+  "Availability": 1,
+  "CellType": "4",
+  "Color": "#F0FFFF",
+  "ComponentStatsId": 1,
+  "Description": "",
+  "DeviceId": null,
+  "DisplayCategory": 1,
+  "DroneBayId": null,
+  "DroneId": null,
+  "Faction": 6,
+  "Icon": "doom1",
+  "Id": 140,
+  "ItemType": 1,
+  "Layout": "1111",
+  "Level": 20,
+  "Name": "$Pulsar_M_1",
   "PossibleModifications": [
     14,
     13,
@@ -24,5 +26,15 @@
     2,
     7,
     1
-  ]
+  ],
+  "Restrictions": {
+    "ComponentGroupTag": null,
+    "MaxComponentAmount": 0,
+    "NotForMechanicShips": false,
+    "NotForOrganicShips": false,
+    "ShipSizes": [],
+    "UniqueComponentTag": ""
+  },
+  "WeaponId": 59,
+  "WeaponSlotType": "S"
 }

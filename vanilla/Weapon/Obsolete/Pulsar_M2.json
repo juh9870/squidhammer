@@ -1,7 +1,15 @@
 {
-  "ItemType": 3,
-  "Id": 60,
-  "WeaponClass": 2,
   "ActivationType": 1,
-  "ControlButtonIcon": "controls_laser"
+  "ChargeSound": "",
+  "ControlButtonIcon": "controls_laser",
+  "EffectSize": 0,
+  "FireRate": 0,
+  "Id": 60,
+  "ItemType": 3,
+  "Magazine": 0,
+  "ShotEffectPrefab": "",
+  "ShotSound": "",
+  "Spread": 0,
+  "VisualEffect": null,
+  "WeaponClass": 2
 }

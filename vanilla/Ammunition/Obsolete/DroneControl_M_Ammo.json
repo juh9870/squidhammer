@@ -1,15 +1,27 @@
 {
-  "ItemType": 4,
-  "Id": 12,
   "AmmunitionClass": 6,
-  "Size": 0.6,
-  "Range": 10.0,
-  "Velocity": 10.0,
-  "LifeTime": 1.0,
-  "EnergyCost": 5.0,
+  "AreaOfEffect": 0,
+  "BulletPrefab": "Energy2",
   "Color": "#B4FFFFFF",
+  "CoupledAmmunitionId": null,
+  "Damage": 0,
+  "DamageType": 0,
+  "EnergyCost": 5,
   "FireSound": "launch_05",
-  "HitSound": "launch_02",
   "HitEffectPrefab": "OrbAdditive",
-  "BulletPrefab": "Energy2"
+  "HitPoints": 0,
+  "HitSound": "launch_02",
+  "Id": 12,
+  "IgnoresShipVelocity": false,
+  "Impulse": 0,
+  "InitialPosition": {
+    "x": 0,
+    "y": 0
+  },
+  "ItemType": 4,
+  "LifeTime": 1,
+  "Range": 10,
+  "Recoil": 0,
+  "Size": 0.6,
+  "Velocity": 10
 }

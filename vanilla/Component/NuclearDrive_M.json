@@ -1,19 +1,34 @@
 {
-  "ItemType": 1,
-  "Id": 59,
-  "Name": "$NuclearDrive_M",
-  "DisplayCategory": 4,
+  "AmmunitionId": null,
   "Availability": 1,
-  "ComponentStatsId": 59,
-  "Faction": -1,
-  "Level": 20,
-  "Icon": "engine3",
-  "Color": "#FFDCC0",
-  "Layout": "1100",
   "CellType": "5",
+  "Color": "#FFDCC0",
+  "ComponentStatsId": 59,
+  "Description": "",
+  "DeviceId": null,
+  "DisplayCategory": 4,
+  "DroneBayId": null,
+  "DroneId": null,
+  "Faction": -1,
+  "Icon": "engine3",
+  "Id": 59,
+  "ItemType": 1,
+  "Layout": "1100",
+  "Level": 20,
+  "Name": "$NuclearDrive_M",
   "PossibleModifications": [
     2,
     11,
     1
-  ]
+  ],
+  "Restrictions": {
+    "ComponentGroupTag": null,
+    "MaxComponentAmount": 0,
+    "NotForMechanicShips": false,
+    "NotForOrganicShips": false,
+    "ShipSizes": [],
+    "UniqueComponentTag": ""
+  },
+  "WeaponId": null,
+  "WeaponSlotType": ""
 }

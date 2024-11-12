@@ -1,102 +1,131 @@
 {
-  "ItemType": 15,
   "Id": 20,
+  "ItemType": 15,
+  "Level": 0,
   "Name": "$Mission_DestroyPirates",
-  "StartCondition": 3,
-  "Weight": 1.0,
   "Nodes": [
     {
-      "Id": 1,
-      "Type": 10,
-      "Message": "$Mission_DestroyPirates_Intro",
-      "Character": 3,
       "Actions": [
         {
-          "TargetNode": 2,
-          "ButtonText": "$Continue"
+          "ButtonText": "$Continue",
+          "Requirement": {
+            "Type": 0
+          },
+          "TargetNode": 2
         }
-      ]
+      ],
+      "Character": 3,
+      "Enemy": null,
+      "Id": 1,
+      "Loot": null,
+      "Message": "$Mission_DestroyPirates_Intro",
+      "RequiredView": 0,
+      "Type": 10
     },
     {
       "Id": 2,
-      "Type": 17,
+      "Message": "",
       "Transitions": [
         {
-          "TargetNode": 3,
           "Requirement": {
-            "Type": 7,
+            "BoolValue": false,
+            "MaxValue": 4,
             "MinValue": 3,
-            "MaxValue": 4
-          }
+            "Type": 7
+          },
+          "TargetNode": 3,
+          "Weight": 0
         }
-      ]
+      ],
+      "Type": 17
     },
     {
-      "Id": 3,
-      "Type": 10,
-      "Message": "$Mission_DestroyPirates_Attack",
-      "Enemy": 3,
-      "Character": 3,
       "Actions": [
         {
-          "TargetNode": 4,
-          "ButtonText": "$Continue"
+          "ButtonText": "$Continue",
+          "Requirement": {
+            "Type": 0
+          },
+          "TargetNode": 4
         }
-      ]
+      ],
+      "Character": 3,
+      "Enemy": 3,
+      "Id": 3,
+      "Loot": null,
+      "Message": "$Mission_DestroyPirates_Attack",
+      "RequiredView": 0,
+      "Type": 10
     },
     {
-      "Id": 4,
-      "Type": 20,
       "DefaultTransition": 11,
+      "Enemy": 3,
       "FailureTransition": 6,
-      "Enemy": 3
+      "Id": 4,
+      "Loot": null,
+      "Type": 20
     },
     {
       "Id": 11,
-      "Type": 17,
+      "Message": "",
       "Transitions": [
         {
-          "TargetNode": 5,
           "Requirement": {
+            "BoolValue": false,
             "Type": 30
-          }
+          },
+          "TargetNode": 5,
+          "Weight": 0
         }
-      ]
+      ],
+      "Type": 17
     },
     {
+      "Actions": [
+        {
+          "ButtonText": "$Continue",
+          "Requirement": {
+            "Type": 0
+          },
+          "TargetNode": 7
+        }
+      ],
+      "Character": 3,
+      "Enemy": null,
       "Id": 5,
-      "Type": 10,
+      "Loot": null,
       "Message": "$Mission_DestroyPirates_Completed",
-      "Character": 3,
-      "Actions": [
-        {
-          "TargetNode": 7,
-          "ButtonText": "$Continue"
-        }
-      ]
+      "RequiredView": 0,
+      "Type": 10
     },
     {
+      "Actions": [
+        {
+          "ButtonText": "$Continue",
+          "Requirement": {
+            "Type": 0
+          },
+          "TargetNode": 8
+        }
+      ],
+      "Character": 3,
+      "Enemy": null,
       "Id": 6,
-      "Type": 10,
+      "Loot": null,
       "Message": "$Mission_DestroyPirates_Failed",
-      "Character": 3,
-      "Actions": [
-        {
-          "TargetNode": 8,
-          "ButtonText": "$Continue"
-        }
-      ]
+      "RequiredView": 0,
+      "Type": 10
     },
     {
+      "DefaultTransition": 9,
       "Id": 7,
       "Type": 56,
-      "DefaultTransition": 9,
       "Value": 5
     },
     {
+      "DefaultTransition": 10,
       "Id": 8,
       "Type": 56,
-      "DefaultTransition": 10,
       "Value": -2
     },
     {
@@ -107,5 +136,23 @@
       "Id": 10,
       "Type": 41
     }
-  ]
+  ],
+  "Origin": {
+    "Factions": {
+      "List": [],
+      "Type": 0
+    },
+    "MaxDistance": 0,
+    "MaxRelations": 0,
+    "MinDistance": 0,
+    "MinRelations": 0,
+    "Type": 0
+  },
+  "QuestType": 0,
+  "Requirement": {
+    "Type": 0
+  },
+  "StartCondition": 3,
+  "UseRandomSeed": false,
+  "Weight": 1
 }

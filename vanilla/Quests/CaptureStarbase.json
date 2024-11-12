@@ -1,63 +1,75 @@
 {
-  "ItemType": 15,
   "Id": 9,
-  "QuestType": 3,
-  "Weight": 1.0,
+  "ItemType": 15,
+  "Level": 0,
+  "Name": "",
   "Nodes": [
     {
-      "Id": 1,
-      "Type": 15,
       "DefaultTransition": 2,
+      "Id": 1,
+      "Message": "",
       "Transitions": [
         {
-          "TargetNode": 10,
           "Requirement": {
-            "Type": 1,
             "Requirements": [
               {
                 "Type": 19
               },
               {
-                "Type": 16,
-                "MaxValue": -100
+                "MaxValue": -100,
+                "MinValue": 0,
+                "Type": 16
               }
-            ]
-          }
+            ],
+            "Type": 1
+          },
+          "TargetNode": 10,
+          "Weight": 0
         }
-      ]
+      ],
+      "Type": 15
     },
     {
-      "Id": 2,
-      "Type": 10,
-      "RequiredView": 1,
-      "Message": "$AttackStarbase_Message",
       "Actions": [
         {
-          "TargetNode": 10,
-          "ButtonText": "$Attack"
+          "ButtonText": "$Attack",
+          "Requirement": {
+            "Type": 0
+          },
+          "TargetNode": 10
         },
         {
-          "TargetNode": 50,
-          "ButtonText": "$Cancel"
+          "ButtonText": "$Cancel",
+          "Requirement": {
+            "Type": 0
+          },
+          "TargetNode": 50
         }
-      ]
+      ],
+      "Character": null,
+      "Enemy": null,
+      "Id": 2,
+      "Loot": null,
+      "Message": "$AttackStarbase_Message",
+      "RequiredView": 1,
+      "Type": 10
     },
     {
+      "DefaultTransition": 20,
       "Id": 10,
       "Type": 51,
-      "DefaultTransition": 20,
       "Value": -100
     },
     {
-      "Id": 20,
-      "Type": 22,
       "DefaultTransition": 30,
-      "FailureTransition": 50
+      "FailureTransition": 50,
+      "Id": 20,
+      "Type": 22
     },
     {
+      "DefaultTransition": 40,
       "Id": 30,
-      "Type": 60,
-      "DefaultTransition": 40
+      "Type": 60
     },
     {
       "Id": 40,
@@ -67,5 +79,23 @@
       "Id": 50,
       "Type": 41
     }
-  ]
+  ],
+  "Origin": {
+    "Factions": {
+      "List": [],
+      "Type": 0
+    },
+    "MaxDistance": 0,
+    "MaxRelations": 0,
+    "MinDistance": 0,
+    "MinRelations": 0,
+    "Type": 0
+  },
+  "QuestType": 3,
+  "Requirement": {
+    "Type": 0
+  },
+  "StartCondition": 0,
+  "UseRandomSeed": false,
+  "Weight": 1
 }

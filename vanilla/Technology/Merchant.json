@@ -1,11 +1,14 @@
 {
-  "ItemType": 10,
-  "Id": 324,
-  "Type": 1,
-  "ItemId": 81,
-  "Price": 10,
-  "Hidden": true,
+  "CustomCraftingLevel": 0,
   "Dependencies": [
     259
-  ]
+  ],
+  "Faction": null,
+  "Hidden": true,
+  "Id": 324,
+  "ItemId": 81,
+  "ItemType": 10,
+  "Price": 10,
+  "Special": false,
+  "Type": 1
 }

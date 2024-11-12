@@ -1,19 +1,21 @@
 {
-  "ItemType": 1,
-  "Id": 170,
-  "Name": "$IonCannon_M_2",
-  "DisplayCategory": 1,
-  "Availability": 2,
-  "ComponentStatsId": 1,
-  "Faction": 11,
-  "Level": 200,
-  "Icon": "ion_cannon2",
-  "Color": "#B4B4FF",
-  "Layout": "110110110",
-  "CellType": "4",
-  "WeaponId": 23,
   "AmmunitionId": 137,
-  "WeaponSlotType": "C",
+  "Availability": 2,
+  "CellType": "4",
+  "Color": "#B4B4FF",
+  "ComponentStatsId": 1,
+  "Description": "",
+  "DeviceId": null,
+  "DisplayCategory": 1,
+  "DroneBayId": null,
+  "DroneId": null,
+  "Faction": 11,
+  "Icon": "ion_cannon2",
+  "Id": 170,
+  "ItemType": 1,
+  "Layout": "110110110",
+  "Level": 200,
+  "Name": "$IonCannon_M_2",
   "PossibleModifications": [
     13,
     8,
@@ -24,5 +26,15 @@
     2,
     7,
     1
-  ]
+  ],
+  "Restrictions": {
+    "ComponentGroupTag": null,
+    "MaxComponentAmount": 0,
+    "NotForMechanicShips": false,
+    "NotForOrganicShips": false,
+    "ShipSizes": [],
+    "UniqueComponentTag": ""
+  },
+  "WeaponId": 23,
+  "WeaponSlotType": "C"
 }

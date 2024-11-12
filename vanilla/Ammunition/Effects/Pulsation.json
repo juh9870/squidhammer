@@ -1,14 +1,27 @@
 {
-  "ItemType": 26,
-  "Id": 18,
   "Elements": [
     {
-      "Type": 2,
-      "Image": "wave",
       "Color": "#000000",
-      "Loop": true,
+      "ColorMode": 0,
+      "GrowthRate": 0,
+      "Image": "wave",
       "Inverse": true,
+      "Lifetime": 1,
+      "Loop": true,
+      "Offset": {
+        "x": 0,
+        "y": 0
+      },
+      "ParticleSize": 1,
+      "Quantity": 1,
+      "Rotation": 0,
+      "Size": 1,
+      "StartTime": 0,
+      "TurnRate": 0,
+      "Type": 2,
       "UseRealTime": true
     }
-  ]
+  ],
+  "Id": 18,
+  "ItemType": 26
 }

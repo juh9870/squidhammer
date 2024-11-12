@@ -1,8 +1,9 @@
 {
-  "ItemType": 20,
-  "Id": 6,
-  "Name": "$Commodity_Scraps",
-  "Icon": "stone",
   "Color": "#A0806A",
+  "Description": "",
+  "Icon": "stone",
+  "Id": 6,
+  "ItemType": 20,
+  "Name": "$Commodity_Scraps",
   "Price": 10
 }

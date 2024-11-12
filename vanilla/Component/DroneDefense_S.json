@@ -1,19 +1,34 @@
 {
-  "ItemType": 1,
-  "Id": 192,
-  "Name": "$DroneDefense_S",
-  "DisplayCategory": 5,
+  "AmmunitionId": null,
   "Availability": 1,
-  "ComponentStatsId": 192,
-  "Faction": 2,
-  "Level": 60,
-  "Icon": "drone_power1",
-  "Color": "#C0FFC0",
-  "Layout": "1111",
   "CellType": "2",
+  "Color": "#C0FFC0",
+  "ComponentStatsId": 192,
+  "Description": "",
+  "DeviceId": null,
+  "DisplayCategory": 5,
+  "DroneBayId": null,
+  "DroneId": null,
+  "Faction": 2,
+  "Icon": "drone_power1",
+  "Id": 192,
+  "ItemType": 1,
+  "Layout": "1111",
+  "Level": 60,
+  "Name": "$DroneDefense_S",
   "PossibleModifications": [
     18,
     1,
     2
-  ]
+  ],
+  "Restrictions": {
+    "ComponentGroupTag": null,
+    "MaxComponentAmount": 0,
+    "NotForMechanicShips": false,
+    "NotForOrganicShips": false,
+    "ShipSizes": [],
+    "UniqueComponentTag": ""
+  },
+  "WeaponId": null,
+  "WeaponSlotType": ""
 }

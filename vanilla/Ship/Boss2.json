@@ -1,72 +1,156 @@
 {
-  "ItemType": 6,
-  "Id": 3,
-  "ShipType": 4,
-  "SizeClass": 4,
-  "Name": "$f2_Flagship",
-  "Faction": 2,
-  "IconImage": "flagship2",
-  "IconScale": 1.3,
-  "ModelImage": "flagship2",
-  "ModelScale": 5.0,
-  "EngineColor": "#40FFBABA",
-  "Engines": [
-    {
-      "Position": {
-        "x": -0.95
-      },
-      "Size": 0.5
-    }
-  ],
-  "Layout": "000000004444400000000000000004444400000000000000004444400000000000000001222100000000000000012222210000000000000442222244000000000000442222244000000000001442222244100000000001112222211100000000441112222211144000000441112222211144000000441112222211144000000111222222222111000000111222222222111000444111222222222111444444111222222222111444011111222222222111110011111222222222111110001111555555555111100000011555555555110000000000555555555000000",
   "Barrels": [
     {
+      "AutoAimingArc": 0,
+      "Image": "",
+      "Offset": 0,
+      "PlatformType": 0,
       "Position": {
-        "x": 1.0
+        "x": 1,
+        "y": 0
       },
+      "Rotation": 0,
+      "RotationSpeed": 0,
+      "Size": 0,
       "WeaponClass": "LM"
     },
     {
+      "AutoAimingArc": 0,
+      "Image": "",
+      "Offset": 0,
+      "PlatformType": 0,
       "Position": {
         "x": 0.54,
         "y": 0.38
       },
+      "Rotation": 0,
+      "RotationSpeed": 0,
+      "Size": 0,
       "WeaponClass": "M"
     },
     {
+      "AutoAimingArc": 0,
+      "Image": "",
+      "Offset": 0,
+      "PlatformType": 0,
       "Position": {
         "x": 0.54,
         "y": -0.38
       },
+      "Rotation": 0,
+      "RotationSpeed": 0,
+      "Size": 0,
       "WeaponClass": "M"
     },
     {
+      "AutoAimingArc": 0,
+      "Image": "",
+      "Offset": 0,
+      "PlatformType": 0,
       "Position": {
         "x": 0.16,
         "y": 0.64
       },
+      "Rotation": 0,
+      "RotationSpeed": 0,
+      "Size": 0,
       "WeaponClass": "MT"
     },
     {
+      "AutoAimingArc": 0,
+      "Image": "",
+      "Offset": 0,
+      "PlatformType": 0,
       "Position": {
         "x": 0.16,
         "y": -0.64
       },
+      "Rotation": 0,
+      "RotationSpeed": 0,
+      "Size": 0,
       "WeaponClass": "MT"
     },
     {
+      "AutoAimingArc": 0,
+      "Image": "",
+      "Offset": 0,
+      "PlatformType": 0,
       "Position": {
         "x": -0.3,
         "y": 0.86
       },
+      "Rotation": 0,
+      "RotationSpeed": 0,
+      "Size": 0,
       "WeaponClass": "M"
     },
     {
+      "AutoAimingArc": 0,
+      "Image": "",
+      "Offset": 0,
+      "PlatformType": 0,
       "Position": {
         "x": -0.3,
         "y": -0.86
       },
+      "Rotation": 0,
+      "RotationSpeed": 0,
+      "Size": 0,
       "WeaponClass": "M"
     }
-  ]
+  ],
+  "BaseWeightModifier": 0,
+  "BuiltinDevices": [],
+  "CellsExpansions": 0,
+  "ColliderTolerance": 0.02,
+  "Description": "",
+  "EnergyResistance": 0,
+  "EngineColor": "#40FFBABA",
+  "EnginePosition": {
+    "x": 0,
+    "y": 0
+  },
+  "EngineSize": 0,
+  "Engines": [
+    {
+      "Position": {
+        "x": -0.95,
+        "y": 0
+      },
+      "Size": 0.5
+    }
+  ],
+  "Faction": 2,
+  "Features": {
+    "ArmorBonus": 0,
+    "BuiltinDevices": [],
+    "DroneAttackBonus": 0,
+    "DroneBuildSpeedBonus": 0,
+    "DroneDefenseBonus": 0,
+    "EnergyBonus": 0,
+    "EnergyResistance": 0,
+    "EquipmentWeightBonus": 0,
+    "HeatResistance": 0,
+    "KineticResistance": 0,
+    "Regeneration": false,
+    "ShieldBonus": 0,
+    "ShipWeightBonus": 0,
+    "TurnRateBonus": 0,
+    "VelocityBonus": 0
+  },
+  "HeatResistance": 0,
+  "IconImage": "flagship2",
+  "IconScale": 1.3,
+  "Id": 3,
+  "ItemType": 6,
+  "KineticResistance": 0,
+  "Layout": "000000004444400000000000000004444400000000000000004444400000000000000001222100000000000000012222210000000000000442222244000000000000442222244000000000001442222244100000000001112222211100000000441112222211144000000441112222211144000000441112222211144000000111222222222111000000111222222222111000444111222222222111444444111222222222111444011111222222222111110011111222222222111110001111555555555111100000011555555555110000000000555555555000000",
+  "ModelImage": "flagship2",
+  "ModelScale": 5,
+  "Name": "$f2_Flagship",
+  "Regeneration": false,
+  "ShipCategory": 0,
+  "ShipRarity": 0,
+  "ShipType": 4,
+  "SizeClass": 4
 }

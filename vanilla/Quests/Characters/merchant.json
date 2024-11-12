@@ -1,6 +1,11 @@
 {
-  "ItemType": 19,
+  "AvatarIcon": "M_12",
+  "Faction": null,
+  "Fleet": null,
   "Id": 1,
+  "Inventory": null,
+  "IsUnique": false,
+  "ItemType": 19,
   "Name": "$CharacterMerchant",
-  "AvatarIcon": "M_12"
+  "Relations": 0
 }

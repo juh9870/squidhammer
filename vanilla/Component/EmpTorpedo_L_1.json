@@ -1,19 +1,21 @@
 {
-  "ItemType": 1,
-  "Id": 164,
-  "Name": "$EmpTorpedo_L_1",
-  "DisplayCategory": 1,
-  "Availability": 1,
-  "ComponentStatsId": 1,
-  "Faction": 2,
-  "Level": 150,
-  "Icon": "laser4",
-  "Color": "#C0FFFF",
-  "Layout": "111111111",
-  "CellType": "4",
-  "WeaponId": 13,
   "AmmunitionId": 13,
-  "WeaponSlotType": "T",
+  "Availability": 1,
+  "CellType": "4",
+  "Color": "#C0FFFF",
+  "ComponentStatsId": 1,
+  "Description": "",
+  "DeviceId": null,
+  "DisplayCategory": 1,
+  "DroneBayId": null,
+  "DroneId": null,
+  "Faction": 2,
+  "Icon": "laser4",
+  "Id": 164,
+  "ItemType": 1,
+  "Layout": "111111111",
+  "Level": 150,
+  "Name": "$EmpTorpedo_L_1",
   "PossibleModifications": [
     14,
     13,
@@ -25,5 +27,15 @@
     2,
     7,
     1
-  ]
+  ],
+  "Restrictions": {
+    "ComponentGroupTag": null,
+    "MaxComponentAmount": 0,
+    "NotForMechanicShips": false,
+    "NotForOrganicShips": false,
+    "ShipSizes": [],
+    "UniqueComponentTag": ""
+  },
+  "WeaponId": 13,
+  "WeaponSlotType": "T"
 }

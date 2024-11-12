@@ -1,10 +1,17 @@
 {
-  "ItemType": 14,
-  "Id": 14,
-  "Name": "$Faction14",
   "Color": "#000000",
+  "Hidden": false,
+  "HideFromMerchants": true,
+  "HideResearchTree": true,
+  "HomeStarDistance": 0,
+  "HomeStarDistanceMax": 0,
+  "Hostile": false,
+  "Id": 14,
+  "ItemType": 14,
+  "Name": "$Faction14",
+  "NoMissions": false,
   "NoTerritories": true,
   "NoWanderingShips": true,
-  "HideFromMerchants": true,
-  "HideResearchTree": true
+  "WanderingShipsDistance": 0,
+  "WanderingShipsDistanceMax": 0
 }

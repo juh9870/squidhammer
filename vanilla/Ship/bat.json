@@ -1,34 +1,72 @@
 {
-  "ItemType": 6,
-  "Id": 128,
-  "SizeClass": 2,
-  "Name": "$ship_bat",
-  "Faction": 17,
-  "IconImage": "bat",
-  "IconScale": 1.0,
-  "ModelImage": "bat",
-  "ModelScale": 2.5,
+  "Barrels": [
+    {
+      "AutoAimingArc": 0,
+      "Image": "",
+      "Offset": 0,
+      "PlatformType": 0,
+      "Position": {
+        "x": 0.75,
+        "y": 0
+      },
+      "Rotation": 0,
+      "RotationSpeed": 0,
+      "Size": 0,
+      "WeaponClass": ""
+    }
+  ],
+  "BaseWeightModifier": 0,
+  "BuiltinDevices": [],
+  "CellsExpansions": 0,
+  "ColliderTolerance": 0.02,
+  "Description": "",
+  "EnergyResistance": 0,
   "EngineColor": "#40FF00CB",
+  "EnginePosition": {
+    "x": 0,
+    "y": 0
+  },
+  "EngineSize": 0,
   "Engines": [
     {
       "Position": {
-        "x": -0.3
+        "x": -0.3,
+        "y": 0
       },
       "Size": 0.3
     }
   ],
-  "Layout": "000000000000000000000000000000000000444000000000000444000000000002444200000000032222230000000132222231000001332555233100011135555531110011100555001110111000000000111110000000000011100000000000001000000000000000000000000000000",
-  "Barrels": [
-    {
-      "Position": {
-        "x": 0.75
-      }
-    }
-  ],
+  "Faction": 17,
   "Features": {
-    "ShipWeightBonus": -0.5,
+    "ArmorBonus": 0,
+    "BuiltinDevices": [],
+    "DroneAttackBonus": 0,
+    "DroneBuildSpeedBonus": 0,
+    "DroneDefenseBonus": 0,
+    "EnergyBonus": 0,
+    "EnergyResistance": 0,
     "EquipmentWeightBonus": -0.5,
-    "VelocityBonus": 1.0,
-    "TurnRateBonus": 1.0
-  }
+    "HeatResistance": 0,
+    "KineticResistance": 0,
+    "Regeneration": false,
+    "ShieldBonus": 0,
+    "ShipWeightBonus": -0.5,
+    "TurnRateBonus": 1,
+    "VelocityBonus": 1
+  },
+  "HeatResistance": 0,
+  "IconImage": "bat",
+  "IconScale": 1,
+  "Id": 128,
+  "ItemType": 6,
+  "KineticResistance": 0,
+  "Layout": "000000000000000000000000000000000000444000000000000444000000000002444200000000032222230000000132222231000001332555233100011135555531110011100555001110111000000000111110000000000011100000000000001000000000000000000000000000000",
+  "ModelImage": "bat",
+  "ModelScale": 2.5,
+  "Name": "$ship_bat",
+  "Regeneration": false,
+  "ShipCategory": 0,
+  "ShipRarity": 0,
+  "ShipType": 0,
+  "SizeClass": 2
 }

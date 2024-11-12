@@ -1,17 +1,25 @@
 {
-  "ItemType": 7,
-  "Id": 5,
-  "Name": "$Companion_2m",
-  "ModelImage": "satellite2",
-  "ModelScale": 0.6,
-  "SizeClass": -1,
-  "Layout": "0040000400014101242100100",
   "Barrels": [
     {
+      "AutoAimingArc": 0,
+      "Image": "",
+      "Offset": 0,
+      "PlatformType": 0,
       "Position": {
-        "x": 1.0
+        "x": 1,
+        "y": 0
       },
+      "Rotation": 0,
+      "RotationSpeed": 0,
+      "Size": 0,
       "WeaponClass": "C"
     }
-  ]
+  ],
+  "Id": 5,
+  "ItemType": 7,
+  "Layout": "0040000400014101242100100",
+  "ModelImage": "satellite2",
+  "ModelScale": 0.6,
+  "Name": "$Companion_2m",
+  "SizeClass": -1
 }

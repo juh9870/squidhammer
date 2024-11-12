@@ -1,8 +1,15 @@
 {
-  "ItemType": 3,
-  "Id": 86,
-  "WeaponClass": 2,
   "ActivationType": 1,
+  "ChargeSound": "",
+  "ControlButtonIcon": "controls_laser",
+  "EffectSize": 0,
+  "FireRate": 0,
+  "Id": 86,
+  "ItemType": 3,
+  "Magazine": 0,
   "ShotEffectPrefab": "OrbAdditive",
-  "ControlButtonIcon": "controls_laser"
+  "ShotSound": "",
+  "Spread": 0,
+  "VisualEffect": null,
+  "WeaponClass": 2
 }

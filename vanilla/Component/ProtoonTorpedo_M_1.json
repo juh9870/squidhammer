@@ -1,19 +1,21 @@
 {
-  "ItemType": 1,
-  "Id": 152,
-  "Name": "$ProtoonTorpedo_M_1",
-  "DisplayCategory": 1,
-  "Availability": 1,
-  "ComponentStatsId": 1,
-  "Faction": 3,
-  "Level": 15,
-  "Icon": "torpedo4",
-  "Color": "#C0FFC0",
-  "Layout": "010010010",
-  "CellType": "4",
-  "WeaponId": 56,
   "AmmunitionId": 56,
-  "WeaponSlotType": "T",
+  "Availability": 1,
+  "CellType": "4",
+  "Color": "#C0FFC0",
+  "ComponentStatsId": 1,
+  "Description": "",
+  "DeviceId": null,
+  "DisplayCategory": 1,
+  "DroneBayId": null,
+  "DroneId": null,
+  "Faction": 3,
+  "Icon": "torpedo4",
+  "Id": 152,
+  "ItemType": 1,
+  "Layout": "010010010",
+  "Level": 15,
+  "Name": "$ProtoonTorpedo_M_1",
   "PossibleModifications": [
     14,
     13,
@@ -25,5 +27,15 @@
     2,
     7,
     1
-  ]
+  ],
+  "Restrictions": {
+    "ComponentGroupTag": null,
+    "MaxComponentAmount": 0,
+    "NotForMechanicShips": false,
+    "NotForOrganicShips": false,
+    "ShipSizes": [],
+    "UniqueComponentTag": ""
+  },
+  "WeaponId": 56,
+  "WeaponSlotType": "T"
 }

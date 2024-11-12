@@ -1,16 +1,32 @@
 {
-  "ItemType": 1,
-  "Id": 281,
-  "Name": "$InertialNullifier",
-  "DisplayCategory": 6,
+  "AmmunitionId": null,
   "Availability": 2,
-  "ComponentStatsId": 281,
-  "Faction": 6,
-  "Level": 400,
-  "Icon": "intertial_damper2",
-  "Layout": "111111111",
   "CellType": "2",
+  "Color": "#00000000",
+  "ComponentStatsId": 281,
+  "Description": "",
+  "DeviceId": null,
+  "DisplayCategory": 6,
+  "DroneBayId": null,
+  "DroneId": null,
+  "Faction": 6,
+  "Icon": "intertial_damper2",
+  "Id": 281,
+  "ItemType": 1,
+  "Layout": "111111111",
+  "Level": 400,
+  "Name": "$InertialNullifier",
   "PossibleModifications": [
     2
-  ]
+  ],
+  "Restrictions": {
+    "ComponentGroupTag": null,
+    "MaxComponentAmount": 0,
+    "NotForMechanicShips": false,
+    "NotForOrganicShips": false,
+    "ShipSizes": [],
+    "UniqueComponentTag": ""
+  },
+  "WeaponId": null,
+  "WeaponSlotType": ""
 }

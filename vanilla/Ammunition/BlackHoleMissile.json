@@ -1,31 +1,60 @@
 {
-  "ItemType": 25,
-  "Id": 145,
   "Body": {
-    "Size": 1.0,
-    "Velocity": 10.0,
-    "Range": 30.0,
-    "Weight": 100.0,
-    "Color": "#C345FF",
+    "AiBulletBehavior": 0,
+    "AttachedToParent": false,
     "BulletPrefab": 9,
-    "EnergyCost": 30.0
+    "CanBeDisarmed": false,
+    "Color": "#C345FF",
+    "EnergyCost": 30,
+    "FriendlyFire": false,
+    "HitPoints": 0,
+    "Length": 0,
+    "Lifetime": 0,
+    "ParentVelocityEffect": 1,
+    "Range": 30,
+    "Size": 1,
+    "Type": 0,
+    "Velocity": 10,
+    "Weight": 100
   },
+  "Controller": {
+    "Type": 0
+  },
+  "Effects": [],
+  "Id": 145,
+  "ImpactType": 0,
+  "ItemType": 25,
   "Triggers": [
     {
-      "Condition": 2,
-      "EffectType": 2,
-      "AudioClip": "launch_04",
       "Ammunition": 146,
+      "AudioClip": "launch_04",
       "Color": "#00000000",
-      "Size": 1.0,
+      "ColorMode": 0,
+      "Condition": 2,
+      "Cooldown": 0,
+      "EffectType": 2,
+      "MaxNestingLevel": 0,
+      "OffsetX": "0",
+      "OffsetY": "0",
+      "PowerMultiplier": 0,
+      "Quantity": 0,
+      "RandomFactor": 0,
       "Rotation": "0",
-      "OffsetX": "0"
+      "Size": 1
     },
     {
+      "AudioClip": "",
+      "Color": "#00000000",
+      "ColorMode": 0,
       "Condition": 1,
+      "Cooldown": 0,
       "EffectType": 1,
-      "VisualEffect": 18,
-      "Size": 4.0
+      "Lifetime": 0,
+      "OncePerCollision": false,
+      "Size": 4,
+      "SyncLifetimeWithBullet": false,
+      "UseBulletPosition": false,
+      "VisualEffect": 18
     }
   ]
 }

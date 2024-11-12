@@ -1,19 +1,21 @@
 {
-  "ItemType": 1,
-  "Id": 105,
-  "Name": "$MassDriver_M_1",
-  "DisplayCategory": 1,
-  "Availability": 1,
-  "ComponentStatsId": 1,
-  "Faction": 6,
-  "Level": 15,
-  "Icon": "gun4",
-  "Color": "#DCFFDC",
-  "Layout": "010010010",
-  "CellType": "4",
-  "WeaponId": 35,
   "AmmunitionId": 35,
-  "WeaponSlotType": "C",
+  "Availability": 1,
+  "CellType": "4",
+  "Color": "#DCFFDC",
+  "ComponentStatsId": 1,
+  "Description": "",
+  "DeviceId": null,
+  "DisplayCategory": 1,
+  "DroneBayId": null,
+  "DroneId": null,
+  "Faction": 6,
+  "Icon": "gun4",
+  "Id": 105,
+  "ItemType": 1,
+  "Layout": "010010010",
+  "Level": 15,
+  "Name": "$MassDriver_M_1",
   "PossibleModifications": [
     13,
     8,
@@ -24,5 +26,15 @@
     2,
     7,
     1
-  ]
+  ],
+  "Restrictions": {
+    "ComponentGroupTag": null,
+    "MaxComponentAmount": 0,
+    "NotForMechanicShips": false,
+    "NotForOrganicShips": false,
+    "ShipSizes": [],
+    "UniqueComponentTag": ""
+  },
+  "WeaponId": 35,
+  "WeaponSlotType": "C"
 }

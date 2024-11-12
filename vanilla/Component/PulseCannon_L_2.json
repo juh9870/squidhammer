@@ -1,19 +1,21 @@
 {
-  "ItemType": 1,
-  "Id": 111,
-  "Name": "$PulseCannon_L_2",
-  "DisplayCategory": 1,
-  "Availability": 2,
-  "ComponentStatsId": 1,
-  "Faction": 1,
-  "Level": 100,
-  "Icon": "cannon_1x6",
-  "Color": "#FFDCC0",
-  "Layout": "0010000100001000010000100",
-  "CellType": "4",
-  "WeaponId": 62,
   "AmmunitionId": 62,
-  "WeaponSlotType": "C",
+  "Availability": 2,
+  "CellType": "4",
+  "Color": "#FFDCC0",
+  "ComponentStatsId": 1,
+  "Description": "",
+  "DeviceId": null,
+  "DisplayCategory": 1,
+  "DroneBayId": null,
+  "DroneId": null,
+  "Faction": 1,
+  "Icon": "cannon_1x6",
+  "Id": 111,
+  "ItemType": 1,
+  "Layout": "0010000100001000010000100",
+  "Level": 100,
+  "Name": "$PulseCannon_L_2",
   "PossibleModifications": [
     13,
     8,
@@ -24,5 +26,15 @@
     2,
     7,
     1
-  ]
+  ],
+  "Restrictions": {
+    "ComponentGroupTag": null,
+    "MaxComponentAmount": 0,
+    "NotForMechanicShips": false,
+    "NotForOrganicShips": false,
+    "ShipSizes": [],
+    "UniqueComponentTag": ""
+  },
+  "WeaponId": 62,
+  "WeaponSlotType": "C"
 }

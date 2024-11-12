@@ -1,13 +1,25 @@
 {
-  "ItemType": 2,
-  "Id": 31,
-  "DeviceClass": 2,
-  "EnergyConsumption": 5.0,
-  "Power": 1.0,
-  "Size": 1.05,
-  "Cooldown": 5.0,
   "ActivationType": 2,
   "Color": "#8080FF00",
+  "ControlButtonIcon": "controls_shield",
+  "Cooldown": 5,
+  "DeviceClass": 2,
+  "EffectPrefab": "",
+  "EnergyConsumption": 5,
+  "Id": 31,
+  "ItemType": 2,
+  "Lifetime": 0,
+  "ObjectPrefab": "",
+  "Offset": {
+    "x": 0,
+    "y": 0
+  },
+  "PassiveEnergyConsumption": 0,
+  "Power": 1,
   "Prefab": 3,
-  "ControlButtonIcon": "controls_shield"
+  "Range": 0,
+  "ScaleEnergyWithShipSize": true,
+  "Size": 1.05,
+  "Sound": "",
+  "VisualEffect": null
 }

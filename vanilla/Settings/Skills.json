@@ -1,3 +1,26 @@
 {
-  "ItemType": 107
+  "AttackBonus": "0.1*level",
+  "BaseFlightRange": 1.5,
+  "BaseFlightSpeed": 1,
+  "BaseFuelCapacity": 100,
+  "BeatAllEnemiesFactionList": [],
+  "CraftingLevelReduction": "5*level",
+  "CraftingPriceFactor": "1 - 0.05*level",
+  "DefenseBonus": "0.1*level",
+  "DisableExceedTheLimits": false,
+  "EnergyResistance": "0.1*level",
+  "ExperienceBonus": "0.1*level",
+  "ExplorationLootBonus": "0.1*level",
+  "FlightRange": "BaseFlightRange + 0.09*level",
+  "FlightSpeed": "BaseFlightSpeed + 0.4*level",
+  "FuelTankCapacity": "BaseFuelCapacity + 50*level",
+  "HeatResistance": "0.1*level",
+  "Id": 0,
+  "IncreasedLevelLimit": 200,
+  "ItemType": 107,
+  "KineticResistance": "0.1*level",
+  "MaxPlayerShipsLevel": 100,
+  "MerchantPriceFactor": "1 - 0.05*level",
+  "ShieldRechargeBonus": "0.1*level",
+  "ShieldStrengthBonus": "0.1*level"
 }

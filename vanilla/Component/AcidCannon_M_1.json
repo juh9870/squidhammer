@@ -1,19 +1,21 @@
 {
-  "ItemType": 1,
-  "Id": 93,
-  "Name": "$AcidCannon_M_1",
-  "DisplayCategory": 1,
-  "Availability": 1,
-  "ComponentStatsId": 1,
-  "Faction": 6,
-  "Level": 105,
-  "Icon": "gun6",
-  "Color": "#00FFB4",
-  "Layout": "110110110",
-  "CellType": "4",
-  "WeaponId": 1,
   "AmmunitionId": 1,
-  "WeaponSlotType": "S",
+  "Availability": 1,
+  "CellType": "4",
+  "Color": "#00FFB4",
+  "ComponentStatsId": 1,
+  "Description": "",
+  "DeviceId": null,
+  "DisplayCategory": 1,
+  "DroneBayId": null,
+  "DroneId": null,
+  "Faction": 6,
+  "Icon": "gun6",
+  "Id": 93,
+  "ItemType": 1,
+  "Layout": "110110110",
+  "Level": 105,
+  "Name": "$AcidCannon_M_1",
   "PossibleModifications": [
     13,
     8,
@@ -24,5 +26,15 @@
     2,
     7,
     1
-  ]
+  ],
+  "Restrictions": {
+    "ComponentGroupTag": null,
+    "MaxComponentAmount": 0,
+    "NotForMechanicShips": false,
+    "NotForOrganicShips": false,
+    "ShipSizes": [],
+    "UniqueComponentTag": ""
+  },
+  "WeaponId": 1,
+  "WeaponSlotType": "S"
 }

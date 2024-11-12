@@ -1,19 +1,21 @@
 {
-  "ItemType": 1,
-  "Id": 162,
-  "Name": "$PlasmaWeb_M_1",
-  "DisplayCategory": 1,
-  "Availability": 1,
-  "ComponentStatsId": 1,
-  "Faction": 11,
-  "Level": 150,
-  "Icon": "torpedo2",
-  "Color": "#F9FFD7",
-  "Layout": "0100010001000100",
-  "CellType": "4",
-  "WeaponId": 53,
   "AmmunitionId": 53,
-  "WeaponSlotType": "S",
+  "Availability": 1,
+  "CellType": "4",
+  "Color": "#F9FFD7",
+  "ComponentStatsId": 1,
+  "Description": "",
+  "DeviceId": null,
+  "DisplayCategory": 1,
+  "DroneBayId": null,
+  "DroneId": null,
+  "Faction": 11,
+  "Icon": "torpedo2",
+  "Id": 162,
+  "ItemType": 1,
+  "Layout": "0100010001000100",
+  "Level": 150,
+  "Name": "$PlasmaWeb_M_1",
   "PossibleModifications": [
     14,
     13,
@@ -25,5 +27,15 @@
     2,
     7,
     1
-  ]
+  ],
+  "Restrictions": {
+    "ComponentGroupTag": null,
+    "MaxComponentAmount": 0,
+    "NotForMechanicShips": false,
+    "NotForOrganicShips": false,
+    "ShipSizes": [],
+    "UniqueComponentTag": ""
+  },
+  "WeaponId": 53,
+  "WeaponSlotType": "S"
 }

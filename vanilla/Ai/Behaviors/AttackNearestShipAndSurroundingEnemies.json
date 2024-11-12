@@ -1,55 +1,83 @@
 {
-  "ItemType": 28,
   "Id": 100,
+  "ItemType": 28,
   "RootNode": {
-    "Type": 3,
-    "Requirement": {
-      "Type": 11
-    },
     "Nodes": [
       {
-        "Type": 103
+        "Requirement": {
+          "Type": 0
+        },
+        "Type": 103,
+        "WeaponType": 0
       },
       {
-        "Type": 4,
         "Nodes": [
           {
-            "Type": 100,
+            "InRange": false,
+            "MaxValue": 5,
             "MinValue": 0.5,
-            "MaxValue": 5.0,
-            "NoDrones": true
+            "NoDrones": true,
+            "Requirement": {
+              "Type": 0
+            },
+            "Type": 100
           },
           {
-            "Type": 111,
+            "Cooldown": 0.1,
             "Requirement": {
-              "Type": 6,
-              "DifficultyLevel": 1
+              "DifficultyLevel": 1,
+              "Type": 6
             },
-            "Cooldown": 0.1
+            "Type": 111
           }
-        ]
+        ],
+        "Requirement": {
+          "Type": 0
+        },
+        "Type": 4
       },
       {
-        "Type": 4,
         "Nodes": [
           {
-            "Type": 1,
-            "ItemId": 141
+            "ItemId": 141,
+            "Requirement": {
+              "Type": 0
+            },
+            "Type": 1
           },
           {
-            "Type": 3,
             "Nodes": [
               {
+                "MaxValue": 0.9,
+                "MinValue": 0.1,
+                "Requirement": {
+                  "Type": 0
+                },
                 "Type": 115
               },
               {
-                "Type": 1,
-                "ItemId": 104
+                "ItemId": 104,
+                "Requirement": {
+                  "Type": 0
+                },
+                "Type": 1
               }
-            ]
+            ],
+            "Requirement": {
+              "Type": 0
+            },
+            "Type": 3
           }
-        ]
+        ],
+        "Requirement": {
+          "Type": 0
+        },
+        "Type": 4
       }
-    ]
+    ],
+    "Requirement": {
+      "Type": 11
+    },
+    "Type": 3
   }
 }

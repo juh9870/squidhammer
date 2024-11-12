@@ -1,16 +1,21 @@
 {
-  "ItemType": 1,
-  "Id": 24,
-  "Name": "StasisField_L_2",
-  "DisplayCategory": 1,
+  "AmmunitionId": 79,
+  "Availability": 0,
+  "CellType": "4",
+  "Color": "#FFA0FF",
   "ComponentStatsId": 3,
+  "Description": "",
+  "DeviceId": null,
+  "DisplayCategory": 1,
+  "DroneBayId": null,
+  "DroneId": null,
   "Faction": 4,
   "Icon": "torpedo3",
-  "Color": "#FFA0FF",
+  "Id": 24,
+  "ItemType": 1,
   "Layout": "101111111",
-  "CellType": "4",
-  "WeaponId": 79,
-  "AmmunitionId": 79,
+  "Level": 0,
+  "Name": "StasisField_L_2",
   "PossibleModifications": [
     13,
     8,
@@ -21,5 +26,15 @@
     2,
     7,
     1
-  ]
+  ],
+  "Restrictions": {
+    "ComponentGroupTag": null,
+    "MaxComponentAmount": 0,
+    "NotForMechanicShips": false,
+    "NotForOrganicShips": false,
+    "ShipSizes": [],
+    "UniqueComponentTag": ""
+  },
+  "WeaponId": 79,
+  "WeaponSlotType": ""
 }

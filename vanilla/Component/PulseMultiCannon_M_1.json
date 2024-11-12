@@ -1,19 +1,21 @@
 {
-  "ItemType": 1,
-  "Id": 143,
-  "Name": "$PulseMultiCannon_M_1",
-  "DisplayCategory": 1,
-  "Availability": 1,
-  "ComponentStatsId": 1,
-  "Faction": 9,
-  "Level": 60,
-  "Icon": "shotgun2",
-  "Color": "#FFDCC0",
-  "Layout": "010010010",
-  "CellType": "4",
-  "WeaponId": 68,
   "AmmunitionId": 68,
-  "WeaponSlotType": "C",
+  "Availability": 1,
+  "CellType": "4",
+  "Color": "#FFDCC0",
+  "ComponentStatsId": 1,
+  "Description": "",
+  "DeviceId": null,
+  "DisplayCategory": 1,
+  "DroneBayId": null,
+  "DroneId": null,
+  "Faction": 9,
+  "Icon": "shotgun2",
+  "Id": 143,
+  "ItemType": 1,
+  "Layout": "010010010",
+  "Level": 60,
+  "Name": "$PulseMultiCannon_M_1",
   "PossibleModifications": [
     13,
     8,
@@ -24,5 +26,15 @@
     2,
     7,
     1
-  ]
+  ],
+  "Restrictions": {
+    "ComponentGroupTag": null,
+    "MaxComponentAmount": 0,
+    "NotForMechanicShips": false,
+    "NotForOrganicShips": false,
+    "ShipSizes": [],
+    "UniqueComponentTag": ""
+  },
+  "WeaponId": 68,
+  "WeaponSlotType": "C"
 }

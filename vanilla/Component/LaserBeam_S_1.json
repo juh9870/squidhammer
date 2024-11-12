@@ -1,21 +1,35 @@
 {
-  "ItemType": 1,
-  "Id": 122,
-  "Name": "$LaserBeam_S_1",
-  "DisplayCategory": 1,
+  "AmmunitionId": 27,
   "Availability": 1,
+  "CellType": "4",
+  "Color": "#FFFFC0",
   "ComponentStatsId": 1,
+  "Description": "",
+  "DeviceId": null,
+  "DisplayCategory": 1,
+  "DroneBayId": null,
+  "DroneId": null,
   "Faction": 2,
   "Icon": "laser2",
-  "Color": "#FFFFC0",
+  "Id": 122,
+  "ItemType": 1,
   "Layout": "1",
-  "CellType": "4",
-  "WeaponId": 27,
-  "AmmunitionId": 27,
+  "Level": 0,
+  "Name": "$LaserBeam_S_1",
   "PossibleModifications": [
     5,
     2,
     7,
     1
-  ]
+  ],
+  "Restrictions": {
+    "ComponentGroupTag": null,
+    "MaxComponentAmount": 0,
+    "NotForMechanicShips": false,
+    "NotForOrganicShips": false,
+    "ShipSizes": [],
+    "UniqueComponentTag": ""
+  },
+  "WeaponId": 27,
+  "WeaponSlotType": ""
 }

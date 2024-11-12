@@ -1,19 +1,34 @@
 {
-  "ItemType": 1,
-  "Id": 184,
-  "Name": "$DroneDamageAmplifier_L",
-  "DisplayCategory": 5,
+  "AmmunitionId": null,
   "Availability": 1,
-  "ComponentStatsId": 184,
-  "Faction": 5,
-  "Level": 100,
-  "Icon": "drone_power3",
-  "Color": "#FFC0C0",
-  "Layout": "0110111111110110",
   "CellType": "2",
+  "Color": "#FFC0C0",
+  "ComponentStatsId": 184,
+  "Description": "",
+  "DeviceId": null,
+  "DisplayCategory": 5,
+  "DroneBayId": null,
+  "DroneId": null,
+  "Faction": 5,
+  "Icon": "drone_power3",
+  "Id": 184,
+  "ItemType": 1,
+  "Layout": "0110111111110110",
+  "Level": 100,
+  "Name": "$DroneDamageAmplifier_L",
   "PossibleModifications": [
     17,
     1,
     2
-  ]
+  ],
+  "Restrictions": {
+    "ComponentGroupTag": null,
+    "MaxComponentAmount": 0,
+    "NotForMechanicShips": false,
+    "NotForOrganicShips": false,
+    "ShipSizes": [],
+    "UniqueComponentTag": ""
+  },
+  "WeaponId": null,
+  "WeaponSlotType": ""
 }

@@ -1,75 +1,114 @@
 {
-  "ItemType": 28,
   "Id": 17,
+  "ItemType": 28,
   "RootNode": {
-    "Type": 2,
     "Nodes": [
       {
-        "Type": 3,
         "Nodes": [
           {
-            "Type": 1,
-            "ItemId": 301
+            "ItemId": 301,
+            "Requirement": {
+              "Type": 0
+            },
+            "Type": 1
           },
           {
-            "Type": 1,
-            "ItemId": 12
+            "ItemId": 12,
+            "Requirement": {
+              "Type": 0
+            },
+            "Type": 1
           }
-        ]
+        ],
+        "Requirement": {
+          "Type": 0
+        },
+        "Type": 3
       },
       {
-        "Type": 1,
+        "ItemId": 22,
         "Requirement": {
           "Type": 19
         },
-        "ItemId": 22
+        "Type": 1
       },
       {
-        "Type": 3,
         "Nodes": [
           {
-            "Type": 1,
-            "ItemId": 302
+            "ItemId": 302,
+            "Requirement": {
+              "Type": 0
+            },
+            "Type": 1
           },
           {
-            "Type": 1,
-            "ItemId": 13
+            "ItemId": 13,
+            "Requirement": {
+              "Type": 0
+            },
+            "Type": 1
           }
-        ]
+        ],
+        "Requirement": {
+          "Type": 0
+        },
+        "Type": 3
       },
       {
-        "Type": 3,
         "Nodes": [
           {
-            "Type": 1,
-            "ItemId": 300
+            "ItemId": 300,
+            "Requirement": {
+              "Type": 0
+            },
+            "Type": 1
           },
           {
-            "Type": 1,
-            "ItemId": 5
+            "ItemId": 5,
+            "Requirement": {
+              "Type": 0
+            },
+            "Type": 1
           }
-        ]
+        ],
+        "Requirement": {
+          "Type": 0
+        },
+        "Type": 3
       },
       {
-        "Type": 3,
         "Nodes": [
           {
-            "Type": 1,
-            "ItemId": 303
+            "ItemId": 303,
+            "Requirement": {
+              "Type": 0
+            },
+            "Type": 1
           },
           {
-            "Type": 1,
-            "ItemId": 24
+            "ItemId": 24,
+            "Requirement": {
+              "Type": 0
+            },
+            "Type": 1
           }
-        ]
+        ],
+        "Requirement": {
+          "Type": 0
+        },
+        "Type": 3
       },
       {
-        "Type": 1,
+        "ItemId": 11,
         "Requirement": {
           "Type": 11
         },
-        "ItemId": 11
+        "Type": 1
       }
-    ]
+    ],
+    "Requirement": {
+      "Type": 0
+    },
+    "Type": 2
   }
 }

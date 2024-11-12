@@ -1,19 +1,21 @@
 {
-  "ItemType": 1,
-  "Id": 148,
-  "Name": "$ChargedTorpedo_L_1",
-  "DisplayCategory": 1,
-  "Availability": 2,
-  "ComponentStatsId": 1,
-  "Faction": 10,
-  "Level": 165,
-  "Icon": "torpedo1",
-  "Color": "#FFA0A0",
-  "Layout": "0110011001100110",
-  "CellType": "4",
-  "WeaponId": 11,
   "AmmunitionId": 142,
-  "WeaponSlotType": "T",
+  "Availability": 2,
+  "CellType": "4",
+  "Color": "#FFA0A0",
+  "ComponentStatsId": 1,
+  "Description": "",
+  "DeviceId": null,
+  "DisplayCategory": 1,
+  "DroneBayId": null,
+  "DroneId": null,
+  "Faction": 10,
+  "Icon": "torpedo1",
+  "Id": 148,
+  "ItemType": 1,
+  "Layout": "0110011001100110",
+  "Level": 165,
+  "Name": "$ChargedTorpedo_L_1",
   "PossibleModifications": [
     14,
     13,
@@ -25,5 +27,15 @@
     2,
     7,
     1
-  ]
+  ],
+  "Restrictions": {
+    "ComponentGroupTag": null,
+    "MaxComponentAmount": 0,
+    "NotForMechanicShips": false,
+    "NotForOrganicShips": false,
+    "ShipSizes": [],
+    "UniqueComponentTag": ""
+  },
+  "WeaponId": 11,
+  "WeaponSlotType": "T"
 }

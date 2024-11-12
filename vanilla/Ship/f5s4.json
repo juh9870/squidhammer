@@ -1,28 +1,72 @@
 {
-  "ItemType": 6,
-  "Id": 43,
-  "SizeClass": 3,
-  "Name": "$f5_Battleship",
-  "Faction": 5,
-  "IconImage": "f5s4",
-  "IconScale": 1.0,
-  "ModelImage": "f5s4",
-  "ModelScale": 2.0,
+  "Barrels": [
+    {
+      "AutoAimingArc": 360,
+      "Image": "",
+      "Offset": 0.6,
+      "PlatformType": 0,
+      "Position": {
+        "x": 0,
+        "y": 0
+      },
+      "Rotation": 0,
+      "RotationSpeed": 0,
+      "Size": 0,
+      "WeaponClass": "C"
+    }
+  ],
+  "BaseWeightModifier": 0,
+  "BuiltinDevices": [],
+  "CellsExpansions": 0,
+  "ColliderTolerance": 0.02,
+  "Description": "",
+  "EnergyResistance": 0,
   "EngineColor": "#40FFCC6F",
+  "EnginePosition": {
+    "x": 0,
+    "y": 0
+  },
+  "EngineSize": 0,
   "Engines": [
     {
       "Position": {
-        "x": -0.9
+        "x": -0.9,
+        "y": 0
       },
       "Size": 0.2
     }
   ],
+  "Faction": 5,
+  "Features": {
+    "ArmorBonus": 0,
+    "BuiltinDevices": [],
+    "DroneAttackBonus": 0,
+    "DroneBuildSpeedBonus": 0,
+    "DroneDefenseBonus": 0,
+    "EnergyBonus": 0,
+    "EnergyResistance": 0,
+    "EquipmentWeightBonus": 0,
+    "HeatResistance": 0,
+    "KineticResistance": 0,
+    "Regeneration": false,
+    "ShieldBonus": 0,
+    "ShipWeightBonus": 0,
+    "TurnRateBonus": 0,
+    "VelocityBonus": 0
+  },
+  "HeatResistance": 0,
+  "IconImage": "f5s4",
+  "IconScale": 1,
+  "Id": 43,
+  "ItemType": 6,
+  "KineticResistance": 0,
   "Layout": "000000000000000111111000001333333100013333333310113300003311113304403311113304403311113304403311013300003310013355553310005505505500000000000000",
-  "Barrels": [
-    {
-      "Offset": 0.6,
-      "AutoAimingArc": 360.0,
-      "WeaponClass": "C"
-    }
-  ]
+  "ModelImage": "f5s4",
+  "ModelScale": 2,
+  "Name": "$f5_Battleship",
+  "Regeneration": false,
+  "ShipCategory": 0,
+  "ShipRarity": 0,
+  "ShipType": 0,
+  "SizeClass": 3
 }

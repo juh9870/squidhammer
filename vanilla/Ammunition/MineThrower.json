@@ -1,39 +1,63 @@
 {
-  "ItemType": 25,
-  "Id": 108,
   "Body": {
-    "Size": 0.7,
-    "Velocity": 10.0,
-    "Range": 15.0,
-    "Weight": 0.5,
-    "HitPoints": 10,
-    "Color": "#FFE1B5",
+    "AiBulletBehavior": 4,
+    "AttachedToParent": false,
     "BulletPrefab": 8,
-    "EnergyCost": 60.0,
-    "AiBulletBehavior": 4
+    "CanBeDisarmed": false,
+    "Color": "#FFE1B5",
+    "EnergyCost": 60,
+    "FriendlyFire": false,
+    "HitPoints": 10,
+    "Length": 0,
+    "Lifetime": 0,
+    "ParentVelocityEffect": 1,
+    "Range": 15,
+    "Size": 0.7,
+    "Type": 0,
+    "Velocity": 10,
+    "Weight": 0.5
   },
+  "Controller": {
+    "Type": 0
+  },
+  "Effects": [],
+  "Id": 108,
+  "ImpactType": 0,
+  "ItemType": 25,
   "Triggers": [
     {
-      "Condition": 6,
-      "EffectType": 2,
-      "AudioClip": "explosion_04",
       "Ammunition": 111,
+      "AudioClip": "explosion_04",
       "Color": "#FFBE00",
       "ColorMode": 2,
+      "Condition": 6,
+      "Cooldown": 0,
+      "EffectType": 2,
+      "MaxNestingLevel": 0,
+      "OffsetX": "0",
+      "OffsetY": "0",
+      "PowerMultiplier": 100,
       "Quantity": 1,
-      "Size": 10.0,
-      "PowerMultiplier": 100.0,
+      "RandomFactor": 0,
       "Rotation": "0",
-      "OffsetX": "0"
+      "Size": 10
     },
     {
-      "Condition": 5,
-      "EffectType": 2,
       "Ammunition": 110,
+      "AudioClip": "",
+      "Color": "#00000000",
+      "ColorMode": 0,
+      "Condition": 5,
+      "Cooldown": 0,
+      "EffectType": 2,
+      "MaxNestingLevel": 0,
+      "OffsetX": "0.5",
+      "OffsetY": "0",
+      "PowerMultiplier": 0,
       "Quantity": 8,
-      "RandomFactor": 1.0,
+      "RandomFactor": 1,
       "Rotation": "RANDOM(0, 360)",
-      "OffsetX": "0.5"
+      "Size": 0
     }
   ]
 }

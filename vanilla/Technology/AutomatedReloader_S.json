@@ -1,8 +1,13 @@
 {
-  "ItemType": 10,
+  "CustomCraftingLevel": 0,
+  "Dependencies": [],
+  "DoesnPreventUnlocking": false,
+  "Faction": 7,
+  "Hidden": false,
   "Id": 192,
   "ItemId": 157,
-  "Faction": 7,
+  "ItemType": 10,
   "Price": 3,
-  "Dependencies": []
+  "Special": false,
+  "Type": 0
 }

@@ -1,110 +1,147 @@
 {
-  "ItemType": 15,
   "Id": 8,
-  "StartCondition": 1,
-  "Weight": 0.9,
+  "ItemType": 15,
+  "Level": 0,
+  "Name": "",
   "Nodes": [
     {
-      "Id": 1,
-      "Type": 10,
-      "Message": "$SOS_OUTOFFUEL_Message",
-      "Enemy": 5,
-      "Character": 6,
       "Actions": [
         {
-          "TargetNode": 4,
+          "ButtonText": "$SOS_OUTOFFUEL_ACTION_Give",
           "Requirement": {
-            "Type": 26,
             "Loot": {
-              "Type": 2,
+              "MaxAmount": 5,
               "MinAmount": 5,
-              "MaxAmount": 5
-            }
+              "Type": 2
+            },
+            "Type": 26
           },
-          "ButtonText": "$SOS_OUTOFFUEL_ACTION_Give"
+          "TargetNode": 4
         },
         {
-          "TargetNode": 7,
+          "ButtonText": "$SOS_OUTOFFUEL_ACTION_Give",
           "Requirement": {
-            "Type": 26,
             "Loot": {
-              "Type": 2,
+              "MaxAmount": 10,
               "MinAmount": 10,
-              "MaxAmount": 10
-            }
+              "Type": 2
+            },
+            "Type": 26
           },
-          "ButtonText": "$SOS_OUTOFFUEL_ACTION_Give"
+          "TargetNode": 7
         },
         {
-          "TargetNode": 2,
-          "ButtonText": "$SOS_OUTOFFUEL_ACTION_Attack"
+          "ButtonText": "$SOS_OUTOFFUEL_ACTION_Attack",
+          "Requirement": {
+            "Type": 0
+          },
+          "TargetNode": 2
         },
         {
-          "TargetNode": 3,
-          "ButtonText": "$SOS_OUTOFFUEL_ACTION_Decline"
+          "ButtonText": "$SOS_OUTOFFUEL_ACTION_Decline",
+          "Requirement": {
+            "Type": 0
+          },
+          "TargetNode": 3
         }
-      ]
+      ],
+      "Character": 6,
+      "Enemy": 5,
+      "Id": 1,
+      "Loot": null,
+      "Message": "$SOS_OUTOFFUEL_Message",
+      "RequiredView": 0,
+      "Type": 10
     },
     {
-      "Id": 2,
-      "Type": 20,
       "DefaultTransition": 3,
+      "Enemy": 5,
       "FailureTransition": 3,
-      "Enemy": 5
+      "Id": 2,
+      "Loot": null,
+      "Type": 20
     },
     {
       "Id": 3,
       "Type": 40
     },
     {
-      "Id": 4,
-      "Type": 36,
       "DefaultTransition": 5,
-      "Loot": 4
+      "Id": 4,
+      "Loot": 4,
+      "Type": 36
     },
     {
+      "Actions": [
+        {
+          "ButtonText": "$Continue",
+          "Requirement": {
+            "Type": 0
+          },
+          "TargetNode": 6
+        }
+      ],
+      "Character": 6,
+      "Enemy": null,
       "Id": 5,
-      "Type": 10,
-      "Message": "$SOS_OUTOFFUEL_Reward",
       "Loot": 11,
-      "Character": 6,
-      "Actions": [
-        {
-          "TargetNode": 6,
-          "ButtonText": "$Continue"
-        }
-      ]
-    },
-    {
-      "Id": 6,
-      "Type": 35,
-      "DefaultTransition": 3,
-      "Loot": 11
-    },
-    {
-      "Id": 7,
-      "Type": 36,
-      "DefaultTransition": 8,
-      "Loot": 9
-    },
-    {
-      "Id": 8,
-      "Type": 10,
       "Message": "$SOS_OUTOFFUEL_Reward",
-      "Loot": 17,
-      "Character": 6,
-      "Actions": [
-        {
-          "TargetNode": 9,
-          "ButtonText": "$Continue"
-        }
-      ]
+      "RequiredView": 0,
+      "Type": 10
     },
     {
-      "Id": 9,
-      "Type": 35,
       "DefaultTransition": 3,
-      "Loot": 17
+      "Id": 6,
+      "Loot": 11,
+      "Type": 35
+    },
+    {
+      "DefaultTransition": 8,
+      "Id": 7,
+      "Loot": 9,
+      "Type": 36
+    },
+    {
+      "Actions": [
+        {
+          "ButtonText": "$Continue",
+          "Requirement": {
+            "Type": 0
+          },
+          "TargetNode": 9
+        }
+      ],
+      "Character": 6,
+      "Enemy": null,
+      "Id": 8,
+      "Loot": 17,
+      "Message": "$SOS_OUTOFFUEL_Reward",
+      "RequiredView": 0,
+      "Type": 10
+    },
+    {
+      "DefaultTransition": 3,
+      "Id": 9,
+      "Loot": 17,
+      "Type": 35
     }
-  ]
+  ],
+  "Origin": {
+    "Factions": {
+      "List": [],
+      "Type": 0
+    },
+    "MaxDistance": 0,
+    "MaxRelations": 0,
+    "MinDistance": 0,
+    "MinRelations": 0,
+    "Type": 0
+  },
+  "QuestType": 0,
+  "Requirement": {
+    "Type": 0
+  },
+  "StartCondition": 1,
+  "UseRandomSeed": false,
+  "Weight": 0.9
 }

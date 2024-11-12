@@ -1,53 +1,86 @@
 {
-  "ItemType": 28,
   "Id": 140,
+  "ItemType": 28,
   "RootNode": {
-    "Type": 3,
-    "Requirement": {
-      "Type": 11
-    },
     "Nodes": [
       {
-        "Type": 103
+        "Requirement": {
+          "Type": 0
+        },
+        "Type": 103,
+        "WeaponType": 0
       },
       {
-        "Type": 2,
         "Nodes": [
           {
+            "Requirement": {
+              "Type": 0
+            },
             "Type": 129
           },
           {
-            "Type": 100,
+            "InRange": false,
+            "MaxValue": 5,
             "MinValue": 0.5,
-            "MaxValue": 5.0,
-            "NoDrones": true
+            "NoDrones": true,
+            "Requirement": {
+              "Type": 0
+            },
+            "Type": 100
           }
-        ]
+        ],
+        "Requirement": {
+          "Type": 0
+        },
+        "Type": 2
       },
       {
-        "Type": 4,
         "Nodes": [
           {
+            "Requirement": {
+              "Type": 0
+            },
             "Type": 117
           },
           {
+            "Requirement": {
+              "Type": 0
+            },
             "Type": 123
           },
           {
-            "Type": 3,
             "Nodes": [
               {
-                "Type": 115,
-                "MaxValue": 0.5
+                "MaxValue": 0.5,
+                "MinValue": 0.1,
+                "Requirement": {
+                  "Type": 0
+                },
+                "Type": 115
               },
               {
-                "Type": 1,
-                "ItemId": 104
+                "ItemId": 104,
+                "Requirement": {
+                  "Type": 0
+                },
+                "Type": 1
               }
-            ]
+            ],
+            "Requirement": {
+              "Type": 0
+            },
+            "Type": 3
           }
-        ]
+        ],
+        "Requirement": {
+          "Type": 0
+        },
+        "Type": 4
       }
-    ]
+    ],
+    "Requirement": {
+      "Type": 11
+    },
+    "Type": 3
   }
 }

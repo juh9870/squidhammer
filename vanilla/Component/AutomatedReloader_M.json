@@ -1,18 +1,33 @@
 {
-  "ItemType": 1,
-  "Id": 156,
-  "Name": "$AutomatedReloader_M",
-  "DisplayCategory": 6,
+  "AmmunitionId": null,
   "Availability": 1,
-  "ComponentStatsId": 156,
-  "Faction": 6,
-  "Level": 70,
-  "Icon": "focus2",
-  "Color": "#A0A0FF",
-  "Layout": "1111",
   "CellType": "2",
+  "Color": "#A0A0FF",
+  "ComponentStatsId": 156,
+  "Description": "",
+  "DeviceId": null,
+  "DisplayCategory": 6,
+  "DroneBayId": null,
+  "DroneId": null,
+  "Faction": 6,
+  "Icon": "focus2",
+  "Id": 156,
+  "ItemType": 1,
+  "Layout": "1111",
+  "Level": 70,
+  "Name": "$AutomatedReloader_M",
   "PossibleModifications": [
     2,
     1
-  ]
+  ],
+  "Restrictions": {
+    "ComponentGroupTag": null,
+    "MaxComponentAmount": 0,
+    "NotForMechanicShips": false,
+    "NotForOrganicShips": false,
+    "ShipSizes": [],
+    "UniqueComponentTag": ""
+  },
+  "WeaponId": null,
+  "WeaponSlotType": ""
 }

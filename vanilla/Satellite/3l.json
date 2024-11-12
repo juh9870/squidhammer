@@ -1,17 +1,25 @@
 {
-  "ItemType": 7,
-  "Id": 7,
-  "Name": "$Companion_3l",
-  "ModelImage": "satellite3",
-  "ModelScale": 0.8,
-  "SizeClass": -1,
-  "Layout": "000000024420124421124421011110000000",
   "Barrels": [
     {
+      "AutoAimingArc": 0,
+      "Image": "",
+      "Offset": 0,
+      "PlatformType": 0,
       "Position": {
-        "x": 0.3
+        "x": 0.3,
+        "y": 0
       },
+      "Rotation": 0,
+      "RotationSpeed": 0,
+      "Size": 0,
       "WeaponClass": "L"
     }
-  ]
+  ],
+  "Id": 7,
+  "ItemType": 7,
+  "Layout": "000000024420124421124421011110000000",
+  "ModelImage": "satellite3",
+  "ModelScale": 0.8,
+  "Name": "$Companion_3l",
+  "SizeClass": -1
 }

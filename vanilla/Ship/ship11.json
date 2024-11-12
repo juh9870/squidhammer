@@ -1,33 +1,72 @@
 {
-  "ItemType": 6,
-  "Id": 139,
-  "SizeClass": 1,
-  "Name": "$ship_11",
-  "Faction": 18,
-  "IconImage": "ship11",
-  "IconScale": 1.0,
-  "ModelImage": "ship11",
-  "ModelScale": 1.8,
+  "Barrels": [
+    {
+      "AutoAimingArc": 0,
+      "Image": "",
+      "Offset": 0,
+      "PlatformType": 0,
+      "Position": {
+        "x": 0.7,
+        "y": 0
+      },
+      "Rotation": 0,
+      "RotationSpeed": 0,
+      "Size": 0,
+      "WeaponClass": "T"
+    }
+  ],
+  "BaseWeightModifier": 0,
+  "BuiltinDevices": [],
+  "CellsExpansions": 0,
+  "ColliderTolerance": 0.02,
+  "Description": "",
+  "EnergyResistance": 0,
   "EngineColor": "#4008FF00",
+  "EnginePosition": {
+    "x": 0,
+    "y": 0
+  },
+  "EngineSize": 0,
   "Engines": [
     {
       "Position": {
-        "x": -0.55
+        "x": -0.55,
+        "y": 0
       },
       "Size": 0.2
     }
   ],
-  "Layout": "0000000000000000000000000000000040000000000004000000000001410000000000242000001122222222211112222222221100002222200000000055500000000005050000000000000000000000000000000",
-  "Barrels": [
-    {
-      "Position": {
-        "x": 0.7
-      },
-      "WeaponClass": "T"
-    }
-  ],
+  "Faction": 18,
   "Features": {
+    "ArmorBonus": 0,
+    "BuiltinDevices": [],
+    "DroneAttackBonus": 0,
+    "DroneBuildSpeedBonus": 0,
+    "DroneDefenseBonus": 0,
+    "EnergyBonus": 0,
+    "EnergyResistance": 0,
+    "EquipmentWeightBonus": -0.8,
+    "HeatResistance": 0,
+    "KineticResistance": 0,
+    "Regeneration": false,
+    "ShieldBonus": 0,
     "ShipWeightBonus": -0.8,
-    "EquipmentWeightBonus": -0.8
-  }
+    "TurnRateBonus": 0,
+    "VelocityBonus": 0
+  },
+  "HeatResistance": 0,
+  "IconImage": "ship11",
+  "IconScale": 1,
+  "Id": 139,
+  "ItemType": 6,
+  "KineticResistance": 0,
+  "Layout": "0000000000000000000000000000000040000000000004000000000001410000000000242000001122222222211112222222221100002222200000000055500000000005050000000000000000000000000000000",
+  "ModelImage": "ship11",
+  "ModelScale": 1.8,
+  "Name": "$ship_11",
+  "Regeneration": false,
+  "ShipCategory": 0,
+  "ShipRarity": 0,
+  "ShipType": 0,
+  "SizeClass": 1
 }

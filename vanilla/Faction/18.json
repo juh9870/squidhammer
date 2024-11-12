@@ -1,9 +1,17 @@
 {
-  "ItemType": 14,
-  "Id": 18,
-  "Name": "$Faction18",
   "Color": "#403020",
+  "Hidden": false,
+  "HideFromMerchants": false,
+  "HideResearchTree": false,
   "HomeStarDistance": 100,
+  "HomeStarDistanceMax": 0,
+  "Hostile": false,
+  "Id": 18,
+  "ItemType": 14,
+  "Name": "$Faction18",
+  "NoMissions": true,
+  "NoTerritories": false,
+  "NoWanderingShips": false,
   "WanderingShipsDistance": 50,
-  "NoMissions": true
+  "WanderingShipsDistanceMax": 0
 }

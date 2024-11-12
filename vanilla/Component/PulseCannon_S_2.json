@@ -1,17 +1,21 @@
 {
-  "ItemType": 1,
-  "Id": 115,
-  "Name": "$PulseCannon_S_2",
-  "DisplayCategory": 1,
+  "AmmunitionId": 66,
   "Availability": 1,
+  "CellType": "4",
+  "Color": "#FFDCC0",
   "ComponentStatsId": 1,
+  "Description": "",
+  "DeviceId": null,
+  "DisplayCategory": 1,
+  "DroneBayId": null,
+  "DroneId": null,
   "Faction": 1,
   "Icon": "gun2",
-  "Color": "#FFDCC0",
+  "Id": 115,
+  "ItemType": 1,
   "Layout": "1010",
-  "CellType": "4",
-  "WeaponId": 66,
-  "AmmunitionId": 66,
+  "Level": 0,
+  "Name": "$PulseCannon_S_2",
   "PossibleModifications": [
     13,
     8,
@@ -22,5 +26,15 @@
     2,
     7,
     1
-  ]
+  ],
+  "Restrictions": {
+    "ComponentGroupTag": null,
+    "MaxComponentAmount": 0,
+    "NotForMechanicShips": false,
+    "NotForOrganicShips": false,
+    "ShipSizes": [],
+    "UniqueComponentTag": ""
+  },
+  "WeaponId": 66,
+  "WeaponSlotType": ""
 }

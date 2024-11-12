@@ -1,34 +1,111 @@
 {
-  "ItemType": 26,
-  "Id": 9,
   "Elements": [
     {
-      "Type": 1,
+      "Color": "#00000000",
+      "ColorMode": 0,
+      "GrowthRate": 0,
       "Image": "star",
-      "Size": 1.5
+      "Inverse": false,
+      "Lifetime": 1,
+      "Loop": false,
+      "Offset": {
+        "x": 0,
+        "y": 0
+      },
+      "ParticleSize": 1,
+      "Quantity": 1,
+      "Rotation": 0,
+      "Size": 1.5,
+      "StartTime": 0,
+      "TurnRate": 0,
+      "Type": 1,
+      "UseRealTime": false
     },
     {
+      "Color": "#00000000",
       "ColorMode": 1,
-      "Size": 1.2
+      "GrowthRate": 0,
+      "Image": "",
+      "Inverse": false,
+      "Lifetime": 1,
+      "Loop": false,
+      "Offset": {
+        "x": 0,
+        "y": 0
+      },
+      "ParticleSize": 1,
+      "Quantity": 1,
+      "Rotation": 0,
+      "Size": 1.2,
+      "StartTime": 0,
+      "TurnRate": 0,
+      "Type": 0,
+      "UseRealTime": false
     },
     {
-      "Type": 2,
+      "Color": "#00000000",
+      "ColorMode": 0,
+      "GrowthRate": 0,
       "Image": "wave",
+      "Inverse": false,
+      "Lifetime": 0.5,
+      "Loop": false,
+      "Offset": {
+        "x": 0,
+        "y": 0
+      },
+      "ParticleSize": 1,
+      "Quantity": 1,
+      "Rotation": 0,
       "Size": 1.2,
-      "Lifetime": 0.5
+      "StartTime": 0,
+      "TurnRate": 0,
+      "Type": 2,
+      "UseRealTime": false
     },
     {
-      "Type": 8,
-      "Image": "beam",
-      "ColorMode": 2,
       "Color": "#0000FF",
+      "ColorMode": 2,
+      "GrowthRate": 0,
+      "Image": "beam",
+      "Inverse": false,
+      "Lifetime": 1,
+      "Loop": false,
+      "Offset": {
+        "x": 0,
+        "y": 0
+      },
+      "ParticleSize": 1.5,
       "Quantity": 6,
+      "Rotation": 0,
       "Size": 1.2,
-      "ParticleSize": 1.5
+      "StartTime": 0,
+      "TurnRate": 0,
+      "Type": 8,
+      "UseRealTime": false
     },
     {
+      "Color": "#00000000",
+      "ColorMode": 0,
+      "GrowthRate": 0,
+      "Image": "",
+      "Inverse": false,
+      "Lifetime": 0,
+      "Loop": false,
+      "Offset": {
+        "x": 0,
+        "y": 0
+      },
+      "ParticleSize": 1,
+      "Quantity": 1,
+      "Rotation": 0,
+      "Size": 1,
+      "StartTime": 0,
+      "TurnRate": 0,
       "Type": 5,
-      "Lifetime": 0.0
+      "UseRealTime": false
     }
-  ]
+  ],
+  "Id": 9,
+  "ItemType": 26
 }

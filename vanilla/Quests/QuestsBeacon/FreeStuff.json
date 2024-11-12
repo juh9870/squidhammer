@@ -1,30 +1,54 @@
 {
-  "ItemType": 15,
   "Id": 2,
-  "StartCondition": 1,
-  "Weight": 1.0,
+  "ItemType": 15,
+  "Level": 0,
+  "Name": "",
   "Nodes": [
     {
-      "Id": 1,
-      "Type": 10,
-      "Message": "$Beacon_FreeStuff",
-      "Loot": 3,
       "Actions": [
         {
-          "TargetNode": 2,
-          "ButtonText": "$ACTION_Continue"
+          "ButtonText": "$ACTION_Continue",
+          "Requirement": {
+            "Type": 0
+          },
+          "TargetNode": 2
         }
-      ]
+      ],
+      "Character": null,
+      "Enemy": null,
+      "Id": 1,
+      "Loot": 3,
+      "Message": "$Beacon_FreeStuff",
+      "RequiredView": 0,
+      "Type": 10
     },
     {
-      "Id": 2,
-      "Type": 35,
       "DefaultTransition": 3,
-      "Loot": 3
+      "Id": 2,
+      "Loot": 3,
+      "Type": 35
     },
     {
       "Id": 3,
       "Type": 40
     }
-  ]
+  ],
+  "Origin": {
+    "Factions": {
+      "List": [],
+      "Type": 0
+    },
+    "MaxDistance": 0,
+    "MaxRelations": 0,
+    "MinDistance": 0,
+    "MinRelations": 0,
+    "Type": 0
+  },
+  "QuestType": 0,
+  "Requirement": {
+    "Type": 0
+  },
+  "StartCondition": 1,
+  "UseRandomSeed": false,
+  "Weight": 1
 }

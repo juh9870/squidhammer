@@ -1,39 +1,63 @@
 {
-  "ItemType": 28,
   "Id": 124,
+  "ItemType": 28,
   "RootNode": {
-    "Type": 3,
     "Nodes": [
       {
-        "Type": 51,
-        "MinValue": 0.25
+        "MinValue": 0.25,
+        "Requirement": {
+          "Type": 0
+        },
+        "Type": 51
       },
       {
-        "Type": 2,
         "Nodes": [
           {
-            "Type": 1,
-            "ItemId": 102
+            "ItemId": 102,
+            "Requirement": {
+              "Type": 0
+            },
+            "Type": 1
           },
           {
-            "Type": 1,
-            "ItemId": 125
+            "ItemId": 125,
+            "Requirement": {
+              "Type": 0
+            },
+            "Type": 1
           },
           {
-            "Type": 3,
             "Nodes": [
               {
-                "Type": 303,
-                "Text": "wait_for_help"
+                "Requirement": {
+                  "Type": 0
+                },
+                "Text": "wait_for_help",
+                "Type": 303
               },
               {
-                "Type": 1,
-                "ItemId": 123
+                "ItemId": 123,
+                "Requirement": {
+                  "Type": 0
+                },
+                "Type": 1
               }
-            ]
+            ],
+            "Requirement": {
+              "Type": 0
+            },
+            "Type": 3
           }
-        ]
+        ],
+        "Requirement": {
+          "Type": 0
+        },
+        "Type": 2
       }
-    ]
+    ],
+    "Requirement": {
+      "Type": 0
+    },
+    "Type": 3
   }
 }

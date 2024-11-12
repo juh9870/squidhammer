@@ -1,18 +1,33 @@
 {
-  "ItemType": 1,
-  "Id": 277,
-  "Name": "$Gravitsappa",
-  "DisplayCategory": 4,
+  "AmmunitionId": null,
   "Availability": 2,
-  "ComponentStatsId": 277,
-  "Faction": 19,
-  "Level": 300,
-  "Icon": "intertial_damper2",
-  "Color": "#80C080",
-  "Layout": "111111111",
   "CellType": "5",
+  "Color": "#80C080",
+  "ComponentStatsId": 277,
+  "Description": "",
+  "DeviceId": null,
+  "DisplayCategory": 4,
+  "DroneBayId": null,
+  "DroneId": null,
+  "Faction": 19,
+  "Icon": "intertial_damper2",
+  "Id": 277,
+  "ItemType": 1,
+  "Layout": "111111111",
+  "Level": 300,
+  "Name": "$Gravitsappa",
   "PossibleModifications": [
     11,
     1
-  ]
+  ],
+  "Restrictions": {
+    "ComponentGroupTag": null,
+    "MaxComponentAmount": 0,
+    "NotForMechanicShips": false,
+    "NotForOrganicShips": false,
+    "ShipSizes": [],
+    "UniqueComponentTag": ""
+  },
+  "WeaponId": null,
+  "WeaponSlotType": ""
 }

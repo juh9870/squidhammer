@@ -1,18 +1,32 @@
 {
-  "ItemType": 28,
   "Id": 137,
+  "ItemType": 28,
   "RootNode": {
-    "Type": 4,
     "Nodes": [
       {
+        "InRange": false,
+        "Requirement": {
+          "Type": 0
+        },
         "Type": 102
       },
       {
+        "Requirement": {
+          "Type": 0
+        },
         "Type": 131
       },
       {
+        "InRange": false,
+        "Requirement": {
+          "Type": 0
+        },
         "Type": 127
       }
-    ]
+    ],
+    "Requirement": {
+      "Type": 0
+    },
+    "Type": 4
   }
 }

@@ -1,19 +1,21 @@
 {
-  "ItemType": 1,
-  "Id": 174,
-  "Name": "$AcidMissile_L_1",
-  "DisplayCategory": 1,
-  "Availability": 1,
-  "ComponentStatsId": 1,
-  "Faction": 6,
-  "Level": 125,
-  "Icon": "missile3",
-  "Color": "#68EFC0",
-  "Layout": "111111000",
-  "CellType": "4",
-  "WeaponId": 2,
   "AmmunitionId": 2,
-  "WeaponSlotType": "S",
+  "Availability": 1,
+  "CellType": "4",
+  "Color": "#68EFC0",
+  "ComponentStatsId": 1,
+  "Description": "",
+  "DeviceId": null,
+  "DisplayCategory": 1,
+  "DroneBayId": null,
+  "DroneId": null,
+  "Faction": 6,
+  "Icon": "missile3",
+  "Id": 174,
+  "ItemType": 1,
+  "Layout": "111111000",
+  "Level": 125,
+  "Name": "$AcidMissile_L_1",
   "PossibleModifications": [
     14,
     13,
@@ -25,5 +27,15 @@
     2,
     7,
     1
-  ]
+  ],
+  "Restrictions": {
+    "ComponentGroupTag": null,
+    "MaxComponentAmount": 0,
+    "NotForMechanicShips": false,
+    "NotForOrganicShips": false,
+    "ShipSizes": [],
+    "UniqueComponentTag": ""
+  },
+  "WeaponId": 2,
+  "WeaponSlotType": "S"
 }

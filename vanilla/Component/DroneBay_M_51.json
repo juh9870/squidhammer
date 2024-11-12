@@ -1,18 +1,21 @@
 {
-  "ItemType": 1,
-  "Id": 37,
-  "Name": "$DroneBay_M_51",
-  "DisplayCategory": 5,
+  "AmmunitionId": null,
   "Availability": 1,
-  "ComponentStatsId": 2,
-  "Faction": 5,
-  "Level": 25,
-  "Icon": "dronebay2",
-  "Color": "#C0FFC0",
-  "Layout": "1110111011101100",
   "CellType": "1",
+  "Color": "#C0FFC0",
+  "ComponentStatsId": 2,
+  "Description": "",
+  "DeviceId": null,
+  "DisplayCategory": 5,
   "DroneBayId": 2,
   "DroneId": 187,
+  "Faction": 5,
+  "Icon": "dronebay2",
+  "Id": 37,
+  "ItemType": 1,
+  "Layout": "1110111011101100",
+  "Level": 25,
+  "Name": "$DroneBay_M_51",
   "PossibleModifications": [
     17,
     18,
@@ -20,5 +23,15 @@
     20,
     1,
     2
-  ]
+  ],
+  "Restrictions": {
+    "ComponentGroupTag": null,
+    "MaxComponentAmount": 0,
+    "NotForMechanicShips": false,
+    "NotForOrganicShips": false,
+    "ShipSizes": [],
+    "UniqueComponentTag": ""
+  },
+  "WeaponId": null,
+  "WeaponSlotType": ""
 }

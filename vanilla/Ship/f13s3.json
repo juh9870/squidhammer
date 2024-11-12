@@ -1,39 +1,86 @@
 {
-  "ItemType": 6,
-  "Id": 107,
-  "Name": "$f13_Scout",
-  "Faction": 13,
-  "IconImage": "f13s3",
-  "IconScale": 0.5,
-  "ModelImage": "f13s3",
-  "ModelScale": 1.0,
-  "EngineColor": "#80FF8D00",
-  "Engines": [
-    {
-      "Position": {
-        "x": -0.9
-      },
-      "Size": 0.2
-    }
-  ],
-  "Layout": "0001000001210000222004122214412221441555140055500",
   "Barrels": [
     {
+      "AutoAimingArc": 0,
+      "Image": "",
+      "Offset": 0,
+      "PlatformType": 0,
       "Position": {
         "x": 0.1,
         "y": 0.95
       },
+      "Rotation": 0,
+      "RotationSpeed": 0,
+      "Size": 0,
       "WeaponClass": "C"
     },
     {
+      "AutoAimingArc": 0,
+      "Image": "",
+      "Offset": 0,
+      "PlatformType": 0,
       "Position": {
         "x": 0.1,
         "y": -0.95
       },
+      "Rotation": 0,
+      "RotationSpeed": 0,
+      "Size": 0,
       "WeaponClass": "M"
     }
   ],
+  "BaseWeightModifier": 0,
+  "BuiltinDevices": [],
+  "CellsExpansions": 0,
+  "ColliderTolerance": 0.02,
+  "Description": "",
+  "EnergyResistance": 0,
+  "EngineColor": "#80FF8D00",
+  "EnginePosition": {
+    "x": 0,
+    "y": 0
+  },
+  "EngineSize": 0,
+  "Engines": [
+    {
+      "Position": {
+        "x": -0.9,
+        "y": 0
+      },
+      "Size": 0.2
+    }
+  ],
+  "Faction": 13,
   "Features": {
-    "EnergyResistance": 1.0
-  }
+    "ArmorBonus": 0,
+    "BuiltinDevices": [],
+    "DroneAttackBonus": 0,
+    "DroneBuildSpeedBonus": 0,
+    "DroneDefenseBonus": 0,
+    "EnergyBonus": 0,
+    "EnergyResistance": 1,
+    "EquipmentWeightBonus": 0,
+    "HeatResistance": 0,
+    "KineticResistance": 0,
+    "Regeneration": false,
+    "ShieldBonus": 0,
+    "ShipWeightBonus": 0,
+    "TurnRateBonus": 0,
+    "VelocityBonus": 0
+  },
+  "HeatResistance": 0,
+  "IconImage": "f13s3",
+  "IconScale": 0.5,
+  "Id": 107,
+  "ItemType": 6,
+  "KineticResistance": 0,
+  "Layout": "0001000001210000222004122214412221441555140055500",
+  "ModelImage": "f13s3",
+  "ModelScale": 1,
+  "Name": "$f13_Scout",
+  "Regeneration": false,
+  "ShipCategory": 0,
+  "ShipRarity": 0,
+  "ShipType": 0,
+  "SizeClass": -1
 }

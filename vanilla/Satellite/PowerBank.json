@@ -1,9 +1,10 @@
 {
-  "ItemType": 7,
+  "Barrels": [],
   "Id": 23,
-  "Name": "$PowerBank",
+  "ItemType": 7,
+  "Layout": "0022200022222001222100222220012221002222200022200",
   "ModelImage": "powerbank",
   "ModelScale": 1.5,
-  "SizeClass": 4,
-  "Layout": "0022200022222001222100222220012221002222200022200"
+  "Name": "$PowerBank",
+  "SizeClass": 4
 }

@@ -1,5 +1,6 @@
 {
-  "ItemType": 117,
   "CorrosiveDamageText": "$CorrosiveDamage",
-  "CorrosiveDpsText": "$CorrosiveDPS"
+  "CorrosiveDpsText": "$CorrosiveDPS",
+  "Id": 0,
+  "ItemType": 117
 }

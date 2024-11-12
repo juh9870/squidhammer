@@ -1,37 +1,86 @@
 {
-  "ItemType": 6,
-  "Id": 62,
-  "SizeClass": 3,
-  "Name": "$f9_Battleship",
-  "Faction": 11,
-  "IconImage": "f9s4",
-  "IconScale": 0.9,
-  "ModelImage": "f9s4",
-  "ModelScale": 2.0,
-  "EngineColor": "#40F0D2B4",
-  "Engines": [
-    {
-      "Position": {
-        "x": -0.75
-      },
-      "Size": 0.3
-    }
-  ],
-  "Layout": "000000131000000000001222100000000013222310000000013222310000000001222100000004443222344400004441222144400004443222344400001111222111100000113222311000000111222111000000111555111000000005555500000000005555500000000005000500000",
   "Barrels": [
     {
+      "AutoAimingArc": 0,
+      "Image": "",
+      "Offset": 0,
+      "PlatformType": 0,
       "Position": {
         "x": 0.3,
         "y": 0.5
       },
+      "Rotation": 0,
+      "RotationSpeed": 0,
+      "Size": 0,
       "WeaponClass": "T"
     },
     {
+      "AutoAimingArc": 0,
+      "Image": "",
+      "Offset": 0,
+      "PlatformType": 0,
       "Position": {
         "x": 0.3,
         "y": -0.5
       },
+      "Rotation": 0,
+      "RotationSpeed": 0,
+      "Size": 0,
       "WeaponClass": "T"
     }
-  ]
+  ],
+  "BaseWeightModifier": 0,
+  "BuiltinDevices": [],
+  "CellsExpansions": 0,
+  "ColliderTolerance": 0.02,
+  "Description": "",
+  "EnergyResistance": 0,
+  "EngineColor": "#40F0D2B4",
+  "EnginePosition": {
+    "x": 0,
+    "y": 0
+  },
+  "EngineSize": 0,
+  "Engines": [
+    {
+      "Position": {
+        "x": -0.75,
+        "y": 0
+      },
+      "Size": 0.3
+    }
+  ],
+  "Faction": 11,
+  "Features": {
+    "ArmorBonus": 0,
+    "BuiltinDevices": [],
+    "DroneAttackBonus": 0,
+    "DroneBuildSpeedBonus": 0,
+    "DroneDefenseBonus": 0,
+    "EnergyBonus": 0,
+    "EnergyResistance": 0,
+    "EquipmentWeightBonus": 0,
+    "HeatResistance": 0,
+    "KineticResistance": 0,
+    "Regeneration": false,
+    "ShieldBonus": 0,
+    "ShipWeightBonus": 0,
+    "TurnRateBonus": 0,
+    "VelocityBonus": 0
+  },
+  "HeatResistance": 0,
+  "IconImage": "f9s4",
+  "IconScale": 0.9,
+  "Id": 62,
+  "ItemType": 6,
+  "KineticResistance": 0,
+  "Layout": "000000131000000000001222100000000013222310000000013222310000000001222100000004443222344400004441222144400004443222344400001111222111100000113222311000000111222111000000111555111000000005555500000000005555500000000005000500000",
+  "ModelImage": "f9s4",
+  "ModelScale": 2,
+  "Name": "$f9_Battleship",
+  "Regeneration": false,
+  "ShipCategory": 0,
+  "ShipRarity": 0,
+  "ShipType": 0,
+  "SizeClass": 3
 }

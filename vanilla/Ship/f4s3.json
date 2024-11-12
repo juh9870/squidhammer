@@ -1,32 +1,72 @@
 {
-  "ItemType": 6,
-  "Id": 37,
-  "SizeClass": 2,
-  "Name": "$f4_Cruiser",
-  "Faction": 4,
-  "IconImage": "f4s3",
-  "IconScale": 0.9,
-  "ModelImage": "f4s3",
-  "ModelScale": 1.8,
+  "Barrels": [
+    {
+      "AutoAimingArc": 0,
+      "Image": "",
+      "Offset": 0,
+      "PlatformType": 0,
+      "Position": {
+        "x": 0.5,
+        "y": 0
+      },
+      "Rotation": 0,
+      "RotationSpeed": 0,
+      "Size": 0,
+      "WeaponClass": "LS"
+    }
+  ],
+  "BaseWeightModifier": 0,
+  "BuiltinDevices": [],
+  "CellsExpansions": 0,
+  "ColliderTolerance": 0.02,
+  "Description": "",
+  "EnergyResistance": 0,
   "EngineColor": "#40B4FFB4",
+  "EnginePosition": {
+    "x": 0,
+    "y": 0
+  },
+  "EngineSize": 0,
   "Engines": [
     {
       "Position": {
-        "x": -0.9
+        "x": -0.9,
+        "y": 0
       },
       "Size": 0.3
     }
   ],
-  "Layout": "000000000000000100001000000104401000011114411110011134431110001332233100011332233110001332233100000022220000000022220000000055550000000015510000",
-  "Barrels": [
-    {
-      "Position": {
-        "x": 0.5
-      },
-      "WeaponClass": "LS"
-    }
-  ],
+  "Faction": 4,
   "Features": {
-    "Regeneration": true
-  }
+    "ArmorBonus": 0,
+    "BuiltinDevices": [],
+    "DroneAttackBonus": 0,
+    "DroneBuildSpeedBonus": 0,
+    "DroneDefenseBonus": 0,
+    "EnergyBonus": 0,
+    "EnergyResistance": 0,
+    "EquipmentWeightBonus": 0,
+    "HeatResistance": 0,
+    "KineticResistance": 0,
+    "Regeneration": true,
+    "ShieldBonus": 0,
+    "ShipWeightBonus": 0,
+    "TurnRateBonus": 0,
+    "VelocityBonus": 0
+  },
+  "HeatResistance": 0,
+  "IconImage": "f4s3",
+  "IconScale": 0.9,
+  "Id": 37,
+  "ItemType": 6,
+  "KineticResistance": 0,
+  "Layout": "000000000000000100001000000104401000011114411110011134431110001332233100011332233110001332233100000022220000000022220000000055550000000015510000",
+  "ModelImage": "f4s3",
+  "ModelScale": 1.8,
+  "Name": "$f4_Cruiser",
+  "Regeneration": false,
+  "ShipCategory": 0,
+  "ShipRarity": 0,
+  "ShipType": 0,
+  "SizeClass": 2
 }

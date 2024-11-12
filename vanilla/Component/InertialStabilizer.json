@@ -1,16 +1,32 @@
 {
-  "ItemType": 1,
-  "Id": 71,
-  "Name": "$InertialStabilizer",
-  "DisplayCategory": 6,
+  "AmmunitionId": null,
   "Availability": 1,
-  "ComponentStatsId": 71,
-  "Faction": 6,
-  "Level": 90,
-  "Icon": "intertial_damper2",
-  "Layout": "1111",
   "CellType": "2",
+  "Color": "#00000000",
+  "ComponentStatsId": 71,
+  "Description": "",
+  "DeviceId": null,
+  "DisplayCategory": 6,
+  "DroneBayId": null,
+  "DroneId": null,
+  "Faction": 6,
+  "Icon": "intertial_damper2",
+  "Id": 71,
+  "ItemType": 1,
+  "Layout": "1111",
+  "Level": 90,
+  "Name": "$InertialStabilizer",
   "PossibleModifications": [
     2
-  ]
+  ],
+  "Restrictions": {
+    "ComponentGroupTag": null,
+    "MaxComponentAmount": 0,
+    "NotForMechanicShips": false,
+    "NotForOrganicShips": false,
+    "ShipSizes": [],
+    "UniqueComponentTag": ""
+  },
+  "WeaponId": null,
+  "WeaponSlotType": ""
 }

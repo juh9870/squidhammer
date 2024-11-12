@@ -1,50 +1,70 @@
 {
-  "ItemType": 25,
-  "Id": 131,
   "Body": {
-    "Size": 1.0,
-    "Velocity": 24.0,
-    "Range": 12.0,
-    "Lifetime": 0.5,
-    "Weight": 1.0,
-    "HitPoints": 150,
-    "Color": "#C9D0F7",
+    "AiBulletBehavior": 5,
+    "AttachedToParent": false,
     "BulletPrefab": 17,
-    "AiBulletBehavior": 5
+    "CanBeDisarmed": false,
+    "Color": "#C9D0F7",
+    "EnergyCost": 0,
+    "FriendlyFire": false,
+    "HitPoints": 150,
+    "Length": 0,
+    "Lifetime": 0.5,
+    "ParentVelocityEffect": 1,
+    "Range": 12,
+    "Size": 1,
+    "Type": 0,
+    "Velocity": 24,
+    "Weight": 1
   },
   "Controller": {
     "Type": 4
   },
-  "Triggers": [
+  "Effects": [
     {
-      "Condition": 3,
-      "EffectType": 1,
-      "VisualEffect": 19,
-      "Color": "#BEE2E3",
-      "ColorMode": 1,
-      "Size": 5.0,
-      "Lifetime": 0.2,
-      "UseBulletPosition": true
+      "DamageType": 0,
+      "Factor": 0,
+      "Power": 1,
+      "Type": 0
     },
     {
-      "Condition": 2,
+      "DamageType": 0,
+      "Factor": 0,
+      "Power": 100,
+      "Type": 3
+    }
+  ],
+  "Id": 131,
+  "ImpactType": 2,
+  "ItemType": 25,
+  "Triggers": [
+    {
+      "AudioClip": "",
+      "Color": "#BEE2E3",
+      "ColorMode": 1,
+      "Condition": 3,
+      "Cooldown": 0,
       "EffectType": 1,
-      "VisualEffect": 1,
+      "Lifetime": 0.2,
+      "OncePerCollision": false,
+      "Size": 5,
+      "SyncLifetimeWithBullet": false,
+      "UseBulletPosition": true,
+      "VisualEffect": 19
+    },
+    {
       "AudioClip": "explosion_10",
       "Color": "#A8D0E5",
       "ColorMode": 1,
-      "Size": 5.0,
-      "Lifetime": 0.2
-    }
-  ],
-  "ImpactType": 2,
-  "Effects": [
-    {
-      "Power": 1.0
-    },
-    {
-      "Type": 3,
-      "Power": 100.0
+      "Condition": 2,
+      "Cooldown": 0,
+      "EffectType": 1,
+      "Lifetime": 0.2,
+      "OncePerCollision": false,
+      "Size": 5,
+      "SyncLifetimeWithBullet": false,
+      "UseBulletPosition": false,
+      "VisualEffect": 1
     }
   ]
 }

@@ -1,17 +1,21 @@
 {
-  "ItemType": 1,
-  "Id": 132,
-  "Name": "MissileLauncher_L_4",
-  "DisplayCategory": 1,
+  "AmmunitionId": 39,
+  "Availability": 0,
+  "CellType": "4",
+  "Color": "#FF0000",
   "ComponentStatsId": 1,
+  "Description": "",
+  "DeviceId": null,
+  "DisplayCategory": 1,
+  "DroneBayId": null,
+  "DroneId": null,
   "Faction": -1,
   "Icon": "rocket1",
-  "Color": "#FF0000",
+  "Id": 132,
+  "ItemType": 1,
   "Layout": "110110110",
-  "CellType": "4",
-  "WeaponId": 39,
-  "AmmunitionId": 39,
-  "WeaponSlotType": "M",
+  "Level": 0,
+  "Name": "MissileLauncher_L_4",
   "PossibleModifications": [
     14,
     13,
@@ -23,5 +27,15 @@
     2,
     7,
     1
-  ]
+  ],
+  "Restrictions": {
+    "ComponentGroupTag": null,
+    "MaxComponentAmount": 0,
+    "NotForMechanicShips": false,
+    "NotForOrganicShips": false,
+    "ShipSizes": [],
+    "UniqueComponentTag": ""
+  },
+  "WeaponId": 39,
+  "WeaponSlotType": "M"
 }

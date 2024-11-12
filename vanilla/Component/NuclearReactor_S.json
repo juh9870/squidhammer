@@ -1,17 +1,33 @@
 {
-  "ItemType": 1,
-  "Id": 78,
-  "Name": "$NuclearReactor_S",
-  "DisplayCategory": 3,
+  "AmmunitionId": null,
   "Availability": 1,
+  "CellType": "2",
+  "Color": "#FFDCFF",
   "ComponentStatsId": 78,
+  "Description": "",
+  "DeviceId": null,
+  "DisplayCategory": 3,
+  "DroneBayId": null,
+  "DroneId": null,
   "Faction": -1,
   "Icon": "reactor1",
-  "Color": "#FFDCFF",
+  "Id": 78,
+  "ItemType": 1,
   "Layout": "1",
-  "CellType": "2",
+  "Level": 0,
+  "Name": "$NuclearReactor_S",
   "PossibleModifications": [
     12,
     1
-  ]
+  ],
+  "Restrictions": {
+    "ComponentGroupTag": null,
+    "MaxComponentAmount": 0,
+    "NotForMechanicShips": false,
+    "NotForOrganicShips": false,
+    "ShipSizes": [],
+    "UniqueComponentTag": ""
+  },
+  "WeaponId": null,
+  "WeaponSlotType": ""
 }

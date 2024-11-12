@@ -1,93 +1,132 @@
 {
-  "ItemType": 15,
   "Id": 101,
-  "StartCondition": 6,
-  "Weight": 0.05,
-  "Requirement": {
-    "Type": 2,
-    "Requirements": [
-      {
-        "Type": 10,
-        "ItemId": 100
-      },
-      {
-        "Type": 26,
-        "Loot": {
-          "Type": 2,
-          "MinAmount": 30,
-          "MaxAmount": 30
-        }
-      }
-    ]
-  },
+  "ItemType": 15,
+  "Level": 0,
+  "Name": "",
   "Nodes": [
     {
+      "Actions": [
+        {
+          "ButtonText": "$Action_Accept",
+          "Requirement": {
+            "Type": 0
+          },
+          "TargetNode": 4
+        },
+        {
+          "ButtonText": "$Action_Decline",
+          "Requirement": {
+            "Type": 0
+          },
+          "TargetNode": 2
+        }
+      ],
+      "Character": 2,
+      "Enemy": null,
       "Id": 1,
-      "Type": 10,
+      "Loot": 2,
       "Message": "$JanSalo_2_Intro",
-      "Loot": 2,
-      "Character": 2,
-      "Actions": [
-        {
-          "TargetNode": 4,
-          "ButtonText": "$Action_Accept"
-        },
-        {
-          "TargetNode": 2,
-          "ButtonText": "$Action_Decline"
-        }
-      ]
+      "RequiredView": 0,
+      "Type": 10
     },
     {
+      "Actions": [
+        {
+          "ButtonText": "$Action_Accept",
+          "Requirement": {
+            "Type": 0
+          },
+          "TargetNode": 4
+        },
+        {
+          "ButtonText": "$Action_Decline",
+          "Requirement": {
+            "Type": 0
+          },
+          "TargetNode": 3
+        }
+      ],
+      "Character": 2,
+      "Enemy": null,
       "Id": 2,
-      "Type": 10,
+      "Loot": 2,
       "Message": "$JanSalo_2_Message1",
-      "Loot": 2,
-      "Character": 2,
-      "Actions": [
-        {
-          "TargetNode": 4,
-          "ButtonText": "$Action_Accept"
-        },
-        {
-          "TargetNode": 3,
-          "ButtonText": "$Action_Decline"
-        }
-      ]
+      "RequiredView": 0,
+      "Type": 10
     },
     {
+      "Actions": [
+        {
+          "ButtonText": "$Action_Accept",
+          "Requirement": {
+            "Type": 0
+          },
+          "TargetNode": 4
+        },
+        {
+          "ButtonText": "$Action_Decline",
+          "Requirement": {
+            "Type": 0
+          },
+          "TargetNode": 2
+        }
+      ],
+      "Character": 2,
+      "Enemy": null,
       "Id": 3,
-      "Type": 10,
-      "Message": "$JanSalo_2_Message2",
       "Loot": 2,
-      "Character": 2,
-      "Actions": [
-        {
-          "TargetNode": 4,
-          "ButtonText": "$Action_Accept"
-        },
-        {
-          "TargetNode": 2,
-          "ButtonText": "$Action_Decline"
-        }
-      ]
+      "Message": "$JanSalo_2_Message2",
+      "RequiredView": 0,
+      "Type": 10
     },
     {
-      "Id": 4,
-      "Type": 36,
       "DefaultTransition": 5,
-      "Loot": 2
+      "Id": 4,
+      "Loot": 2,
+      "Type": 36
     },
     {
+      "Character": 2,
+      "DefaultTransition": 6,
       "Id": 5,
       "Type": 55,
-      "DefaultTransition": 6,
-      "Character": 2,
       "Value": 5
     },
     {
       "Id": 6,
       "Type": 40
     }
-  ]
+  ],
+  "Origin": {
+    "Factions": {
+      "List": [],
+      "Type": 0
+    },
+    "MaxDistance": 0,
+    "MaxRelations": 0,
+    "MinDistance": 0,
+    "MinRelations": 0,
+    "Type": 0
+  },
+  "QuestType": 0,
+  "Requirement": {
+    "Requirements": [
+      {
+        "ItemId": 100,
+        "Type": 10
+      },
+      {
+        "Loot": {
+          "MaxAmount": 30,
+          "MinAmount": 30,
+          "Type": 2
+        },
+        "Type": 26
+      }
+    ],
+    "Type": 2
+  },
+  "StartCondition": 6,
+  "UseRandomSeed": false,
+  "Weight": 0.05
 }

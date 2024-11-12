@@ -1,15 +1,25 @@
 {
-  "ItemType": 2,
-  "Id": 21,
+  "ActivationType": 0,
+  "Color": "#00000000",
+  "ControlButtonIcon": "controls_gear",
+  "Cooldown": 7,
   "DeviceClass": 22,
-  "PassiveEnergyConsumption": 5.0,
-  "Power": 0.3,
-  "Size": 15.0,
-  "Cooldown": 7.0,
+  "EffectPrefab": "",
+  "EnergyConsumption": 0,
+  "Id": 21,
+  "ItemType": 2,
+  "Lifetime": 0,
+  "ObjectPrefab": "WormSegment2",
   "Offset": {
     "x": 0.45,
     "y": 0.35
   },
-  "ObjectPrefab": "WormSegment2",
-  "ControlButtonIcon": "controls_gear"
+  "PassiveEnergyConsumption": 5,
+  "Power": 0.3,
+  "Prefab": null,
+  "Range": 0,
+  "ScaleEnergyWithShipSize": true,
+  "Size": 15,
+  "Sound": "",
+  "VisualEffect": null
 }

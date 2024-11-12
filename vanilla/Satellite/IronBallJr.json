@@ -1,18 +1,25 @@
 {
-  "ItemType": 7,
-  "Id": 24,
-  "Name": "$IronBall",
-  "ModelImage": "ironball",
-  "ModelScale": 1.2,
-  "SizeClass": 4,
-  "Layout": "0033300013331033444333344433334443301333100033300",
   "Barrels": [
     {
-      "AutoAimingArc": 360.0,
-      "RotationSpeed": 90.0,
-      "WeaponClass": "L",
+      "AutoAimingArc": 360,
       "Image": "ironball",
-      "Size": 1.0
+      "Offset": 0,
+      "PlatformType": 0,
+      "Position": {
+        "x": 0,
+        "y": 0
+      },
+      "Rotation": 0,
+      "RotationSpeed": 90,
+      "Size": 1,
+      "WeaponClass": "L"
     }
-  ]
+  ],
+  "Id": 24,
+  "ItemType": 7,
+  "Layout": "0033300013331033444333344433334443301333100033300",
+  "ModelImage": "ironball",
+  "ModelScale": 1.2,
+  "Name": "$IronBall",
+  "SizeClass": 4
 }

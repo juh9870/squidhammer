@@ -1,17 +1,25 @@
 {
-  "ItemType": 7,
-  "Id": 13,
-  "Name": "$Companion_5l",
-  "ModelImage": "satellite5",
-  "ModelScale": 0.8,
-  "SizeClass": -1,
-  "Layout": "0000014441244422444200000",
   "Barrels": [
     {
+      "AutoAimingArc": 0,
+      "Image": "",
+      "Offset": 0,
+      "PlatformType": 0,
       "Position": {
-        "x": 0.5
+        "x": 0.5,
+        "y": 0
       },
+      "Rotation": 0,
+      "RotationSpeed": 0,
+      "Size": 0,
       "WeaponClass": "M"
     }
-  ]
+  ],
+  "Id": 13,
+  "ItemType": 7,
+  "Layout": "0000014441244422444200000",
+  "ModelImage": "satellite5",
+  "ModelScale": 0.8,
+  "Name": "$Companion_5l",
+  "SizeClass": -1
 }

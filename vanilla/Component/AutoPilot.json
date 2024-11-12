@@ -1,18 +1,33 @@
 {
-  "ItemType": 1,
-  "Id": 216,
-  "Name": "$Autopilot",
-  "DisplayCategory": 6,
+  "AmmunitionId": null,
   "Availability": 1,
-  "ComponentStatsId": 199,
-  "Faction": 5,
-  "Level": 100,
-  "Icon": "jammer",
-  "Color": "#C0FFC0",
-  "Layout": "1100",
   "CellType": "2",
+  "Color": "#C0FFC0",
+  "ComponentStatsId": 199,
+  "Description": "",
+  "DeviceId": null,
+  "DisplayCategory": 6,
+  "DroneBayId": null,
+  "DroneId": null,
+  "Faction": 5,
+  "Icon": "jammer",
+  "Id": 216,
+  "ItemType": 1,
+  "Layout": "1100",
+  "Level": 100,
+  "Name": "$Autopilot",
   "PossibleModifications": [
     1,
     2
-  ]
+  ],
+  "Restrictions": {
+    "ComponentGroupTag": null,
+    "MaxComponentAmount": 0,
+    "NotForMechanicShips": false,
+    "NotForOrganicShips": false,
+    "ShipSizes": [],
+    "UniqueComponentTag": ""
+  },
+  "WeaponId": null,
+  "WeaponSlotType": ""
 }

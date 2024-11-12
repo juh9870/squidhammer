@@ -1,7 +1,17 @@
 {
-  "ItemType": 14,
-  "Id": 6,
-  "Name": "$Faction6",
   "Color": "#FF8000",
-  "WanderingShipsDistance": 15
+  "Hidden": false,
+  "HideFromMerchants": false,
+  "HideResearchTree": false,
+  "HomeStarDistance": 0,
+  "HomeStarDistanceMax": 0,
+  "Hostile": false,
+  "Id": 6,
+  "ItemType": 14,
+  "Name": "$Faction6",
+  "NoMissions": false,
+  "NoTerritories": false,
+  "NoWanderingShips": false,
+  "WanderingShipsDistance": 15,
+  "WanderingShipsDistanceMax": 0
 }

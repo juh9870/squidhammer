@@ -1,21 +1,35 @@
 {
-  "ItemType": 1,
-  "Id": 73,
-  "Name": "$PointDefense",
-  "DisplayCategory": 2,
+  "AmmunitionId": null,
   "Availability": 1,
-  "ComponentStatsId": 3,
-  "Faction": 1,
-  "Level": 40,
-  "Icon": "pointdefense",
-  "Color": "#C0FFC0",
-  "Layout": "000010111",
   "CellType": "2",
+  "Color": "#C0FFC0",
+  "ComponentStatsId": 3,
+  "Description": "",
   "DeviceId": 10,
+  "DisplayCategory": 2,
+  "DroneBayId": null,
+  "DroneId": null,
+  "Faction": 1,
+  "Icon": "pointdefense",
+  "Id": 73,
+  "ItemType": 1,
+  "Layout": "000010111",
+  "Level": 40,
+  "Name": "$PointDefense",
   "PossibleModifications": [
     2,
     7,
     1,
     6
-  ]
+  ],
+  "Restrictions": {
+    "ComponentGroupTag": null,
+    "MaxComponentAmount": 0,
+    "NotForMechanicShips": false,
+    "NotForOrganicShips": false,
+    "ShipSizes": [],
+    "UniqueComponentTag": ""
+  },
+  "WeaponId": null,
+  "WeaponSlotType": ""
 }

@@ -1,48 +1,73 @@
 {
-  "ItemType": 25,
-  "Id": 102,
   "Body": {
-    "Size": 2.0,
+    "AiBulletBehavior": 2,
     "AttachedToParent": true,
-    "Range": 20.0,
-    "Lifetime": 0.1,
-    "Color": "#7ACFFF",
     "BulletPrefab": 5,
-    "EnergyCost": 5.0,
-    "AiBulletBehavior": 2
+    "CanBeDisarmed": false,
+    "Color": "#7ACFFF",
+    "EnergyCost": 5,
+    "FriendlyFire": false,
+    "HitPoints": 0,
+    "Length": 0,
+    "Lifetime": 0.1,
+    "ParentVelocityEffect": 1,
+    "Range": 20,
+    "Size": 2,
+    "Type": 0,
+    "Velocity": 0,
+    "Weight": 0
   },
   "Controller": {
     "Type": 2
   },
-  "Triggers": [
-    {
-      "Condition": 3,
-      "EffectType": 1,
-      "VisualEffect": 1,
-      "Size": 2.0
-    },
-    {
-      "Condition": 3,
-      "EffectType": 2,
-      "Ammunition": 106,
-      "Quantity": 9,
-      "Cooldown": 0.5,
-      "RandomFactor": 0.75,
-      "Rotation": "RANDOM(0,360)",
-      "OffsetX": "0.5"
-    }
-  ],
-  "ImpactType": 1,
   "Effects": [
     {
       "DamageType": 1,
-      "Power": 10.0,
-      "Factor": 1.0
+      "Factor": 1,
+      "Power": 10,
+      "Type": 0
     },
     {
-      "Type": 3,
       "DamageType": 1,
-      "Power": 1.0
+      "Factor": 0,
+      "Power": 1,
+      "Type": 3
+    }
+  ],
+  "Id": 102,
+  "ImpactType": 1,
+  "ItemType": 25,
+  "Triggers": [
+    {
+      "AudioClip": "",
+      "Color": "#00000000",
+      "ColorMode": 0,
+      "Condition": 3,
+      "Cooldown": 0,
+      "EffectType": 1,
+      "Lifetime": 0,
+      "OncePerCollision": false,
+      "Size": 2,
+      "SyncLifetimeWithBullet": false,
+      "UseBulletPosition": false,
+      "VisualEffect": 1
+    },
+    {
+      "Ammunition": 106,
+      "AudioClip": "",
+      "Color": "#00000000",
+      "ColorMode": 0,
+      "Condition": 3,
+      "Cooldown": 0.5,
+      "EffectType": 2,
+      "MaxNestingLevel": 0,
+      "OffsetX": "0.5",
+      "OffsetY": "0",
+      "PowerMultiplier": 0,
+      "Quantity": 9,
+      "RandomFactor": 0.75,
+      "Rotation": "RANDOM(0,360)",
+      "Size": 0
     }
   ]
 }

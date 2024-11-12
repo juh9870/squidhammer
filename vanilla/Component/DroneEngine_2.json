@@ -1,17 +1,34 @@
 {
-  "ItemType": 1,
-  "Id": 198,
-  "Name": "DroneEngine_2",
-  "DisplayCategory": 4,
-  "ComponentStatsId": 198,
-  "Faction": -1,
-  "Level": 5,
-  "Icon": "engine0",
-  "Layout": "1",
+  "AmmunitionId": null,
+  "Availability": 0,
   "CellType": "5",
+  "Color": "#00000000",
+  "ComponentStatsId": 198,
+  "Description": "",
+  "DeviceId": null,
+  "DisplayCategory": 4,
+  "DroneBayId": null,
+  "DroneId": null,
+  "Faction": -1,
+  "Icon": "engine0",
+  "Id": 198,
+  "ItemType": 1,
+  "Layout": "1",
+  "Level": 5,
+  "Name": "DroneEngine_2",
   "PossibleModifications": [
     11,
     1,
     2
-  ]
+  ],
+  "Restrictions": {
+    "ComponentGroupTag": null,
+    "MaxComponentAmount": 0,
+    "NotForMechanicShips": false,
+    "NotForOrganicShips": false,
+    "ShipSizes": [],
+    "UniqueComponentTag": ""
+  },
+  "WeaponId": null,
+  "WeaponSlotType": ""
 }

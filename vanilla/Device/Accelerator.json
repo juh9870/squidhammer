@@ -1,16 +1,25 @@
 {
-  "ItemType": 2,
-  "Id": 1,
-  "EnergyConsumption": 0.3,
-  "ScaleEnergyWithShipSize": false,
-  "Power": 4.0,
-  "Size": 2.0,
-  "Cooldown": 1.0,
-  "Offset": {
-    "x": -0.1
-  },
   "ActivationType": 1,
   "Color": "#C0FFFF80",
+  "ControlButtonIcon": "controls_boost",
+  "Cooldown": 1,
+  "DeviceClass": 0,
   "EffectPrefab": "Flicker",
-  "ControlButtonIcon": "controls_boost"
+  "EnergyConsumption": 0.3,
+  "Id": 1,
+  "ItemType": 2,
+  "Lifetime": 0,
+  "ObjectPrefab": "",
+  "Offset": {
+    "x": -0.1,
+    "y": 0
+  },
+  "PassiveEnergyConsumption": 0,
+  "Power": 4,
+  "Prefab": null,
+  "Range": 0,
+  "ScaleEnergyWithShipSize": false,
+  "Size": 2,
+  "Sound": "",
+  "VisualEffect": null
 }

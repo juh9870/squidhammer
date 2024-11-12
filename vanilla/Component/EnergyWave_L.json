@@ -1,18 +1,21 @@
 {
-  "ItemType": 1,
-  "Id": 199,
-  "Name": "$EnergyWaveL",
-  "DisplayCategory": 1,
-  "Availability": 5,
-  "ComponentStatsId": 1,
-  "Faction": 17,
-  "Level": 200,
-  "Icon": "energy_wave2",
-  "Layout": "010111111",
-  "CellType": "4",
-  "WeaponId": 108,
   "AmmunitionId": 119,
-  "WeaponSlotType": "L",
+  "Availability": 5,
+  "CellType": "4",
+  "Color": "#00000000",
+  "ComponentStatsId": 1,
+  "Description": "",
+  "DeviceId": null,
+  "DisplayCategory": 1,
+  "DroneBayId": null,
+  "DroneId": null,
+  "Faction": 17,
+  "Icon": "energy_wave2",
+  "Id": 199,
+  "ItemType": 1,
+  "Layout": "010111111",
+  "Level": 200,
+  "Name": "$EnergyWaveL",
   "PossibleModifications": [
     6,
     5,
@@ -21,5 +24,15 @@
     7,
     1,
     14
-  ]
+  ],
+  "Restrictions": {
+    "ComponentGroupTag": null,
+    "MaxComponentAmount": 0,
+    "NotForMechanicShips": false,
+    "NotForOrganicShips": false,
+    "ShipSizes": [],
+    "UniqueComponentTag": ""
+  },
+  "WeaponId": 108,
+  "WeaponSlotType": "L"
 }

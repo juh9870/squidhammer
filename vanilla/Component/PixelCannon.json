@@ -1,16 +1,21 @@
 {
-  "ItemType": 1,
-  "Id": 266,
-  "Name": "$PixelCannon",
-  "DisplayCategory": 1,
-  "Availability": 4,
-  "ComponentStatsId": 1,
-  "Icon": "tutorial_gun",
-  "Layout": "110110110",
-  "CellType": "4",
-  "WeaponId": 84,
   "AmmunitionId": 84,
-  "WeaponSlotType": "C",
+  "Availability": 4,
+  "CellType": "4",
+  "Color": "#00000000",
+  "ComponentStatsId": 1,
+  "Description": "",
+  "DeviceId": null,
+  "DisplayCategory": 1,
+  "DroneBayId": null,
+  "DroneId": null,
+  "Faction": null,
+  "Icon": "tutorial_gun",
+  "Id": 266,
+  "ItemType": 1,
+  "Layout": "110110110",
+  "Level": 0,
+  "Name": "$PixelCannon",
   "PossibleModifications": [
     13,
     8,
@@ -21,5 +26,15 @@
     2,
     7,
     1
-  ]
+  ],
+  "Restrictions": {
+    "ComponentGroupTag": null,
+    "MaxComponentAmount": 0,
+    "NotForMechanicShips": false,
+    "NotForOrganicShips": false,
+    "ShipSizes": [],
+    "UniqueComponentTag": ""
+  },
+  "WeaponId": 84,
+  "WeaponSlotType": "C"
 }

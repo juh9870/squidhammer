@@ -1,31 +1,72 @@
 {
-  "ItemType": 6,
-  "Id": 9,
-  "ShipType": 4,
-  "SizeClass": 4,
-  "Name": "$f8_Flagship",
-  "Faction": 10,
-  "IconImage": "flagship8",
-  "IconScale": 1.0,
-  "ModelImage": "flagship8",
-  "ModelScale": 5.0,
+  "Barrels": [
+    {
+      "AutoAimingArc": 20,
+      "Image": "",
+      "Offset": 0,
+      "PlatformType": 0,
+      "Position": {
+        "x": 1,
+        "y": 0
+      },
+      "Rotation": 0,
+      "RotationSpeed": 0,
+      "Size": 0,
+      "WeaponClass": "L"
+    }
+  ],
+  "BaseWeightModifier": 0,
+  "BuiltinDevices": [],
+  "CellsExpansions": 0,
+  "ColliderTolerance": 0.02,
+  "Description": "",
+  "EnergyResistance": 0,
   "EngineColor": "#4096A8FF",
+  "EnginePosition": {
+    "x": 0,
+    "y": 0
+  },
+  "EngineSize": 0,
   "Engines": [
     {
       "Position": {
-        "x": -0.95
+        "x": -0.95,
+        "y": 0
       },
       "Size": 0.5
     }
   ],
+  "Faction": 10,
+  "Features": {
+    "ArmorBonus": 0,
+    "BuiltinDevices": [],
+    "DroneAttackBonus": 0,
+    "DroneBuildSpeedBonus": 0,
+    "DroneDefenseBonus": 0,
+    "EnergyBonus": 0,
+    "EnergyResistance": 0,
+    "EquipmentWeightBonus": 0,
+    "HeatResistance": 0,
+    "KineticResistance": 0,
+    "Regeneration": false,
+    "ShieldBonus": 0,
+    "ShipWeightBonus": 0,
+    "TurnRateBonus": 0,
+    "VelocityBonus": 0
+  },
+  "HeatResistance": 0,
+  "IconImage": "flagship8",
+  "IconScale": 1,
+  "Id": 9,
+  "ItemType": 6,
+  "KineticResistance": 0,
   "Layout": "000000000000000000000000000000444000000000000001110444011100000000011111444111110000000111111444111111000001111112444211111100001111122222221111100011111122222221111110111111222222222111111111111222222222111111111112222222222211111111111222222222111111011111222222222111110011111222222222111110011111222222222111110001111222222222111100001111222222222111100000111555222555111000000011555555555110000000000555555555000000000000055555550000000",
-  "Barrels": [
-    {
-      "Position": {
-        "x": 1.0
-      },
-      "AutoAimingArc": 20.0,
-      "WeaponClass": "L"
-    }
-  ]
+  "ModelImage": "flagship8",
+  "ModelScale": 5,
+  "Name": "$f8_Flagship",
+  "Regeneration": false,
+  "ShipCategory": 0,
+  "ShipRarity": 0,
+  "ShipType": 4,
+  "SizeClass": 4
 }

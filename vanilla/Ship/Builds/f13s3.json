@@ -1,101 +1,182 @@
 {
-  "ItemType": 8,
-  "Id": 253,
-  "ShipId": 107,
+  "AvailableForEnemy": true,
+  "AvailableForPlayer": true,
+  "BuildFaction": null,
   "Components": [
     {
+      "BarrelId": 0,
+      "Behaviour": 0,
       "ComponentId": 58,
+      "KeyBinding": 2,
+      "Modification": null,
+      "Quality": 0,
       "X": 2,
-      "Y": 5,
-      "KeyBinding": 2
+      "Y": 5
     },
     {
+      "BarrelId": 0,
+      "Behaviour": 0,
       "ComponentId": 67,
+      "KeyBinding": 2,
+      "Modification": null,
+      "Quality": 0,
       "X": 4,
-      "Y": 6,
-      "KeyBinding": 2
+      "Y": 6
     },
     {
+      "BarrelId": 0,
+      "Behaviour": 0,
       "ComponentId": 67,
+      "KeyBinding": 2,
+      "Modification": null,
+      "Quality": 0,
       "X": 4,
-      "Y": 5,
-      "KeyBinding": 2
+      "Y": 5
     },
     {
+      "BarrelId": 0,
+      "Behaviour": 0,
       "ComponentId": 67,
+      "KeyBinding": 2,
+      "Modification": null,
+      "Quality": 0,
       "X": 3,
-      "Y": 1,
-      "KeyBinding": 2
+      "Y": 1
     },
     {
+      "BarrelId": 0,
+      "Behaviour": 0,
       "ComponentId": 67,
+      "KeyBinding": 2,
+      "Modification": null,
+      "Quality": 0,
       "X": 5,
-      "Y": 5,
-      "KeyBinding": 2
+      "Y": 5
     },
     {
+      "BarrelId": 0,
+      "Behaviour": 0,
       "ComponentId": 67,
+      "KeyBinding": 2,
+      "Modification": null,
+      "Quality": 0,
       "X": 5,
-      "Y": 4,
-      "KeyBinding": 2
-    },
-    {
-      "ComponentId": 67,
-      "X": 5,
-      "Y": 3,
-      "KeyBinding": 2
-    },
-    {
-      "ComponentId": 67,
-      "X": 1,
-      "Y": 5,
-      "KeyBinding": 2
-    },
-    {
-      "ComponentId": 67,
-      "X": 1,
-      "Y": 4,
-      "KeyBinding": 2
-    },
-    {
-      "ComponentId": 67,
-      "X": 1,
-      "Y": 3,
-      "KeyBinding": 2
-    },
-    {
-      "ComponentId": 12,
-      "X": 3,
-      "KeyBinding": 2
-    },
-    {
-      "ComponentId": 67,
-      "X": 4,
-      "Y": 1,
-      "KeyBinding": 2
-    },
-    {
-      "ComponentId": 67,
-      "X": 2,
-      "Y": 1,
-      "KeyBinding": 2
-    },
-    {
-      "ComponentId": 115,
       "Y": 4
     },
     {
-      "ComponentId": 165,
-      "X": 6,
-      "Y": 4,
-      "BarrelId": 1,
-      "KeyBinding": 1
+      "BarrelId": 0,
+      "Behaviour": 0,
+      "ComponentId": 67,
+      "KeyBinding": 2,
+      "Modification": null,
+      "Quality": 0,
+      "X": 5,
+      "Y": 3
     },
     {
-      "ComponentId": 77,
+      "BarrelId": 0,
+      "Behaviour": 0,
+      "ComponentId": 67,
+      "KeyBinding": 2,
+      "Modification": null,
+      "Quality": 0,
+      "X": 1,
+      "Y": 5
+    },
+    {
+      "BarrelId": 0,
+      "Behaviour": 0,
+      "ComponentId": 67,
+      "KeyBinding": 2,
+      "Modification": null,
+      "Quality": 0,
+      "X": 1,
+      "Y": 4
+    },
+    {
+      "BarrelId": 0,
+      "Behaviour": 0,
+      "ComponentId": 67,
+      "KeyBinding": 2,
+      "Modification": null,
+      "Quality": 0,
+      "X": 1,
+      "Y": 3
+    },
+    {
+      "BarrelId": 0,
+      "Behaviour": 0,
+      "ComponentId": 12,
+      "KeyBinding": 2,
+      "Modification": null,
+      "Quality": 0,
       "X": 3,
-      "Y": 3,
-      "KeyBinding": 2
+      "Y": 0
+    },
+    {
+      "BarrelId": 0,
+      "Behaviour": 0,
+      "ComponentId": 67,
+      "KeyBinding": 2,
+      "Modification": null,
+      "Quality": 0,
+      "X": 4,
+      "Y": 1
+    },
+    {
+      "BarrelId": 0,
+      "Behaviour": 0,
+      "ComponentId": 67,
+      "KeyBinding": 2,
+      "Modification": null,
+      "Quality": 0,
+      "X": 2,
+      "Y": 1
+    },
+    {
+      "BarrelId": 0,
+      "Behaviour": 0,
+      "ComponentId": 115,
+      "KeyBinding": 0,
+      "Modification": null,
+      "Quality": 0,
+      "X": 0,
+      "Y": 4
+    },
+    {
+      "BarrelId": 1,
+      "Behaviour": 0,
+      "ComponentId": 165,
+      "KeyBinding": 1,
+      "Modification": null,
+      "Quality": 0,
+      "X": 6,
+      "Y": 4
+    },
+    {
+      "BarrelId": 0,
+      "Behaviour": 0,
+      "ComponentId": 77,
+      "KeyBinding": 2,
+      "Modification": null,
+      "Quality": 0,
+      "X": 3,
+      "Y": 3
     }
-  ]
+  ],
+  "CustomAI": null,
+  "DifficultyClass": 0,
+  "ExtendedLayout": false,
+  "Id": 253,
+  "ItemType": 8,
+  "LeftSatelliteBuild": null,
+  "NotAvailableInGame": false,
+  "Perks": {
+    "Perk1": 0,
+    "Perk2": 0,
+    "Perk3": 0
+  },
+  "RandomColor": false,
+  "RightSatelliteBuild": null,
+  "ShipId": 107
 }

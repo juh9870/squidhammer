@@ -1,39 +1,100 @@
 {
-  "ItemType": 6,
-  "Id": 80,
-  "ShipType": 3,
-  "Name": "Invader",
-  "IconImage": "space_invader",
-  "IconScale": 0.5,
-  "ModelImage": "space_invader",
-  "ModelScale": 3.0,
+  "Barrels": [
+    {
+      "AutoAimingArc": 0,
+      "Image": "",
+      "Offset": 0,
+      "PlatformType": 0,
+      "Position": {
+        "x": 0.5,
+        "y": 0.9
+      },
+      "Rotation": 0,
+      "RotationSpeed": 0,
+      "Size": 0,
+      "WeaponClass": ""
+    },
+    {
+      "AutoAimingArc": 0,
+      "Image": "",
+      "Offset": 0,
+      "PlatformType": 0,
+      "Position": {
+        "x": 0.5,
+        "y": -0.9
+      },
+      "Rotation": 0,
+      "RotationSpeed": 0,
+      "Size": 0,
+      "WeaponClass": ""
+    },
+    {
+      "AutoAimingArc": 0,
+      "Image": "",
+      "Offset": 0,
+      "PlatformType": 0,
+      "Position": {
+        "x": 0.3,
+        "y": 0
+      },
+      "Rotation": 0,
+      "RotationSpeed": 0,
+      "Size": 0,
+      "WeaponClass": ""
+    }
+  ],
+  "BaseWeightModifier": 0,
+  "BuiltinDevices": [],
+  "CellsExpansions": 0,
+  "ColliderTolerance": 0.02,
+  "Description": "",
+  "EnergyResistance": 0,
   "EngineColor": "#40FFFFFF",
+  "EnginePosition": {
+    "x": 0,
+    "y": 0
+  },
+  "EngineSize": 0,
   "Engines": [
     {
       "Position": {
-        "x": -0.4
+        "x": -0.4,
+        "y": 0
       },
       "Size": 0.3
     }
   ],
+  "Faction": null,
+  "Features": {
+    "ArmorBonus": 0,
+    "BuiltinDevices": [],
+    "DroneAttackBonus": 0,
+    "DroneBuildSpeedBonus": 0,
+    "DroneDefenseBonus": 0,
+    "EnergyBonus": 0,
+    "EnergyResistance": 0,
+    "EquipmentWeightBonus": 0,
+    "HeatResistance": 0,
+    "KineticResistance": 0,
+    "Regeneration": false,
+    "ShieldBonus": 0,
+    "ShipWeightBonus": 0,
+    "TurnRateBonus": 0,
+    "VelocityBonus": 0
+  },
+  "HeatResistance": 0,
+  "IconImage": "space_invader",
+  "IconScale": 0.5,
+  "Id": 80,
+  "ItemType": 6,
+  "KineticResistance": 0,
   "Layout": "0000000000000000000000000100010004010000010440114441104411144411140112252211000522522500000500050000000000000000000000000",
-  "Barrels": [
-    {
-      "Position": {
-        "x": 0.5,
-        "y": 0.9
-      }
-    },
-    {
-      "Position": {
-        "x": 0.5,
-        "y": -0.9
-      }
-    },
-    {
-      "Position": {
-        "x": 0.3
-      }
-    }
-  ]
+  "ModelImage": "space_invader",
+  "ModelScale": 3,
+  "Name": "Invader",
+  "Regeneration": false,
+  "ShipCategory": 0,
+  "ShipRarity": 0,
+  "ShipType": 3,
+  "SizeClass": -1
 }

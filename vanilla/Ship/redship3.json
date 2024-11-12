@@ -1,14 +1,46 @@
 {
-  "ItemType": 6,
-  "Id": 147,
-  "SizeClass": 2,
-  "Name": "$redship3",
-  "Faction": 19,
-  "IconImage": "red_ship3",
-  "IconScale": 1.0,
-  "ModelImage": "red_ship3",
-  "ModelScale": 4.0,
+  "Barrels": [
+    {
+      "AutoAimingArc": 0,
+      "Image": "",
+      "Offset": 0,
+      "PlatformType": 0,
+      "Position": {
+        "x": 0.33,
+        "y": 0.78
+      },
+      "Rotation": 0,
+      "RotationSpeed": 0,
+      "Size": 0,
+      "WeaponClass": "CS"
+    },
+    {
+      "AutoAimingArc": 0,
+      "Image": "",
+      "Offset": 0,
+      "PlatformType": 0,
+      "Position": {
+        "x": 0.33,
+        "y": -0.78
+      },
+      "Rotation": 0,
+      "RotationSpeed": 0,
+      "Size": 0,
+      "WeaponClass": "TL"
+    }
+  ],
+  "BaseWeightModifier": 0,
+  "BuiltinDevices": [],
+  "CellsExpansions": 0,
+  "ColliderTolerance": 0.02,
+  "Description": "",
+  "EnergyResistance": 0,
   "EngineColor": "#40FF1000",
+  "EnginePosition": {
+    "x": 0,
+    "y": 0
+  },
+  "EngineSize": 0,
   "Engines": [
     {
       "Position": {
@@ -25,26 +57,37 @@
       "Size": 0.5
     }
   ],
-  "Layout": "0000000000000000001110000000000111000000000111110000440122222104444112222211444411222221144441122222114444112222211440011155511100001015551010000000555000000000005000000",
-  "Barrels": [
-    {
-      "Position": {
-        "x": 0.33,
-        "y": 0.78
-      },
-      "WeaponClass": "CS"
-    },
-    {
-      "Position": {
-        "x": 0.33,
-        "y": -0.78
-      },
-      "WeaponClass": "TL"
-    }
-  ],
+  "Faction": 19,
   "Features": {
-    "ShipWeightBonus": 0.3,
+    "ArmorBonus": 1,
+    "BuiltinDevices": [],
+    "DroneAttackBonus": 0,
+    "DroneBuildSpeedBonus": 0,
+    "DroneDefenseBonus": 0,
+    "EnergyBonus": 0,
+    "EnergyResistance": 0,
     "EquipmentWeightBonus": 0.3,
-    "ArmorBonus": 1.0
-  }
+    "HeatResistance": 0,
+    "KineticResistance": 0,
+    "Regeneration": false,
+    "ShieldBonus": 0,
+    "ShipWeightBonus": 0.3,
+    "TurnRateBonus": 0,
+    "VelocityBonus": 0
+  },
+  "HeatResistance": 0,
+  "IconImage": "red_ship3",
+  "IconScale": 1,
+  "Id": 147,
+  "ItemType": 6,
+  "KineticResistance": 0,
+  "Layout": "0000000000000000001110000000000111000000000111110000440122222104444112222211444411222221144441122222114444112222211440011155511100001015551010000000555000000000005000000",
+  "ModelImage": "red_ship3",
+  "ModelScale": 4,
+  "Name": "$redship3",
+  "Regeneration": false,
+  "ShipCategory": 0,
+  "ShipRarity": 0,
+  "ShipType": 0,
+  "SizeClass": 2
 }

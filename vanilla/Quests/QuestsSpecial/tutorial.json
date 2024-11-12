@@ -1,72 +1,117 @@
 {
-  "ItemType": 15,
   "Id": 1,
+  "ItemType": 15,
+  "Level": 0,
   "Name": "$Quest_Tutorial",
-  "QuestType": 2,
-  "StartCondition": 4,
   "Nodes": [
     {
+      "Actions": [
+        {
+          "ButtonText": "$ACTION_Continue",
+          "Requirement": {
+            "Type": 0
+          },
+          "TargetNode": 2
+        }
+      ],
+      "Character": 3,
+      "Enemy": null,
       "Id": 1,
-      "Type": 10,
+      "Loot": null,
       "Message": "$TUTORIAL_Start",
-      "Character": 3,
-      "Actions": [
-        {
-          "TargetNode": 2,
-          "ButtonText": "$ACTION_Continue"
-        }
-      ]
+      "RequiredView": 0,
+      "Type": 10
     },
     {
+      "Actions": [
+        {
+          "ButtonText": "$ACTION_Continue",
+          "Requirement": {
+            "Type": 0
+          },
+          "TargetNode": 3
+        }
+      ],
+      "Character": 3,
+      "Enemy": null,
       "Id": 2,
-      "Type": 10,
+      "Loot": null,
       "Message": "$TUTORIAL_Info1",
-      "Character": 3,
-      "Actions": [
-        {
-          "TargetNode": 3,
-          "ButtonText": "$ACTION_Continue"
-        }
-      ]
+      "RequiredView": 0,
+      "Type": 10
     },
     {
-      "Id": 3,
-      "Type": 10,
-      "Message": "$TUTORIAL_Training",
-      "Character": 3,
       "Actions": [
         {
-          "TargetNode": 4,
-          "ButtonText": "$TUTORIAL_ACTION_Training"
+          "ButtonText": "$TUTORIAL_ACTION_Training",
+          "Requirement": {
+            "Type": 0
+          },
+          "TargetNode": 4
         },
         {
-          "TargetNode": 5,
-          "ButtonText": "$TUTORIAL_ACTION_Skip"
+          "ButtonText": "$TUTORIAL_ACTION_Skip",
+          "Requirement": {
+            "Type": 0
+          },
+          "TargetNode": 5
         }
-      ]
-    },
-    {
-      "Id": 4,
-      "Type": 20,
-      "DefaultTransition": 5,
-      "FailureTransition": 3,
-      "Enemy": 1
-    },
-    {
-      "Id": 5,
-      "Type": 10,
-      "Message": "$TUTORIAL_End",
+      ],
       "Character": 3,
+      "Enemy": null,
+      "Id": 3,
+      "Loot": null,
+      "Message": "$TUTORIAL_Training",
+      "RequiredView": 0,
+      "Type": 10
+    },
+    {
+      "DefaultTransition": 5,
+      "Enemy": 1,
+      "FailureTransition": 3,
+      "Id": 4,
+      "Loot": null,
+      "Type": 20
+    },
+    {
       "Actions": [
         {
-          "TargetNode": 6,
-          "ButtonText": "$ACTION_Continue"
+          "ButtonText": "$ACTION_Continue",
+          "Requirement": {
+            "Type": 0
+          },
+          "TargetNode": 6
         }
-      ]
+      ],
+      "Character": 3,
+      "Enemy": null,
+      "Id": 5,
+      "Loot": null,
+      "Message": "$TUTORIAL_End",
+      "RequiredView": 0,
+      "Type": 10
     },
     {
       "Id": 6,
       "Type": 40
     }
-  ]
+  ],
+  "Origin": {
+    "Factions": {
+      "List": [],
+      "Type": 0
+    },
+    "MaxDistance": 0,
+    "MaxRelations": 0,
+    "MinDistance": 0,
+    "MinRelations": 0,
+    "Type": 0
+  },
+  "QuestType": 2,
+  "Requirement": {
+    "Type": 0
+  },
+  "StartCondition": 4,
+  "UseRandomSeed": false,
+  "Weight": 0
 }

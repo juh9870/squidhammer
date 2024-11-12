@@ -1,3 +1,8 @@
 {
-  "ItemType": 112
+  "CombatMusic": [],
+  "ExplorationMusic": [],
+  "GalaxyMapMusic": [],
+  "Id": 0,
+  "ItemType": 112,
+  "MainMenuMusic": []
 }

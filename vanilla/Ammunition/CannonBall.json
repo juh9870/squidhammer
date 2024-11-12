@@ -1,35 +1,58 @@
 {
-  "ItemType": 25,
-  "Id": 116,
   "Body": {
-    "Size": 0.4,
-    "Velocity": 20.0,
-    "Range": 30.0,
-    "Weight": 0.5,
-    "HitPoints": 10,
+    "AiBulletBehavior": 0,
+    "AttachedToParent": false,
     "BulletPrefab": 12,
-    "EnergyCost": 10.0
+    "CanBeDisarmed": false,
+    "Color": "#00000000",
+    "EnergyCost": 10,
+    "FriendlyFire": false,
+    "HitPoints": 10,
+    "Length": 0,
+    "Lifetime": 0,
+    "ParentVelocityEffect": 1,
+    "Range": 30,
+    "Size": 0.4,
+    "Type": 0,
+    "Velocity": 20,
+    "Weight": 0.5
   },
+  "Controller": {
+    "Type": 0
+  },
+  "Effects": [],
+  "Id": 116,
+  "ImpactType": 0,
+  "ItemType": 25,
   "Triggers": [
     {
-      "Condition": 2,
-      "EffectType": 2,
-      "AudioClip": "explosion_04",
       "Ammunition": 117,
+      "AudioClip": "explosion_04",
       "Color": "#0051FF",
       "ColorMode": 1,
+      "Condition": 2,
+      "Cooldown": 0,
+      "EffectType": 2,
+      "MaxNestingLevel": 0,
+      "OffsetX": "IF(Quantity <= 1, 0, Size / 2)",
+      "OffsetY": "0",
+      "PowerMultiplier": 75,
       "Quantity": 1,
-      "Size": 10.0,
-      "PowerMultiplier": 75.0
+      "RandomFactor": 0,
+      "Rotation": "IF(Quantity <= 1, 0, RANDOM(0, 360))",
+      "Size": 10
     },
     {
-      "Condition": 1,
-      "EffectType": 4,
-      "VisualEffect": 6,
+      "AudioClip": "",
       "Color": "#20FFFFFF",
       "ColorMode": 3,
-      "Size": 5.0,
-      "Lifetime": 1.0
+      "Condition": 1,
+      "Cooldown": 0,
+      "EffectType": 4,
+      "Lifetime": 1,
+      "OncePerCollision": false,
+      "Size": 5,
+      "VisualEffect": 6
     }
   ]
 }

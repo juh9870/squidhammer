@@ -1,19 +1,21 @@
 {
-  "ItemType": 1,
-  "Id": 251,
-  "Name": "$ClusterTorpedo",
-  "DisplayCategory": 1,
-  "Availability": 1,
-  "ComponentStatsId": 1,
-  "Faction": 15,
-  "Level": 200,
-  "Icon": "torpedo4",
-  "Color": "#FF5151",
-  "Layout": "0110011001100110",
-  "CellType": "4",
-  "WeaponId": 101,
   "AmmunitionId": 107,
-  "WeaponSlotType": "T",
+  "Availability": 1,
+  "CellType": "4",
+  "Color": "#FF5151",
+  "ComponentStatsId": 1,
+  "Description": "",
+  "DeviceId": null,
+  "DisplayCategory": 1,
+  "DroneBayId": null,
+  "DroneId": null,
+  "Faction": 15,
+  "Icon": "torpedo4",
+  "Id": 251,
+  "ItemType": 1,
+  "Layout": "0110011001100110",
+  "Level": 200,
+  "Name": "$ClusterTorpedo",
   "PossibleModifications": [
     6,
     5,
@@ -22,5 +24,15 @@
     7,
     1,
     14
-  ]
+  ],
+  "Restrictions": {
+    "ComponentGroupTag": null,
+    "MaxComponentAmount": 0,
+    "NotForMechanicShips": false,
+    "NotForOrganicShips": false,
+    "ShipSizes": [],
+    "UniqueComponentTag": ""
+  },
+  "WeaponId": 101,
+  "WeaponSlotType": "T"
 }

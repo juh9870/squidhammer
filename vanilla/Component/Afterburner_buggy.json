@@ -1,20 +1,34 @@
 {
+  "AmmunitionId": null,
+  "Availability": 4,
+  "CellType": "5",
+  "Color": "#000000",
+  "ComponentStatsId": 3,
+  "Description": "",
+  "DeviceId": 1,
+  "DisplayCategory": 4,
+  "DroneBayId": null,
+  "DroneId": null,
+  "Faction": 7,
+  "Icon": "afterburner1",
   "Id": 0,
   "ItemType": 1,
-  "Name": "$Afterburner",
-  "DisplayCategory": 4,
-  "Availability": 4,
-  "ComponentStatsId": 3,
-  "Faction": 7,
-  "Level": 25,
-  "Icon": "afterburner1",
-  "Color": "#000000",
   "Layout": "100100100",
-  "CellType": "5",
-  "DeviceId": 1,
+  "Level": 25,
+  "Name": "$Afterburner",
   "PossibleModifications": [
     2,
     1,
     6
-  ]
+  ],
+  "Restrictions": {
+    "ComponentGroupTag": null,
+    "MaxComponentAmount": 0,
+    "NotForMechanicShips": false,
+    "NotForOrganicShips": false,
+    "ShipSizes": [],
+    "UniqueComponentTag": ""
+  },
+  "WeaponId": null,
+  "WeaponSlotType": ""
 }

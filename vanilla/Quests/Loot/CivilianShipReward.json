@@ -1,80 +1,83 @@
 {
-  "ItemType": 16,
   "Id": 17,
+  "ItemType": 16,
   "Loot": {
-    "Type": 21,
     "Items": [
       {
         "Loot": {
           "Type": 5
-        }
+        },
+        "Weight": 0
       },
       {
         "Loot": {
-          "Type": 20,
-          "MinAmount": 1,
-          "MaxAmount": 3,
           "Items": [
             {
-              "Weight": 1.0,
               "Loot": {
-                "Type": 25,
                 "ItemId": 11,
+                "MaxAmount": 20,
                 "MinAmount": 1,
-                "MaxAmount": 20
-              }
+                "Type": 25
+              },
+              "Weight": 1
             },
             {
-              "Weight": 1.0,
               "Loot": {
-                "Type": 25,
                 "ItemId": 6,
+                "MaxAmount": 20,
                 "MinAmount": 1,
-                "MaxAmount": 20
-              }
+                "Type": 25
+              },
+              "Weight": 1
             },
             {
-              "Weight": 0.5,
               "Loot": {
-                "Type": 10,
-                "MinAmount": 1,
-                "MaxAmount": 2,
-                "ValueRatio": 1.0,
                 "Factions": {
+                  "List": [],
                   "Type": 3
-                }
-              }
+                },
+                "MaxAmount": 2,
+                "MinAmount": 1,
+                "Type": 10,
+                "ValueRatio": 1
+              },
+              "Weight": 0.5
             },
             {
-              "Weight": 0.6,
               "Loot": {
-                "Type": 25,
                 "ItemId": 13,
+                "MaxAmount": 15,
                 "MinAmount": 1,
-                "MaxAmount": 15
-              }
+                "Type": 25
+              },
+              "Weight": 0.6
             },
             {
-              "Weight": 0.1,
               "Loot": {
-                "Type": 25,
                 "ItemId": 14,
+                "MaxAmount": 10,
                 "MinAmount": 1,
-                "MaxAmount": 10
-              }
+                "Type": 25
+              },
+              "Weight": 0.1
             },
             {
-              "Weight": 0.1,
               "Loot": {
-                "Type": 25,
                 "ItemId": 12,
+                "MaxAmount": 10,
                 "MinAmount": 1,
-                "MaxAmount": 10
-              }
+                "Type": 25
+              },
+              "Weight": 0.1
             }
-          ]
-        }
+          ],
+          "MaxAmount": 3,
+          "MinAmount": 1,
+          "Type": 20
+        },
+        "Weight": 0
       }
-    ]
+    ],
+    "Type": 21
   }
 }

@@ -1,19 +1,34 @@
 {
-  "ItemType": 1,
-  "Id": 61,
-  "Name": "$NuclearDrive_T",
-  "DisplayCategory": 4,
+  "AmmunitionId": null,
   "Availability": 1,
-  "ComponentStatsId": 61,
-  "Faction": -1,
-  "Level": 100,
-  "Icon": "engine5",
-  "Color": "#FFFFC0",
-  "Layout": "111111111",
   "CellType": "5",
+  "Color": "#FFFFC0",
+  "ComponentStatsId": 61,
+  "Description": "",
+  "DeviceId": null,
+  "DisplayCategory": 4,
+  "DroneBayId": null,
+  "DroneId": null,
+  "Faction": -1,
+  "Icon": "engine5",
+  "Id": 61,
+  "ItemType": 1,
+  "Layout": "111111111",
+  "Level": 100,
+  "Name": "$NuclearDrive_T",
   "PossibleModifications": [
     2,
     11,
     1
-  ]
+  ],
+  "Restrictions": {
+    "ComponentGroupTag": null,
+    "MaxComponentAmount": 0,
+    "NotForMechanicShips": false,
+    "NotForOrganicShips": false,
+    "ShipSizes": [],
+    "UniqueComponentTag": ""
+  },
+  "WeaponId": null,
+  "WeaponSlotType": ""
 }

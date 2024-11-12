@@ -1,8 +1,9 @@
 {
-  "ItemType": 20,
-  "Id": 16,
-  "Name": "$Commodity_Artifacts",
-  "Icon": "eye",
   "Color": "#D892A2",
+  "Description": "",
+  "Icon": "eye",
+  "Id": 16,
+  "ItemType": 20,
+  "Name": "$Commodity_Artifacts",
   "Price": 200
 }

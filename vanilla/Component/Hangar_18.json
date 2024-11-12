@@ -1,18 +1,21 @@
 {
-  "ItemType": 1,
-  "Id": 279,
-  "Name": "$DroneBay_L_18",
-  "DisplayCategory": 5,
+  "AmmunitionId": null,
   "Availability": 2,
-  "ComponentStatsId": 2,
-  "Faction": 18,
-  "Level": 250,
-  "Icon": "hangar",
-  "Color": "#808080",
-  "Layout": "0000011111111111111111111",
   "CellType": "1",
+  "Color": "#808080",
+  "ComponentStatsId": 2,
+  "Description": "",
+  "DeviceId": null,
+  "DisplayCategory": 5,
   "DroneBayId": 6,
   "DroneId": 375,
+  "Faction": 18,
+  "Icon": "hangar",
+  "Id": 279,
+  "ItemType": 1,
+  "Layout": "0000011111111111111111111",
+  "Level": 250,
+  "Name": "$DroneBay_L_18",
   "PossibleModifications": [
     17,
     18,
@@ -20,5 +23,15 @@
     20,
     1,
     2
-  ]
+  ],
+  "Restrictions": {
+    "ComponentGroupTag": null,
+    "MaxComponentAmount": 0,
+    "NotForMechanicShips": false,
+    "NotForOrganicShips": false,
+    "ShipSizes": [],
+    "UniqueComponentTag": ""
+  },
+  "WeaponId": null,
+  "WeaponSlotType": ""
 }

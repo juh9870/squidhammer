@@ -1,48 +1,100 @@
 {
-  "ItemType": 6,
-  "Id": 16,
-  "SizeClass": 3,
-  "Name": "$f0_Destroyer2",
-  "Faction": 7,
-  "IconImage": "f0s4",
-  "IconScale": 1.0,
-  "ModelImage": "f0s4",
-  "ModelScale": 1.8,
+  "Barrels": [
+    {
+      "AutoAimingArc": 0,
+      "Image": "",
+      "Offset": 0,
+      "PlatformType": 0,
+      "Position": {
+        "x": 1,
+        "y": 0.5
+      },
+      "Rotation": 3,
+      "RotationSpeed": 0,
+      "Size": 0,
+      "WeaponClass": "L"
+    },
+    {
+      "AutoAimingArc": 0,
+      "Image": "",
+      "Offset": 0,
+      "PlatformType": 0,
+      "Position": {
+        "x": 1,
+        "y": -0.5
+      },
+      "Rotation": -3,
+      "RotationSpeed": 0,
+      "Size": 0,
+      "WeaponClass": "L"
+    },
+    {
+      "AutoAimingArc": 0,
+      "Image": "",
+      "Offset": 0,
+      "PlatformType": 0,
+      "Position": {
+        "x": 0.8,
+        "y": 0
+      },
+      "Rotation": 0,
+      "RotationSpeed": 0,
+      "Size": 0,
+      "WeaponClass": "S"
+    }
+  ],
+  "BaseWeightModifier": 0,
+  "BuiltinDevices": [],
+  "CellsExpansions": 0,
+  "ColliderTolerance": 0.02,
+  "Description": "",
+  "EnergyResistance": 0,
   "EngineColor": "#40FFFF80",
+  "EnginePosition": {
+    "x": 0,
+    "y": 0
+  },
+  "EngineSize": 0,
   "Engines": [
     {
       "Position": {
-        "x": -0.85
+        "x": -0.85,
+        "y": 0
       },
       "Size": 0.3
     }
   ],
-  "Layout": "004000000400004000000400004044440400001044440100011044440110110222222011110222222011110222222011111222222111001225522100000055550000000005500000",
-  "Barrels": [
-    {
-      "Position": {
-        "x": 1.0,
-        "y": 0.5
-      },
-      "Rotation": 3.0,
-      "WeaponClass": "L"
-    },
-    {
-      "Position": {
-        "x": 1.0,
-        "y": -0.5
-      },
-      "Rotation": -3.0,
-      "WeaponClass": "L"
-    },
-    {
-      "Position": {
-        "x": 0.8
-      },
-      "WeaponClass": "S"
-    }
-  ],
+  "Faction": 7,
   "Features": {
-    "ArmorBonus": 0.5
-  }
+    "ArmorBonus": 0.5,
+    "BuiltinDevices": [],
+    "DroneAttackBonus": 0,
+    "DroneBuildSpeedBonus": 0,
+    "DroneDefenseBonus": 0,
+    "EnergyBonus": 0,
+    "EnergyResistance": 0,
+    "EquipmentWeightBonus": 0,
+    "HeatResistance": 0,
+    "KineticResistance": 0,
+    "Regeneration": false,
+    "ShieldBonus": 0,
+    "ShipWeightBonus": 0,
+    "TurnRateBonus": 0,
+    "VelocityBonus": 0
+  },
+  "HeatResistance": 0,
+  "IconImage": "f0s4",
+  "IconScale": 1,
+  "Id": 16,
+  "ItemType": 6,
+  "KineticResistance": 0,
+  "Layout": "004000000400004000000400004044440400001044440100011044440110110222222011110222222011110222222011111222222111001225522100000055550000000005500000",
+  "ModelImage": "f0s4",
+  "ModelScale": 1.8,
+  "Name": "$f0_Destroyer2",
+  "Regeneration": false,
+  "ShipCategory": 0,
+  "ShipRarity": 0,
+  "ShipType": 0,
+  "SizeClass": 3
 }

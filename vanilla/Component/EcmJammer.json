@@ -1,20 +1,34 @@
 {
-  "ItemType": 1,
-  "Id": 54,
-  "Name": "$EcmJammer",
-  "DisplayCategory": 6,
+  "AmmunitionId": null,
   "Availability": 1,
-  "ComponentStatsId": 3,
-  "Faction": 7,
-  "Level": 25,
-  "Icon": "jammer",
-  "Color": "#C0C0C0",
-  "Layout": "1100",
   "CellType": "2",
+  "Color": "#C0C0C0",
+  "ComponentStatsId": 3,
+  "Description": "",
   "DeviceId": 4,
+  "DisplayCategory": 6,
+  "DroneBayId": null,
+  "DroneId": null,
+  "Faction": 7,
+  "Icon": "jammer",
+  "Id": 54,
+  "ItemType": 1,
+  "Layout": "1100",
+  "Level": 25,
+  "Name": "$EcmJammer",
   "PossibleModifications": [
     6,
     2,
     1
-  ]
+  ],
+  "Restrictions": {
+    "ComponentGroupTag": null,
+    "MaxComponentAmount": 0,
+    "NotForMechanicShips": false,
+    "NotForOrganicShips": false,
+    "ShipSizes": [],
+    "UniqueComponentTag": ""
+  },
+  "WeaponId": null,
+  "WeaponSlotType": ""
 }

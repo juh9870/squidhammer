@@ -1,9 +1,15 @@
 {
-  "ItemType": 3,
-  "Id": 80,
-  "FireRate": 1.0,
-  "Spread": 5.0,
   "ActivationType": 1,
+  "ChargeSound": "",
+  "ControlButtonIcon": "controls_web",
+  "EffectSize": 0,
+  "FireRate": 1,
+  "Id": 80,
+  "ItemType": 3,
+  "Magazine": 0,
   "ShotEffectPrefab": "OrbAdditive",
-  "ControlButtonIcon": "controls_web"
+  "ShotSound": "",
+  "Spread": 5,
+  "VisualEffect": null,
+  "WeaponClass": 0
 }

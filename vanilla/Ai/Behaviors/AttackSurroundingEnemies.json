@@ -1,68 +1,114 @@
 {
-  "ItemType": 28,
   "Id": 128,
+  "ItemType": 28,
   "RootNode": {
-    "Type": 3,
-    "Requirement": {
-      "Type": 11
-    },
     "Nodes": [
       {
-        "Type": 103
+        "Requirement": {
+          "Type": 0
+        },
+        "Type": 103,
+        "WeaponType": 0
       },
       {
-        "Type": 4,
         "Nodes": [
           {
+            "Requirement": {
+              "Type": 0
+            },
             "Type": 58
           },
           {
-            "Type": 111,
+            "Cooldown": 0.1,
             "Requirement": {
-              "Type": 6,
-              "DifficultyLevel": 1
+              "DifficultyLevel": 1,
+              "Type": 6
             },
-            "Cooldown": 0.1
+            "Type": 111
           }
-        ]
+        ],
+        "Requirement": {
+          "Type": 0
+        },
+        "Type": 4
       },
       {
-        "Type": 4,
         "Nodes": [
           {
-            "Type": 1,
-            "ItemId": 141
+            "ItemId": 141,
+            "Requirement": {
+              "Type": 0
+            },
+            "Type": 1
           },
           {
-            "Type": 3,
             "Nodes": [
               {
+                "Requirement": {
+                  "Type": 0
+                },
                 "Type": 58
               },
               {
+                "MaxValue": 0.9,
+                "MinValue": 0.1,
+                "Requirement": {
+                  "Type": 0
+                },
                 "Type": 115
               },
               {
+                "InRange": false,
+                "Requirement": {
+                  "Type": 0
+                },
                 "Type": 102
               }
-            ]
+            ],
+            "Requirement": {
+              "Type": 0
+            },
+            "Type": 3
           },
           {
-            "Type": 3,
             "Nodes": [
               {
+                "Requirement": {
+                  "Type": 0
+                },
                 "Type": 54
               },
               {
+                "MaxValue": 0.9,
+                "MinValue": 0.1,
+                "Requirement": {
+                  "Type": 0
+                },
                 "Type": 115
               },
               {
+                "InRange": false,
+                "Requirement": {
+                  "Type": 0
+                },
                 "Type": 127
               }
-            ]
+            ],
+            "Requirement": {
+              "Type": 0
+            },
+            "Type": 3
           }
-        ]
+        ],
+        "Requirement": {
+          "Type": 0
+        },
+        "Type": 4
       }
-    ]
+    ],
+    "Requirement": {
+      "Type": 11
+    },
+    "Type": 3
   }
 }

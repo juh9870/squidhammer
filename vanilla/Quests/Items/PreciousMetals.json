@@ -1,8 +1,9 @@
 {
-  "ItemType": 20,
-  "Id": 14,
-  "Name": "$Commodity_PreciousMetals",
-  "Icon": "stone",
   "Color": "#EADA82",
+  "Description": "",
+  "Icon": "stone",
+  "Id": 14,
+  "ItemType": 20,
+  "Name": "$Commodity_PreciousMetals",
   "Price": 100
 }

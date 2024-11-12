@@ -1,21 +1,64 @@
 {
-  "ItemType": 6,
-  "Id": 100,
-  "ShipType": 3,
-  "SizeClass": 2,
-  "Name": "turret1",
-  "Faction": 1,
-  "IconImage": "turret_platform_1",
-  "IconScale": 1.0,
-  "ModelImage": "turret_platform_1",
-  "ModelScale": 2.0,
-  "EngineColor": "#407F7FFF",
-  "Layout": "0000111000000111111100012111112100222444222022224442222222244422222222444222202224442220012111112100011111110000001110000",
   "Barrels": [
     {
-      "AutoAimingArc": 360.0,
+      "AutoAimingArc": 360,
       "Image": "turret",
-      "Size": 1.0
+      "Offset": 0,
+      "PlatformType": 0,
+      "Position": {
+        "x": 0,
+        "y": 0
+      },
+      "Rotation": 0,
+      "RotationSpeed": 0,
+      "Size": 1,
+      "WeaponClass": ""
     }
-  ]
+  ],
+  "BaseWeightModifier": 0,
+  "BuiltinDevices": [],
+  "CellsExpansions": 0,
+  "ColliderTolerance": 0.02,
+  "Description": "",
+  "EnergyResistance": 0,
+  "EngineColor": "#407F7FFF",
+  "EnginePosition": {
+    "x": 0,
+    "y": 0
+  },
+  "EngineSize": 0,
+  "Engines": [],
+  "Faction": 1,
+  "Features": {
+    "ArmorBonus": 0,
+    "BuiltinDevices": [],
+    "DroneAttackBonus": 0,
+    "DroneBuildSpeedBonus": 0,
+    "DroneDefenseBonus": 0,
+    "EnergyBonus": 0,
+    "EnergyResistance": 0,
+    "EquipmentWeightBonus": 0,
+    "HeatResistance": 0,
+    "KineticResistance": 0,
+    "Regeneration": false,
+    "ShieldBonus": 0,
+    "ShipWeightBonus": 0,
+    "TurnRateBonus": 0,
+    "VelocityBonus": 0
+  },
+  "HeatResistance": 0,
+  "IconImage": "turret_platform_1",
+  "IconScale": 1,
+  "Id": 100,
+  "ItemType": 6,
+  "KineticResistance": 0,
+  "Layout": "0000111000000111111100012111112100222444222022224442222222244422222222444222202224442220012111112100011111110000001110000",
+  "ModelImage": "turret_platform_1",
+  "ModelScale": 2,
+  "Name": "turret1",
+  "Regeneration": false,
+  "ShipCategory": 0,
+  "ShipRarity": 0,
+  "ShipType": 3,
+  "SizeClass": 2
 }

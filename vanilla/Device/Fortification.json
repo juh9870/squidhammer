@@ -1,12 +1,25 @@
 {
-  "ItemType": 2,
-  "Id": 7,
-  "DeviceClass": 13,
-  "EnergyConsumption": 1.0,
-  "PassiveEnergyConsumption": 2.0,
-  "Cooldown": 4.0,
   "ActivationType": 1,
   "Color": "#C04A4CFF",
+  "ControlButtonIcon": "controls_laser",
+  "Cooldown": 4,
+  "DeviceClass": 13,
+  "EffectPrefab": "",
+  "EnergyConsumption": 1,
+  "Id": 7,
+  "ItemType": 2,
+  "Lifetime": 0,
+  "ObjectPrefab": "",
+  "Offset": {
+    "x": 0,
+    "y": 0
+  },
+  "PassiveEnergyConsumption": 2,
+  "Power": 0,
+  "Prefab": null,
+  "Range": 0,
+  "ScaleEnergyWithShipSize": true,
+  "Size": 0,
   "Sound": "hit_04",
-  "ControlButtonIcon": "controls_laser"
+  "VisualEffect": null
 }

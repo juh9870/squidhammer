@@ -1,18 +1,34 @@
 {
-  "ItemType": 1,
-  "Id": 203,
-  "Name": "$AntiMatterDrive_T",
-  "DisplayCategory": 4,
+  "AmmunitionId": null,
   "Availability": 1,
-  "ComponentStatsId": 203,
-  "Faction": 15,
-  "Level": 350,
-  "Icon": "engine7",
-  "Layout": "000000111111111111111111011110000000",
   "CellType": "5",
+  "Color": "#00000000",
+  "ComponentStatsId": 203,
+  "Description": "",
+  "DeviceId": null,
+  "DisplayCategory": 4,
+  "DroneBayId": null,
+  "DroneId": null,
+  "Faction": 15,
+  "Icon": "engine7",
+  "Id": 203,
+  "ItemType": 1,
+  "Layout": "000000111111111111111111011110000000",
+  "Level": 350,
+  "Name": "$AntiMatterDrive_T",
   "PossibleModifications": [
     2,
     11,
     1
-  ]
+  ],
+  "Restrictions": {
+    "ComponentGroupTag": null,
+    "MaxComponentAmount": 0,
+    "NotForMechanicShips": false,
+    "NotForOrganicShips": false,
+    "ShipSizes": [],
+    "UniqueComponentTag": ""
+  },
+  "WeaponId": null,
+  "WeaponSlotType": ""
 }

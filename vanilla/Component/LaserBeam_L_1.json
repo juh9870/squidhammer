@@ -1,20 +1,35 @@
 {
-  "ItemType": 1,
-  "Id": 20,
-  "Name": "LaserBeam_L_1",
-  "DisplayCategory": 1,
+  "AmmunitionId": 24,
+  "Availability": 0,
+  "CellType": "4",
+  "Color": "#FFFFC0",
   "ComponentStatsId": 1,
+  "Description": "",
+  "DeviceId": null,
+  "DisplayCategory": 1,
+  "DroneBayId": null,
+  "DroneId": null,
   "Faction": 7,
   "Icon": "laser4",
-  "Color": "#FFFFC0",
+  "Id": 20,
+  "ItemType": 1,
   "Layout": "111111111",
-  "CellType": "4",
-  "WeaponId": 24,
-  "AmmunitionId": 24,
+  "Level": 0,
+  "Name": "LaserBeam_L_1",
   "PossibleModifications": [
     5,
     2,
     7,
     1
-  ]
+  ],
+  "Restrictions": {
+    "ComponentGroupTag": null,
+    "MaxComponentAmount": 0,
+    "NotForMechanicShips": false,
+    "NotForOrganicShips": false,
+    "ShipSizes": [],
+    "UniqueComponentTag": ""
+  },
+  "WeaponId": 24,
+  "WeaponSlotType": ""
 }

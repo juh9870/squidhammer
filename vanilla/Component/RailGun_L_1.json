@@ -1,19 +1,21 @@
 {
-  "ItemType": 1,
-  "Id": 116,
-  "Name": "$RailGun_L_1",
-  "DisplayCategory": 1,
-  "Availability": 1,
-  "ComponentStatsId": 1,
-  "Faction": 9,
-  "Level": 125,
-  "Icon": "gun7",
-  "Color": "#BCDFFF",
-  "Layout": "0100010001000100",
-  "CellType": "4",
-  "WeaponId": 70,
   "AmmunitionId": 70,
-  "WeaponSlotType": "C",
+  "Availability": 1,
+  "CellType": "4",
+  "Color": "#BCDFFF",
+  "ComponentStatsId": 1,
+  "Description": "",
+  "DeviceId": null,
+  "DisplayCategory": 1,
+  "DroneBayId": null,
+  "DroneId": null,
+  "Faction": 9,
+  "Icon": "gun7",
+  "Id": 116,
+  "ItemType": 1,
+  "Layout": "0100010001000100",
+  "Level": 125,
+  "Name": "$RailGun_L_1",
   "PossibleModifications": [
     13,
     8,
@@ -24,5 +26,15 @@
     2,
     7,
     1
-  ]
+  ],
+  "Restrictions": {
+    "ComponentGroupTag": null,
+    "MaxComponentAmount": 0,
+    "NotForMechanicShips": false,
+    "NotForOrganicShips": false,
+    "ShipSizes": [],
+    "UniqueComponentTag": ""
+  },
+  "WeaponId": 70,
+  "WeaponSlotType": "C"
 }
