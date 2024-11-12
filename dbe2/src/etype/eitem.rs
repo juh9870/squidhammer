@@ -65,10 +65,17 @@ impl EItemInfo {
         match self {
             EItemInfo::Specific(ty) => {
                 if let Some(value) = self.extra_properties().get("default") {
-                    value.default_value().into()
-                } else {
-                    ty.ty.default_value(registry)
+                    let mut json_value = value.as_json_value();
+                    match ty.ty.parse_json(registry, &mut json_value, false) {
+                        Ok(data) => {
+                            return data.into();
+                        }
+                        Err(err) => {
+                            error!("failed to parse default value for {:?}: {}", ty.ty, err);
+                        }
+                    }
                 }
+                ty.ty.default_value(registry)
             }
             EItemInfo::Generic(ty) => {
                 error!(
