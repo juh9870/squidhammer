@@ -155,7 +155,8 @@ impl<Io> TabViewer for WorkspaceTabViewer<'_, Io> {
                     }
                 }
 
-                ui.label(format!("{:?}", value));
+                ui.add_space(ui.ctx().screen_rect().height() * 0.5);
+                ui.separator();
             }
             ProjectFile::BadValue(err) => {
                 let err_str = format!("{:?}", err);
@@ -185,6 +186,9 @@ impl<Io> TabViewer for WorkspaceTabViewer<'_, Io> {
                         panic!("Generated value was edited");
                     }
                 });
+
+                ui.add_space(ui.ctx().screen_rect().height() * 0.5);
+                ui.separator();
             }
         }
 

@@ -1,13 +1,14 @@
 use crate::graph::execution::GraphExecutionContext;
 use crate::graph::node::commands::{SnarlCommand, SnarlCommands};
 use crate::graph::node::enum_node::EnumNode;
+use crate::graph::node::list::ListNode;
 use crate::graph::node::struct_node::StructNode;
 use crate::graph::node::{get_snarl_node, SnarlNode};
 use crate::graph::Graph;
 use crate::m_try;
 use crate::project::side_effects::SideEffectsContext;
 use crate::registry::{EObjectType, ETypesRegistry};
-use crate::value::id::ETypeId;
+use crate::value::id::{EListId, ETypeId};
 use crate::value::EValue;
 use ahash::AHashMap;
 use egui_snarl::{InPin, InPinId, NodeId, OutPin, OutPinId, Snarl};
@@ -95,12 +96,12 @@ impl<'a> PartialGraphExecutionContext<'a> {
         &mut self,
         snarl: &Snarl<SnarlNode>,
         pin: InPinId,
-    ) -> miette::Result<()> {
+    ) -> miette::Result<bool> {
         let node = &snarl[pin.node];
 
-        self.as_full(snarl).inline_input_value(pin, node)?;
-
-        Ok(())
+        self.as_full(snarl)
+            .inline_input_value(pin, node)
+            .map(|e| e.is_some())
     }
 
     /// Returns mutable reference to the input value of the given pin
@@ -108,13 +109,16 @@ impl<'a> PartialGraphExecutionContext<'a> {
         &mut self,
         snarl: &Snarl<SnarlNode>,
         pin: InPinId,
-    ) -> miette::Result<&mut EValue> {
-        self.ensure_inline_input(snarl, pin)?;
+    ) -> miette::Result<Option<&mut EValue>> {
+        if !self.ensure_inline_input(snarl, pin)? {
+            return Ok(None);
+        }
 
-        Ok(self
-            .inputs
-            .get_mut(&pin)
-            .expect("input value should be present"))
+        Ok(Some(
+            self.inputs
+                .get_mut(&pin)
+                .expect("input value should be present"),
+        ))
     }
 
     pub fn read_input(&mut self, snarl: &Snarl<SnarlNode>, id: InPinId) -> miette::Result<EValue> {
@@ -198,6 +202,25 @@ impl<'a> PartialGraphExecutionContext<'a> {
             EObjectType::Enum(data) => Box::new(EnumNode::new(data.variant_ids()[0])),
         };
 
+        let id = snarl.insert_node(pos, node);
+        self.inputs.retain(|in_pin, _| in_pin.node != id);
+
+        Ok(id)
+    }
+
+    pub fn create_list_node(
+        &mut self,
+        item_ty: EListId,
+        pos: Pos2,
+        snarl: &mut Snarl<SnarlNode>,
+        _commands: &mut SnarlCommands,
+    ) -> miette::Result<NodeId> {
+        let item_ty = self
+            .registry
+            .get_list(&item_ty)
+            .expect("list id should be valid")
+            .value_type;
+        let node = Box::new(ListNode::of_type(item_ty));
         let id = snarl.insert_node(pos, node);
         self.inputs.retain(|in_pin, _| in_pin.node != id);
 

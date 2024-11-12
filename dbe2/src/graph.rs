@@ -147,6 +147,14 @@ impl Graph {
         let mut inputs = AHashMap::new();
 
         for (pin, value) in &self.inputs {
+            let Some(node) = self.snarl.get_node(pin.node) else {
+                continue;
+            };
+
+            if !node.has_inline_values()? {
+                continue;
+            }
+
             let value_json = value.write_json(registry).with_context(|| {
                 format!(
                     "failed to serialize input value #{} for {:?}",

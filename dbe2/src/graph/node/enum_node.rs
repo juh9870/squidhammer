@@ -137,7 +137,8 @@ impl Node for EnumNode {
             }
         }
 
-        self._default_try_connect(registry, commands, from, to, incoming_type)
+        self._default_try_connect(registry, commands, from, to, incoming_type)?;
+        Ok(())
     }
 
     fn execute(
