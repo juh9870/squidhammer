@@ -51,7 +51,7 @@ impl DbeApp {
         let mut fonts = FontDefinitions::default();
         fonts.font_data.insert(
             "fira-code".to_owned(),
-            FontData::from_static(include_bytes!("../fonts/FiraCode-Light.ttf")),
+            FontData::from_static(include_bytes!("../../assets/fonts/FiraCode-Light.ttf")),
         );
 
         fonts

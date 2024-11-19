@@ -18,3 +18,4 @@ targets = [
 ]
 # Where to host releases
 hosting = "github"
+precise-builds = true
