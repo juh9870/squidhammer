@@ -30,7 +30,7 @@ pub struct EStructField {
 }
 
 impl EStructField {
-    fn is_inline(&self) -> bool {
+    pub fn is_inline(&self) -> bool {
         self.ty
             .extra_properties()
             .get("inline")

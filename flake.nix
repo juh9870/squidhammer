@@ -43,6 +43,8 @@
           pkgs.cargo-depgraph
           pkgs.cargo-limit
           pkgs.pre-commit
+          pkgs.cargo-dist
+          pkgs.cargo-release
         ];
 
         shellHook = ''

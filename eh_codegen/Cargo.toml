@@ -2,6 +2,8 @@
 name = "eh_codegen"
 version = "0.1.0"
 edition = "2021"
+repository = "https://github.com/juh9870/dbe"
+publish = false
 
 [dependencies]
 camino = { workspace = true }
