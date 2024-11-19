@@ -1,2 +1,11 @@
 [alias]
 xtask = "run --package xtask --"
+
+[target.aarch64-apple-darwin]
+rustflags = [
+    "-C", "link-arg=-fuse-ld=lld",
+]
+[target.x86-apple-darwin]
+rustflags = [
+    "-C", "link-arg=-fuse-ld=lld",
+]
