@@ -1155,7 +1155,6 @@ dependencies = [
  "strip-ansi-escapes",
  "tracing",
  "ustr",
- "utils",
 ]
 
 [[package]]
@@ -3520,6 +3519,21 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "94143f37725109f92c262ed2cf5e59bce7498c01bcc1502d7b9afe439a4e9f49"
 
 [[package]]
+name = "scrapyard_editor"
+version = "0.1.0"
+dependencies = [
+ "backtrace-on-stack-overflow",
+ "color-backtrace",
+ "dbe_ui",
+ "eframe",
+ "egui_tracing",
+ "num_cpus",
+ "rayon",
+ "tracing",
+ "tracing-subscriber",
+]
+
+[[package]]
 name = "sctk-adwaita"
 version = "0.10.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3784,21 +3798,6 @@ dependencies = [
  "quote",
  "rustversion",
  "syn 2.0.87",
-]
-
-[[package]]
-name = "stuff_editor"
-version = "0.1.0"
-dependencies = [
- "backtrace-on-stack-overflow",
- "color-backtrace",
- "dbe_ui",
- "eframe",
- "egui_tracing",
- "num_cpus",
- "rayon",
- "tracing",
- "tracing-subscriber",
 ]
 
 [[package]]
