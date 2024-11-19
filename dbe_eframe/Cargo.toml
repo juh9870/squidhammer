@@ -1,6 +1,6 @@
 [package]
-name = "scrapyard_editor"
-version = "0.1.2"
+name = "squidhammer"
+version = "0.1.3-alpha.1"
 edition = "2021"
 repository = "https://github.com/juh9870/dbe"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
@@ -17,6 +17,10 @@ tracing-subscriber = { workspace = true, features = ["env-filter", "fmt"] }
 
 [target.'cfg(target_os = "linux")'.dependencies]
 backtrace-on-stack-overflow = { workspace = true, optional = true }
+
+[build-dependencies]
+embed-resource = { workspace = true }
+fs-err = { workspace = true }
 
 [features]
 default = []

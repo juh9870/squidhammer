@@ -1,3 +1,5 @@
+#![windows_subsystem = "windows"]
+
 use color_backtrace::{default_output_stream, BacktracePrinter};
 use dbe_ui::DbeApp;
 use eframe::egui::Context;
