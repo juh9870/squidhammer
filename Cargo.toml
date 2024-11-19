@@ -1,9 +1,9 @@
 [workspace]
 resolver = "2"
 members = [
-    "dbe2",
-    "dbe2_runner",
-    "dbe2_ui",
+    "dbe_backend",
+    "dbe_eframe",
+    "dbe_ui",
     "diagnostic",
     "eh_codegen",
     "list_edit",
@@ -68,7 +68,8 @@ ustr = "1.0.0"
 walkdir = "2.5.0"
 
 # Workspace crates
-dbe2 = { path = "dbe2" }
+dbe_backend = { path = "dbe_backend" }
+dbe_ui = { path = "dbe_ui" }
 utils = { path = "utils" }
 list_edit = { path = "list_edit" }
 diagnostic = { path = "diagnostic" }

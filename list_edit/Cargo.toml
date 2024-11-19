@@ -9,3 +9,6 @@ publish = false
 egui = { workspace = true }
 egui_dnd = { workspace = true }
 inline_tweak = { workspace = true }
+
+[package.metadata.release]
+release = false

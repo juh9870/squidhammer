@@ -1,0 +1,38 @@
+[package]
+name = "dbe_ui"
+version = "0.1.0"
+edition = "2021"
+repository = "https://github.com/juh9870/dbe"
+publish = false
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+ahash = { workspace = true }
+atomic_refcell = { workspace = true }
+camino = { workspace = true }
+cansi = { workspace = true }
+csscolorparser = { workspace = true }
+dbe_backend = { workspace = true }
+downcast-rs = { workspace = true }
+dyn-clone = { workspace = true }
+egui = { workspace = true }
+egui-modal = { workspace = true }
+egui-snarl = { workspace = true }
+egui-toast = { workspace = true }
+egui_dock = { workspace = true }
+egui_file = { workspace = true }
+egui_hooks = { workspace = true, features = ["serde"] }
+egui_tracing = { workspace = true }
+inline_tweak = { workspace = true }
+itertools = { workspace = true }
+list_edit = { workspace = true }
+miette = { workspace = true, features = ["fancy"] }
+num-traits = { workspace = true }
+random_color = { workspace = true }
+sanitise-file-name = { workspace = true }
+serde = { version = "1.0.214", features = ["derive"] }
+serde_json5 = { workspace = true }
+strip-ansi-escapes = { workspace = true }
+tracing = { workspace = true }
+ustr = { workspace = true }
+utils = { workspace = true }

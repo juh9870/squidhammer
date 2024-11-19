@@ -8,3 +8,6 @@ publish = false
 lockfree-object-pool = { workspace = true }
 miette = { workspace = true }
 smallvec = { workspace = true }
+
+[package.metadata.release]
+release = false

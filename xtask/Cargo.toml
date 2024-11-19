@@ -10,3 +10,6 @@ publish = false
 anyhow = "1"
 xflags = "0.3"
 xshell = "0.2"
+
+[package.metadata.release]
+release = false

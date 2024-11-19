@@ -13,3 +13,6 @@ thiserror = { workspace = true }
 
 [dev-dependencies]
 rstest = { workspace = true }
+
+[package.metadata.release]
+release = false
