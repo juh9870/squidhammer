@@ -3,12 +3,15 @@
 use color_backtrace::{default_output_stream, BacktracePrinter};
 use dbe_ui::DbeApp;
 use eframe::egui::Context;
+use eframe::icon_data::from_png_bytes;
 use eframe::{egui, App, CreationContext, Frame, Storage};
 use egui_tracing::tracing::collector::AllowedTargets;
 use egui_tracing::EventCollector;
 use tracing_subscriber::filter::LevelFilter;
 use tracing_subscriber::layer::SubscriberExt;
 use tracing_subscriber::EnvFilter;
+
+const ICON: &[u8] = include_bytes!("../../assets/favicon.png");
 
 fn main() -> eframe::Result<()> {
     #[cfg(all(
@@ -54,10 +57,13 @@ fn main() -> eframe::Result<()> {
         .build_global()
         .unwrap();
 
+    let icon = from_png_bytes(ICON).expect("Failed to load icon");
+
     let native_options = eframe::NativeOptions {
         viewport: egui::ViewportBuilder::default()
             .with_inner_size([800.0, 600.0])
-            .with_min_inner_size([400.0, 300.0]),
+            .with_min_inner_size([400.0, 300.0])
+            .with_icon(icon),
         ..Default::default()
     };
 
