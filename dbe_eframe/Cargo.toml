@@ -6,7 +6,6 @@ repository = "https://github.com/juh9870/dbe"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-backtrace-on-stack-overflow = { workspace = true }
 color-backtrace = { workspace = true }
 dbe_ui = { workspace = true }
 eframe = { workspace = true, features = ["persistence"] }
@@ -15,3 +14,11 @@ num_cpus = { workspace = true }
 rayon = { workspace = true }
 tracing = { workspace = true }
 tracing-subscriber = { workspace = true, features = ["env-filter", "fmt"] }
+
+[target.'cfg(target_os = "linux")'.dependencies]
+backtrace-on-stack-overflow = { workspace = true, optional = true }
+
+[features]
+default = []
+# Enables backtrace-on-stack-overflow ONLY on linux machines when debug assertions are enabled
+backtrace-on-stack-overflow = ["dep:backtrace-on-stack-overflow"]

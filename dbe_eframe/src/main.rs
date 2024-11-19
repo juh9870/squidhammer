@@ -9,7 +9,11 @@ use tracing_subscriber::layer::SubscriberExt;
 use tracing_subscriber::EnvFilter;
 
 fn main() -> eframe::Result<()> {
-    #[cfg(debug_assertions)]
+    #[cfg(all(
+        debug_assertions,
+        target_os = "linux",
+        feature = "backtrace-on-stack-overflow"
+    ))]
     unsafe {
         backtrace_on_stack_overflow::enable();
     }
