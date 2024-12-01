@@ -78,7 +78,7 @@ pub trait JsonRepr: Send + Sync + Debug {
         this: &EItemInfo,
         value: EValue,
     ) -> miette::Result<EValue> {
-        let _ = (registry, value);
+        let _ = (registry, this, value);
         bail!("conversion not supported")
     }
 

@@ -1,4 +1,4 @@
-enum tag="ItemType" {
+enum tag="ItemType" graph_autoconvert=true {
 //    const "Undefined" null tag=0
     object "Component" "eh:objects/component" tag=1
     object "Device" "eh:objects/device" tag=2

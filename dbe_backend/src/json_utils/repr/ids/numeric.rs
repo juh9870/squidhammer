@@ -8,10 +8,8 @@ use crate::validation::ids::numeric::NumericIDRegistry;
 use crate::validation::{validator_by_name, Validator};
 use crate::value::id::ETypeId;
 use crate::value::{estruct, EValue};
-use itertools::Itertools;
 use miette::bail;
 use std::borrow::Cow;
-use std::hash::Hasher;
 use std::sync::LazyLock;
 
 #[derive(Debug)]

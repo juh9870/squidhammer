@@ -1,4 +1,5 @@
 use crate::etype::default::DefaultEValue;
+use crate::etype::eenum::variant::{EEnumVariant, EEnumVariantId};
 use crate::etype::eitem::EItemInfo;
 use crate::etype::EDataType;
 use crate::json_utils::repr::JsonRepr;
@@ -85,19 +86,19 @@ impl NodePortType {
         let from = from.item_info_or_null();
 
         if let Some(repr) = from.repr(registry) {
-            #[cfg(debug_assertions)]
-            if !repr.is_convertible_to(registry, &from, to) {
-                panic!("only compatible types should be passed to this function");
+            if repr.is_convertible_to(registry, &from, to) {
+                return repr.convert_to(registry, to, value);
             }
-            return repr.convert_to(registry, to, value);
         }
 
         if let Some(repr) = to.repr(registry) {
-            #[cfg(debug_assertions)]
-            if !repr.is_convertible_from(registry, to, &from) {
-                panic!("only compatible types should be passed to this function");
+            if repr.is_convertible_from(registry, to, &from) {
+                return repr.convert_from(registry, to, value);
             }
-            return repr.convert_from(registry, to, value);
+        }
+
+        if let Some(value) = convert_enum(registry, &from, to, value)? {
+            return Ok(value);
         }
 
         bail!("conversion not supported")
@@ -131,5 +132,155 @@ fn types_compatible(registry: &ETypesRegistry, from: &EItemInfo, to: &EItemInfo)
         return true;
     }
 
+    enum_assignable(registry, from, to)
+}
+
+fn enum_assignable(registry: &ETypesRegistry, from: &EItemInfo, to: &EItemInfo) -> bool {
+    let target_ty = to.ty();
+
+    let EDataType::Object { ident } = target_ty else {
+        return false;
+    };
+
+    let Some(enum_data) = registry.get_enum(&ident) else {
+        return false;
+    };
+
+    let autoconvert = enum_data
+        .extra_properties
+        .get("graph_autoconvert")
+        .is_some_and(|v| v.as_bool().unwrap_or(false));
+    if !autoconvert {
+        return false;
+    }
+
+    let recursive_convert = enum_data
+        .extra_properties
+        .get("graph_autoconvert_recursive")
+        .is_some_and(|v| v.as_bool().unwrap_or(false));
+    let autoconvert_variant = enum_data
+        .extra_properties
+        .get("graph_autoconvert_variant")
+        .and_then(|v| v.as_string());
+
+    fn check_variant(
+        registry: &ETypesRegistry,
+        variant: &EEnumVariant,
+        from: &EItemInfo,
+        recursive_convert: bool,
+    ) -> bool {
+        if variant.data.ty() == from.ty() {
+            return true;
+        }
+
+        if recursive_convert {
+            let inner_info = &variant.data;
+            if let Some(inner_repr) = inner_info.repr(registry) {
+                if inner_repr.is_convertible_from(registry, inner_info, from) {
+                    return true;
+                }
+            };
+            if from
+                .repr(registry)
+                .is_some_and(|r| r.is_convertible_to(registry, from, inner_info))
+            {
+                return true;
+            }
+        }
+
+        false
+    }
+
+    if let Some(autoconvert_variant) = autoconvert_variant {
+        for variant in enum_data.variants() {
+            if variant.name == autoconvert_variant {
+                return check_variant(registry, variant, from, recursive_convert);
+            }
+        }
+    }
+
+    for variant in enum_data.variants() {
+        if check_variant(registry, variant, from, recursive_convert) {
+            return true;
+        }
+    }
+
     false
+}
+
+fn convert_enum(
+    registry: &ETypesRegistry,
+    from: &EItemInfo,
+    to: &EItemInfo,
+    value: EValue,
+) -> miette::Result<Option<EValue>> {
+    let target_ty = to.ty();
+
+    let EDataType::Object { ident } = target_ty else {
+        return Ok(None);
+    };
+
+    let Some(enum_data) = registry.get_enum(&ident) else {
+        return Ok(None);
+    };
+
+    // TODO: proper handling for properties, some centralized location with static utilities to handle conversion and warning logging too
+    let autoconvert = enum_data
+        .extra_properties
+        .get("graph_autoconvert")
+        .is_some_and(|v| v.as_bool().unwrap_or(false));
+    if !autoconvert {
+        return Ok(None);
+    }
+
+    let recursive_convert = enum_data
+        .extra_properties
+        .get("graph_autoconvert_recursive")
+        .is_some_and(|v| v.as_bool().unwrap_or(false));
+
+    let autoconvert_variant = enum_data
+        .extra_properties
+        .get("graph_autoconvert_variant")
+        .and_then(|v| v.as_string());
+
+    fn make_enum(variant: &EEnumVariantId, value: EValue) -> EValue {
+        EValue::Enum {
+            variant: *variant,
+            data: Box::new(value),
+        }
+    }
+
+    for variant in enum_data.variants_with_ids() {
+        let (variant, variant_id) = variant;
+
+        if autoconvert_variant.is_some_and(|v| v != variant.name) {
+            continue;
+        }
+
+        if variant.data.ty() == from.ty() {
+            return Ok(Some(make_enum(variant_id, value)));
+        }
+
+        if recursive_convert {
+            let inner_info = &variant.data;
+            if let Some(inner_repr) = inner_info.repr(registry) {
+                if inner_repr.is_convertible_from(registry, inner_info, from) {
+                    return Ok(Some(make_enum(
+                        variant_id,
+                        inner_repr.convert_from(registry, inner_info, value)?,
+                    )));
+                }
+            }
+            if let Some(repr) = from.repr(registry) {
+                if repr.is_convertible_to(registry, from, inner_info) {
+                    return Ok(Some(make_enum(
+                        variant_id,
+                        repr.convert_to(registry, inner_info, value)?,
+                    )));
+                }
+            }
+        }
+    }
+
+    Ok(None)
 }
