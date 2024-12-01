@@ -97,7 +97,7 @@ impl NodePortType {
             if !repr.is_convertible_from(registry, to, &from) {
                 panic!("only compatible types should be passed to this function");
             }
-            return repr.convert_from(registry, &from, value);
+            return repr.convert_from(registry, to, value);
         }
 
         bail!("conversion not supported")
