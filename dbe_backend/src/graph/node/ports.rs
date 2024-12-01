@@ -5,6 +5,7 @@ use crate::json_utils::repr::JsonRepr;
 use crate::registry::ETypesRegistry;
 use crate::value::EValue;
 use miette::bail;
+use std::borrow::Cow;
 use strum::EnumIs;
 use ustr::Ustr;
 
@@ -43,6 +44,12 @@ impl NodePortType {
         }
     }
 
+    pub fn item_info_or_null(&self) -> Cow<EItemInfo> {
+        self.item_info()
+            .map(Cow::Borrowed)
+            .unwrap_or_else(|| Cow::Owned(EItemInfo::simple_type(EDataType::null())))
+    }
+
     pub fn ty(&self) -> EDataType {
         match self {
             NodePortType::Any => EDataType::null(),
@@ -52,12 +59,48 @@ impl NodePortType {
 
     pub fn compatible(registry: &ETypesRegistry, from: &NodePortType, to: &NodePortType) -> bool {
         match (from, to) {
-            (NodePortType::Any, _) => true,
+            (NodePortType::Any, _) => false, // Any can't be converted to anything
             (_, NodePortType::Any) => true,
             (NodePortType::Specific(from), NodePortType::Specific(to)) => {
                 types_compatible(registry, from, to)
             }
         }
+    }
+
+    pub fn convert_value(
+        registry: &ETypesRegistry,
+        from: &NodePortType,
+        to: &NodePortType,
+        value: EValue,
+    ) -> miette::Result<EValue> {
+        if from.ty() == to.ty() {
+            return Ok(value);
+        }
+
+        let NodePortType::Specific(to) = to else {
+            // When target type is Any, anything goes
+            return Ok(value);
+        };
+
+        let from = from.item_info_or_null();
+
+        if let Some(repr) = from.repr(registry) {
+            #[cfg(debug_assertions)]
+            if !repr.is_convertible_to(registry, &from, to) {
+                panic!("only compatible types should be passed to this function");
+            }
+            return repr.convert_to(registry, to, value);
+        }
+
+        if let Some(repr) = to.repr(registry) {
+            #[cfg(debug_assertions)]
+            if !repr.is_convertible_from(registry, to, &from) {
+                panic!("only compatible types should be passed to this function");
+            }
+            return repr.convert_from(registry, &from, value);
+        }
+
+        bail!("conversion not supported")
     }
 }
 
@@ -89,33 +132,4 @@ fn types_compatible(registry: &ETypesRegistry, from: &EItemInfo, to: &EItemInfo)
     }
 
     false
-}
-
-pub fn convert_value(
-    registry: &ETypesRegistry,
-    from: &EItemInfo,
-    to: &EItemInfo,
-    value: EValue,
-) -> miette::Result<EValue> {
-    if from.ty() == to.ty() {
-        return Ok(value);
-    }
-
-    if let Some(repr) = from.repr(registry) {
-        #[cfg(debug_assertions)]
-        if !repr.is_convertible_to(registry, from, to) {
-            panic!("only compatible types should be passed to this function");
-        }
-        return repr.convert_to(registry, to, value);
-    }
-
-    if let Some(repr) = to.repr(registry) {
-        #[cfg(debug_assertions)]
-        if !repr.is_convertible_from(registry, to, from) {
-            panic!("only compatible types should be passed to this function");
-        }
-        return repr.convert_from(registry, from, value);
-    }
-
-    bail!("conversion not supported")
 }
