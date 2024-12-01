@@ -164,8 +164,8 @@ impl Node for ListNode {
     ) -> miette::Result<()> {
         let mut values = vec![];
         // TODO: check for inputs count to match items_count
-        for input in 0..self.items_count {
-            values.push(inputs[input].clone());
+        for input in inputs.iter().take(self.items_count).cloned() {
+            values.push(input);
         }
         outputs.clear();
         outputs.push(EValue::List {
