@@ -133,7 +133,7 @@ impl<'a> PartialGraphExecutionContext<'a> {
         commands: &mut SnarlCommands,
     ) -> miette::Result<()> {
         m_try(|| {
-            let from_ty = snarl[from.id.node]
+            let from_ty = &snarl[from.id.node]
                 .try_output(self.registry, from.id.output)?
                 .ty;
 

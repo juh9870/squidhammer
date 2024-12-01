@@ -118,8 +118,12 @@ impl Graph {
                 let input_type = node
                     .try_input(registry, in_pin.input)
                     .with_context(|| format!("failed to get inputs for node {:?}", in_pin.node))?;
-                let value = input_type
-                    .ty
+
+                let Some(info) = input_type.ty.item_info() else {
+                    continue;
+                };
+
+                let value = info
                     .ty()
                     .parse_json(registry, &mut value, false)
                     .with_context(|| {

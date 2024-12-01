@@ -16,7 +16,9 @@
   "Layout": "",
   "Level": 0,
   "Name": "",
-  "PossibleModifications": [],
+  "PossibleModifications": [
+    12
+  ],
   "Restrictions": {
     "ComponentGroupTag": null,
     "MaxComponentAmount": 0,

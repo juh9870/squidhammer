@@ -1,6 +1,7 @@
 use crate::etype::default::DefaultEValue;
 use crate::etype::econst::ETypeConst;
 use crate::etype::EDataType;
+use crate::json_utils::repr::Repr;
 use crate::registry::ETypesRegistry;
 use crate::validation::Validator;
 use crate::value::EValue;
@@ -59,6 +60,19 @@ impl EItemInfo {
                 EDataType::null()
             }
         }
+    }
+
+    /// Returns the repr for this type, if it exists
+    pub fn repr<'a>(&self, registry: &'a ETypesRegistry) -> Option<&'a Repr> {
+        let source_ty = self.ty();
+        if let EDataType::Object { ident } = source_ty {
+            let obj = registry.get_object(&ident).expect("object should exist");
+            if let Some(repr) = obj.repr() {
+                return Some(repr);
+            }
+        }
+
+        None
     }
 
     pub fn default_value(&self, registry: &ETypesRegistry) -> DefaultEValue {

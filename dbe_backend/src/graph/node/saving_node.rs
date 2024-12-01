@@ -36,7 +36,8 @@ impl Node for SavingNode {
         Ok(InputData {
             ty: EItemInfo::simple_type(EDataType::Object {
                 ident: registry.project_config().types_config.import,
-            }),
+            })
+            .into(),
             name: "item".into(),
         })
     }

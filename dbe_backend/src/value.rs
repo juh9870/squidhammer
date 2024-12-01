@@ -135,7 +135,7 @@ macro_rules! try_to {
                         Ok($field_name)
                     } else {
                         miette::bail!(
-                            "Invalid cast from {:?} to {}",
+                            "invalid cast from {:?} to {}",
                             self,
                             stringify!($name)
                             // rust_i18n::t!(stringify!($name))
@@ -147,7 +147,7 @@ macro_rules! try_to {
                         Ok(&$field_name)
                     } else {
                         miette::bail!(
-                            "Invalid cast from {:?} to {}",
+                            "invalid cast from {:?} to {}",
                             self,
                             stringify!($name)
                             // rust_i18n::t!(stringify!($name))
@@ -160,7 +160,7 @@ macro_rules! try_to {
                         Ok($field_name)
                     } else {
                         miette::bail!(
-                            "Invalid cast from {:?} to {}",
+                            "invalid cast from {:?} to {}",
                             self,
                             stringify!($name)
                             // rust_i18n::t!(stringify!($name))
@@ -176,6 +176,18 @@ try_to!(primitive Number, ENumber, number, value);
 try_to!(primitive Boolean, bool, boolean, value);
 try_to!(primitive String, String, string, value);
 try_to!(Struct, BTreeMap<Ustr, EValue>, struct, fields);
+
+impl EValue {
+    pub fn try_get_field(&self, field: &str) -> miette::Result<&EValue> {
+        if let EValue::Struct { fields, .. } = self {
+            fields
+                .get(&Ustr::from(field))
+                .ok_or_else(|| miette!("field `{}` not found", field))
+        } else {
+            bail!("expected struct, got {:?}", self)
+        }
+    }
+}
 
 impl From<f64> for EValue {
     fn from(value: f64) -> Self {
@@ -336,3 +348,37 @@ impl EValue {
         Ok(value)
     }
 }
+
+macro_rules! estruct {
+    (
+        $ident:tt {
+            $($field_name:tt : $field_ty:expr),* $(,)?
+        }
+    ) => {
+        {
+            let mut fields = std::collections::BTreeMap::<ustr::Ustr, $crate::value::EValue>::default();
+            $(
+                fields.insert(ustr::Ustr::from($crate::value::estruct_keyish!($field_name)), $crate::value::EValue::from($field_ty));
+            )*
+            $crate::value::EValue::Struct {
+                ident: $crate::value::estruct_keyish!($ident),
+                fields,
+            }
+        }
+    };
+}
+
+macro_rules! estruct_keyish {
+    ($a:ident) => {
+        $a
+    };
+    ($a:expr) => {
+        $a
+    };
+    ($a:literal) => {
+        $a
+    };
+}
+
+pub(crate) use estruct;
+pub(crate) use estruct_keyish;

@@ -51,7 +51,7 @@ impl Node for StructNode {
         let field = &data.fields[input];
 
         Ok(InputData {
-            ty: field.ty.clone(),
+            ty: field.ty.clone().into(),
             name: field.name,
         })
     }
@@ -77,7 +77,7 @@ impl Node for StructNode {
         }
 
         Ok(OutputData {
-            ty: EItemInfo::simple_type(EDataType::Object { ident: self.id }),
+            ty: EItemInfo::simple_type(EDataType::Object { ident: self.id }).into(),
             name: "output".into(),
         })
     }

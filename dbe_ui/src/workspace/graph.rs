@@ -6,10 +6,10 @@ use ahash::AHashMap;
 use dbe_backend::diagnostic::context::DiagnosticContextRef;
 use dbe_backend::diagnostic::prelude::{Diagnostic, DiagnosticLevel};
 use dbe_backend::etype::econst::ETypeConst;
-use dbe_backend::etype::eitem::EItemInfo;
 use dbe_backend::etype::EDataType;
 use dbe_backend::graph::execution::partial::PartialGraphExecutionContext;
 use dbe_backend::graph::node::commands::SnarlCommands;
+use dbe_backend::graph::node::ports::NodePortType;
 use dbe_backend::graph::node::{
     all_node_factories, node_factories_by_category, NodeFactory, SnarlNode,
 };
@@ -19,6 +19,7 @@ use egui::{Color32, Pos2, Stroke, Ui};
 use egui_hooks::UseHookExt;
 use egui_snarl::ui::{AnyPins, PinInfo, SnarlViewer};
 use egui_snarl::{InPin, NodeId, OutPin, OutPinId, Snarl};
+use inline_tweak::tweak;
 use random_color::options::Luminosity;
 use random_color::RandomColor;
 use std::iter::Peekable;
@@ -487,23 +488,35 @@ fn pin_stroke(ty: EDataType, registry: &ETypesRegistry) -> Stroke {
             .get_map(&id)
             .map(|e| pin_color(e.key_type, registry))
             .unwrap_or_else(|| pin_color(ty, registry));
-        Stroke::new(4.0, color)
+        Stroke::new(tweak!(4.0), color)
     } else {
         Stroke::NONE
     }
 }
 
-fn pin_info(ty: &EItemInfo, registry: &ETypesRegistry) -> PinInfo {
-    let shape = match ty.ty() {
-        EDataType::Boolean | EDataType::Number | EDataType::String | EDataType::Const { .. } => {
-            PinInfo::circle()
-        }
-        EDataType::Object { .. } => PinInfo::circle(),
-        EDataType::List { .. } => PinInfo::square(),
-        EDataType::Map { .. } => PinInfo::star(),
-    };
+fn pin_info(ty: &NodePortType, registry: &ETypesRegistry) -> PinInfo {
+    match ty {
+        NodePortType::Any => any_pin(),
+        NodePortType::Specific(ty) => {
+            let shape = match ty.ty() {
+                EDataType::Boolean
+                | EDataType::Number
+                | EDataType::String
+                | EDataType::Const { .. } => PinInfo::circle(),
+                EDataType::Object { .. } => PinInfo::circle(),
+                EDataType::List { .. } => PinInfo::square(),
+                EDataType::Map { .. } => PinInfo::star(),
+            };
 
-    shape
-        .with_fill(pin_color(ty.ty(), registry))
-        .with_stroke(pin_stroke(ty.ty(), registry))
+            shape
+                .with_fill(pin_color(ty.ty(), registry))
+                .with_stroke(pin_stroke(ty.ty(), registry))
+        }
+    }
+}
+
+fn any_pin() -> PinInfo {
+    PinInfo::circle()
+        .with_fill(Color32::TRANSPARENT)
+        .with_stroke(Stroke::new(tweak!(4.0), Color32::WHITE))
 }

@@ -3,7 +3,8 @@ use crate::json_utils::repr::colors::ColorStringRepr;
 use crate::json_utils::JsonValue;
 use crate::registry::ETypesRegistry;
 use crate::validation::Validator;
-use miette::miette;
+use crate::value::EValue;
+use miette::{bail, miette};
 use parking_lot::RwLock;
 use std::borrow::Cow;
 use std::fmt::Debug;
@@ -16,6 +17,8 @@ mod ids;
 
 #[allow(clippy::wrong_self_convention)]
 pub trait JsonRepr: Send + Sync + Debug {
+    fn id(&self) -> &'static str;
+
     /// Converts from the serialized data representation to the consumable data
     fn from_repr(
         &self,
@@ -34,12 +37,73 @@ pub trait JsonRepr: Send + Sync + Debug {
     fn validators(&self) -> Cow<'static, [Validator]> {
         Cow::Borrowed(&[])
     }
+
+    /// Whenever objects of this repr can be created from the given type
+    fn is_convertible_from(
+        &self,
+        registry: &ETypesRegistry,
+        this: &EItemInfo,
+        other: &EItemInfo,
+    ) -> bool {
+        self.is_convertible_both_way(registry, this, other)
+    }
+
+    /// Whenever objects of this repr can be converted to the given type
+    fn is_convertible_to(
+        &self,
+        registry: &ETypesRegistry,
+        this: &EItemInfo,
+        other: &EItemInfo,
+    ) -> bool {
+        self.is_convertible_both_way(registry, this, other)
+    }
+
+    /// Whenever objects of this repr can be converted both ways with the given type
+    fn is_convertible_both_way(
+        &self,
+        registry: &ETypesRegistry,
+        this: &EItemInfo,
+        other: &EItemInfo,
+    ) -> bool {
+        let _ = (registry, this, other);
+        false
+    }
+
+    /// Converts the provided value to the value of this repr
+    ///
+    /// This function should only be called if [JsonRepr::is_convertible_from] returned true
+    fn convert_from(
+        &self,
+        registry: &ETypesRegistry,
+        this: &EItemInfo,
+        value: EValue,
+    ) -> miette::Result<EValue> {
+        let _ = (registry, value);
+        bail!("conversion not supported")
+    }
+
+    /// Converts the value of this repr to the provided type
+    ///
+    /// This function should only be called if [JsonRepr::is_convertible_to] returned true
+    fn convert_to(
+        &self,
+        registry: &ETypesRegistry,
+        other: &EItemInfo,
+        value: EValue,
+    ) -> miette::Result<EValue> {
+        let _ = (registry, other, value);
+        bail!("conversion not supported")
+    }
 }
 
 #[derive(Debug, Clone)]
 pub struct Repr(Arc<dyn JsonRepr>);
 
 impl JsonRepr for Repr {
+    fn id(&self) -> &'static str {
+        self.0.id()
+    }
+
     fn from_repr(
         &self,
         registry: &ETypesRegistry,
@@ -60,6 +124,51 @@ impl JsonRepr for Repr {
     fn validators(&self) -> Cow<'static, [Validator]> {
         self.0.validators()
     }
+
+    fn is_convertible_from(
+        &self,
+        registry: &ETypesRegistry,
+        this: &EItemInfo,
+        other: &EItemInfo,
+    ) -> bool {
+        self.0.is_convertible_from(registry, this, other)
+    }
+
+    fn is_convertible_to(
+        &self,
+        registry: &ETypesRegistry,
+        this: &EItemInfo,
+        other: &EItemInfo,
+    ) -> bool {
+        self.0.is_convertible_to(registry, this, other)
+    }
+
+    fn is_convertible_both_way(
+        &self,
+        registry: &ETypesRegistry,
+        this: &EItemInfo,
+        other: &EItemInfo,
+    ) -> bool {
+        self.0.is_convertible_both_way(registry, this, other)
+    }
+
+    fn convert_from(
+        &self,
+        registry: &ETypesRegistry,
+        this: &EItemInfo,
+        value: EValue,
+    ) -> miette::Result<EValue> {
+        self.0.convert_from(registry, this, value)
+    }
+
+    fn convert_to(
+        &self,
+        registry: &ETypesRegistry,
+        other: &EItemInfo,
+        value: EValue,
+    ) -> miette::Result<EValue> {
+        self.0.convert_to(registry, other, value)
+    }
 }
 
 impl FromStr for Repr {
@@ -72,14 +181,17 @@ impl FromStr for Repr {
 
 static REPR_REGISTRY: LazyLock<RwLock<UstrMap<Repr>>> = LazyLock::new(|| {
     RwLock::new({
-        let mut map = UstrMap::default();
+        let reprs: Vec<Arc<dyn JsonRepr>> = vec![
+            Arc::new(ColorStringRepr::ARGB),
+            Arc::new(ColorStringRepr::RGBA),
+            Arc::new(ids::numeric::Id),
+            Arc::new(ids::numeric::Ref),
+        ];
 
-        map.insert("argb".into(), Repr(Arc::new(ColorStringRepr::ARGB)));
-        map.insert("rgba".into(), Repr(Arc::new(ColorStringRepr::RGBA)));
-        map.insert("ids/numeric".into(), Repr(Arc::new(ids::numeric::Id)));
-        map.insert("ids/numeric_ref".into(), Repr(Arc::new(ids::numeric::Ref)));
-
-        map
+        reprs
+            .into_iter()
+            .map(|r| (Ustr::from(r.id()), Repr(r)))
+            .collect()
     })
 });
 
@@ -136,6 +248,7 @@ macro_rules! transparent_to {
     };
 }
 
+use crate::etype::eitem::EItemInfo;
 pub(crate) use transparent;
 pub(crate) use transparent_from;
 pub(crate) use transparent_to;

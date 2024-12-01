@@ -2,7 +2,8 @@ use super::{
     FuncNode, FunctionalArgNames, FunctionalNode, FunctionalNodeOutput, IntoFunctionalNode,
 };
 use crate::etype::conversion::EItemInfoAdapter;
-use crate::graph::node::{InputData, Node, NodeFactory, OutputData};
+use crate::graph::node::ports::{InputData, NodePortType, OutputData};
+use crate::graph::node::{Node, NodeFactory};
 use crate::registry::ETypesRegistry;
 use crate::value::EValue;
 use miette::Context;
@@ -100,7 +101,7 @@ macro_rules! impl_functional_node {
                 #[allow(unreachable_code)]
                 InputData {
                     name: self.input_names[input].into(),
-                    ty,
+                    ty: NodePortType::Specific(ty),
                 }
             }
 
@@ -173,7 +174,7 @@ macro_rules! impl_functional_output {
                 #[allow(unreachable_code)]
                 OutputData {
                     name: names[output].into(),
-                    ty,
+                    ty: NodePortType::Specific(ty),
                 }
             }
 

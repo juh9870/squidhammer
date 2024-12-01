@@ -1,5 +1,6 @@
 use crate::etype::default::DefaultEValue;
 use crate::etype::econst::ETypeConst;
+use crate::etype::eitem::EItemInfo;
 use crate::json_utils::{json_expected, json_kind, JsonValue};
 use crate::m_try;
 use crate::registry::ETypesRegistry;
@@ -10,7 +11,10 @@ use ordered_float::OrderedFloat;
 use serde::{Deserialize, Serialize};
 use std::borrow::Cow;
 use std::collections::BTreeMap;
+use std::ops::Deref;
+use std::sync::LazyLock;
 use strum::EnumIs;
+use ustr::Ustr;
 
 pub mod conversion;
 pub mod default;
@@ -80,6 +84,57 @@ impl EDataType {
             EDataType::Const { value } => value.to_string().into(),
             EDataType::List { id: ty } => ty.to_string().into(),
             EDataType::Map { id: ty } => ty.to_string().into(),
+        }
+    }
+
+    /// Returns the generic arguments names for this type
+    pub fn generic_arguments_names<'a>(&self, registry: &'a ETypesRegistry) -> Cow<'a, [Ustr]> {
+        match self {
+            EDataType::Boolean
+            | EDataType::Number
+            | EDataType::String
+            | EDataType::Const { .. } => Cow::Borrowed(&[]),
+            EDataType::Object { ident } => {
+                let obj = registry.get_object(ident).expect("object should exist");
+                obj.generic_arguments_names().into()
+            }
+            EDataType::List { .. } => {
+                static NAMES: LazyLock<[Ustr; 1]> = LazyLock::new(|| [Ustr::from("Item")]);
+                Cow::Borrowed(NAMES.deref())
+            }
+            EDataType::Map { .. } => {
+                static NAMES: LazyLock<[Ustr; 2]> =
+                    LazyLock::new(|| [Ustr::from("Key"), Ustr::from("Item")]);
+                Cow::Borrowed(NAMES.deref())
+            }
+        }
+    }
+
+    /// Returns the generic arguments values for this type
+    pub fn generic_arguments_values<'a>(
+        &self,
+        registry: &'a ETypesRegistry,
+    ) -> Cow<'a, [EItemInfo]> {
+        match self {
+            EDataType::Boolean
+            | EDataType::Number
+            | EDataType::String
+            | EDataType::Const { .. } => Cow::Borrowed(&[]),
+            EDataType::Object { ident } => {
+                let obj = registry.get_object(ident).expect("object should exist");
+                obj.generic_arguments_values().into()
+            }
+            EDataType::List { id } => {
+                let list = registry.get_list(id).expect("list should exist");
+                Cow::Owned(vec![EItemInfo::simple_type(list.value_type)])
+            }
+            EDataType::Map { id } => {
+                let map = registry.get_map(id).expect("map should exist");
+                Cow::Owned(vec![
+                    EItemInfo::simple_type(map.key_type),
+                    EItemInfo::simple_type(map.value_type),
+                ])
+            }
         }
     }
 

@@ -1,7 +1,6 @@
-use crate::etype::econst::ETypeConst;
 use crate::etype::eitem::EItemInfo;
-use crate::etype::EDataType;
 use crate::graph::node::commands::{SnarlCommand, SnarlCommands};
+use crate::graph::node::ports::NodePortType;
 use crate::graph::node::{InputData, Node, NodeFactory, OutputData, SnarlNode};
 use crate::registry::ETypesRegistry;
 use crate::value::EValue;
@@ -32,14 +31,12 @@ impl Node for RerouteNode {
     ) -> miette::Result<InputData> {
         if input == self.inputs.len() {
             return Ok(InputData {
-                ty: EItemInfo::simple_type(EDataType::Const {
-                    value: ETypeConst::Null,
-                }),
+                ty: NodePortType::Any,
                 name: "".into(),
             });
         }
         Ok(InputData {
-            ty: self.inputs[input].clone(),
+            ty: self.inputs[input].clone().into(),
             name: input.to_string().into(),
         })
     }
@@ -54,7 +51,7 @@ impl Node for RerouteNode {
         output: usize,
     ) -> miette::Result<OutputData> {
         Ok(OutputData {
-            ty: self.inputs[output].clone(),
+            ty: self.inputs[output].clone().into(),
             name: output.to_string().into(),
         })
     }
@@ -65,13 +62,17 @@ impl Node for RerouteNode {
         commands: &mut SnarlCommands,
         from: &OutPin,
         to: &InPin,
-        incoming_type: EItemInfo,
+        incoming_type: &NodePortType,
     ) -> miette::Result<()> {
+        let Some(info) = incoming_type.item_info() else {
+            return Ok(());
+        };
+
         let i = to.id.input;
         if i == self.inputs.len() {
-            self.inputs.push(incoming_type.clone());
+            self.inputs.push(info.clone());
         } else if self.inputs[i].ty() != incoming_type.ty() {
-            self.inputs[i] = incoming_type.clone();
+            self.inputs[i] = info.clone();
             // Reconnect the corresponding output pin to propagate type
             // changes and clear invalid connections
             commands.push(SnarlCommand::ReconnectOutput {

@@ -1,6 +1,6 @@
 use crate::workspace::editors::editor_for_item;
 use crate::workspace::graph::viewer::NodeView;
-use crate::workspace::graph::{pin_info, GraphViewer};
+use crate::workspace::graph::{any_pin, pin_info, GraphViewer};
 use dbe_backend::etype::EDataType;
 use dbe_backend::graph::node::SnarlNode;
 use dbe_backend::registry::ETypesRegistry;
@@ -88,11 +88,14 @@ impl NodeView for DefaultNodeView {
         let registry = viewer.ctx.registry;
         let node = &snarl[pin.id.node];
         let input_data = node.try_input(viewer.ctx.registry, pin.id.input)?;
+        let Some(info) = input_data.ty.item_info() else {
+            return Ok(any_pin());
+        };
         let mut shown = false;
         if pin.remotes.is_empty() {
             if let Some(value) = viewer.ctx.get_inline_input_mut(snarl, pin.id)? {
                 if has_inline_editor(registry, input_data.ty.ty(), true) {
-                    let editor = editor_for_item(registry, &input_data.ty);
+                    let editor = editor_for_item(registry, info);
                     let res = ui.vertical(|ui| {
                         editor.show(
                             ui,
@@ -120,7 +123,7 @@ impl NodeView for DefaultNodeView {
         if !shown {
             let mut value = viewer.ctx.read_input(snarl, pin.id)?;
             if has_inline_editor(registry, input_data.ty.ty(), false) {
-                let editor = editor_for_item(registry, &input_data.ty);
+                let editor = editor_for_item(registry, info);
                 ui.add_enabled_ui(true, |ui| {
                     ui.vertical(|ui| {
                         editor.show(
