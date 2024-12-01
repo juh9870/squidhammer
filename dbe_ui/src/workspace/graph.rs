@@ -488,7 +488,7 @@ fn pin_stroke(ty: EDataType, registry: &ETypesRegistry) -> Stroke {
             .get_map(&id)
             .map(|e| pin_color(e.key_type, registry))
             .unwrap_or_else(|| pin_color(ty, registry));
-        Stroke::new(tweak!(4.0), color)
+        Stroke::new(tweak!(2.0), color)
     } else {
         Stroke::NONE
     }
@@ -518,5 +518,8 @@ fn pin_info(ty: &NodePortType, registry: &ETypesRegistry) -> PinInfo {
 fn any_pin() -> PinInfo {
     PinInfo::circle()
         .with_fill(Color32::TRANSPARENT)
-        .with_stroke(Stroke::new(tweak!(4.0), Color32::WHITE))
+        .with_stroke(Stroke::new(
+            tweak!(2.0),
+            Color32::from_rgb(tweak!(128), tweak!(128), tweak!(128)),
+        ))
 }

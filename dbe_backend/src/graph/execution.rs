@@ -1,3 +1,4 @@
+use crate::graph::node::ports::NodePortType;
 use crate::graph::node::SnarlNode;
 use crate::graph::Graph;
 use crate::m_try;
@@ -157,21 +158,32 @@ impl<'a, 'snarl> GraphExecutionContext<'a, 'snarl> {
         node: &SnarlNode,
         side_effects: bool,
     ) -> miette::Result<EValue> {
+        let in_info = node.try_input(self.registry, id.input)?;
         // trace!("Reading input #{} of node {:?}", id.input, id.node);
         m_try(|| {
             // TODO: check for valid types
             let slot = self.snarl.in_pin(id);
             let value = if slot.remotes.is_empty() {
                 match self.inline_input_value(slot.id, node)? {
-                    None => {
-                        let ty = node.try_input(self.registry, id.input)?;
-                        ty.ty.default_value(self.registry).into_owned()
-                    }
+                    None => in_info.ty.default_value(self.registry).into_owned(),
                     Some(val) => val.clone(),
                 }
             } else if slot.remotes.len() == 1 {
                 let remote = slot.remotes[0];
-                self.read_node_output_inner(stack, remote, side_effects)?
+                let output = self.read_node_output_inner(stack, remote, side_effects)?;
+                if output.ty() != in_info.ty.ty() {
+                    let remote_info =
+                        self.snarl[remote.node].try_output(self.registry, remote.output)?;
+
+                    NodePortType::convert_value(
+                        self.registry,
+                        &remote_info.ty,
+                        &in_info.ty,
+                        output,
+                    )?
+                } else {
+                    output
+                }
             } else {
                 // TODO: allow multi-connect for inputs
                 bail!(
