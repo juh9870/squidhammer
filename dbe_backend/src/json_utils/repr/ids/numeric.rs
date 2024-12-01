@@ -4,6 +4,7 @@ use crate::etype::EDataType;
 use crate::json_utils::repr::{transparent, JsonRepr};
 use crate::json_utils::JsonValue;
 use crate::registry::ETypesRegistry;
+use crate::validation::ids::numeric::NumericIDRegistry;
 use crate::validation::{validator_by_name, Validator};
 use crate::value::id::ETypeId;
 use crate::value::{estruct, EValue};
@@ -51,7 +52,7 @@ impl JsonRepr for Id {
             return false;
         };
 
-        generics_equals(registry, this, other)
+        generics_compatible(registry, this, other)
     }
 
     fn convert_to(
@@ -115,7 +116,7 @@ impl JsonRepr for Ref {
             return false;
         };
 
-        generics_equals(registry, this, other)
+        generics_compatible(registry, this, other)
     }
 
     fn is_convertible_to(
@@ -164,18 +165,13 @@ impl JsonRepr for Ref {
     }
 }
 
-fn generics_equals(reg: &ETypesRegistry, a: &EItemInfo, b: &EItemInfo) -> bool {
+fn generics_compatible(reg: &ETypesRegistry, a: &EItemInfo, b: &EItemInfo) -> bool {
     let a = a.ty();
     let b = b.ty();
 
-    let a = a.generic_arguments_values(reg);
-    let b = b.generic_arguments_values(reg);
-
-    if a.len() != b.len() {
-        return false;
-    }
-
-    a.iter().zip_eq(b.iter()).all(|(a, b)| a.ty() == b.ty())
+    NumericIDRegistry::of(reg)
+        .is_id_assignable_ty(a, b)
+        .expect("types should be objects at this point")
 }
 
 fn value_to_obj(ident: ETypeId, value: EValue) -> miette::Result<EValue> {

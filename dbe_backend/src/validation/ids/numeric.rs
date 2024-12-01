@@ -3,6 +3,7 @@ use crate::etype::EDataType;
 use crate::registry::config::merge::ConfigMerge;
 use crate::registry::ETypesRegistry;
 use crate::validation::DataValidator;
+use crate::value::id::ETypeId;
 use crate::value::{ENumber, EValue};
 use ahash::{AHashMap, AHashSet};
 use camino::Utf8PathBuf;
@@ -33,6 +34,26 @@ fn ty_and_id(registry: &ETypesRegistry, data: &EValue) -> miette::Result<(Ustr, 
         bail!("expected an ID struct value, got {:?}", data);
     };
 
+    let arg = extract_generic_arg(registry, ident)?;
+
+    let Some(id) = fields.get(&Ustr::from("id")) else {
+        bail!(
+            "expected field `id` in an ID struct, got {:?}",
+            fields.keys().map(|x| x.as_str()).join(", ")
+        );
+    };
+
+    let id = id.try_as_number().map_err(|_| {
+        miette!(
+            "expected numeric value for `id` field in an ID struct, got {:?}",
+            id
+        )
+    })?;
+
+    Ok((arg, *id))
+}
+
+fn extract_generic_arg(registry: &ETypesRegistry, ident: &ETypeId) -> miette::Result<Ustr> {
     let obj_data = registry
         .get_struct(ident)
         .ok_or_else(|| miette!("unknown object type or not a struct: `{:?}`", ident))?;
@@ -70,21 +91,7 @@ fn ty_and_id(registry: &ETypesRegistry, data: &EValue) -> miette::Result<(Ustr, 
         );
     };
 
-    let Some(id) = fields.get(&Ustr::from("id")) else {
-        bail!(
-            "expected field `id` in an ID struct, got {:?}",
-            fields.keys().map(|x| x.as_str()).join(", ")
-        );
-    };
-
-    let id = id.try_as_number().map_err(|_| {
-        miette!(
-            "expected numeric value for `id` field in an ID struct, got {:?}",
-            id
-        )
-    })?;
-
-    Ok((arg, *id))
+    Ok(arg)
 }
 
 #[derive(Debug, Error)]
@@ -181,6 +188,40 @@ impl ConfigMerge for ReservedIdTypeConfig {
 
 fn config(reg: &ETypesRegistry) -> miette::Result<Arc<ReservedIdConfig>> {
     reg.config().get::<ReservedIdConfig>("ids/numeric")
+}
+
+#[derive(Debug, Copy, Clone)]
+pub struct NumericIDRegistry<'a> {
+    registry: &'a ETypesRegistry,
+}
+
+impl<'a> NumericIDRegistry<'a> {
+    pub fn of(registry: &'a ETypesRegistry) -> Self {
+        Self { registry }
+    }
+
+    pub fn is_id_assignable(&self, from: Ustr, to: Ustr) -> miette::Result<bool> {
+        if from == to {
+            return Ok(true);
+        }
+        let config = config(self.registry)?;
+        Ok(config
+            .types
+            .get(&to)
+            .is_some_and(|c| c.satisfied_by_types.contains(&from)))
+    }
+
+    pub fn is_id_assignable_ty(&self, from: EDataType, to: EDataType) -> miette::Result<bool> {
+        let (EDataType::Object { ident: from }, EDataType::Object { ident: to }) = (from, to)
+        else {
+            bail!("expected object types, got {:?} and {:?}", from, to);
+        };
+
+        let from_arg = extract_generic_arg(self.registry, &from)?;
+        let to_arg = extract_generic_arg(self.registry, &to)?;
+
+        self.is_id_assignable(from_arg, to_arg)
+    }
 }
 
 #[derive(Debug)]
