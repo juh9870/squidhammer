@@ -1,5 +1,4 @@
 use crate::etype::default::DefaultEValue;
-use crate::etype::eitem::EItemInfo;
 use crate::graph::node::commands::{SnarlCommand, SnarlCommands};
 use crate::graph::node::functional::functional_nodes;
 use crate::graph::node::reroute::RerouteFactory;
@@ -20,6 +19,7 @@ pub mod commands;
 pub mod enum_node;
 pub mod functional;
 pub mod list;
+pub mod ports;
 pub mod reroute;
 pub mod saving_node;
 pub mod struct_node;
@@ -70,18 +70,6 @@ pub trait NodeFactory: Send + Sync + Debug + 'static {
 }
 
 pub type SnarlNode = Box<dyn Node>;
-
-#[derive(Debug, Clone)]
-pub struct InputData {
-    pub ty: EItemInfo,
-    pub name: Ustr,
-}
-
-#[derive(Debug, Clone)]
-pub struct OutputData {
-    pub ty: EItemInfo,
-    pub name: Ustr,
-}
 
 pub trait Node: DynClone + Debug + Send + Sync + Downcast + 'static {
     /// Writes node state to json
@@ -161,7 +149,7 @@ pub trait Node: DynClone + Debug + Send + Sync + Downcast + 'static {
     /// Attempts to create a connection to the input pin of the node
     /// Returns true if the connection can be made
     ///
-    /// On success, cthe onnection may or may not be made depending on the node logic
+    /// On success, the connection may or may not be made depending on the node logic
     ///
     /// Nodes may mutate their internal state when a connection is made
     fn try_connect(
@@ -170,7 +158,7 @@ pub trait Node: DynClone + Debug + Send + Sync + Downcast + 'static {
         commands: &mut SnarlCommands,
         from: &OutPin,
         to: &InPin,
-        incoming_type: EItemInfo,
+        incoming_type: &NodePortType,
     ) -> miette::Result<()> {
         self._default_try_connect(registry, commands, from, to, incoming_type)?;
         Ok(())
@@ -220,10 +208,10 @@ pub trait Node: DynClone + Debug + Send + Sync + Downcast + 'static {
         commands: &mut SnarlCommands,
         from: &OutPin,
         to: &InPin,
-        incoming_type: EItemInfo,
+        incoming_type: &NodePortType,
     ) -> miette::Result<bool> {
         let ty = self.try_input(registry, to.id.input)?;
-        if ty.ty.ty() == incoming_type.ty() {
+        if NodePortType::compatible(registry, incoming_type, &ty.ty) {
             // TODO: support for multi-connect ports
             if !to.remotes.is_empty() {
                 commands.push(SnarlCommand::DropInputsRaw { to: to.id });
@@ -281,6 +269,7 @@ macro_rules! impl_serde_node {
 
 use crate::graph::node::enum_node::EnumNodeFactory;
 use crate::graph::node::list::ListNodeFactory;
+use crate::graph::node::ports::{InputData, NodePortType, OutputData};
 use crate::graph::node::saving_node::SavingNodeFactory;
 use crate::graph::node::struct_node::StructNodeFactory;
 use crate::project::side_effects::SideEffectsContext;

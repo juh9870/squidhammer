@@ -89,6 +89,26 @@
         "input": 0,
         "node": 7
       }
+    ],
+    [
+      {
+        "node": 10,
+        "output": 0
+      },
+      {
+        "input": 18,
+        "node": 5
+      }
+    ],
+    [
+      {
+        "node": 12,
+        "output": 0
+      },
+      {
+        "input": 0,
+        "node": 10
+      }
     ]
   ],
   "inputs": [
@@ -241,13 +261,6 @@
     ],
     [
       {
-        "input": 18,
-        "node": 5
-      },
-      []
-    ],
-    [
-      {
         "input": 0,
         "node": 6
       },
@@ -280,6 +293,13 @@
         "node": 8
       },
       15
+    ],
+    [
+      {
+        "input": 0,
+        "node": 12
+      },
+      12
     ]
   ],
   "nodes": [
@@ -420,6 +440,56 @@
         "pos": {
           "x": 521.6986694335938,
           "y": -347.08099365234375
+        }
+      }
+    ],
+    [
+      10,
+      {
+        "data": {
+          "item": {
+            "Object": {
+              "ident": "sys:ids/numeric_ref<Id='eh:objects/component_mod'>"
+            }
+          }
+        },
+        "id": "list",
+        "open": true,
+        "pos": {
+          "x": -987.770263671875,
+          "y": 99.47506713867188
+        }
+      }
+    ],
+    [
+      11,
+      {
+        "data": {
+          "item": {
+            "Const": {
+              "value": null
+            }
+          }
+        },
+        "id": "list",
+        "open": true,
+        "pos": {
+          "x": -1019.4898071289062,
+          "y": 242.6172637939453
+        }
+      }
+    ],
+    [
+      12,
+      {
+        "data": {
+          "id": "sys:ids/numeric_ref<Id='eh:objects/component_mod'>"
+        },
+        "id": "struct_node",
+        "open": true,
+        "pos": {
+          "x": -1538.380126953125,
+          "y": 84.83547973632812
         }
       }
     ]

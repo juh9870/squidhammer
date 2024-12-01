@@ -7,20 +7,27 @@ use utils::color_format::ColorFormat;
 
 #[derive(Debug)]
 pub struct ColorStringRepr {
+    id: &'static str,
     alpha_repr: ColorFormat,
 }
 
 impl ColorStringRepr {
     pub const ARGB: ColorStringRepr = ColorStringRepr {
+        id: "argb",
         alpha_repr: ColorFormat::argb(),
     };
 
     pub const RGBA: ColorStringRepr = ColorStringRepr {
+        id: "rgba",
         alpha_repr: ColorFormat::argb(),
     };
 }
 
 impl JsonRepr for ColorStringRepr {
+    fn id(&self) -> &'static str {
+        self.id
+    }
+
     fn from_repr(
         &self,
         _registry: &ETypesRegistry,

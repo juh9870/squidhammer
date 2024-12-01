@@ -109,6 +109,20 @@ impl EObjectType {
         }
     }
 
+    pub fn generic_arguments_names(&self) -> &[Ustr] {
+        match self {
+            EObjectType::Struct(s) => &s.generic_arguments,
+            EObjectType::Enum(e) => &e.generic_arguments,
+        }
+    }
+
+    pub fn generic_arguments_values(&self) -> &[EItemInfo] {
+        match self {
+            EObjectType::Struct(s) => &s.generic_arguments_values,
+            EObjectType::Enum(e) => &e.generic_arguments_values,
+        }
+    }
+
     // pub fn default_editor(&self) -> Option<&str> {
     //     match self {
     //         EObjectType::Struct(s) => s.default_editor.as_ref().map(|e| e.as_str()),

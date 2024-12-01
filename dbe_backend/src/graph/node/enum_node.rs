@@ -3,6 +3,7 @@ use crate::etype::eenum::EEnumData;
 use crate::etype::eitem::EItemInfo;
 use crate::etype::EDataType;
 use crate::graph::node::commands::{SnarlCommand, SnarlCommands};
+use crate::graph::node::ports::NodePortType;
 use crate::graph::node::{impl_serde_node, InputData, Node, NodeFactory, OutputData, SnarlNode};
 use crate::registry::ETypesRegistry;
 use crate::value::EValue;
@@ -83,7 +84,7 @@ impl Node for EnumNode {
             panic!("Enum only has one input");
         }
         Ok(InputData {
-            ty: variant.data.clone(),
+            ty: variant.data.clone().into(),
             name: variant.name,
         })
     }
@@ -109,7 +110,7 @@ impl Node for EnumNode {
         }
 
         Ok(OutputData {
-            ty: EItemInfo::simple_type(EDataType::Object { ident: data.ident }),
+            ty: EItemInfo::simple_type(EDataType::Object { ident: data.ident }).into(),
             name: "output".into(),
         })
     }
@@ -120,7 +121,7 @@ impl Node for EnumNode {
         commands: &mut SnarlCommands,
         from: &OutPin,
         to: &InPin,
-        incoming_type: EItemInfo,
+        incoming_type: &NodePortType,
     ) -> miette::Result<()> {
         let Some((data, _)) = self.get_data(registry) else {
             panic!("Unknown enum variant");

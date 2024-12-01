@@ -2,6 +2,7 @@ use crate::etype::econst::ETypeConst;
 use crate::etype::eitem::EItemInfo;
 use crate::etype::EDataType;
 use crate::graph::node::commands::{SnarlCommand, SnarlCommands};
+use crate::graph::node::ports::NodePortType;
 use crate::graph::node::{impl_serde_node, InputData, Node, NodeFactory, OutputData, SnarlNode};
 use crate::registry::ETypesRegistry;
 use crate::value::EValue;
@@ -12,6 +13,11 @@ use ustr::Ustr;
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ListNode {
     item: EDataType,
+    /// Determines whenever the list retains its type once empty
+    ///
+    /// This flag is NOT persisted
+    #[serde(skip)]
+    fixed: bool,
     #[serde(skip)]
     items_count: usize,
 }
@@ -22,6 +28,7 @@ impl ListNode {
             item: EDataType::Const {
                 value: ETypeConst::Null,
             },
+            fixed: false,
             items_count: 0,
         }
     }
@@ -29,6 +36,7 @@ impl ListNode {
     pub fn of_type(ty: EDataType) -> Self {
         Self {
             item: ty,
+            fixed: true,
             items_count: 0,
         }
     }
@@ -61,7 +69,11 @@ impl Node for ListNode {
         input: usize,
     ) -> miette::Result<InputData> {
         Ok(InputData {
-            ty: EItemInfo::simple_type(self.item),
+            ty: if self.items_count == 0 && !self.fixed {
+                NodePortType::Any
+            } else {
+                EItemInfo::simple_type(self.item).into()
+            },
             name: if input == self.items_count {
                 "+".into()
             } else {
@@ -80,7 +92,7 @@ impl Node for ListNode {
         output: usize,
     ) -> miette::Result<OutputData> {
         Ok(OutputData {
-            ty: EItemInfo::simple_type(registry.list_of(self.item)),
+            ty: EItemInfo::simple_type(registry.list_of(self.item)).into(),
             name: output.to_string().into(),
         })
     }
@@ -91,7 +103,7 @@ impl Node for ListNode {
         commands: &mut SnarlCommands,
         from: &OutPin,
         to: &InPin,
-        incoming_type: EItemInfo,
+        incoming_type: &NodePortType,
     ) -> miette::Result<()> {
         if self.items_count == 0 && self.item != incoming_type.ty() {
             self.item = incoming_type.ty();
