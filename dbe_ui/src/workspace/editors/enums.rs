@@ -1,3 +1,4 @@
+use crate::ui_props::PROP_FIELD_KIND;
 use crate::widgets::report::diagnostics_column;
 use crate::workspace::editors::utils::{
     inline_error, labeled_error, labeled_field, prop, unsupported, EditorSize,
@@ -51,7 +52,7 @@ impl Editor for EnumEditor {
     fn props(&self, _reg: &ETypesRegistry, item: Option<&EItemInfo>) -> miette::Result<DynProps> {
         let kind = prop(
             item.map(|i| i.extra_properties()),
-            "kind",
+            &PROP_FIELD_KIND,
             EnumEditorType::Auto,
         )?;
 

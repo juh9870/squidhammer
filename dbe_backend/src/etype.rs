@@ -22,6 +22,7 @@ pub mod econst;
 pub mod eenum;
 pub mod eitem;
 pub mod estruct;
+pub mod property;
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, EnumIs)]
 pub enum EDataType {

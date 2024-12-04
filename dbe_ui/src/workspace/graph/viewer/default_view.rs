@@ -1,3 +1,4 @@
+use crate::ui_props::PROP_OBJECT_GRAPH_INLINE;
 use crate::workspace::editors::editor_for_item;
 use crate::workspace::graph::viewer::NodeView;
 use crate::workspace::graph::{any_pin, pin_info, GraphViewer};
@@ -42,8 +43,7 @@ fn has_inline_editor(registry: &ETypesRegistry, ty: EDataType, editable: bool) -
         EDataType::String => editable,
         EDataType::Object { ident } => registry
             .get_object(&ident)
-            .and_then(|obj| obj.extra_properties().get("graph_inline"))
-            .and_then(|v| v.as_bool())
+            .and_then(|obj| PROP_OBJECT_GRAPH_INLINE.try_get(obj.extra_properties()))
             .unwrap_or(editable),
         EDataType::Const { .. } => false,
         EDataType::List { id } => registry

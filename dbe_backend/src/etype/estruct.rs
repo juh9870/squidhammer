@@ -1,5 +1,7 @@
 use crate::etype::econst::ETypeConst;
 use crate::etype::eitem::EItemInfo;
+use crate::etype::property::default_properties::{PROP_FIELD_DEFAULT, PROP_FIELD_INLINE};
+use crate::etype::property::ObjectPropertyId;
 use crate::json_utils::repr::{JsonRepr, Repr};
 use crate::json_utils::{json_kind, JsonMap, JsonValue};
 use crate::m_try;
@@ -20,7 +22,7 @@ pub struct EStructData {
     pub fields: Vec<EStructField>,
     // pub id_field: Option<usize>,
     pub repr: Option<Repr>,
-    pub extra_properties: AHashMap<String, ETypeConst>,
+    pub extra_properties: AHashMap<ObjectPropertyId, ETypeConst>,
 }
 
 #[derive(Debug, Clone)]
@@ -31,10 +33,7 @@ pub struct EStructField {
 
 impl EStructField {
     pub fn is_inline(&self) -> bool {
-        self.ty
-            .extra_properties()
-            .get("inline")
-            .is_some_and(|val| val == &ETypeConst::Boolean(true))
+        PROP_FIELD_INLINE.get(self.ty.extra_properties(), false)
     }
 }
 
@@ -43,7 +42,7 @@ impl EStructData {
         ident: ETypeId,
         generic_arguments: Vec<Ustr>,
         repr: Option<Repr>,
-        extra_properties: AHashMap<String, ETypeConst>,
+        extra_properties: AHashMap<ObjectPropertyId, ETypeConst>,
     ) -> EStructData {
         Self {
             generic_arguments,
@@ -175,7 +174,7 @@ impl EStructData {
                     .ty()
                     .parse_json(registry, &mut json_value, false)
                     .with_context(|| format!("in field `{}`", field.name))?
-            } else if let Some(default) = field.ty.extra_properties().get("default") {
+            } else if let Some(default) = PROP_FIELD_DEFAULT.try_get(field.ty.extra_properties()) {
                 let mut json_value = default.as_json_value();
                 field
                     .ty

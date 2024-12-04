@@ -1,12 +1,11 @@
 use crate::widgets::report::diagnostics_column;
-use crate::workspace::editors::utils::{
-    labeled_field, prop, unsupported, EditorResultExt, EditorSize,
-};
+use crate::workspace::editors::utils::{labeled_field, unsupported, EditorResultExt, EditorSize};
 use crate::workspace::editors::{
     cast_props, editor_for_item, DynProps, Editor, EditorProps, EditorResponse,
 };
 use dbe_backend::diagnostic::context::DiagnosticContextRef;
 use dbe_backend::etype::eitem::EItemInfo;
+use dbe_backend::etype::property::default_properties::PROP_FIELD_INLINE;
 use dbe_backend::registry::ETypesRegistry;
 use dbe_backend::value::EValue;
 use egui::{Ui, Widget};
@@ -18,7 +17,11 @@ pub struct StructEditor;
 
 impl Editor for StructEditor {
     fn props(&self, _reg: &ETypesRegistry, item: Option<&EItemInfo>) -> miette::Result<DynProps> {
-        if prop(item.map(|i| i.extra_properties()), "inline", false)? {
+        if item
+            .map(|i| i.extra_properties())
+            .and_then(|p| PROP_FIELD_INLINE.try_get(p))
+            .unwrap_or(false)
+        {
             Ok(StructProps { inline: true }.pack())
         } else {
             Ok(StructProps { inline: false }.pack())

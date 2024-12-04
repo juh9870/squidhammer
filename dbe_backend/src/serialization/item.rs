@@ -1,5 +1,6 @@
 use crate::etype::econst::ETypeConst;
 use crate::etype::eitem::{EItemInfo, EItemInfoGeneric, EItemInfoSpecific};
+use crate::etype::property::field_props;
 use crate::etype::EDataType;
 use crate::m_try;
 use crate::registry::ETypesRegistry;
@@ -149,7 +150,7 @@ impl ThingItem {
                     self.name,
                     EItemInfo::Generic(Arc::new(EItemInfoGeneric {
                         argument_name: arg,
-                        extra_properties: self.extra_properties,
+                        extra_properties: field_props(self.extra_properties)?,
                         validators: vec![],
                     })),
                 ));
@@ -162,7 +163,7 @@ impl ThingItem {
             self.name,
             EItemInfo::Specific(Arc::new(EItemInfoSpecific {
                 ty,
-                extra_properties: self.extra_properties,
+                extra_properties: field_props(self.extra_properties)?,
                 validators,
             })),
         ))

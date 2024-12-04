@@ -1,4 +1,5 @@
-use crate::workspace::editors::utils::{labeled_field, prop, unsupported, EditorSize};
+use crate::ui_props::PROP_FIELD_MULTILINE;
+use crate::workspace::editors::utils::{labeled_field, unsupported, EditorSize};
 use crate::workspace::editors::{cast_props, DynProps, Editor, EditorProps, EditorResponse};
 use dbe_backend::diagnostic::context::DiagnosticContextRef;
 use dbe_backend::etype::eitem::EItemInfo;
@@ -11,7 +12,9 @@ pub struct StringEditor;
 impl Editor for StringEditor {
     fn props(&self, _reg: &ETypesRegistry, item: Option<&EItemInfo>) -> miette::Result<DynProps> {
         let props = item.map(|i| i.extra_properties());
-        let multiline = prop(props, "multiline", false)?;
+        let multiline = props
+            .and_then(|p| PROP_FIELD_MULTILINE.try_get(p))
+            .unwrap_or(false);
 
         Ok(StringProps { multiline }.pack())
     }

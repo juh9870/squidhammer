@@ -2,6 +2,7 @@ use crate::etype::econst::ETypeConst;
 use crate::etype::eenum::pattern::{EnumPattern, Tagged};
 use crate::etype::eenum::variant::{EEnumVariant, EEnumVariantId, EEnumVariantWithId};
 use crate::etype::eitem::EItemInfo;
+use crate::etype::property::ObjectPropertyId;
 use crate::json_utils::repr::{JsonRepr, Repr};
 use crate::json_utils::{json_kind, JsonMap, JsonValue};
 use crate::registry::ETypesRegistry;
@@ -21,7 +22,7 @@ pub struct EEnumData {
     pub generic_arguments_values: Vec<EItemInfo>,
     pub ident: ETypeId,
     pub repr: Option<Repr>,
-    pub extra_properties: AHashMap<String, ETypeConst>,
+    pub extra_properties: AHashMap<ObjectPropertyId, ETypeConst>,
     tagged_repr: Option<Tagged>,
     variants: Vec<EEnumVariant>,
     variant_ids: Vec<EEnumVariantId>,
@@ -33,7 +34,7 @@ impl EEnumData {
         generic_arguments: Vec<Ustr>,
         repr: Option<Repr>,
         tagged_repr: Option<Tagged>,
-        extra_properties: AHashMap<String, ETypeConst>,
+        extra_properties: AHashMap<ObjectPropertyId, ETypeConst>,
     ) -> Self {
         Self {
             generic_arguments,

@@ -3,6 +3,7 @@ use crate::etype::econst::ETypeConst;
 use crate::etype::eenum::pattern::{EnumPattern, Tagged};
 use crate::etype::eenum::EEnumData;
 use crate::etype::eitem::EItemInfo;
+use crate::etype::property::default_properties::PROP_FIELD_TAG;
 use crate::etype::EDataType;
 use crate::json_utils::repr::JsonRepr;
 use crate::registry::ETypesRegistry;
@@ -34,11 +35,7 @@ impl EEnumVariant {
     }
 
     pub(crate) fn get_tag_value(&self) -> ETypeConst {
-        self.data
-            .extra_properties()
-            .get("tag")
-            .copied()
-            .unwrap_or(ETypeConst::String(self.name))
+        PROP_FIELD_TAG.get(self.data.extra_properties(), ETypeConst::String(self.name))
     }
 
     pub(crate) fn from_eitem(
@@ -52,11 +49,7 @@ impl EEnumVariant {
             return Ok(EEnumVariant::new(name, EnumPattern::Never, item));
         }
         let pat = if let Some(repr) = tagged_repr {
-            let tag = item
-                .extra_properties()
-                .get("tag")
-                .copied()
-                .unwrap_or(ETypeConst::String(variant_name));
+            let tag = PROP_FIELD_TAG.get(item.extra_properties(), ETypeConst::String(variant_name));
 
             if repr.is_internal() && !item.ty().is_object() {
                 bail!("internally tagged enums can only have object variants")

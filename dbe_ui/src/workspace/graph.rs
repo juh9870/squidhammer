@@ -1,5 +1,6 @@
 use crate::error::report_error;
 use crate::m_try;
+use crate::ui_props::{PROP_OBJECT_GRAPH_SEARCH_HIDE, PROP_OBJECT_PIN_COLOR};
 use crate::widgets::report::diagnostic_widget;
 use crate::workspace::graph::viewer::get_viewer;
 use ahash::AHashMap;
@@ -195,14 +196,7 @@ impl<'a> SnarlViewer<SnarlNode> for GraphViewer<'a> {
                         .registry
                         .all_objects()
                         .filter(|obj| {
-                            match obj
-                                .extra_properties()
-                                .get("graph_search_hide")
-                                .and_then(|o| o.as_bool())
-                            {
-                                None => true,
-                                Some(hide) => !hide,
-                            }
+                            !PROP_OBJECT_GRAPH_SEARCH_HIDE.get(obj.extra_properties(), false)
                         })
                         .map(|s| NodeCombo::Object(s.ident()));
                     all_nodes
@@ -453,15 +447,9 @@ fn pin_color(ty: EDataType, registry: &ETypesRegistry) -> Color32 {
         },
         EDataType::Object { ident } => match registry.get_object(&ident) {
             None => NULL_COLOR,
-            Some(data) => data
-                .extra_properties()
-                .get("pin_color")
-                .and_then(|v| v.as_string())
-                .and_then(|c| csscolorparser::parse(&c).ok())
-                .map(|c| {
-                    let rgba = c.to_rgba8();
-                    Color32::from_rgba_unmultiplied(rgba[0], rgba[1], rgba[2], rgba[3])
-                })
+            Some(data) => PROP_OBJECT_PIN_COLOR
+                .try_get(data.extra_properties())
+                .map(|e| e.0)
                 .unwrap_or_else(|| {
                     let c = RandomColor::new()
                         .seed(ident.to_string())
