@@ -1,4 +1,5 @@
-use crate::workspace::editors::utils::{labeled_field, prop_opt, unsupported, EditorSize};
+use crate::ui_props::{PROP_FIELD_LOGARITHMIC, PROP_FIELD_MAX, PROP_FIELD_MIN};
+use crate::workspace::editors::utils::{labeled_field, unsupported, EditorSize};
 use crate::workspace::editors::{cast_props, DynProps, Editor, EditorProps, EditorResponse};
 use dbe_backend::diagnostic::context::DiagnosticContextRef;
 use dbe_backend::etype::eitem::EItemInfo;
@@ -22,9 +23,9 @@ impl NumberEditor {
 impl Editor for NumberEditor {
     fn props(&self, _reg: &ETypesRegistry, item: Option<&EItemInfo>) -> miette::Result<DynProps> {
         let props = item.map(|i| i.extra_properties());
-        let min = prop_opt::<ENumber>(props, "min")?;
-        let max = prop_opt::<ENumber>(props, "max")?;
-        let logarithmic = prop_opt(props, "logarithmic")?;
+        let min = props.and_then(|p| PROP_FIELD_MIN.try_get(p));
+        let max = props.and_then(|p| PROP_FIELD_MAX.try_get(p));
+        let logarithmic = props.and_then(|p| PROP_FIELD_LOGARITHMIC.try_get(p));
 
         let min = min.unwrap_or(ENumber::min_value()).0;
         let max = max.unwrap_or(ENumber::max_value()).0;

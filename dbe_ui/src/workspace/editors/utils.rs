@@ -1,5 +1,6 @@
 use crate::workspace::editors::Props;
 use dbe_backend::etype::econst::ETypeConst;
+use dbe_backend::etype::property::FieldProperty;
 use dbe_backend::value::EValue;
 use egui::{InnerResponse, RichText, Ui, WidgetText};
 use itertools::Itertools;
@@ -43,11 +44,11 @@ impl EditorSize {
 #[inline(always)]
 pub fn prop_opt<'a, T: TryFrom<ETypeConst, Error = miette::Error>>(
     props: impl Into<Option<Props<'a>>>,
-    name: &str,
+    prop: &FieldProperty<ETypeConst>,
 ) -> miette::Result<Option<T>> {
-    if let Some(prop) = props.into().and_then(|props| props.get(name)) {
-        Ok(Some(T::try_from(*prop).map_err(|e| {
-            miette!("Bad value for property `{}`: `{}`", name, e)
+    if let Some(value) = props.into().and_then(|props| prop.try_get(props)) {
+        Ok(Some(T::try_from(value).map_err(|e| {
+            miette!("Bad value for property `{}`: `{}`", prop.info().id, e)
         })?))
     } else {
         Ok(None)
@@ -57,20 +58,20 @@ pub fn prop_opt<'a, T: TryFrom<ETypeConst, Error = miette::Error>>(
 #[inline(always)]
 pub fn prop<'a, T: TryFrom<ETypeConst, Error = miette::Error>>(
     props: impl Into<Option<Props<'a>>>,
-    name: &str,
+    prop: &FieldProperty<ETypeConst>,
     default: T,
 ) -> miette::Result<T> {
-    prop_opt(props, name).map(|o| o.unwrap_or(default))
+    prop_opt(props, prop).map(|o| o.unwrap_or(default))
 }
 
 #[inline(always)]
 #[allow(dead_code)]
 pub fn prop_required<'a, T: TryFrom<ETypeConst, Error = miette::Error>>(
     props: impl Into<Option<Props<'a>>>,
-    name: &str,
+    prop: &FieldProperty<ETypeConst>,
 ) -> miette::Result<T> {
-    prop_opt(props, name)
-        .and_then(|s| s.ok_or_else(|| miette!("required property `{}` is missing", name)))
+    prop_opt(props, prop)
+        .and_then(|s| s.ok_or_else(|| miette!("required property `{}` is missing", prop.info().id)))
 }
 
 pub fn get_values<'a, T: TryFrom<&'a EValue, Error = E>, E: Into<miette::Error>, const N: usize>(

@@ -20,6 +20,7 @@ use tracing::info;
 mod diagnostics_list;
 mod error;
 mod file_tree;
+mod ui_props;
 mod widgets;
 mod workspace;
 

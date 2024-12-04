@@ -3,9 +3,10 @@ use crate::value::{ENumber, EValue};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::fmt::{Display, Formatter};
+use strum::EnumIs;
 use ustr::Ustr;
 
-#[derive(Debug, Copy, Clone, Eq, PartialEq, Hash, Serialize, Deserialize)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Hash, EnumIs, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum ETypeConst {
     String(Ustr),

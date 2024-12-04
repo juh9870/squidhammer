@@ -3,6 +3,7 @@ use crate::etype::eenum::pattern::Tagged;
 use crate::etype::eenum::variant::EEnumVariant;
 use crate::etype::eenum::EEnumData;
 use crate::etype::estruct::{EStructData, EStructField};
+use crate::etype::property::object_props;
 use crate::json_utils::repr::Repr;
 use crate::m_try;
 use crate::registry::{EObjectType, ETypesRegistry};
@@ -84,8 +85,12 @@ impl ThingStruct {
         registry: &mut ETypesRegistry,
         id: ETypeId,
     ) -> miette::Result<EStructData> {
-        let mut data =
-            EStructData::new(id, self.generic_arguments, self.repr, self.extra_properties);
+        let mut data = EStructData::new(
+            id,
+            self.generic_arguments,
+            self.repr,
+            object_props(self.extra_properties)?,
+        );
         for e in self.fields {
             let field_name = e.name;
             m_try(|| {
@@ -129,7 +134,7 @@ impl ThingEnum {
             self.generic_arguments,
             self.repr,
             repr,
-            self.extra_properties,
+            object_props(self.extra_properties)?,
         );
         for e in self.variants {
             let (name, item) = e.into_item(registry, &data.generic_arguments)?;

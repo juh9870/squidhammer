@@ -1,6 +1,10 @@
 use crate::etype::default::DefaultEValue;
 use crate::etype::eenum::variant::{EEnumVariant, EEnumVariantId};
 use crate::etype::eitem::EItemInfo;
+use crate::etype::property::default_properties::{
+    PROP_OBJECT_GRAPH_AUTOCONVERT, PROP_OBJECT_GRAPH_AUTOCONVERT_RECURSIVE,
+    PROP_OBJECT_GRAPH_AUTOCONVERT_VARIANT,
+};
 use crate::etype::EDataType;
 use crate::json_utils::repr::JsonRepr;
 use crate::registry::ETypesRegistry;
@@ -146,22 +150,15 @@ fn enum_assignable(registry: &ETypesRegistry, from: &EItemInfo, to: &EItemInfo) 
         return false;
     };
 
-    let autoconvert = enum_data
-        .extra_properties
-        .get("graph_autoconvert")
-        .is_some_and(|v| v.as_bool().unwrap_or(false));
+    let autoconvert = PROP_OBJECT_GRAPH_AUTOCONVERT.get(&enum_data.extra_properties, false);
     if !autoconvert {
         return false;
     }
 
-    let recursive_convert = enum_data
-        .extra_properties
-        .get("graph_autoconvert_recursive")
-        .is_some_and(|v| v.as_bool().unwrap_or(false));
-    let autoconvert_variant = enum_data
-        .extra_properties
-        .get("graph_autoconvert_variant")
-        .and_then(|v| v.as_string());
+    let recursive_convert =
+        PROP_OBJECT_GRAPH_AUTOCONVERT_RECURSIVE.get(&enum_data.extra_properties, false);
+    let autoconvert_variant =
+        PROP_OBJECT_GRAPH_AUTOCONVERT_VARIANT.try_get(&enum_data.extra_properties);
 
     fn check_variant(
         registry: &ETypesRegistry,
@@ -224,24 +221,15 @@ fn convert_enum(
         return Ok(None);
     };
 
-    // TODO: proper handling for properties, some centralized location with static utilities to handle conversion and warning logging too
-    let autoconvert = enum_data
-        .extra_properties
-        .get("graph_autoconvert")
-        .is_some_and(|v| v.as_bool().unwrap_or(false));
+    let autoconvert = PROP_OBJECT_GRAPH_AUTOCONVERT.get(&enum_data.extra_properties, false);
     if !autoconvert {
         return Ok(None);
     }
 
-    let recursive_convert = enum_data
-        .extra_properties
-        .get("graph_autoconvert_recursive")
-        .is_some_and(|v| v.as_bool().unwrap_or(false));
-
-    let autoconvert_variant = enum_data
-        .extra_properties
-        .get("graph_autoconvert_variant")
-        .and_then(|v| v.as_string());
+    let recursive_convert =
+        PROP_OBJECT_GRAPH_AUTOCONVERT_RECURSIVE.get(&enum_data.extra_properties, false);
+    let autoconvert_variant =
+        PROP_OBJECT_GRAPH_AUTOCONVERT_VARIANT.try_get(&enum_data.extra_properties);
 
     fn make_enum(variant: &EEnumVariantId, value: EValue) -> EValue {
         EValue::Enum {

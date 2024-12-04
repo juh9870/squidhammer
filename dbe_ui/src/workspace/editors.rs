@@ -1,4 +1,5 @@
 use crate::m_try;
+use crate::ui_props::{PROP_FIELD_EDITOR, PROP_OBJECT_EDITOR};
 use crate::workspace::editors::boolean::BooleanEditor;
 use crate::workspace::editors::consts::ConstEditor;
 use crate::workspace::editors::enums::EnumEditor;
@@ -7,12 +8,13 @@ use crate::workspace::editors::number::NumberEditor;
 use crate::workspace::editors::rgb::RgbEditor;
 use crate::workspace::editors::string::StringEditor;
 use crate::workspace::editors::structs::StructEditor;
-use crate::workspace::editors::utils::{prop_opt, EditorSize};
+use crate::workspace::editors::utils::EditorSize;
 use crate::workspace::editors::wrapped::WrappedEditor;
 use ahash::AHashMap;
 use dbe_backend::diagnostic::context::DiagnosticContextRef;
 use dbe_backend::etype::econst::ETypeConst;
 use dbe_backend::etype::eitem::EItemInfo;
+use dbe_backend::etype::property::FieldPropertyId;
 use dbe_backend::etype::EDataType;
 use dbe_backend::registry::{EObjectType, ETypesRegistry};
 use dbe_backend::value::EValue;
@@ -89,7 +91,7 @@ fn default_editors() -> impl Iterator<Item = (Ustr, Box<dyn Editor>)> {
     ];
     v.into_iter()
 }
-type Props<'a> = &'a AHashMap<String, ETypeConst>;
+type Props<'a> = &'a AHashMap<FieldPropertyId, ETypeConst>;
 
 trait EditorProps: std::any::Any + DynClone + Downcast {
     fn pack(self) -> DynProps
@@ -158,7 +160,7 @@ pub fn editor_for_type(reg: &ETypesRegistry, ty: &EDataType) -> EditorData {
 
 pub fn editor_for_item(reg: &ETypesRegistry, item: &EItemInfo) -> EditorData {
     m_try(|| {
-        let name = prop_opt::<Ustr>(item.extra_properties(), "editor")?;
+        let name = PROP_FIELD_EDITOR.try_get(item.extra_properties());
 
         let editor = editor_for_raw(reg, &item.ty(), name)?;
 
@@ -182,14 +184,8 @@ fn editor_for_raw(
                 let data = reg
                     .get_object(ident)
                     .ok_or_else(|| miette!("Unknown object ID `{}`", ident))?;
-                if let Some(prop) = data.extra_properties().get("editor") {
-                    Ustr::try_from(*prop).map_err(|e| {
-                        miette!(
-                            "Bad value for property `editor` in object `{}`: {}",
-                            ident,
-                            e
-                        )
-                    })?
+                if let Some(prop) = PROP_OBJECT_EDITOR.try_get(data.extra_properties()) {
+                    prop
                 } else {
                     match data {
                         EObjectType::Struct(_) => "struct".into(),

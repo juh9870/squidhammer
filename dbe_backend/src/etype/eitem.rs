@@ -1,5 +1,7 @@
 use crate::etype::default::DefaultEValue;
 use crate::etype::econst::ETypeConst;
+use crate::etype::property::default_properties::PROP_FIELD_DEFAULT;
+use crate::etype::property::FieldPropertyId;
 use crate::etype::EDataType;
 use crate::json_utils::repr::Repr;
 use crate::registry::ETypesRegistry;
@@ -15,14 +17,14 @@ use ustr::Ustr;
 #[derive(Debug, Clone)]
 pub struct EItemInfoSpecific {
     pub ty: EDataType,
-    pub extra_properties: AHashMap<String, ETypeConst>,
+    pub extra_properties: AHashMap<FieldPropertyId, ETypeConst>,
     pub validators: Vec<Validator>,
 }
 
 #[derive(Debug, Clone)]
 pub struct EItemInfoGeneric {
     pub argument_name: Ustr,
-    pub extra_properties: AHashMap<String, ETypeConst>,
+    pub extra_properties: AHashMap<FieldPropertyId, ETypeConst>,
     pub validators: Vec<Validator>,
 }
 
@@ -78,7 +80,7 @@ impl EItemInfo {
     pub fn default_value(&self, registry: &ETypesRegistry) -> DefaultEValue {
         match self {
             EItemInfo::Specific(ty) => {
-                if let Some(value) = self.extra_properties().get("default") {
+                if let Some(value) = PROP_FIELD_DEFAULT.try_get(self.extra_properties()) {
                     let mut json_value = value.as_json_value();
                     match ty.ty.parse_json(registry, &mut json_value, false) {
                         Ok(data) => {
@@ -101,7 +103,7 @@ impl EItemInfo {
         }
     }
 
-    pub fn extra_properties(&self) -> &AHashMap<String, ETypeConst> {
+    pub fn extra_properties(&self) -> &AHashMap<FieldPropertyId, ETypeConst> {
         match self {
             EItemInfo::Specific(ty) => &ty.extra_properties,
             EItemInfo::Generic(ty) => &ty.extra_properties,

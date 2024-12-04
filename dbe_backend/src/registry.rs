@@ -3,6 +3,7 @@ use crate::etype::econst::ETypeConst;
 use crate::etype::eenum::EEnumData;
 use crate::etype::eitem::EItemInfo;
 use crate::etype::estruct::EStructData;
+use crate::etype::property::ObjectPropertyId;
 use crate::etype::EDataType;
 use crate::json_utils::repr::{JsonRepr, Repr};
 use crate::json_utils::JsonValue;
@@ -88,7 +89,7 @@ impl EObjectType {
         }
     }
 
-    pub fn extra_properties(&self) -> &AHashMap<String, ETypeConst> {
+    pub fn extra_properties(&self) -> &AHashMap<ObjectPropertyId, ETypeConst> {
         match self {
             EObjectType::Struct(s) => &s.extra_properties,
             EObjectType::Enum(e) => &e.extra_properties,
