@@ -77,6 +77,8 @@ impl DbeApp {
     }
 
     pub fn new(collector: EventCollector) -> Self {
+        ui_props::register_extra_properties();
+
         Self {
             project: None,
             open_file_dialog: None,

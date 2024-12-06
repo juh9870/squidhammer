@@ -19,21 +19,29 @@ static ALL_PROPERTIES: LazyLock<AtomicRefCell<AHashMap<(String, PropertyKind), P
 pub type PropValidator = fn(ETypeConst) -> miette::Result<()>;
 
 /// Register a field property. Unregistered properties will panic on access.
-pub fn register_field_property<T: TryFrom<ETypeConst>>(prop: FieldProperty<T>) {
-    let prop = prop.0;
+pub fn register_field_property<T: TryFrom<ETypeConst>>(prop: &FieldProperty<T>) {
+    let prop = &prop.0;
     let key = (prop.info.id.to_string(), PropertyKind::Field);
     let id = prop.info.id;
-    if ALL_PROPERTIES.borrow_mut().insert(key, prop.info).is_some() {
+    if ALL_PROPERTIES
+        .borrow_mut()
+        .insert(key, prop.info.clone())
+        .is_some()
+    {
         panic!("Field property {} already registered", id);
     };
 }
 
 /// Register an object property. Unregistered properties will panic on access.
-pub fn register_object_property<T: TryFrom<ETypeConst>>(prop: ObjectProperty<T>) {
-    let prop = prop.0;
+pub fn register_object_property<T: TryFrom<ETypeConst>>(prop: &ObjectProperty<T>) {
+    let prop = &prop.0;
     let key = (prop.info.id.to_string(), PropertyKind::Object);
     let id = prop.info.id;
-    if ALL_PROPERTIES.borrow_mut().insert(key, prop.info).is_some() {
+    if ALL_PROPERTIES
+        .borrow_mut()
+        .insert(key, prop.info.clone())
+        .is_some()
+    {
         panic!("Object property {} already registered", id);
     };
 }
@@ -74,9 +82,6 @@ macro_rules! extra_properties {
             }));
         }
     };
-    // (@single $vis:vis prop<$kind:tt> $id:ident: $ty:ty) => {
-    //     $crate::extra_properties!(@single #[doc = ""] $vis prop<$kind> $id: $ty);
-    // };
     (@ty object $ty:ty) => {
         $crate::etype::property::ObjectProperty::<$ty>
     };
@@ -95,6 +100,17 @@ macro_rules! extra_properties {
         $(
             $crate::extra_properties!(@single $(#[doc = $doc])* $vis prop<$kind> $id: $ty);
         )*
+
+        $crate::etype::property::paste::paste! {
+            pub fn register_extra_properties() {
+                static ONCE: std::sync::LazyLock<()> = std::sync::LazyLock::new(|| {
+                    $(
+                        $crate::etype::property::[<register_ $kind _property>](&[< PROP_ $kind:upper _ $id:snake:upper >]);
+                    )*
+                });
+                let _: () = *ONCE;
+            }
+        }
     };
 }
 
@@ -136,7 +152,7 @@ fn check_prop(
     Ok(())
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct PropertyInfo {
     pub id: &'static str,
     pub desc: &'static str,
