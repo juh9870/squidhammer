@@ -3,7 +3,7 @@ use crate::etype::econst::ETypeConst;
 use crate::etype::eenum::EEnumData;
 use crate::etype::eitem::EItemInfo;
 use crate::etype::estruct::EStructData;
-use crate::etype::property::ObjectPropertyId;
+use crate::etype::property::{default_properties, ObjectPropertyId};
 use crate::etype::EDataType;
 use crate::json_utils::repr::{JsonRepr, Repr};
 use crate::json_utils::JsonValue;
@@ -184,6 +184,8 @@ impl ETypesRegistry {
         data: impl IntoIterator<Item = (ETypeId, String)>,
         project_config: ProjectConfig,
     ) -> miette::Result<Self> {
+        default_properties::register_extra_properties();
+
         let iter = data.into_iter();
 
         let types: BTreeMap<ETypeId, RegistryItem> = iter

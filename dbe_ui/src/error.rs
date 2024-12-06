@@ -7,6 +7,7 @@ use tracing::error;
 
 pub fn report_error(err: miette::Report) {
     let str = format_error(&err, true);
+    println!("{str}");
     error!("{str}");
 
     ERROR_HAPPENED.store(true, Ordering::Release);
