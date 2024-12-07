@@ -2,6 +2,7 @@ use crate::ui_props::PROP_OBJECT_GRAPH_INLINE;
 use crate::workspace::editors::editor_for_item;
 use crate::workspace::graph::viewer::NodeView;
 use crate::workspace::graph::{any_pin, pin_info, GraphViewer};
+use dbe_backend::etype::eobject::EObject;
 use dbe_backend::etype::EDataType;
 use dbe_backend::graph::node::SnarlNode;
 use dbe_backend::registry::ETypesRegistry;
@@ -64,7 +65,7 @@ impl NodeView for DefaultNodeView {
 
     fn show_header(
         &self,
-        _viewer: &GraphViewer,
+        viewer: &GraphViewer,
         node: NodeId,
         _inputs: &[InPin],
         _outputs: &[OutPin],
@@ -73,7 +74,7 @@ impl NodeView for DefaultNodeView {
         snarl: &mut Snarl<SnarlNode>,
     ) -> miette::Result<()> {
         ui.label(node.0.to_string());
-        ui.label(snarl[node].title());
+        ui.label(snarl[node].title(viewer.ctx.registry));
         Ok(())
     }
 

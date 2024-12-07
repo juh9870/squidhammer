@@ -2,6 +2,7 @@ use crate::etype::default::DefaultEValue;
 use crate::etype::econst::ETypeConst;
 use crate::etype::eenum::EEnumData;
 use crate::etype::eitem::EItemInfo;
+use crate::etype::eobject::EObject;
 use crate::etype::estruct::EStructData;
 use crate::etype::property::{default_properties, ObjectPropertyId};
 use crate::etype::EDataType;
@@ -22,6 +23,7 @@ use smallvec::SmallVec;
 use std::any::{Any, TypeId};
 use std::collections::btree_map::Entry;
 use std::collections::BTreeMap;
+use std::fmt::Debug;
 use std::sync::Arc;
 use ustr::{Ustr, UstrMap};
 
@@ -88,62 +90,50 @@ impl EObjectType {
                 .with_context(|| format!("in enum `{}`", e.ident)),
         }
     }
+}
 
-    pub fn extra_properties(&self) -> &AHashMap<ObjectPropertyId, ETypeConst> {
+impl EObject for EObjectType {
+    fn extra_properties(&self) -> &AHashMap<ObjectPropertyId, ETypeConst> {
         match self {
-            EObjectType::Struct(s) => &s.extra_properties,
-            EObjectType::Enum(e) => &e.extra_properties,
+            EObjectType::Struct(s) => s.extra_properties(),
+            EObjectType::Enum(e) => e.extra_properties(),
         }
     }
 
-    pub fn repr(&self) -> Option<&Repr> {
+    fn repr(&self) -> Option<&Repr> {
         match self {
-            EObjectType::Struct(s) => s.repr.as_ref(),
-            EObjectType::Enum(e) => e.repr.as_ref(),
+            EObjectType::Struct(s) => s.repr(),
+            EObjectType::Enum(e) => e.repr(),
         }
     }
 
-    pub fn ident(&self) -> ETypeId {
+    fn ident(&self) -> ETypeId {
         match self {
-            EObjectType::Struct(s) => s.ident,
-            EObjectType::Enum(e) => e.ident,
+            EObjectType::Struct(s) => s.ident(),
+            EObjectType::Enum(e) => e.ident(),
         }
     }
 
-    pub fn generic_arguments_names(&self) -> &[Ustr] {
+    fn generic_arguments_names(&self) -> &[Ustr] {
         match self {
-            EObjectType::Struct(s) => &s.generic_arguments,
-            EObjectType::Enum(e) => &e.generic_arguments,
+            EObjectType::Struct(s) => s.generic_arguments_names(),
+            EObjectType::Enum(e) => e.generic_arguments_names(),
         }
     }
 
-    pub fn generic_arguments_values(&self) -> &[EItemInfo] {
+    fn generic_arguments_values(&self) -> &[EItemInfo] {
         match self {
-            EObjectType::Struct(s) => &s.generic_arguments_values,
-            EObjectType::Enum(e) => &e.generic_arguments_values,
+            EObjectType::Struct(s) => s.generic_arguments_values(),
+            EObjectType::Enum(e) => e.generic_arguments_values(),
         }
     }
 
-    // pub fn default_editor(&self) -> Option<&str> {
-    //     match self {
-    //         EObjectType::Struct(s) => s.default_editor.as_ref().map(|e| e.as_str()),
-    //         EObjectType::Enum(e) => e.default_editor.as_ref().map(|e| e.as_str()),
-    //     }
-    // }
-    //
-    // pub fn color(&self) -> Option<Color32> {
-    //     match self {
-    //         EObjectType::Struct(s) => s.color,
-    //         EObjectType::Enum(e) => e.color,
-    //     }
-    // }
-    //
-    // pub fn port_shape(&self) -> Option<PortShape> {
-    //     match self {
-    //         EObjectType::Struct(s) => s.port_shape,
-    //         EObjectType::Enum(e) => e.port_shape,
-    //     }
-    // }
+    fn title(&self, registry: &ETypesRegistry) -> String {
+        match self {
+            EObjectType::Struct(s) => s.title(registry),
+            EObjectType::Enum(e) => e.title(registry),
+        }
+    }
 }
 
 #[derive(Debug, Clone)]

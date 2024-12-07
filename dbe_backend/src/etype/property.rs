@@ -12,6 +12,7 @@ use std::sync::LazyLock;
 use tracing::error;
 
 pub mod default_properties;
+pub mod wrappers;
 
 static ALL_PROPERTIES: LazyLock<AtomicRefCell<AHashMap<(String, PropertyKind), PropertyInfo>>> =
     LazyLock::new(|| AtomicRefCell::new(Default::default()));

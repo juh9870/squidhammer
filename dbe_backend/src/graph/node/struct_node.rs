@@ -1,4 +1,5 @@
 use crate::etype::eitem::EItemInfo;
+use crate::etype::eobject::EObject;
 use crate::etype::EDataType;
 use crate::graph::node::{impl_serde_node, InputData, Node, NodeFactory, OutputData, SnarlNode};
 use crate::registry::ETypesRegistry;
@@ -27,8 +28,12 @@ impl Node for StructNode {
         "struct_node".into()
     }
 
-    fn title(&self) -> String {
-        self.id.to_string()
+    fn title(&self, registry: &ETypesRegistry) -> String {
+        let Some(data) = registry.get_struct(&self.id) else {
+            return format!("Unknown struct `{}`", self.id);
+        };
+
+        data.title(registry)
     }
 
     fn inputs_count(&self, registry: &ETypesRegistry) -> usize {

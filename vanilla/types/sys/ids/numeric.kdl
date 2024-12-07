@@ -1,3 +1,3 @@
-struct "Id" repr="ids/numeric" editor="ids/numeric" graph_inline=true graph_search_hide=true {
+struct "Id" repr="ids/numeric" editor="ids/numeric" title="Id<{Id}>" graph_inline=true graph_search_hide=true {
     number "id"
 }

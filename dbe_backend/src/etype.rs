@@ -1,6 +1,7 @@
 use crate::etype::default::DefaultEValue;
 use crate::etype::econst::ETypeConst;
 use crate::etype::eitem::EItemInfo;
+use crate::etype::eobject::EObject;
 use crate::json_utils::{json_expected, json_kind, JsonValue};
 use crate::m_try;
 use crate::registry::ETypesRegistry;
@@ -21,8 +22,10 @@ pub mod default;
 pub mod econst;
 pub mod eenum;
 pub mod eitem;
+pub mod eobject;
 pub mod estruct;
 pub mod property;
+pub mod title;
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, EnumIs)]
 pub enum EDataType {
@@ -76,6 +79,7 @@ impl EDataType {
         }
     }
 
+    /// Returns the name of the type for debugging purposes
     pub fn name(&self) -> Cow<'_, str> {
         match self {
             EDataType::Boolean => "boolean".into(),
@@ -85,6 +89,32 @@ impl EDataType {
             EDataType::Const { value } => value.to_string().into(),
             EDataType::List { id: ty } => ty.to_string().into(),
             EDataType::Map { id: ty } => ty.to_string().into(),
+        }
+    }
+
+    /// Returns the human-readable title of the type
+    pub fn title(&self, registry: &ETypesRegistry) -> String {
+        match self {
+            EDataType::Boolean | EDataType::Number | EDataType::String => self.name().to_string(),
+            EDataType::Object { ident } => registry.get_object(ident).map_or_else(
+                || format!("Unknown object `{}`", ident),
+                |data| data.title(registry),
+            ),
+            EDataType::Const { value } => value.to_string(),
+            EDataType::List { id } => registry.get_list(id).map_or_else(
+                || format!("Unknown list `{}`", id),
+                |data| format!("List<{}>", data.value_type.title(registry)),
+            ),
+            EDataType::Map { id } => registry.get_map(id).map_or_else(
+                || format!("Unknown map `{}`", id),
+                |data| {
+                    format!(
+                        "Map<{}, {}>",
+                        data.key_type.title(registry),
+                        data.value_type.title(registry)
+                    )
+                },
+            ),
         }
     }
 

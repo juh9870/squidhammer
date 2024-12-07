@@ -98,7 +98,8 @@ pub trait Node: DynClone + Debug + Send + Sync + Downcast + 'static {
         Ok(input.ty.default_value(registry))
     }
 
-    fn title(&self) -> String {
+    fn title(&self, registry: &ETypesRegistry) -> String {
+        let _ = (registry,);
         self.id().to_string()
     }
 

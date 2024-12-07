@@ -1,4 +1,4 @@
-struct editor="rgba" repr="rgba" pin_color="#c7c729" graph_inline=true {
+struct editor="rgba" repr="rgba" title="Color (RGBA)" pin_color="#c7c729" graph_inline=true {
     number "r" min=0 max=1
     number "g" min=0 max=1
     number "b" min=0 max=1

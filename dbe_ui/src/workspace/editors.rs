@@ -14,6 +14,7 @@ use ahash::AHashMap;
 use dbe_backend::diagnostic::context::DiagnosticContextRef;
 use dbe_backend::etype::econst::ETypeConst;
 use dbe_backend::etype::eitem::EItemInfo;
+use dbe_backend::etype::eobject::EObject;
 use dbe_backend::etype::property::FieldPropertyId;
 use dbe_backend::etype::EDataType;
 use dbe_backend::registry::{EObjectType, ETypesRegistry};

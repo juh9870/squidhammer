@@ -3,6 +3,7 @@ use crate::etype::econst::ETypeConst;
 use crate::etype::eenum::pattern::{EnumPattern, Tagged};
 use crate::etype::eenum::EEnumData;
 use crate::etype::eitem::EItemInfo;
+use crate::etype::eobject::EObject;
 use crate::etype::property::default_properties::PROP_FIELD_TAG;
 use crate::etype::EDataType;
 use crate::json_utils::repr::JsonRepr;

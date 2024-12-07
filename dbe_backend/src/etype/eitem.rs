@@ -1,5 +1,6 @@
 use crate::etype::default::DefaultEValue;
 use crate::etype::econst::ETypeConst;
+use crate::etype::eobject::EObject;
 use crate::etype::property::default_properties::PROP_FIELD_DEFAULT;
 use crate::etype::property::FieldPropertyId;
 use crate::etype::EDataType;

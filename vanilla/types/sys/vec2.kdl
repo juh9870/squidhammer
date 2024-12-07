@@ -1,4 +1,4 @@
-struct graph_inline=true {
+struct graph_inline=true title="Vector2" {
     number "x"
     number "y"
 }

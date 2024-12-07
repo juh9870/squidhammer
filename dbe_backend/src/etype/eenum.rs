@@ -2,7 +2,9 @@ use crate::etype::econst::ETypeConst;
 use crate::etype::eenum::pattern::{EnumPattern, Tagged};
 use crate::etype::eenum::variant::{EEnumVariant, EEnumVariantId, EEnumVariantWithId};
 use crate::etype::eitem::EItemInfo;
+use crate::etype::eobject::EObject;
 use crate::etype::property::ObjectPropertyId;
+use crate::etype::title::ObjectTitle;
 use crate::json_utils::repr::{JsonRepr, Repr};
 use crate::json_utils::{json_kind, JsonMap, JsonValue};
 use crate::registry::ETypesRegistry;
@@ -23,6 +25,7 @@ pub struct EEnumData {
     pub ident: ETypeId,
     pub repr: Option<Repr>,
     pub extra_properties: AHashMap<ObjectPropertyId, ETypeConst>,
+    title: ObjectTitle,
     tagged_repr: Option<Tagged>,
     variants: Vec<EEnumVariant>,
     variant_ids: Vec<EEnumVariantId>,
@@ -42,6 +45,7 @@ impl EEnumData {
             ident,
             repr,
             extra_properties,
+            title: Default::default(),
             tagged_repr,
             variants: Default::default(),
             variant_ids: Default::default(),
@@ -283,5 +287,31 @@ impl EEnumData {
         }
 
         Ok(json_value)
+    }
+}
+
+impl EObject for EEnumData {
+    fn extra_properties(&self) -> &AHashMap<ObjectPropertyId, ETypeConst> {
+        &self.extra_properties
+    }
+
+    fn repr(&self) -> Option<&Repr> {
+        self.repr.as_ref()
+    }
+
+    fn ident(&self) -> ETypeId {
+        self.ident
+    }
+
+    fn generic_arguments_names(&self) -> &[Ustr] {
+        &self.generic_arguments
+    }
+
+    fn generic_arguments_values(&self) -> &[EItemInfo] {
+        &self.generic_arguments_values
+    }
+
+    fn title(&self, registry: &ETypesRegistry) -> String {
+        self.title.get(self, registry)
     }
 }

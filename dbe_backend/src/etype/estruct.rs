@@ -1,7 +1,9 @@
 use crate::etype::econst::ETypeConst;
 use crate::etype::eitem::EItemInfo;
+use crate::etype::eobject::EObject;
 use crate::etype::property::default_properties::{PROP_FIELD_DEFAULT, PROP_FIELD_INLINE};
 use crate::etype::property::ObjectPropertyId;
+use crate::etype::title::ObjectTitle;
 use crate::json_utils::repr::{JsonRepr, Repr};
 use crate::json_utils::{json_kind, JsonMap, JsonValue};
 use crate::m_try;
@@ -23,6 +25,7 @@ pub struct EStructData {
     // pub id_field: Option<usize>,
     pub repr: Option<Repr>,
     pub extra_properties: AHashMap<ObjectPropertyId, ETypeConst>,
+    title: ObjectTitle,
 }
 
 #[derive(Debug, Clone)]
@@ -52,6 +55,7 @@ impl EStructData {
             // id_field: None,
             repr,
             extra_properties,
+            title: Default::default(),
         }
     }
 
@@ -257,5 +261,31 @@ impl EStructData {
         }
 
         Ok(json)
+    }
+}
+
+impl EObject for EStructData {
+    fn extra_properties(&self) -> &AHashMap<ObjectPropertyId, ETypeConst> {
+        &self.extra_properties
+    }
+
+    fn repr(&self) -> Option<&Repr> {
+        self.repr.as_ref()
+    }
+
+    fn ident(&self) -> ETypeId {
+        self.ident
+    }
+
+    fn generic_arguments_names(&self) -> &[Ustr] {
+        &self.generic_arguments
+    }
+
+    fn generic_arguments_values(&self) -> &[EItemInfo] {
+        &self.generic_arguments_values
+    }
+
+    fn title(&self, registry: &ETypesRegistry) -> String {
+        self.title.get(self, registry)
     }
 }

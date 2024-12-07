@@ -1,4 +1,5 @@
 use crate::etype::econst::ETypeConst;
+use crate::etype::property::wrappers::parser::ParsedFmtProp;
 use crate::extra_properties;
 use ustr::Ustr;
 
@@ -19,4 +20,7 @@ extra_properties! {
     ///
     /// This has no effect if `graph_autoconvert` is false
     pub prop<object> graph_autoconvert_variant: Ustr;
+
+    /// Format string for the human-readable title of the object
+    pub prop<object> title: ParsedFmtProp;
 }

@@ -7,6 +7,7 @@ use ahash::AHashMap;
 use dbe_backend::diagnostic::context::DiagnosticContextRef;
 use dbe_backend::diagnostic::prelude::{Diagnostic, DiagnosticLevel};
 use dbe_backend::etype::econst::ETypeConst;
+use dbe_backend::etype::eobject::EObject;
 use dbe_backend::etype::EDataType;
 use dbe_backend::graph::execution::partial::PartialGraphExecutionContext;
 use dbe_backend::graph::node::commands::SnarlCommands;
@@ -52,7 +53,7 @@ impl<'a> GraphViewer<'a> {
 
 impl<'a> SnarlViewer<SnarlNode> for GraphViewer<'a> {
     fn title(&mut self, node: &SnarlNode) -> String {
-        node.title()
+        node.title(self.ctx.registry)
     }
 
     fn show_header(
