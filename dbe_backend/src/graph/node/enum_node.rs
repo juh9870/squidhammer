@@ -67,7 +67,7 @@ impl Node for EnumNode {
     }
 
     fn title(&self, registry: &ETypesRegistry) -> String {
-        let Some((data, variant)) = self.get_data(registry) else {
+        let Some((data, _variant)) = self.get_data(registry) else {
             return "Unknown enum variant".into();
         };
 
