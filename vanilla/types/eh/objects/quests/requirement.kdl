@@ -1,4 +1,4 @@
-enum tag="Type" {
+enum title="Requirement" tag="Type" {
 	object "Empty" "eh:objects/quests/requirement_empty" tag=0
 	object "Any" "eh:objects/quests/requirement_any" tag=1
 	object "All" "eh:objects/quests/requirement_all" tag=2

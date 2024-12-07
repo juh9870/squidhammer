@@ -1,4 +1,4 @@
-struct {
+struct title="GameObjectPrefabDataCircularOutlineObject" {
 	string "Image1" alias="Image" editor="eh:image"
 	number "ImageScale" default=1 min=0 max=10
 	number "Thickness" default=0.1 min=0 max=1

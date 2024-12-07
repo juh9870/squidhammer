@@ -1,4 +1,4 @@
-enum tag="Type" {
+enum title="BehaviorTreeNode" tag="Type" {
 	object "Success" "eh:objects/ai/behavior_tree_node_success" tag=0
 	object "Failure" "eh:objects/ai/behavior_tree_node_failure" tag=9
 	object "SubTree" "eh:objects/ai/behavior_tree_node_sub_tree" tag=1

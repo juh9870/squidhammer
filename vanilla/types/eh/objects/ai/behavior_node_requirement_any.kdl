@@ -1,4 +1,4 @@
-struct {
+struct title="BehaviorNodeRequirementAny" {
 	list "Requirements" {
 		object "Item" "eh:objects/ai/behavior_node_requirement"
 	}

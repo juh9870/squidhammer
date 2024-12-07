@@ -1,4 +1,4 @@
-enum {
+enum title="ModificationQuality" {
 	const "N3" 0
 	const "N2" 1
 	const "N1" 2

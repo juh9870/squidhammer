@@ -1,4 +1,4 @@
-struct singleton=true {
+struct title="MusicPlaylistData" singleton=true {
 	list "MainMenuMusic" {
 		object "Item" "eh:objects/settings/sound_track"
 	}

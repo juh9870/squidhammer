@@ -1,4 +1,4 @@
-struct {
+struct title="CombatRulesData" {
 	string "InitialEnemyShips" default="1" arguments="level" min=1 editor="eh:expression"
 	string "MaxEnemyShips" default="12" arguments="level" min=1 editor="eh:expression"
 	number "BattleMapSize" default=200 min=50 type="int"

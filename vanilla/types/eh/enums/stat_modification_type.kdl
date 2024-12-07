@@ -1,4 +1,4 @@
-enum {
+enum title="StatModificationType" {
 	const "None" 0
 	const "WeaponDamage" 1
 	const "WeaponRange" 2

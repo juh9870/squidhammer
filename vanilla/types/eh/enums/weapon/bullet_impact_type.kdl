@@ -1,4 +1,4 @@
-enum {
+enum title="BulletImpactType" {
 	const "HitFirstTarget" 0
 	const "HitAllTargets" 1
 	const "DamageOverTime" 2

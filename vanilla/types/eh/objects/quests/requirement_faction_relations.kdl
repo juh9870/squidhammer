@@ -1,4 +1,4 @@
-struct {
+struct title="RequirementFactionRelations" {
 	number "MinValue" min=-100 max=100 type="int"
 	number "MaxValue" min=-100 max=100 type="int"
 }

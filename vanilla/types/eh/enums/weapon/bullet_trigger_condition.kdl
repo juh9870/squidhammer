@@ -1,4 +1,4 @@
-enum {
+enum title="BulletTriggerCondition" {
 	const "Undefined" 0
 	const "Created" 1
 	const "Destroyed" 2

@@ -1,4 +1,4 @@
-enum {
+enum title="DeviceClass" {
 	const "Accelerator" 0
 	const "Decoy" 1
 	const "EnergyShield" 2

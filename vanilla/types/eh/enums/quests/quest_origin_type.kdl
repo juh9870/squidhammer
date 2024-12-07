@@ -1,4 +1,4 @@
-enum {
+enum title="QuestOriginType" {
 	const "CurrentStar" 0
 	const "CurrentFactionBase" 1
 	const "RandomFactionBase" 2

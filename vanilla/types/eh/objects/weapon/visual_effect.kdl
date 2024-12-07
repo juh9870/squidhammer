@@ -1,4 +1,4 @@
-struct {
+struct title="VisualEffect" {
 	object "Id" "sys:ids/numeric" {
 		const "Id" "eh:objects/weapon/visual_effect"
 	}

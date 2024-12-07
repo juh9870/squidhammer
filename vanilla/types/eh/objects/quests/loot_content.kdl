@@ -1,4 +1,4 @@
-enum tag="Type" {
+enum title="LootContent" tag="Type" {
 	object "None" "eh:objects/quests/loot_content_none" tag=0
 	object "SomeMoney" "eh:objects/quests/loot_content_some_money" tag=1
 	object "Fuel" "eh:objects/quests/loot_content_fuel" tag=2

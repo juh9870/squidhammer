@@ -1,4 +1,4 @@
-struct {
+struct title="SatelliteBuild" {
 	object "Id" "sys:ids/numeric" {
 		const "Id" "eh:objects/satellite_build"
 	}

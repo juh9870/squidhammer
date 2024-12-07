@@ -1,4 +1,4 @@
-enum {
+enum title="ShipRarity" {
 	const "Normal" 0
 	const "Rare" 1
 	const "Hidden" 2

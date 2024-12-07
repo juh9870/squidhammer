@@ -1,4 +1,4 @@
-enum {
+enum title="ItemType" {
 	const "Undefined" 0
 	const "Component" 1
 	const "Device" 2

@@ -1,4 +1,4 @@
-struct {
+struct title="ExplorationSettings" {
 	object "Id" "sys:ids/numeric" {
 		const "Id" "eh:objects/settings/exploration_settings"
 	}

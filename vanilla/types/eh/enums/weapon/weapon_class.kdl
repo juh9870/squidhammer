@@ -1,4 +1,4 @@
-enum {
+enum title="WeaponClass" {
 	const "Common" 0
 	const "Manageable" 1
 	const "Continuous" 2

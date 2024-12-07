@@ -1,4 +1,4 @@
-enum tag="Type" {
+enum title="BulletController" tag="Type" {
 	object "Projectile" "eh:objects/weapon/bullet_controller_projectile" tag=0
 	object "Homing" "eh:objects/weapon/bullet_controller_homing" tag=1
 	object "Beam" "eh:objects/weapon/bullet_controller_beam" tag=2

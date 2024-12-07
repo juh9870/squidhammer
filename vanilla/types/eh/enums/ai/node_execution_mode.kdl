@@ -1,4 +1,4 @@
-enum {
+enum title="NodeExecutionMode" {
 	const "UntilSucceeds" 0
 	const "UntilFails" 1
 	const "UntilFinishes" 2

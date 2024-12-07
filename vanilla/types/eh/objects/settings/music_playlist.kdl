@@ -1,4 +1,4 @@
-struct {
+struct title="MusicPlaylist" {
 	object "Id" "sys:ids/numeric" {
 		const "Id" "eh:objects/settings/music_playlist"
 	}

@@ -1,4 +1,4 @@
-struct {
+struct title="TechnologyDataComponent" {
 	object "ItemId" "sys:ids/numeric_ref" alias="Component" typeid="eh:objects/component" {
 		const "Id" "eh:objects/component"
 	}

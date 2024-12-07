@@ -1,4 +1,4 @@
-enum {
+enum title="ComponentStatsType" {
 	const "PerComponent" 0
 	const "PerOneCell" 1
 }

@@ -1,4 +1,4 @@
-struct {
+struct title="QuestData" {
 	string "Name"
 	object "QuestType" "eh:enums/quests/quest_type"
 	object "StartCondition" "eh:enums/quests/start_condition"

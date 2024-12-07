@@ -1,4 +1,4 @@
-enum {
+enum title="ComponentCategory" {
 	const "Undefined" 0
 	const "Weapon" 1
 	const "Defense" 2

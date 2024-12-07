@@ -1,4 +1,4 @@
-enum {
+enum title="BulletTypeObsolete" {
 	const "Projectile" 0
 	const "Homing" 1
 	const "Static" 2

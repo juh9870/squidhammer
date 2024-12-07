@@ -1,4 +1,4 @@
-enum tag="Type" {
+enum title="GameObjectPrefabData" tag="Type" {
 	object "Undefined" "eh:objects/game_object_prefab_undefined" tag=0
 	object "WormTailSegment" "eh:objects/game_object_prefab_worm_tail_segment" tag=1
 	object "CircularSpriteObject" "eh:objects/game_object_prefab_circular_sprite_object" tag=2

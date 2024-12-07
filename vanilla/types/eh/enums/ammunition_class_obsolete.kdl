@@ -1,4 +1,4 @@
-enum {
+enum title="AmmunitionClassObsolete" {
 	const "Common" 0
 	const "Acid" 1
 	const "Aura" 2

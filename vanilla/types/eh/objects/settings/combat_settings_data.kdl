@@ -1,4 +1,4 @@
-struct singleton=true {
+struct title="CombatSettingsData" singleton=true {
 	object "EnemyAI" "sys:optional" {
 		object "Item" "sys:ids/numeric_ref" {
 			const "Id" "eh:objects/ai/behavior_tree"

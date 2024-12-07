@@ -1,4 +1,4 @@
-struct {
+struct title="Engine" {
 	object "Position" "sys:vec2"
 	number "Size" min=0 max=1
 }

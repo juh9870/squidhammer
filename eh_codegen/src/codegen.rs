@@ -73,22 +73,29 @@ impl Ctx {
         let _guard = error_span!("Struct", name = &data.name).entered();
 
         if let Some(_ty) = &data.typeid {
+            let name = data.name.clone();
             let data_path = Utf8PathBuf::from(path.to_string() + "Data");
-            let data_id = self.consume_struct_raw(data_path.clone(), data);
+            let data_id = self.consume_struct_raw(data_path.clone(), data, true);
             self.output(
                 id(&path),
                 format!(
-                    "struct {{\n\tobject \"Id\" \"sys:ids/numeric\" {{\n\t\tconst \"Id\" \"{}\"\n\t}}\n\tobject \"Data\" \"{}\" inline=true\n}}",
+                    "struct title=\"{}\" {{\n\tobject \"Id\" \"sys:ids/numeric\" {{\n\t\tconst \"Id\" \"{}\"\n\t}}\n\tobject \"Data\" \"{}\" inline=true\n}}",
+                    &name,
                     id(&path),
                     data_id,
                 ),
             );
         } else {
-            self.consume_struct_raw(path, data);
+            self.consume_struct_raw(path, data, false);
         }
     }
 
-    fn consume_struct_raw(&mut self, path: Utf8PathBuf, data: SchemaData) -> String {
+    fn consume_struct_raw(
+        &mut self,
+        path: Utf8PathBuf,
+        data: SchemaData,
+        is_switch_variant: bool,
+    ) -> String {
         let members = data.member.unwrap_or_default();
         if let Some(switch_field) = data.switch {
             let enum_name = members
@@ -124,12 +131,17 @@ impl Ctx {
             let enum_id = id(&path);
             edata.id = enum_id.clone();
             edata.name = data.name;
+            if is_switch_variant {
+                edata.name = format!("{}Data", edata.name);
+            }
             for (variant, variant_name) in variants
                 .iter()
                 .zip(edata.item.iter().map(|i| i.name.clone()).collect_vec())
             {
+                let combined = format!("{}{}", &edata.name, variant_name);
                 self.emit_struct(
                     variant.clone(),
+                    &combined,
                     members
                         .iter()
                         .filter(|m| {
@@ -147,17 +159,33 @@ impl Ctx {
             enum_id
         } else {
             let id = id(&path);
-            self.emit_struct(id.clone(), members, data.ty == SchemaDataType::Settings);
+            let name = if is_switch_variant {
+                format!("{}Data", data.name)
+            } else {
+                data.name.clone()
+            };
+            self.emit_struct(
+                id.clone(),
+                &name,
+                members,
+                data.ty == SchemaDataType::Settings,
+            );
             id
         }
     }
 
-    fn emit_struct(&mut self, id: String, members: Vec<SchemaStructMember>, singleton: bool) {
+    fn emit_struct(
+        &mut self,
+        id: String,
+        title: &str,
+        members: Vec<SchemaStructMember>,
+        singleton: bool,
+    ) {
         let _guard = error_span!("Struct", id = &id).entered();
         let mut code = if singleton {
-            "struct singleton=true {".to_string()
+            format!("struct title=\"{}\" singleton=true {{", title)
         } else {
-            "struct {".to_string()
+            format!("struct title=\"{}\" {{", title)
         };
 
         let typeid_fmt = |id: String| format!("\"{}\"", typeid(&self.typeids, id,));
@@ -328,7 +356,7 @@ impl Ctx {
         let _guard = error_span!("Enum", name = &data.name).entered();
 
         let code = if let Some((fields, field)) = data.linked_struct {
-            let mut code = format!("enum tag=\"{}\" {{", field);
+            let mut code = format!("enum title=\"{}\" tag=\"{}\" {{", &data.name, field);
             for (i, (item, struct_id)) in data.item.into_iter().zip(fields).enumerate() {
                 code += &format!(
                     "\n\tobject \"{}\" \"{}\" tag={}",
@@ -342,7 +370,7 @@ impl Ctx {
             code += "\n}";
             code
         } else {
-            let mut code = "enum {".to_string();
+            let mut code = format!("enum title=\"{}\" {{", &data.name);
 
             for (i, item) in data.item.into_iter().enumerate() {
                 code += &format!(

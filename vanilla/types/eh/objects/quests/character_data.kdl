@@ -1,4 +1,4 @@
-struct {
+struct title="CharacterData" {
 	string "Name"
 	string "AvatarIcon" editor="eh:image"
 	object "Faction" "sys:optional" {

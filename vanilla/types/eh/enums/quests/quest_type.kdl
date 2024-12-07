@@ -1,4 +1,4 @@
-enum {
+enum title="QuestType" {
 	const "Common" 0
 	const "Singleton" 1
 	const "Storyline" 2

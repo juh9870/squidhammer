@@ -1,4 +1,4 @@
-struct {
+struct title="ComponentGroupTag" {
 	object "Id" "sys:ids/numeric" {
 		const "Id" "eh:objects/component_group_tag"
 	}

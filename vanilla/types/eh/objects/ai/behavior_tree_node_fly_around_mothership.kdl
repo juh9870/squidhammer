@@ -1,4 +1,4 @@
-struct {
+struct title="BehaviorTreeNodeFlyAroundMothership" {
 	object "Requirement" "eh:objects/ai/behavior_node_requirement" description="The node will not execute and will return FAILURE if the requirement is not met"
 	number "MinValue" alias="MinDistance" default=2.5 min=0 max=1000
 	number "MaxValue" alias="MaxDistance" default=3.5 min=0 max=1000

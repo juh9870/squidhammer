@@ -1,4 +1,4 @@
-enum {
+enum title="AiWeaponCategory" {
 	const "All" 0
 	const "Repair" 1
 	const "Damage" 2

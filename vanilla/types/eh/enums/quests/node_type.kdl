@@ -1,4 +1,4 @@
-enum {
+enum title="NodeType" {
 	const "Undefined" 0
 	const "ComingSoon" 1
 	const "ShowDialog" 10

@@ -1,4 +1,4 @@
-struct {
+struct title="RequirementQuestCompleted" {
 	object "ItemId" "sys:optional" alias="Quest" {
 		object "Item" "sys:ids/numeric_ref" {
 			const "Id" "eh:objects/quests/quest"

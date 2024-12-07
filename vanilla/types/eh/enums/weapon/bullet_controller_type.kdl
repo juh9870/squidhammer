@@ -1,4 +1,4 @@
-enum {
+enum title="BulletControllerType" {
 	const "Projectile" 0
 	const "Homing" 1
 	const "Beam" 2

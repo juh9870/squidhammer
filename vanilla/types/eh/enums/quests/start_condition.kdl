@@ -1,4 +1,4 @@
-enum {
+enum title="StartCondition" {
 	const "Manual" 0
 	const "Beacon" 1
 	const "LocalEncounter" 2

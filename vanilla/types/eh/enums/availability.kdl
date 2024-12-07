@@ -1,4 +1,4 @@
-enum {
+enum title="Availability" {
 	const "None" 0
 	const "Common" 1
 	const "Rare" 2

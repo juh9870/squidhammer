@@ -1,4 +1,4 @@
-enum {
+enum title="FactionFilterType" {
 	const "AllButList" 0
 	const "ListOnly" 1
 	const "StarOwnersAndList" 2

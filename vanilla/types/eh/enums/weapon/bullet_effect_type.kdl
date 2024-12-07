@@ -1,4 +1,4 @@
-enum {
+enum title="BulletEffectType" {
 	const "None" 0
 	const "PlaySfx" 1
 	const "SpawnBullet" 2

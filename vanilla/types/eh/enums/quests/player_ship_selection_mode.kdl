@@ -1,4 +1,4 @@
-enum {
+enum title="PlayerShipSelectionMode" {
 	const "Default" 0
 	const "OnlyOneShip" 1
 	const "ByOrder" 2

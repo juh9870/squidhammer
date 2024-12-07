@@ -1,4 +1,4 @@
-struct singleton=true {
+struct title="SkillSettingsData" singleton=true {
 	list "BeatAllEnemiesFactionList" {
 		object "Item" "sys:ids/numeric_ref" {
 			const "Id" "eh:objects/faction"

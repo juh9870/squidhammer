@@ -1,4 +1,4 @@
-enum {
+enum title="SizeClass" {
 	const "Undefined" -1
 	const "Frigate" 0
 	const "Destroyer" 1

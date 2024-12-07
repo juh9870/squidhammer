@@ -1,4 +1,4 @@
-struct {
+struct title="ShipModSettings" {
 	object "Id" "sys:ids/numeric" {
 		const "Id" "eh:objects/settings/ship_mod_settings"
 	}

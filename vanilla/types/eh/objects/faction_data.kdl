@@ -1,4 +1,4 @@
-struct {
+struct title="FactionData" {
 	string "Name"
 	object "Color" "color:argb"
 	boolean "NoTerritories"

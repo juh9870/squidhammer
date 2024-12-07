@@ -1,4 +1,4 @@
-struct singleton=true {
+struct title="DebugSettingsData" singleton=true {
 	list "Codes" {
 		object "Item" "eh:objects/settings/debug_code"
 	}

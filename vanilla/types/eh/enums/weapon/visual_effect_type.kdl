@@ -1,4 +1,4 @@
-enum {
+enum title="VisualEffectType" {
 	const "Flash" 0
 	const "FlashAdditive" 1
 	const "Shockwave" 2

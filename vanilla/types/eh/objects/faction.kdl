@@ -1,4 +1,4 @@
-struct {
+struct title="Faction" {
 	object "Id" "sys:ids/numeric" {
 		const "Id" "eh:objects/faction"
 	}

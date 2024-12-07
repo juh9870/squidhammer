@@ -1,4 +1,4 @@
-enum {
+enum title="CellType" {
 	const "Empty" "0"
 	const "Weapon" "4"
 	const "Outer" "1"

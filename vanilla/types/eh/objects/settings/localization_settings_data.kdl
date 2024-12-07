@@ -1,4 +1,4 @@
-struct singleton=true {
+struct title="LocalizationSettingsData" singleton=true {
 	string "CorrosiveDamageText" default="$WeaponDamage"
 	string "CorrosiveDpsText" default="$WeaponDPS"
 }

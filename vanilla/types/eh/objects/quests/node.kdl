@@ -1,4 +1,4 @@
-enum tag="Type" {
+enum title="Node" tag="Type" {
 	object "Undefined" "eh:objects/quests/node_undefined" tag=0
 	object "ComingSoon" "eh:objects/quests/node_coming_soon" tag=1
 	object "ShowDialog" "eh:objects/quests/node_show_dialog" tag=10

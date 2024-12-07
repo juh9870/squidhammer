@@ -1,4 +1,4 @@
-enum {
+enum title="DifficultyClass" {
 	const "Default" 0
 	const "Class1" 1
 	const "Class2" 2

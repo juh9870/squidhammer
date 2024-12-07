@@ -1,4 +1,4 @@
-struct singleton=true {
+struct title="ShipSettingsData" singleton=true {
 	number "DefaultWeightPerCell" min=1 max=1000000
 	number "MinimumWeightPerCell" min=1 max=1000000
 	number "BaseArmorPoints" min=0 max=1000000

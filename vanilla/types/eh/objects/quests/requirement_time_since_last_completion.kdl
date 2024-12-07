@@ -1,4 +1,4 @@
-struct {
+struct title="RequirementTimeSinceLastCompletion" {
 	number "MinValue" alias="Minutes" min=0 max=999999 type="int"
 	number "MaxValue" alias="Hours" min=0 max=999999 type="int"
 }

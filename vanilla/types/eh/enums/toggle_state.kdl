@@ -1,4 +1,4 @@
-enum {
+enum title="ToggleState" {
 	const "Default" 0
 	const "Enabled" 1
 	const "Disabled" 2

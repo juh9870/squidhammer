@@ -1,4 +1,4 @@
-enum {
+enum title="SkillType" {
 	const "Undefined" 0
 	const "ShipAttack" 1
 	const "ShipDefense" 2

@@ -1,4 +1,4 @@
-struct {
+struct title="SkillSettings" {
 	object "Id" "sys:ids/numeric" {
 		const "Id" "eh:objects/settings/skill_settings"
 	}

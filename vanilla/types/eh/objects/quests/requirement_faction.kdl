@@ -1,4 +1,4 @@
-struct {
+struct title="RequirementFaction" {
 	object "Faction" "sys:optional" {
 		object "Item" "sys:ids/numeric_ref" {
 			const "Id" "eh:objects/faction"

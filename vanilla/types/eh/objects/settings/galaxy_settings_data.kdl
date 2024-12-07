@@ -1,4 +1,4 @@
-struct singleton=true {
+struct title="GalaxySettingsData" singleton=true {
 	object "AbandonedStarbaseFaction" "sys:optional" {
 		object "Item" "sys:ids/numeric_ref" {
 			const "Id" "eh:objects/faction"

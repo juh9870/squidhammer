@@ -1,4 +1,4 @@
-enum {
+enum title="AiBulletBehavior" {
 	const "Projectile" 0
 	const "Homing" 1
 	const "Beam" 2

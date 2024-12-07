@@ -1,4 +1,4 @@
-enum tag="Type" {
+enum title="TechnologyData" tag="Type" {
 	object "Component" "eh:objects/technology_component" tag=0
 	object "Ship" "eh:objects/technology_ship" tag=1
 	object "Satellite" "eh:objects/technology_satellite" tag=2

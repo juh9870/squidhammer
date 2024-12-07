@@ -1,4 +1,4 @@
-enum tag="EffectType" {
+enum title="BulletTrigger" tag="EffectType" {
 	object "None" "eh:objects/weapon/bullet_trigger_none" tag=0
 	object "PlaySfx" "eh:objects/weapon/bullet_trigger_play_sfx" tag=1
 	object "SpawnBullet" "eh:objects/weapon/bullet_trigger_spawn_bullet" tag=2

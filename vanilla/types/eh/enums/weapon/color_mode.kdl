@@ -1,4 +1,4 @@
-enum {
+enum title="ColorMode" {
 	const "TakeFromOwner" 0
 	const "UseMyOwn" 1
 	const "Blend" 2

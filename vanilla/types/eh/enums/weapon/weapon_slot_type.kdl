@@ -1,4 +1,4 @@
-enum {
+enum title="WeaponSlotType" {
 	const "Default" 0
 	const "Cannon" "C"
 	const "Torpedo" "T"

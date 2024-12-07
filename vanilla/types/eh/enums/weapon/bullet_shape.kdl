@@ -1,4 +1,4 @@
-enum {
+enum title="BulletShape" {
 	const "Projectile" 0
 	const "Rocket" 1
 	const "LaserBeam" 2

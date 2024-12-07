@@ -1,4 +1,4 @@
-enum {
+enum title="ShipPerkType" {
 	const "Empty" 0
 	const "AutoTargeting" 1
 	const "HeatDefense" 2

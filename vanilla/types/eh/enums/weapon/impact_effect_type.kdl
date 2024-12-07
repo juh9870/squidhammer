@@ -1,4 +1,4 @@
-enum {
+enum title="ImpactEffectType" {
 	const "Damage" 0
 	const "Push" 1
 	const "Pull" 2

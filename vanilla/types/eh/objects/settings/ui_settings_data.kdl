@@ -1,4 +1,4 @@
-struct singleton=true {
+struct title="UiSettingsData" singleton=true {
 	object "WindowColor" default="#50C0FF" "color:argb"
 	object "ScrollBarColor" default="#C050C0FF" "color:argb"
 	object "IconColor" default="#80FFFF" "color:argb"

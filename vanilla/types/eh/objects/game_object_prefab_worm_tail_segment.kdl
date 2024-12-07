@@ -1,4 +1,4 @@
-struct {
+struct title="GameObjectPrefabDataWormTailSegment" {
 	string "Image1" alias="BodyImage" editor="eh:image"
 	string "Image2" alias="JointImage" editor="eh:image"
 	number "ImageScale" alias="JointImageScale" min=0 max=10

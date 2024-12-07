@@ -1,4 +1,4 @@
-enum {
+enum title="BehaviorNodeType" {
 	const "Success" 0
 	const "Failure" 9
 	const "SubTree" 1

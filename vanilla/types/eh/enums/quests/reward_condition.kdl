@@ -1,4 +1,4 @@
-enum {
+enum title="RewardCondition" {
 	const "Default" 0
 	const "Always" 1
 	const "Never" 2

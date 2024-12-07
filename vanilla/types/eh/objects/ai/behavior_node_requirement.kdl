@@ -1,4 +1,4 @@
-enum tag="Type" {
+enum title="BehaviorNodeRequirement" tag="Type" {
 	object "Empty" "eh:objects/ai/behavior_node_requirement_empty" tag=0
 	object "Any" "eh:objects/ai/behavior_node_requirement_any" tag=1
 	object "All" "eh:objects/ai/behavior_node_requirement_all" tag=2

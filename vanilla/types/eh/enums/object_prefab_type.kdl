@@ -1,4 +1,4 @@
-enum {
+enum title="ObjectPrefabType" {
 	const "Undefined" 0
 	const "WormTailSegment" 1
 	const "CircularSpriteObject" 2

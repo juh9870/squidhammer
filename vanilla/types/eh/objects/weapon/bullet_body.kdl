@@ -1,4 +1,4 @@
-struct {
+struct title="BulletBody" {
 	number "Size" min=0 max=1000
 	number "Length" min=0 max=1000
 	number "Velocity" min=0 max=1000

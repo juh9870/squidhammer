@@ -1,4 +1,4 @@
-struct {
+struct title="LootContentMoney" {
 	number "MinAmount" min=0 max=1000000000 type="int"
 	number "MaxAmount" min=0 max=1000000000 type="int"
 }

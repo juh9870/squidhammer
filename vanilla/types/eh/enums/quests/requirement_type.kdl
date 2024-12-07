@@ -1,4 +1,4 @@
-enum {
+enum title="RequirementType" {
 	const "Empty" 0
 	const "Any" 1
 	const "All" 2

@@ -1,4 +1,4 @@
-struct {
+struct title="RequirementNone" {
 	list "Requirements" {
 		object "Item" "eh:objects/quests/requirement"
 	}

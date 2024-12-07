@@ -1,4 +1,4 @@
-struct {
+struct title="RequirementHaveItemById" {
 	object "ItemId" "sys:optional" alias="Loot" {
 		object "Item" "sys:ids/numeric_ref" {
 			const "Id" "eh:objects/quests/loot"

@@ -1,4 +1,4 @@
-enum {
+enum title="ShipType" {
 	const "Common" 0
 	const "Drone" 1
 	const "Starbase" 2

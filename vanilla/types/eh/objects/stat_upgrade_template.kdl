@@ -1,4 +1,4 @@
-struct {
+struct title="StatUpgradeTemplate" {
 	object "Id" "sys:ids/numeric" {
 		const "Id" "eh:objects/stat_upgrade_template"
 	}

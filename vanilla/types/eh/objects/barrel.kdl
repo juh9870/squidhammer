@@ -1,4 +1,4 @@
-struct {
+struct title="Barrel" {
 	object "Position" "sys:vec2"
 	number "Rotation" min=-360 max=360
 	number "Offset" min=0 max=1

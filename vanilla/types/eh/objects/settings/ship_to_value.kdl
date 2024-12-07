@@ -1,4 +1,4 @@
-struct {
+struct title="ShipToValue" {
 	object "Ship" "sys:optional" {
 		object "Item" "sys:ids/numeric_ref" {
 			const "Id" "eh:objects/ship"

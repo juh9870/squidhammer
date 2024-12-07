@@ -1,4 +1,4 @@
-enum {
+enum title="LootItemType" {
 	const "None" 0
 	const "SomeMoney" 1
 	const "Fuel" 2

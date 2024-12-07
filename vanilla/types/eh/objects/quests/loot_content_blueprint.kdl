@@ -1,4 +1,4 @@
-struct {
+struct title="LootContentBlueprint" {
 	object "ItemId" "sys:ids/numeric_ref" alias="Blueprint" typeid="eh:objects/technology" {
 		const "Id" "eh:objects/technology"
 	}

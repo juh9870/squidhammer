@@ -1,4 +1,4 @@
-enum {
+enum title="DamageType" {
 	const "Impact" 0
 	const "Energy" 1
 	const "Heat" 2

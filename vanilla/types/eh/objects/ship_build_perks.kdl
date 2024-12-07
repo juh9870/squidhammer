@@ -1,4 +1,4 @@
-struct {
+struct title="ShipBuildPerks" {
 	object "Perk1" "eh:enums/ship_perk_type"
 	object "Perk2" "eh:enums/ship_perk_type"
 	object "Perk3" "eh:enums/ship_perk_type"
