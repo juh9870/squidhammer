@@ -1,6 +1,7 @@
 use crate::etype::eenum::variant::{EEnumVariant, EEnumVariantId};
 use crate::etype::eenum::EEnumData;
 use crate::etype::eitem::EItemInfo;
+use crate::etype::eobject::EObject;
 use crate::etype::EDataType;
 use crate::graph::node::commands::{SnarlCommand, SnarlCommands};
 use crate::graph::node::ports::NodePortType;
@@ -63,6 +64,14 @@ impl Node for EnumNode {
     impl_serde_node!();
     fn id(&self) -> Ustr {
         EnumNodeFactory.id()
+    }
+
+    fn title(&self, registry: &ETypesRegistry) -> String {
+        let Some((data, variant)) = self.get_data(registry) else {
+            return "Unknown enum variant".into();
+        };
+
+        data.title(registry)
     }
 
     fn inputs_count(&self, registry: &ETypesRegistry) -> usize {
