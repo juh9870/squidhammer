@@ -150,7 +150,7 @@ fn enum_assignable(registry: &ETypesRegistry, from: &EItemInfo, to: &EItemInfo) 
         return false;
     };
 
-    let autoconvert = PROP_OBJECT_GRAPH_AUTOCONVERT.get(&enum_data.extra_properties, false);
+    let autoconvert = PROP_OBJECT_GRAPH_AUTOCONVERT.get(&enum_data.extra_properties, true);
     if !autoconvert {
         return false;
     }
@@ -221,7 +221,7 @@ fn convert_enum(
         return Ok(None);
     };
 
-    let autoconvert = PROP_OBJECT_GRAPH_AUTOCONVERT.get(&enum_data.extra_properties, false);
+    let autoconvert = PROP_OBJECT_GRAPH_AUTOCONVERT.get(&enum_data.extra_properties, true);
     if !autoconvert {
         return Ok(None);
     }
