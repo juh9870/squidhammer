@@ -11,8 +11,6 @@ use egui_snarl::{InPinId, NodeId, OutPinId, Snarl};
 use miette::{bail, miette, Context};
 use smallvec::SmallVec;
 
-pub mod partial;
-
 #[derive(Debug)]
 pub struct GraphExecutionContext<'a, 'snarl> {
     pub snarl: &'snarl Snarl<SnarlNode>,
@@ -260,5 +258,62 @@ impl<'a, 'snarl> GraphExecutionContext<'a, 'snarl> {
             Ok(())
         })
         .with_context(|| format!("failed to evaluate node {:?}", id))
+    }
+}
+
+#[derive(Debug)]
+pub struct PartialGraphExecutionContext<'a> {
+    pub inline_values: &'a AHashMap<InPinId, EValue>,
+    pub registry: &'a ETypesRegistry,
+    pub side_effects: SideEffectsContext<'a>,
+    cache: &'a mut GraphCache,
+}
+
+impl<'a> PartialGraphExecutionContext<'a> {
+    pub fn from_context<'b, 'snarl>(
+        ctx: &'a mut GraphExecutionContext<'b, 'snarl>,
+    ) -> (Self, &'snarl Snarl<SnarlNode>) {
+        (
+            PartialGraphExecutionContext {
+                inline_values: ctx.inline_values,
+                cache: ctx.cache,
+                registry: ctx.registry,
+                side_effects: ctx.side_effects.clone(),
+            },
+            ctx.snarl,
+        )
+    }
+
+    pub fn from_graph(
+        graph: &'a Graph,
+        registry: &'a ETypesRegistry,
+        cache: &'a mut GraphCache,
+        side_effects: SideEffectsContext<'a>,
+    ) -> (Self, &'a Snarl<SnarlNode>) {
+        (
+            PartialGraphExecutionContext {
+                inline_values: &graph.inline_values,
+                cache,
+                registry,
+                side_effects,
+            },
+            &graph.snarl,
+        )
+    }
+
+    pub fn as_full<'b, 'snarl>(
+        &'b mut self,
+        snarl: &'snarl Snarl<SnarlNode>,
+    ) -> GraphExecutionContext<'b, 'snarl>
+    where
+        'a: 'b,
+    {
+        GraphExecutionContext {
+            snarl,
+            inline_values: self.inline_values,
+            cache: self.cache,
+            registry: self.registry,
+            side_effects: self.side_effects.clone(),
+        }
     }
 }
