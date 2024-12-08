@@ -5,9 +5,11 @@ use crate::json_utils::JsonValue;
 use crate::project::ProjectFile;
 use crate::registry::ETypesRegistry;
 use ahash::AHashMap;
-use miette::{Context, IntoDiagnostic};
+use camino::Utf8PathBuf;
+use miette::{bail, Context, IntoDiagnostic};
 use serde::{Deserialize, Serialize};
 use smallvec::SmallVec;
+use std::collections::hash_map::Entry;
 use strum::EnumIs;
 use uuid::Uuid;
 
@@ -134,10 +136,15 @@ impl ProjectGraph {
 
 #[derive(Debug, Serialize, Deserialize)]
 struct PackedProjectGraph {
+    #[serde(default = "default_uuid")]
     id: Uuid,
     #[serde(default)]
     name: Option<String>,
     graph: JsonValue,
+}
+
+fn default_uuid() -> Uuid {
+    Uuid::new_v4()
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -153,6 +160,7 @@ pub struct ProjectGraphs {
     pub graphs: AHashMap<Uuid, ProjectGraph>,
     /// Cache for project graphs. Should only be used when executing graph standalone, not as a node group
     pub cache: AHashMap<Uuid, GraphCache>,
+    paths: AHashMap<Uuid, Utf8PathBuf>,
 }
 
 impl ProjectGraphs {
@@ -177,10 +185,32 @@ impl ProjectGraphs {
         result
     }
 
-    pub fn add_graph(&mut self, graph: ProjectGraph) -> ProjectFile {
+    pub fn add_graph(
+        &mut self,
+        path: Utf8PathBuf,
+        graph: ProjectGraph,
+    ) -> miette::Result<ProjectFile> {
         let id = graph.id;
-        self.graphs.insert(id, graph);
+        match self.graphs.entry(id) {
+            Entry::Occupied(_) => {
+                let other_path = self
+                    .paths
+                    .get(&id)
+                    .map(|p| p.to_string())
+                    .unwrap_or_else(|| "unknown file".to_string());
+                bail!(
+                    "graph with id {:?} already exists at `{}`. Were graph files copied manually?",
+                    id,
+                    other_path
+                );
+            }
+            Entry::Vacant(e) => {
+                e.insert(graph);
+            }
+        }
 
-        ProjectFile::Graph(id)
+        self.paths.insert(id, path);
+
+        Ok(ProjectFile::Graph(id))
     }
 }

@@ -255,8 +255,12 @@ impl<IO: ProjectIO> Project<IO> {
 
         for (path, mut json) in graphs {
             let graph = ProjectGraph::parse_json(&project.registry, &mut json)
-                .with_context(|| format!("failed to deseialize Graph at `{}`", path))?;
-            project.files.insert(path, project.graphs.add_graph(graph));
+                .with_context(|| format!("failed to deserialize Graph at `{}`", path))?;
+            let file = project
+                .graphs
+                .add_graph(path.clone(), graph)
+                .with_context(|| format!("failed to process Graph at `{}`", path))?;
+            project.files.insert(path, file);
         }
 
         // Validate again after all files are loaded
