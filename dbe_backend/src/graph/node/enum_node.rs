@@ -49,7 +49,7 @@ impl EnumNode {
         }
 
         self.variant = Some(variant);
-        commands.push(SnarlCommand::DropInputsRaw {
+        commands.push(SnarlCommand::DropInlineValuesRaw {
             to: InPinId { node, input: 0 },
         });
         commands.push(SnarlCommand::DeletePinValue {

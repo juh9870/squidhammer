@@ -2,7 +2,7 @@ use crate::error::report_error;
 use crate::workspace::editors::editor_for_value;
 use crate::DbeApp;
 use camino::Utf8PathBuf;
-use dbe_backend::graph::execution::partial::PartialGraphExecutionContext;
+use dbe_backend::graph::editing::PartialGraphEditingContext;
 use dbe_backend::project::side_effects::SideEffectsContext;
 use dbe_backend::project::{Project, ProjectFile};
 use dbe_backend::validation::validate;
@@ -163,17 +163,18 @@ impl<Io> TabViewer for WorkspaceTabViewer<'_, Io> {
 
                 ui.label(RichText::new(strip_ansi_escapes::strip_str(err_str)).color(Color32::RED));
             }
-            ProjectFile::Graph(graph) => {
-                let (ctx, snarl) = PartialGraphExecutionContext::from_graph(
+            ProjectFile::Graph(id) => self.0.graphs.edit_graph(*id, |graph, cache, _graphs| {
+                let (ctx, snarl) = PartialGraphEditingContext::from_graph(
                     graph,
                     &self.0.registry,
+                    cache,
                     SideEffectsContext::new(&mut side_effects, tab.clone()),
                 );
 
                 let mut viewer = graph::GraphViewer::new(ctx, diagnostics.as_readonly());
 
                 snarl.show(&mut viewer, &SnarlStyle::default(), tab.to_string(), ui);
-            }
+            }),
             ProjectFile::GeneratedValue(value) => {
                 let editor = editor_for_value(&self.0.registry, value);
 

@@ -1,3 +1,4 @@
+use crate::graph::cache::GraphCache;
 use crate::graph::node::ports::NodePortType;
 use crate::graph::node::SnarlNode;
 use crate::graph::Graph;
@@ -9,31 +10,47 @@ use ahash::AHashMap;
 use egui_snarl::{InPinId, NodeId, OutPinId, Snarl};
 use miette::{bail, miette, Context};
 use smallvec::SmallVec;
-use std::collections::hash_map::Entry;
 
 pub mod partial;
 
 #[derive(Debug)]
 pub struct GraphExecutionContext<'a, 'snarl> {
     pub snarl: &'snarl Snarl<SnarlNode>,
-    pub inputs: &'a mut AHashMap<InPinId, EValue>,
+    pub inline_values: &'a AHashMap<InPinId, EValue>,
     pub registry: &'a ETypesRegistry,
     pub side_effects: SideEffectsContext<'a>,
-    cache: &'a mut AHashMap<NodeId, Vec<EValue>>,
+    cache: &'a mut GraphCache,
 }
 
 impl<'a> GraphExecutionContext<'a, 'a> {
     pub fn from_graph(
-        graph: &'a mut Graph,
+        graph: &'a Graph,
         registry: &'a ETypesRegistry,
+        cache: &'a mut GraphCache,
         side_effects: SideEffectsContext<'a>,
     ) -> Self {
         GraphExecutionContext {
             snarl: &graph.snarl,
-            inputs: &mut graph.inputs,
-            cache: &mut graph.cache,
+            inline_values: &graph.inline_values,
+            cache,
             registry,
             side_effects,
+        }
+    }
+
+    pub(super) fn new(
+        snarl: &'a Snarl<SnarlNode>,
+        inline_values: &'a AHashMap<InPinId, EValue>,
+        registry: &'a ETypesRegistry,
+        side_effects: SideEffectsContext<'a>,
+        cache: &'a mut GraphCache,
+    ) -> Self {
+        Self {
+            snarl,
+            inline_values,
+            registry,
+            side_effects,
+            cache,
         }
     }
 }
@@ -138,17 +155,11 @@ impl<'a, 'snarl> GraphExecutionContext<'a, 'snarl> {
         &mut self,
         pin: InPinId,
         node: &SnarlNode,
-    ) -> miette::Result<Option<&mut EValue>> {
+    ) -> miette::Result<Option<&EValue>> {
         if !node.has_inline_values()? {
             return Ok(None);
         }
-        Ok(Some(match self.inputs.entry(pin) {
-            Entry::Occupied(entry) => entry.into_mut(),
-            Entry::Vacant(entry) => {
-                let default = node.default_input_value(self.registry, pin.input)?;
-                entry.insert(default.into_owned())
-            }
-        }))
+        Ok(self.inline_values.get(&pin))
     }
 
     fn read_node_input_inner(
@@ -165,7 +176,9 @@ impl<'a, 'snarl> GraphExecutionContext<'a, 'snarl> {
             let slot = self.snarl.in_pin(id);
             let value = if slot.remotes.is_empty() {
                 match self.inline_input_value(slot.id, node)? {
-                    None => in_info.ty.default_value(self.registry).into_owned(),
+                    None => node
+                        .default_input_value(self.registry, id.input)?
+                        .into_owned(),
                     Some(val) => val.clone(),
                 }
             } else if slot.remotes.len() == 1 {

@@ -94,7 +94,7 @@ impl NodeView for DefaultNodeView {
         };
         let mut shown = false;
         if pin.remotes.is_empty() {
-            if let Some(value) = viewer.ctx.get_inline_input_mut(snarl, pin.id)? {
+            if let Some(value) = viewer.ctx.as_full(snarl).get_inline_input_mut(pin.id)? {
                 if has_inline_editor(registry, input_data.ty.ty(), true) {
                     let editor = editor_for_item(registry, info);
                     let res = ui.vertical(|ui| {
@@ -108,7 +108,7 @@ impl NodeView for DefaultNodeView {
                     });
 
                     if res.inner.changed {
-                        viewer.ctx.mark_dirty(snarl, pin.id.node);
+                        viewer.ctx.as_full(snarl).mark_dirty(pin.id.node);
                     }
                     shown = true;
                 } else {
@@ -122,7 +122,7 @@ impl NodeView for DefaultNodeView {
         }
 
         if !shown {
-            let mut value = viewer.ctx.read_input(snarl, pin.id)?;
+            let mut value = viewer.ctx.as_full(snarl).read_input(pin.id)?;
             if has_inline_editor(registry, input_data.ty.ty(), false) {
                 let editor = editor_for_item(registry, info);
                 ui.add_enabled_ui(true, |ui| {
@@ -158,7 +158,7 @@ impl NodeView for DefaultNodeView {
         let registry = viewer.ctx.registry;
         let node = &snarl[pin.id.node];
         let output_data = node.try_output(viewer.ctx.registry, pin.id.output)?;
-        let value = viewer.ctx.read_output(snarl, pin.id)?;
+        let value = viewer.ctx.as_full(snarl).read_output(pin.id)?;
         ui.horizontal(|ui| {
             ui.label(&*output_data.name);
             ui.label(format_value(&value));

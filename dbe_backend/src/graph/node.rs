@@ -215,7 +215,7 @@ pub trait Node: DynClone + Debug + Send + Sync + Downcast + 'static {
         if NodePortType::compatible(registry, incoming_type, &ty.ty) {
             // TODO: support for multi-connect ports
             if !to.remotes.is_empty() {
-                commands.push(SnarlCommand::DropInputsRaw { to: to.id });
+                commands.push(SnarlCommand::DropInlineValuesRaw { to: to.id });
             }
 
             commands.push(SnarlCommand::ConnectRaw {

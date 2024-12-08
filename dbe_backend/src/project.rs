@@ -1,10 +1,10 @@
 use crate::etype::EDataType;
 use crate::graph::execution::GraphExecutionContext;
-use crate::graph::Graph;
 use crate::json_utils::formatter::DBEJsonFormatter;
 use crate::json_utils::{json_kind, JsonValue};
 use crate::m_try;
 use crate::project::io::{FilesystemIO, ProjectIO};
+use crate::project::project_graph::{ProjectGraph, ProjectGraphs};
 use crate::project::side_effects::SideEffectsContext;
 use crate::registry::ETypesRegistry;
 use crate::validation::{clear_validation_cache, validate};
@@ -18,9 +18,11 @@ use miette::{bail, miette, Context, IntoDiagnostic, Report};
 use serde::{Deserialize, Serialize};
 use std::collections::{BTreeMap, BTreeSet};
 use std::path::{Path, PathBuf};
+use uuid::Uuid;
 use walkdir::WalkDir;
 
 pub mod io;
+pub mod project_graph;
 pub mod side_effects;
 
 #[derive(Debug)]
@@ -31,6 +33,7 @@ pub struct Project<IO> {
     pub diagnostics: DiagnosticContext,
     /// Files present in the project
     pub files: BTreeMap<Utf8PathBuf, ProjectFile>,
+    pub graphs: ProjectGraphs,
     /// Files that should be deleted on save
     pub to_delete: AHashSet<Utf8PathBuf>,
     /// Root folder of the project
@@ -45,7 +48,7 @@ pub enum ProjectFile {
     /// Valid plain JSON value that was automatically generated
     GeneratedValue(EValue),
     /// Snarl graph
-    Graph(Box<Graph>),
+    Graph(Uuid),
     /// Plain JSON value that had issues during parsing or loading
     BadValue(Report),
 }
@@ -204,6 +207,7 @@ impl<IO: ProjectIO> Project<IO> {
             registry,
             diagnostics: Default::default(),
             files: Default::default(),
+            graphs: Default::default(),
             to_delete: Default::default(),
             root,
             io,
@@ -250,11 +254,9 @@ impl<IO: ProjectIO> Project<IO> {
         }
 
         for (path, mut json) in graphs {
-            let graph = Graph::parse_json(&project.registry, &mut json)
+            let graph = ProjectGraph::parse_json(&project.registry, &mut json)
                 .with_context(|| format!("failed to deseialize Graph at `{}`", path))?;
-            project
-                .files
-                .insert(path, ProjectFile::Graph(Box::new(graph)));
+            project.files.insert(path, project.graphs.add_graph(graph));
         }
 
         // Validate again after all files are loaded
@@ -283,13 +285,20 @@ impl<IO: ProjectIO> Project<IO> {
                 generated.push(path.clone());
                 continue;
             }
-            let ProjectFile::Graph(graph) = file else {
+            let ProjectFile::Graph(id) = file else {
                 continue;
             };
 
+            let Some(graph) = self.graphs.graphs.get(id) else {
+                bail!("graph {:?} at path {} is not found", id, path);
+            };
+
+            let cache = self.graphs.cache.entry(*id).or_default();
+
             let mut ctx = GraphExecutionContext::from_graph(
-                graph,
+                graph.graph(),
                 &self.registry,
+                cache,
                 SideEffectsContext::new(&mut side_effects, path.clone()),
             );
             ctx.full_eval(true)?;
@@ -355,7 +364,12 @@ impl<IO: ProjectIO> Project<IO> {
                         generated = true;
                         self.serialize_json(value)?
                     }
-                    ProjectFile::Graph(graph) => graph.write_json(&self.registry)?,
+                    ProjectFile::Graph(id) => {
+                        let Some(graph) = self.graphs.graphs.get(id) else {
+                            panic!("graph {:?} at path {} is not found", id, path);
+                        };
+                        graph.write_json(&self.registry)?
+                    }
                     ProjectFile::BadValue(_) => {
                         panic!("BadValue should have been filtered out by validate_all");
                     }
@@ -371,7 +385,7 @@ impl<IO: ProjectIO> Project<IO> {
 
                 Ok(String::from_utf8(buf).expect("JSON should be UTF-8"))
             })
-            .with_context(|| format!("failed to serialize JSON at `{}`", path))?;
+            .with_context(|| format!("failed to serialize file at `{}`", path))?;
 
             if generated {
                 let generated_path = generated_marker_path(path);

@@ -1,27 +1,19 @@
+use crate::graph::cache::GraphCache;
 use crate::graph::execution::GraphExecutionContext;
-use crate::graph::node::commands::{SnarlCommand, SnarlCommands};
-use crate::graph::node::enum_node::EnumNode;
-use crate::graph::node::list::ListNode;
-use crate::graph::node::struct_node::StructNode;
-use crate::graph::node::{get_snarl_node, SnarlNode};
+use crate::graph::node::SnarlNode;
 use crate::graph::Graph;
-use crate::m_try;
 use crate::project::side_effects::SideEffectsContext;
-use crate::registry::{EObjectType, ETypesRegistry};
-use crate::value::id::{EListId, ETypeId};
+use crate::registry::ETypesRegistry;
 use crate::value::EValue;
 use ahash::AHashMap;
-use egui_snarl::{InPin, InPinId, NodeId, OutPin, OutPinId, Snarl};
-use emath::Pos2;
-use miette::Context;
-use ustr::Ustr;
+use egui_snarl::{InPinId, NodeId, OutPinId, Snarl};
 
 #[derive(Debug)]
 pub struct PartialGraphExecutionContext<'a> {
-    pub inputs: &'a mut AHashMap<InPinId, EValue>,
+    pub inline_values: &'a AHashMap<InPinId, EValue>,
     pub registry: &'a ETypesRegistry,
     pub side_effects: SideEffectsContext<'a>,
-    cache: &'a mut AHashMap<NodeId, Vec<EValue>>,
+    cache: &'a mut GraphCache,
 }
 
 impl<'a> PartialGraphExecutionContext<'a> {
@@ -30,7 +22,7 @@ impl<'a> PartialGraphExecutionContext<'a> {
     ) -> (Self, &'snarl Snarl<SnarlNode>) {
         (
             PartialGraphExecutionContext {
-                inputs: ctx.inputs,
+                inline_values: ctx.inline_values,
                 cache: ctx.cache,
                 registry: ctx.registry,
                 side_effects: ctx.side_effects.clone(),
@@ -40,18 +32,19 @@ impl<'a> PartialGraphExecutionContext<'a> {
     }
 
     pub fn from_graph(
-        graph: &'a mut Graph,
+        graph: &'a Graph,
         registry: &'a ETypesRegistry,
+        cache: &'a mut GraphCache,
         side_effects: SideEffectsContext<'a>,
-    ) -> (Self, &'a mut Snarl<SnarlNode>) {
+    ) -> (Self, &'a Snarl<SnarlNode>) {
         (
             PartialGraphExecutionContext {
-                inputs: &mut graph.inputs,
-                cache: &mut graph.cache,
+                inline_values: &graph.inline_values,
+                cache,
                 registry,
                 side_effects,
             },
-            &mut graph.snarl,
+            &graph.snarl,
         )
     }
 
@@ -64,7 +57,7 @@ impl<'a> PartialGraphExecutionContext<'a> {
     {
         GraphExecutionContext {
             snarl,
-            inputs: self.inputs,
+            inline_values: self.inline_values,
             cache: self.cache,
             registry: self.registry,
             side_effects: self.side_effects.clone(),
@@ -91,139 +84,7 @@ impl<'a> PartialGraphExecutionContext<'a> {
         self.as_full(snarl).read_output(id)
     }
 
-    /// Ensures that the inline input value of the given pin is present
-    pub fn ensure_inline_input(
-        &mut self,
-        snarl: &Snarl<SnarlNode>,
-        pin: InPinId,
-    ) -> miette::Result<bool> {
-        let node = &snarl[pin.node];
-
-        self.as_full(snarl)
-            .inline_input_value(pin, node)
-            .map(|e| e.is_some())
-    }
-
-    /// Returns mutable reference to the input value of the given pin
-    pub fn get_inline_input_mut(
-        &mut self,
-        snarl: &Snarl<SnarlNode>,
-        pin: InPinId,
-    ) -> miette::Result<Option<&mut EValue>> {
-        if !self.ensure_inline_input(snarl, pin)? {
-            return Ok(None);
-        }
-
-        Ok(Some(
-            self.inputs
-                .get_mut(&pin)
-                .expect("input value should be present"),
-        ))
-    }
-
     pub fn read_input(&mut self, snarl: &Snarl<SnarlNode>, id: InPinId) -> miette::Result<EValue> {
         self.as_full(snarl).read_input(id)
-    }
-
-    pub fn connect(
-        &mut self,
-        from: &OutPin,
-        to: &InPin,
-        snarl: &mut Snarl<SnarlNode>,
-        commands: &mut SnarlCommands,
-    ) -> miette::Result<()> {
-        m_try(|| {
-            let from_ty = &snarl[from.id.node]
-                .try_output(self.registry, from.id.output)?
-                .ty;
-
-            let to_node = &mut snarl[to.id.node];
-
-            to_node.try_connect(self.registry, commands, from, to, from_ty)?;
-
-            Ok(())
-        })
-        .with_context(|| format!("failed to connect pins: {:?} -> {:?}", from.id, to.id))?;
-
-        commands.execute(self, snarl)
-    }
-
-    pub fn disconnect(
-        &mut self,
-        from: &OutPin,
-        to: &InPin,
-        snarl: &mut Snarl<SnarlNode>,
-        commands: &mut SnarlCommands,
-    ) -> miette::Result<()> {
-        snarl[to.id.node].try_disconnect(self.registry, commands, from, to)?;
-
-        commands.execute(self, snarl)
-    }
-
-    pub fn remove_node(
-        &mut self,
-        node: NodeId,
-        snarl: &mut Snarl<SnarlNode>,
-        commands: &mut SnarlCommands,
-    ) -> miette::Result<()> {
-        commands.push(SnarlCommand::DeleteNode { node });
-
-        commands
-            .execute(self, snarl)
-            .with_context(|| format!("failed to remove node: {:?}", node))
-    }
-
-    pub fn create_node(
-        &mut self,
-        id: Ustr,
-        pos: Pos2,
-        snarl: &mut Snarl<SnarlNode>,
-        _commands: &mut SnarlCommands,
-    ) -> miette::Result<NodeId> {
-        let id = snarl.insert_node(pos, get_snarl_node(&id).unwrap());
-        self.inputs.retain(|in_pin, _| in_pin.node != id);
-
-        Ok(id)
-    }
-
-    pub fn create_object_node(
-        &mut self,
-        object: ETypeId,
-        pos: Pos2,
-        snarl: &mut Snarl<SnarlNode>,
-        _commands: &mut SnarlCommands,
-    ) -> miette::Result<NodeId> {
-        let node: SnarlNode = match self
-            .registry
-            .get_object(&object)
-            .expect("object id should be valid")
-        {
-            EObjectType::Struct(_) => Box::new(StructNode::new(object)),
-            EObjectType::Enum(data) => Box::new(EnumNode::new(data.variant_ids()[0])),
-        };
-
-        let id = snarl.insert_node(pos, node);
-        self.inputs.retain(|in_pin, _| in_pin.node != id);
-
-        Ok(id)
-    }
-
-    pub fn create_list_node(
-        &mut self,
-        item_ty: EListId,
-        pos: Pos2,
-        snarl: &mut Snarl<SnarlNode>,
-        _commands: &mut SnarlCommands,
-    ) -> miette::Result<NodeId> {
-        let item_ty = self
-            .registry
-            .get_list(&item_ty)
-            .expect("list id should be valid")
-            .value_type;
-        let node = Box::new(ListNode::of_type(item_ty));
-        let id = snarl.insert_node(pos, node);
-        self.inputs.retain(|in_pin, _| in_pin.node != id);
-
-        Ok(id)
     }
 }

@@ -1,4 +1,5 @@
-use crate::graph::execution::partial::PartialGraphExecutionContext;
+use crate::graph::editing::GraphEditingContext;
+use crate::graph::inputs::{GraphInput, GraphOutput};
 use crate::graph::node::commands::SnarlCommands;
 use crate::graph::node::{get_snarl_node, SnarlNode};
 use crate::json_utils::JsonValue;
@@ -11,18 +12,26 @@ use egui_snarl::{InPinId, NodeId, OutPinId, Snarl};
 use emath::Pos2;
 use miette::{miette, Context, IntoDiagnostic};
 use serde::{Deserialize, Serialize};
+use smallvec::SmallVec;
 use std::fmt::Debug;
 use ustr::Ustr;
 
+pub mod cache;
+pub mod editing;
 pub mod execution;
+pub mod inputs;
 pub mod node;
 
+/// A container of a graph with inline values. It contains all the data
+/// that is unique to this graph and is required for both node groups and standalone graphs
 #[derive(Debug, Default)]
 pub struct Graph {
     snarl: Snarl<SnarlNode>,
-    inputs: AHashMap<InPinId, EValue>,
-    cache: AHashMap<NodeId, Vec<EValue>>,
+    inline_values: AHashMap<InPinId, EValue>,
+    inputs: SmallVec<[GraphInput; 1]>,
+    outputs: SmallVec<[GraphOutput; 1]>,
 }
+
 impl Graph {
     pub fn parse_json(registry: &ETypesRegistry, value: &mut JsonValue) -> miette::Result<Self> {
         let mut snarl = Snarl::<SnarlNode>::new();
@@ -47,19 +56,22 @@ impl Graph {
         })
         .context("failed to create nodes")?;
 
-        let inputs = AHashMap::with_capacity(packed.inputs.len());
+        let inputs = AHashMap::with_capacity(packed.inline_values.len());
 
         let mut graph = Self {
             snarl,
-            inputs,
-            cache: Default::default(),
+            inline_values: inputs,
+            inputs: packed.inputs,
+            outputs: packed.outputs,
         };
 
         m_try(|| {
             let mut side_effects = SideEffects::default();
-            let (mut ctx, snarl) = PartialGraphExecutionContext::from_graph(
+            let mut cache = cache::GraphCache::default();
+            let mut ctx = GraphEditingContext::from_graph(
                 &mut graph,
                 registry,
+                &mut cache,
                 SideEffectsContext::new(&mut side_effects, "".into()),
             );
             let commands = &mut SnarlCommands::new();
@@ -74,8 +86,8 @@ impl Graph {
                     .get(&in_pin.node)
                     .ok_or_else(|| miette!("node {:?} not found", in_pin.node))?;
                 // snarl.connect(out_pin, in_pin);
-                let out_pin = snarl.out_pin(out_pin);
-                let in_pin = snarl.in_pin(in_pin);
+                let out_pin = ctx.snarl.out_pin(out_pin);
+                let in_pin = ctx.snarl.in_pin(in_pin);
                 to_connect.push((out_pin, in_pin));
             }
 
@@ -89,12 +101,12 @@ impl Graph {
             });
 
             for (out_pin, in_pin) in to_connect {
-                ctx.connect(&out_pin, &in_pin, snarl, commands)?;
+                ctx.connect(&out_pin, &in_pin, commands)?;
             }
 
             commands
-                .execute(&mut ctx, snarl)
-                .with_context(|| "failed sto execute commands")?;
+                .execute(&mut ctx)
+                .with_context(|| "failed to execute commands")?;
 
             if !side_effects.is_empty() {
                 panic!("Side effects are not supported during deserialization");
@@ -105,7 +117,7 @@ impl Graph {
         .context("failed to connect pins")?;
 
         m_try(|| {
-            for (mut in_pin, mut value) in packed.inputs {
+            for (mut in_pin, mut value) in packed.inline_values {
                 in_pin.node = *mapping
                     .get(&in_pin.node)
                     .ok_or_else(|| miette!("node {:?} not found", in_pin.node))?;
@@ -132,7 +144,7 @@ impl Graph {
                             in_pin.input, in_pin.node
                         )
                     })?;
-                graph.inputs.insert(in_pin, value);
+                graph.inline_values.insert(in_pin, value);
             }
             Ok(())
         })
@@ -145,12 +157,14 @@ impl Graph {
         let mut packed = PackedGraph {
             nodes: Default::default(),
             edges: Default::default(),
-            inputs: Default::default(),
+            inline_values: Default::default(),
+            inputs: self.inputs.clone(),
+            outputs: self.outputs.clone(),
         };
 
-        let mut inputs = AHashMap::new();
+        let mut inline_values = AHashMap::new();
 
-        for (pin, value) in &self.inputs {
+        for (pin, value) in &self.inline_values {
             let Some(node) = self.snarl.get_node(pin.node) else {
                 continue;
             };
@@ -165,7 +179,7 @@ impl Graph {
                     pin.input, pin.node
                 )
             })?;
-            inputs.insert(*pin, value_json);
+            inline_values.insert(*pin, value_json);
         }
 
         for (id, node) in self.snarl.node_ids() {
@@ -183,12 +197,12 @@ impl Graph {
 
         for (out_pin, in_pin) in self.snarl.wires() {
             // do not serialize inputs with connections
-            inputs.remove(&in_pin);
+            inline_values.remove(&in_pin);
             packed.edges.push((out_pin, in_pin));
         }
 
-        packed.inputs = inputs.into_iter().collect();
-        packed.inputs.sort_by_key(|(in_pin, _)| *in_pin);
+        packed.inline_values = inline_values.into_iter().collect();
+        packed.inline_values.sort_by_key(|(in_pin, _)| *in_pin);
         packed.nodes.sort_by_key(|(id, _)| *id);
         packed
             .edges
@@ -198,13 +212,25 @@ impl Graph {
             .into_diagnostic()
             .with_context(|| "failed to serialize graph")
     }
+
+    pub fn inputs(&self) -> &SmallVec<[GraphInput; 1]> {
+        &self.inputs
+    }
+
+    pub fn outputs(&self) -> &SmallVec<[GraphOutput; 1]> {
+        &self.outputs
+    }
 }
 
 #[derive(Debug, Serialize, Deserialize)]
 struct PackedGraph {
     nodes: Vec<(NodeId, PackedNode)>,
     edges: Vec<(OutPinId, InPinId)>,
-    inputs: Vec<(InPinId, JsonValue)>,
+    inline_values: Vec<(InPinId, JsonValue)>,
+    #[serde(default)]
+    inputs: SmallVec<[GraphInput; 1]>,
+    #[serde(default)]
+    outputs: SmallVec<[GraphOutput; 1]>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]

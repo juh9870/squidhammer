@@ -9,7 +9,7 @@ use dbe_backend::diagnostic::prelude::{Diagnostic, DiagnosticLevel};
 use dbe_backend::etype::econst::ETypeConst;
 use dbe_backend::etype::eobject::EObject;
 use dbe_backend::etype::EDataType;
-use dbe_backend::graph::execution::partial::PartialGraphExecutionContext;
+use dbe_backend::graph::editing::PartialGraphEditingContext;
 use dbe_backend::graph::node::commands::SnarlCommands;
 use dbe_backend::graph::node::ports::NodePortType;
 use dbe_backend::graph::node::{
@@ -33,16 +33,13 @@ pub mod viewer;
 
 #[derive(Debug)]
 pub struct GraphViewer<'a> {
-    pub ctx: PartialGraphExecutionContext<'a>,
+    pub ctx: PartialGraphEditingContext<'a>,
     pub diagnostics: DiagnosticContextRef<'a>,
     commands: SnarlCommands,
 }
 
 impl<'a> GraphViewer<'a> {
-    pub fn new(
-        ctx: PartialGraphExecutionContext<'a>,
-        diagnostics: DiagnosticContextRef<'a>,
-    ) -> Self {
+    pub fn new(ctx: PartialGraphEditingContext<'a>, diagnostics: DiagnosticContextRef<'a>) -> Self {
         Self {
             ctx,
             diagnostics,
@@ -220,12 +217,15 @@ impl<'a> SnarlViewer<SnarlNode> for GraphViewer<'a> {
                     if ui.button(name).clicked() {
                         let node = match node {
                             NodeCombo::Factory(id) => {
-                                self.ctx.create_node(*id, pos, snarl, &mut self.commands)
-                            }
-                            NodeCombo::Object(id) => {
                                 self.ctx
-                                    .create_object_node(*id, pos, snarl, &mut self.commands)
+                                    .as_full(snarl)
+                                    .create_node(*id, pos, &mut self.commands)
                             }
+                            NodeCombo::Object(id) => self.ctx.as_full(snarl).create_object_node(
+                                *id,
+                                pos,
+                                &mut self.commands,
+                            ),
                         };
                         if let Err(err) = node {
                             report_error(err);
@@ -316,7 +316,9 @@ impl<'a> SnarlViewer<SnarlNode> for GraphViewer<'a> {
         m_try(|| {
             ui.label("Node menu");
             if ui.button("Remove").clicked() {
-                self.ctx.remove_node(node, snarl, &mut self.commands)?;
+                self.ctx
+                    .as_full(snarl)
+                    .remove_node(node, &mut self.commands)?;
                 ui.close_menu();
             }
             Ok(())
@@ -325,13 +327,21 @@ impl<'a> SnarlViewer<SnarlNode> for GraphViewer<'a> {
     }
 
     fn connect(&mut self, from: &OutPin, to: &InPin, snarl: &mut Snarl<SnarlNode>) {
-        if let Err(err) = self.ctx.connect(from, to, snarl, &mut self.commands) {
+        if let Err(err) = self
+            .ctx
+            .as_full(snarl)
+            .connect(from, to, &mut self.commands)
+        {
             report_error(err)
         }
     }
 
     fn disconnect(&mut self, from: &OutPin, to: &InPin, snarl: &mut Snarl<SnarlNode>) {
-        if let Err(err) = self.ctx.disconnect(from, to, snarl, &mut self.commands) {
+        if let Err(err) = self
+            .ctx
+            .as_full(snarl)
+            .disconnect(from, to, &mut self.commands)
+        {
             report_error(err);
         }
     }
@@ -339,8 +349,10 @@ impl<'a> SnarlViewer<SnarlNode> for GraphViewer<'a> {
     fn drop_outputs(&mut self, pin: &OutPin, snarl: &mut Snarl<SnarlNode>) {
         if let Err(err) = m_try(|| {
             for remote in &pin.remotes {
+                let in_pin = snarl.in_pin(*remote);
                 self.ctx
-                    .disconnect(pin, &snarl.in_pin(*remote), snarl, &mut self.commands)?;
+                    .as_full(snarl)
+                    .disconnect(pin, &in_pin, &mut self.commands)?;
             }
 
             Ok(())
@@ -352,8 +364,10 @@ impl<'a> SnarlViewer<SnarlNode> for GraphViewer<'a> {
     fn drop_inputs(&mut self, pin: &InPin, snarl: &mut Snarl<SnarlNode>) {
         if let Err(err) = m_try(|| {
             for remote in &pin.remotes {
+                let out_pin = snarl.out_pin(*remote);
                 self.ctx
-                    .disconnect(&snarl.out_pin(*remote), pin, snarl, &mut self.commands)?;
+                    .as_full(snarl)
+                    .disconnect(&out_pin, pin, &mut self.commands)?;
             }
 
             Ok(())
@@ -384,16 +398,16 @@ impl<'a> SnarlViewer<SnarlNode> for GraphViewer<'a> {
                         match data.ty.ty() {
                             EDataType::Object { ident } => {
                                 if ui.button(ident.as_raw().unwrap()).clicked() {
-                                    let node = self.ctx.create_object_node(
+                                    let node = self.ctx.as_full(snarl).create_object_node(
                                         ident,
                                         pos,
-                                        snarl,
                                         &mut self.commands,
                                     )?;
-                                    self.ctx.connect(
-                                        &snarl.out_pin(OutPinId { node, output: 0 }),
-                                        &snarl.in_pin(*pin),
-                                        snarl,
+                                    let out_pin = &snarl.out_pin(OutPinId { node, output: 0 });
+                                    let in_pin = snarl.in_pin(*pin);
+                                    self.ctx.as_full(snarl).connect(
+                                        out_pin,
+                                        &in_pin,
                                         &mut self.commands,
                                     )?;
                                     ui.close_menu();
@@ -401,16 +415,16 @@ impl<'a> SnarlViewer<SnarlNode> for GraphViewer<'a> {
                             }
                             EDataType::List { id } => {
                                 if ui.button("List").clicked() {
-                                    let node = self.ctx.create_list_node(
+                                    let node = self.ctx.as_full(snarl).create_list_node(
                                         id,
                                         pos,
-                                        snarl,
                                         &mut self.commands,
                                     )?;
-                                    self.ctx.connect(
-                                        &snarl.out_pin(OutPinId { node, output: 0 }),
-                                        &snarl.in_pin(*pin),
-                                        snarl,
+                                    let out_pin = &snarl.out_pin(OutPinId { node, output: 0 });
+                                    let in_pin = snarl.in_pin(*pin);
+                                    self.ctx.as_full(snarl).connect(
+                                        out_pin,
+                                        &in_pin,
                                         &mut self.commands,
                                     )?;
                                     ui.close_menu();
