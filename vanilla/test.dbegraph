@@ -1,497 +1,504 @@
 {
-  "edges": [
-    [
-      {
-        "node": 0,
-        "output": 0
-      },
-      {
-        "input": 0,
-        "node": 1
-      }
-    ],
-    [
-      {
-        "node": 2,
-        "output": 0
-      },
-      {
-        "input": 1,
-        "node": 0
-      }
-    ],
-    [
-      {
-        "node": 2,
-        "output": 0
-      },
-      {
-        "input": 1,
-        "node": 1
-      }
-    ],
-    [
-      {
-        "node": 3,
-        "output": 0
-      },
-      {
-        "input": 0,
-        "node": 9
-      }
-    ],
-    [
-      {
-        "node": 4,
-        "output": 0
-      },
-      {
-        "input": 0,
-        "node": 3
-      }
-    ],
-    [
-      {
-        "node": 5,
-        "output": 0
-      },
-      {
-        "input": 1,
-        "node": 4
-      }
-    ],
-    [
-      {
-        "node": 6,
-        "output": 0
-      },
-      {
-        "input": 8,
-        "node": 5
-      }
-    ],
-    [
-      {
-        "node": 7,
-        "output": 0
-      },
-      {
-        "input": 11,
-        "node": 5
-      }
-    ],
-    [
-      {
-        "node": 8,
-        "output": 0
-      },
-      {
-        "input": 0,
-        "node": 7
-      }
-    ],
-    [
-      {
-        "node": 10,
-        "output": 0
-      },
-      {
-        "input": 18,
-        "node": 5
-      }
-    ],
-    [
-      {
-        "node": 12,
-        "output": 0
-      },
-      {
-        "input": 0,
-        "node": 10
-      }
-    ]
-  ],
-  "inputs": [
-    [
-      {
-        "input": 0,
-        "node": 0
-      },
-      20
-    ],
-    [
-      {
-        "input": 0,
-        "node": 2
-      },
-      12
-    ],
-    [
-      {
-        "input": 1,
-        "node": 2
-      },
-      5
-    ],
-    [
-      {
-        "input": 0,
-        "node": 4
-      },
-      9870
-    ],
-    [
-      {
-        "input": 0,
-        "node": 5
-      },
-      ""
-    ],
-    [
-      {
-        "input": 1,
-        "node": 5
-      },
-      ""
-    ],
-    [
-      {
-        "input": 2,
-        "node": 5
-      },
-      0
-    ],
-    [
-      {
-        "input": 3,
-        "node": 5
-      },
-      0
-    ],
-    [
-      {
-        "input": 4,
-        "node": 5
-      },
-      3
-    ],
-    [
-      {
-        "input": 5,
-        "node": 5
-      },
-      null
-    ],
-    [
-      {
-        "input": 6,
-        "node": 5
-      },
-      0
-    ],
-    [
-      {
-        "input": 7,
-        "node": 5
-      },
-      ""
-    ],
-    [
-      {
-        "input": 9,
-        "node": 5
-      },
-      ""
-    ],
-    [
-      {
-        "input": 10,
-        "node": 5
-      },
-      ""
-    ],
-    [
-      {
-        "input": 12,
-        "node": 5
-      },
-      null
-    ],
-    [
-      {
-        "input": 13,
-        "node": 5
-      },
-      null
-    ],
-    [
-      {
-        "input": 14,
-        "node": 5
-      },
-      ""
-    ],
-    [
-      {
-        "input": 15,
-        "node": 5
-      },
-      null
-    ],
-    [
-      {
-        "input": 16,
-        "node": 5
-      },
-      null
-    ],
-    [
-      {
-        "input": 17,
-        "node": 5
-      },
-      {
-        "ComponentGroupTag": null,
-        "MaxComponentAmount": 0,
-        "NotForMechanicShips": false,
-        "NotForOrganicShips": false,
-        "ShipSizes": [],
-        "UniqueComponentTag": ""
-      }
-    ],
-    [
-      {
-        "input": 0,
-        "node": 6
-      },
-      0
-    ],
-    [
-      {
-        "input": 1,
-        "node": 6
-      },
-      0
-    ],
-    [
-      {
-        "input": 2,
-        "node": 6
-      },
-      0
-    ],
-    [
-      {
-        "input": 3,
-        "node": 6
-      },
-      0
-    ],
-    [
-      {
-        "input": 0,
-        "node": 8
-      },
-      15
-    ],
-    [
-      {
-        "input": 0,
-        "node": 12
-      },
-      12
-    ]
-  ],
-  "nodes": [
-    [
-      0,
-      {
-        "data": null,
-        "id": "add",
-        "open": true,
-        "pos": {
-          "x": -61,
-          "y": -189
+  "graph": {
+    "edges": [
+      [
+        {
+          "node": 0,
+          "output": 0
+        },
+        {
+          "input": 0,
+          "node": 1
         }
-      }
-    ],
-    [
-      1,
-      {
-        "data": null,
-        "id": "subtract",
-        "open": true,
-        "pos": {
-          "x": 261,
-          "y": -156
+      ],
+      [
+        {
+          "node": 2,
+          "output": 0
+        },
+        {
+          "input": 1,
+          "node": 0
         }
-      }
-    ],
-    [
-      2,
-      {
-        "data": null,
-        "id": "multiply",
-        "open": true,
-        "pos": {
-          "x": -325,
-          "y": -91
+      ],
+      [
+        {
+          "node": 2,
+          "output": 0
+        },
+        {
+          "input": 1,
+          "node": 1
         }
-      }
+      ],
+      [
+        {
+          "node": 3,
+          "output": 0
+        },
+        {
+          "input": 0,
+          "node": 9
+        }
+      ],
+      [
+        {
+          "node": 4,
+          "output": 0
+        },
+        {
+          "input": 0,
+          "node": 3
+        }
+      ],
+      [
+        {
+          "node": 5,
+          "output": 0
+        },
+        {
+          "input": 1,
+          "node": 4
+        }
+      ],
+      [
+        {
+          "node": 6,
+          "output": 0
+        },
+        {
+          "input": 8,
+          "node": 5
+        }
+      ],
+      [
+        {
+          "node": 7,
+          "output": 0
+        },
+        {
+          "input": 11,
+          "node": 5
+        }
+      ],
+      [
+        {
+          "node": 8,
+          "output": 0
+        },
+        {
+          "input": 0,
+          "node": 7
+        }
+      ],
+      [
+        {
+          "node": 10,
+          "output": 0
+        },
+        {
+          "input": 18,
+          "node": 5
+        }
+      ],
+      [
+        {
+          "node": 12,
+          "output": 0
+        },
+        {
+          "input": 0,
+          "node": 10
+        }
+      ]
     ],
-    [
-      3,
-      {
-        "data": {
-          "variant": {
-            "ident": "eh:item",
-            "variant": "Component"
+    "inline_values": [
+      [
+        {
+          "input": 0,
+          "node": 0
+        },
+        20
+      ],
+      [
+        {
+          "input": 0,
+          "node": 2
+        },
+        12
+      ],
+      [
+        {
+          "input": 1,
+          "node": 2
+        },
+        5
+      ],
+      [
+        {
+          "input": 0,
+          "node": 4
+        },
+        9870
+      ],
+      [
+        {
+          "input": 0,
+          "node": 5
+        },
+        ""
+      ],
+      [
+        {
+          "input": 1,
+          "node": 5
+        },
+        ""
+      ],
+      [
+        {
+          "input": 2,
+          "node": 5
+        },
+        0
+      ],
+      [
+        {
+          "input": 3,
+          "node": 5
+        },
+        0
+      ],
+      [
+        {
+          "input": 4,
+          "node": 5
+        },
+        3
+      ],
+      [
+        {
+          "input": 5,
+          "node": 5
+        },
+        null
+      ],
+      [
+        {
+          "input": 6,
+          "node": 5
+        },
+        0
+      ],
+      [
+        {
+          "input": 7,
+          "node": 5
+        },
+        ""
+      ],
+      [
+        {
+          "input": 9,
+          "node": 5
+        },
+        ""
+      ],
+      [
+        {
+          "input": 10,
+          "node": 5
+        },
+        ""
+      ],
+      [
+        {
+          "input": 12,
+          "node": 5
+        },
+        null
+      ],
+      [
+        {
+          "input": 13,
+          "node": 5
+        },
+        null
+      ],
+      [
+        {
+          "input": 14,
+          "node": 5
+        },
+        ""
+      ],
+      [
+        {
+          "input": 15,
+          "node": 5
+        },
+        null
+      ],
+      [
+        {
+          "input": 16,
+          "node": 5
+        },
+        null
+      ],
+      [
+        {
+          "input": 17,
+          "node": 5
+        },
+        {
+          "ComponentGroupTag": null,
+          "MaxComponentAmount": 0,
+          "NotForMechanicShips": false,
+          "NotForOrganicShips": false,
+          "ShipSizes": [],
+          "UniqueComponentTag": ""
+        }
+      ],
+      [
+        {
+          "input": 0,
+          "node": 6
+        },
+        0
+      ],
+      [
+        {
+          "input": 1,
+          "node": 6
+        },
+        0
+      ],
+      [
+        {
+          "input": 2,
+          "node": 6
+        },
+        0
+      ],
+      [
+        {
+          "input": 3,
+          "node": 6
+        },
+        0
+      ],
+      [
+        {
+          "input": 0,
+          "node": 8
+        },
+        15
+      ],
+      [
+        {
+          "input": 0,
+          "node": 12
+        },
+        12
+      ]
+    ],
+    "inputs": [],
+    "nodes": [
+      [
+        0,
+        {
+          "data": null,
+          "id": "add",
+          "open": true,
+          "pos": {
+            "x": -61,
+            "y": -189
           }
-        },
-        "id": "enum_node",
-        "open": true,
-        "pos": {
-          "x": 58,
-          "y": -402
         }
-      }
-    ],
-    [
-      4,
-      {
-        "data": {
-          "id": "eh:objects/component"
-        },
-        "id": "struct_node",
-        "open": true,
-        "pos": {
-          "x": -248,
-          "y": -421
-        }
-      }
-    ],
-    [
-      5,
-      {
-        "data": {
-          "id": "eh:objects/component_data"
-        },
-        "id": "struct_node",
-        "open": true,
-        "pos": {
-          "x": -704,
-          "y": -407
-        }
-      }
-    ],
-    [
-      6,
-      {
-        "data": {
-          "id": "color:argb"
-        },
-        "id": "struct_node",
-        "open": true,
-        "pos": {
-          "x": -1032.5,
-          "y": -347
-        }
-      }
-    ],
-    [
-      7,
-      {
-        "data": {
-          "variant": {
-            "ident": "sys:optional<Item=sys:ids/numeric_ref<Id='eh:objects/device'>>",
-            "variant": "some"
+      ],
+      [
+        1,
+        {
+          "data": null,
+          "id": "subtract",
+          "open": true,
+          "pos": {
+            "x": 261,
+            "y": -156
           }
-        },
-        "id": "enum_node",
-        "open": true,
-        "pos": {
-          "x": -1110.5,
-          "y": -43
         }
-      }
-    ],
-    [
-      8,
-      {
-        "data": {
-          "id": "sys:ids/numeric_ref<Id='eh:objects/device'>"
-        },
-        "id": "struct_node",
-        "open": true,
-        "pos": {
-          "x": -1555.5,
-          "y": -92
+      ],
+      [
+        2,
+        {
+          "data": null,
+          "id": "multiply",
+          "open": true,
+          "pos": {
+            "x": -325,
+            "y": -91
+          }
         }
-      }
-    ],
-    [
-      9,
-      {
-        "data": {
-          "path": null
-        },
-        "id": "write_item",
-        "open": true,
-        "pos": {
-          "x": 521.6986694335938,
-          "y": -347.08099365234375
-        }
-      }
-    ],
-    [
-      10,
-      {
-        "data": {
-          "item": {
-            "Object": {
-              "ident": "sys:ids/numeric_ref<Id='eh:objects/component_mod'>"
+      ],
+      [
+        3,
+        {
+          "data": {
+            "variant": {
+              "ident": "eh:item",
+              "variant": "Component"
             }
+          },
+          "id": "enum_node",
+          "open": true,
+          "pos": {
+            "x": 58,
+            "y": -402
           }
-        },
-        "id": "list",
-        "open": true,
-        "pos": {
-          "x": -987.770263671875,
-          "y": 99.47506713867188
         }
-      }
-    ],
-    [
-      11,
-      {
-        "data": {
-          "item": {
-            "Const": {
-              "value": null
+      ],
+      [
+        4,
+        {
+          "data": {
+            "id": "eh:objects/component"
+          },
+          "id": "struct_node",
+          "open": true,
+          "pos": {
+            "x": -248,
+            "y": -421
+          }
+        }
+      ],
+      [
+        5,
+        {
+          "data": {
+            "id": "eh:objects/component_data"
+          },
+          "id": "struct_node",
+          "open": true,
+          "pos": {
+            "x": -704,
+            "y": -407
+          }
+        }
+      ],
+      [
+        6,
+        {
+          "data": {
+            "id": "color:argb"
+          },
+          "id": "struct_node",
+          "open": true,
+          "pos": {
+            "x": -1032.5,
+            "y": -347
+          }
+        }
+      ],
+      [
+        7,
+        {
+          "data": {
+            "variant": {
+              "ident": "sys:optional<Item=sys:ids/numeric_ref<Id='eh:objects/device'>>",
+              "variant": "some"
             }
+          },
+          "id": "enum_node",
+          "open": true,
+          "pos": {
+            "x": -1110.5,
+            "y": -43
           }
-        },
-        "id": "list",
-        "open": true,
-        "pos": {
-          "x": -1019.4898071289062,
-          "y": 242.6172637939453
         }
-      }
+      ],
+      [
+        8,
+        {
+          "data": {
+            "id": "sys:ids/numeric_ref<Id='eh:objects/device'>"
+          },
+          "id": "struct_node",
+          "open": true,
+          "pos": {
+            "x": -1555.5,
+            "y": -92
+          }
+        }
+      ],
+      [
+        9,
+        {
+          "data": {
+            "path": null
+          },
+          "id": "write_item",
+          "open": true,
+          "pos": {
+            "x": 521.6986694335938,
+            "y": -347.08099365234375
+          }
+        }
+      ],
+      [
+        10,
+        {
+          "data": {
+            "item": {
+              "Object": {
+                "ident": "sys:ids/numeric_ref<Id='eh:objects/component_mod'>"
+              }
+            }
+          },
+          "id": "list",
+          "open": true,
+          "pos": {
+            "x": -987.770263671875,
+            "y": 99.47506713867188
+          }
+        }
+      ],
+      [
+        11,
+        {
+          "data": {
+            "item": {
+              "Const": {
+                "value": null
+              }
+            }
+          },
+          "id": "list",
+          "open": true,
+          "pos": {
+            "x": -1019.4898071289062,
+            "y": 242.6172637939453
+          }
+        }
+      ],
+      [
+        12,
+        {
+          "data": {
+            "id": "sys:ids/numeric_ref<Id='eh:objects/component_mod'>"
+          },
+          "id": "struct_node",
+          "open": true,
+          "pos": {
+            "x": -1538.380126953125,
+            "y": 84.83547973632812
+          }
+        }
+      ]
     ],
-    [
-      12,
-      {
-        "data": {
-          "id": "sys:ids/numeric_ref<Id='eh:objects/component_mod'>"
-        },
-        "id": "struct_node",
-        "open": true,
-        "pos": {
-          "x": -1538.380126953125,
-          "y": 84.83547973632812
-        }
-      }
-    ]
-  ]
+    "outputs": []
+  },
+  "id": "0ec96a2e-fcab-4d13-95d7-d89ea490f3cd",
+  "name": null,
+  "version": "V1"
 }
