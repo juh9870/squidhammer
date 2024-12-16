@@ -283,7 +283,7 @@ impl<Tab: SerializableAny + Eq + Hash> CollapsibleToolbar<'_, Tab> {
         info: &mut TabsInfo<Tab>,
         viewer: &mut impl ToolbarViewer<Tab = Tab>,
     ) -> Response {
-        const MIN_SIZE: f32 = 200.0;
+        const MIN_SIZE: f32 = 100.0;
 
         fn layout_tabs<Tab: SerializableAny>(
             ui: &mut Ui,
