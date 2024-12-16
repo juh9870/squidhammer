@@ -1,15 +1,17 @@
-use crate::diagnostics_list::diagnostics_tab;
 use crate::error::report_error;
-use crate::file_tree::file_tab;
+use crate::main_toolbar::{ToolPanel, ToolPanelViewer};
+use crate::widgets::collapsible_toolbar::CollapsibleToolbar;
+use crate::widgets::dpanel::DPanelSide;
 use crate::workspace::Tab;
 use ahash::AHashMap;
 use dbe_backend::project::io::FilesystemIO;
 use dbe_backend::project::Project;
-use egui::{Align2, Color32, Context, FontData, FontDefinitions, FontFamily, Ui};
+use egui::{Align2, Color32, Context, FontData, FontDefinitions, FontFamily, Id, Ui};
 use egui_dock::DockState;
 use egui_file::FileDialog;
 use egui_toast::{Toast, ToastKind, ToastOptions, Toasts};
 use egui_tracing::EventCollector;
+use inline_tweak::tweak;
 use itertools::Itertools;
 use miette::{IntoDiagnostic, WrapErr};
 use serde::{Deserialize, Serialize};
@@ -20,8 +22,9 @@ use tracing::info;
 mod diagnostics_list;
 mod error;
 mod file_tree;
+pub mod main_toolbar;
 mod ui_props;
-mod widgets;
+pub mod widgets;
 mod workspace;
 
 /// A function that can be called to show a modal
@@ -123,6 +126,10 @@ impl DbeApp {
     }
 
     pub fn update(&mut self, ctx: &Context) {
+        #[cfg(debug_assertions)]
+        {
+            ctx.set_debug_on_hover(tweak!(false));
+        }
         egui::TopBottomPanel::top("top_panel").show(ctx, |ui| {
             // The top panel is often a good place for a menu bar:
 
@@ -169,16 +176,18 @@ impl DbeApp {
             });
         });
 
-        egui::SidePanel::left("files").show(ctx, |ui| file_tab(ui, self));
-        egui::SidePanel::right("diagnostics").show(ctx, |ui| diagnostics_tab(ui, self));
+        let global_drag_id = Id::from("dbe_toolbar_global_drag");
+        CollapsibleToolbar::new(DPanelSide::Bottom, &[ToolPanel::Log], &[])
+            .global_drag_id(global_drag_id)
+            .show(ctx, "bottom_toolbar", &mut ToolPanelViewer(self));
+        CollapsibleToolbar::new(DPanelSide::Left, &[ToolPanel::ProjectTree], &[])
+            .global_drag_id(global_drag_id)
+            .show(ctx, "left_toolbar", &mut ToolPanelViewer(self));
+        CollapsibleToolbar::new(DPanelSide::Right, &[ToolPanel::Diagnostics], &[])
+            .global_drag_id(global_drag_id)
+            .show(ctx, "right_toolbar", &mut ToolPanelViewer(self));
 
         egui::CentralPanel::default().show(ctx, |ui| workspace::workspace(ui, self));
-
-        egui::TopBottomPanel::bottom("bottom_logs")
-            .resizable(true)
-            .show(ctx, |ui| {
-                ui.add(egui_tracing::Logs::new(self.collector.clone()))
-            });
 
         if let Some(dialog) = &mut self.open_file_dialog {
             if dialog.show(ctx).selected() {

@@ -29,6 +29,7 @@ use std::ops::DerefMut;
 use std::sync::Arc;
 use ustr::Ustr;
 
+pub mod toolbar;
 pub mod viewer;
 
 #[derive(Debug)]
