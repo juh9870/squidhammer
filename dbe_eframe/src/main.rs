@@ -26,11 +26,11 @@ fn main() -> eframe::Result<()> {
     BacktracePrinter::new()
         .add_frame_filter(Box::new(|frame| {
             frame.retain(|frame| {
-                if frame
-                    .name
-                    .as_ref()
-                    .is_some_and(|name| name.starts_with("core::ops::function::FnOnce::call_once"))
-                {
+                if frame.name.as_ref().is_some_and(|name| {
+                    name.starts_with("core::ops::function::FnOnce::call_once")
+                        || name.starts_with("core::panicking::panic_display")
+                        || name.starts_with("core::option::expect_failed")
+                }) {
                     return false;
                 }
                 true

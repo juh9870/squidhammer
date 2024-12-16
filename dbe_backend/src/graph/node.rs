@@ -23,6 +23,7 @@ pub mod ports;
 pub mod reroute;
 pub mod saving_node;
 pub mod struct_node;
+pub mod subgraph_node;
 
 static NODE_FACTORIES: LazyLock<AtomicRefCell<UstrMap<Arc<dyn NodeFactory>>>> =
     LazyLock::new(|| AtomicRefCell::new(default_nodes().collect()));

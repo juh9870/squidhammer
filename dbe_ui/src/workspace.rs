@@ -1,16 +1,20 @@
 use crate::error::report_error;
+use crate::widgets::collapsible_toolbar::CollapsibleToolbar;
+use crate::widgets::dpanel::DPanelSide;
 use crate::workspace::editors::editor_for_value;
+use crate::workspace::graph::toolbar::{GraphTab, GraphToolbarViewer};
 use crate::DbeApp;
 use camino::Utf8PathBuf;
 use dbe_backend::graph::editing::PartialGraphEditingContext;
 use dbe_backend::project::side_effects::SideEffectsContext;
 use dbe_backend::project::{Project, ProjectFile};
 use dbe_backend::validation::validate;
-use egui::{Color32, Context, RichText, Ui, WidgetText};
+use egui::{Color32, Context, Frame, Margin, RichText, Ui, WidgetText};
 use egui_dock::{DockArea, TabViewer};
 use egui_hooks::UseHookExt;
 use egui_modal::Modal;
 use egui_snarl::ui::SnarlStyle;
+use inline_tweak::tweak;
 use miette::miette;
 use std::ops::DerefMut;
 use tracing::trace;
@@ -163,18 +167,47 @@ impl<Io> TabViewer for WorkspaceTabViewer<'_, Io> {
 
                 ui.label(RichText::new(strip_ansi_escapes::strip_str(err_str)).color(Color32::RED));
             }
-            ProjectFile::Graph(id) => self.0.graphs.edit_graph(*id, |graph, cache, _graphs| {
-                let (ctx, snarl) = PartialGraphEditingContext::from_graph(
-                    graph,
-                    &self.0.registry,
-                    cache,
-                    SideEffectsContext::new(&mut side_effects, tab.clone()),
-                );
+            ProjectFile::Graph(id) => {
+                let Some(graph) = self.0.graphs.graphs.get_mut(id) else {
+                    ui.centered_and_justified(|ui| {
+                        ui.label(format!("!!INTERNAL ERROR!! the graph {} is missing", id));
+                    });
+                    return;
+                };
 
-                let mut viewer = graph::GraphViewer::new(ctx, diagnostics.as_readonly());
+                CollapsibleToolbar::new(
+                    DPanelSide::Right,
+                    &[GraphTab::General],
+                    &[GraphTab::General],
+                )
+                .show_inside(ui, &mut GraphToolbarViewer);
 
-                snarl.show(&mut viewer, &SnarlStyle::default(), tab.to_string(), ui);
-            }),
+                egui::CentralPanel::default()
+                    .frame(Frame {
+                        inner_margin: Margin {
+                            left: tweak!(2.0),
+                            right: tweak!(4.0),
+                            top: tweak!(1.0),
+                            bottom: tweak!(1.0),
+                        },
+                        ..Default::default()
+                    })
+                    .show_inside(ui, |ui| {
+                        self.0.graphs.edit_graph(*id, |graph, cache, _graphs| {
+                            let (ctx, snarl) = PartialGraphEditingContext::from_graph(
+                                graph,
+                                &self.0.registry,
+                                cache,
+                                SideEffectsContext::new(&mut side_effects, tab.clone()),
+                            );
+
+                            let mut viewer =
+                                graph::GraphViewer::new(ctx, diagnostics.as_readonly());
+
+                            snarl.show(&mut viewer, &SnarlStyle::default(), tab.to_string(), ui);
+                        })
+                    });
+            }
             ProjectFile::GeneratedValue(value) => {
                 let editor = editor_for_value(&self.0.registry, value);
 

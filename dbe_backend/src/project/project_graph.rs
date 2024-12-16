@@ -169,8 +169,7 @@ impl ProjectGraphs {
         id: Uuid,
         func: Fn,
     ) -> R {
-        // Take the graph data out of the
-        //         let graph = self.graphs.get_mut(&id).unwrap();
+        // Take the graph data out of the graphs map
         let graph = self.graphs.get_mut(&id).unwrap();
         let mut taken = graph.take_graph();
         let mut cache = self.cache.remove(&id).unwrap_or_default();

@@ -14,6 +14,7 @@ enum Command {
 }
 
 pub fn file_tab(ui: &mut Ui, app: &mut DbeApp) {
+    // dbg!(("file tab",ui.available_size()));
     egui::ScrollArea::both()
         .auto_shrink(tweak!(false))
         .show(ui, |ui| {
