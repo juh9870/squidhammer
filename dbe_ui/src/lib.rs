@@ -7,6 +7,7 @@ use ahash::AHashMap;
 use dbe_backend::project::io::FilesystemIO;
 use dbe_backend::project::Project;
 use egui::{Align2, Color32, Context, FontData, FontDefinitions, FontFamily, Id, Ui};
+use egui_colors::Colorix;
 use egui_dock::DockState;
 use egui_file::FileDialog;
 use egui_toast::{Toast, ToastKind, ToastOptions, Toasts};
@@ -17,6 +18,7 @@ use miette::{IntoDiagnostic, WrapErr};
 use serde::{Deserialize, Serialize};
 use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::OnceLock;
 use tracing::info;
 
 mod diagnostics_list;
@@ -41,11 +43,20 @@ pub struct DbeApp {
     modals: AHashMap<&'static str, ModalFn>,
     history: Vec<PathBuf>,
     tabs: DockState<Tab>,
+
+    // Theming
+    colorix: Colorix,
+    dark_mode: bool,
 }
 
 #[derive(Debug, Default, Serialize, Deserialize)]
 struct AppStorage {
+    #[serde(default)]
     history: Vec<PathBuf>,
+    #[serde(default)]
+    theme: egui_colors::Theme,
+    #[serde(default)]
+    dark_mode: bool,
 }
 
 static ERROR_HAPPENED: AtomicBool = AtomicBool::new(false);
@@ -83,6 +94,7 @@ impl DbeApp {
         ui_props::register_extra_properties();
 
         Self {
+            colorix: Default::default(),
             project: None,
             open_file_dialog: None,
             collector,
@@ -90,10 +102,11 @@ impl DbeApp {
             modals: Default::default(),
             history: vec![],
             tabs: DockState::new(vec![]),
+            dark_mode: true,
         }
     }
 
-    pub fn load_storage(&mut self, value: &str) {
+    pub fn load_storage(&mut self, ctx: &Context, value: &str) {
         match serde_json5::from_str::<AppStorage>(value)
             .into_diagnostic()
             .context("Failed to load persistent app storage")
@@ -103,6 +116,13 @@ impl DbeApp {
                 if let Some(head) = self.history.first() {
                     self.load_project_from_path(head.clone())
                 }
+
+                self.colorix = Colorix::init(ctx, storage.theme);
+
+                ctx.set_visuals(egui::Visuals {
+                    dark_mode: storage.dark_mode,
+                    ..Default::default()
+                });
             }
             Err(err) => {
                 report_error(err);
@@ -113,6 +133,8 @@ impl DbeApp {
     pub fn save_storage(&self) -> Option<String> {
         match serde_json5::to_string(&AppStorage {
             history: self.history.clone(),
+            theme: *self.colorix.theme(),
+            dark_mode: self.dark_mode,
         })
         .into_diagnostic()
         .context("Failed to save persistent app storage")
@@ -130,6 +152,18 @@ impl DbeApp {
         {
             ctx.set_debug_on_hover(tweak!(false));
         }
+
+        static INIT: OnceLock<()> = OnceLock::new();
+
+        INIT.get_or_init(|| {
+            self.colorix = Colorix::init(ctx, *self.colorix.theme());
+        });
+
+        self.dark_mode = ctx.style().visuals.dark_mode;
+        self.colorix.draw_background(ctx, false);
+
+        // self.colorix = Colorix::init(ctx, [ColorPreset::Red; 12]);
+
         egui::TopBottomPanel::top("top_panel").show(ctx, |ui| {
             // The top panel is often a good place for a menu bar:
 
@@ -168,8 +202,6 @@ impl DbeApp {
                 });
                 ui.add_space(16.0);
 
-                egui::widgets::global_theme_preference_switch(ui);
-
                 if ui.button("Clear All").clicked() {
                     // self.snarl = Default::default();
                 }
@@ -180,9 +212,13 @@ impl DbeApp {
         CollapsibleToolbar::new(DPanelSide::Bottom, &[ToolPanel::Log], &[])
             .global_drag_id(global_drag_id)
             .show(ctx, "bottom_toolbar", &mut ToolPanelViewer(self));
-        CollapsibleToolbar::new(DPanelSide::Left, &[ToolPanel::ProjectTree], &[])
-            .global_drag_id(global_drag_id)
-            .show(ctx, "left_toolbar", &mut ToolPanelViewer(self));
+        CollapsibleToolbar::new(
+            DPanelSide::Left,
+            &[ToolPanel::ProjectTree, ToolPanel::Theme],
+            &[],
+        )
+        .global_drag_id(global_drag_id)
+        .show(ctx, "left_toolbar", &mut ToolPanelViewer(self));
         CollapsibleToolbar::new(DPanelSide::Right, &[ToolPanel::Diagnostics], &[])
             .global_drag_id(global_drag_id)
             .show(ctx, "right_toolbar", &mut ToolPanelViewer(self));

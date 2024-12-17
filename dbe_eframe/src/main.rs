@@ -83,7 +83,7 @@ impl AppWrapper {
         let mut app = DbeApp::new(collector);
         if let Some(storage) = cx.storage {
             if let Some(value) = storage.get_string("dbe") {
-                app.load_storage(&value);
+                app.load_storage(&cx.egui_ctx, &value);
             }
         }
         Self(app)

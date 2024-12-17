@@ -1,5 +1,6 @@
 use crate::diagnostics_list::diagnostics_tab;
 use crate::file_tree::file_tab;
+use crate::main_toolbar::colors::colors_tab;
 use crate::widgets::collapsible_toolbar::ToolbarViewer;
 use crate::widgets::rotated_label::RotLabelDirection;
 use crate::DbeApp;
@@ -7,11 +8,14 @@ use egui::Ui;
 use serde::{Deserialize, Serialize};
 use std::borrow::Cow;
 
+pub mod colors;
+
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum ToolPanel {
     ProjectTree,
     Diagnostics,
     Log,
+    Theme,
 }
 
 pub struct ToolPanelViewer<'a>(pub &'a mut DbeApp);
@@ -24,6 +28,7 @@ impl ToolbarViewer for ToolPanelViewer<'_> {
             ToolPanel::ProjectTree => "Project Tree".into(),
             ToolPanel::Diagnostics => "Diagnostics".into(),
             ToolPanel::Log => "Log".into(),
+            ToolPanel::Theme => "Theme".into(),
         }
     }
 
@@ -37,6 +42,9 @@ impl ToolbarViewer for ToolPanelViewer<'_> {
             ToolPanel::Diagnostics => diagnostics_tab(ui, self.0),
             ToolPanel::Log => {
                 ui.add(egui_tracing::Logs::new(self.0.collector.clone()));
+            }
+            ToolPanel::Theme => {
+                colors_tab(ui, self.0);
             }
         }
     }
