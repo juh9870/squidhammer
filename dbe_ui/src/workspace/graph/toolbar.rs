@@ -20,11 +20,11 @@ impl ToolbarViewer for GraphToolbarViewer {
         }
     }
 
-    fn closable(&self, tab: &Self::Tab) -> bool {
+    fn closable(&self, _tab: &Self::Tab) -> bool {
         false
     }
 
-    fn ui(&mut self, ui: &mut Ui, tab: &Self::Tab, direction: RotLabelDirection) {
+    fn ui(&mut self, ui: &mut Ui, tab: &Self::Tab, _direction: RotLabelDirection) {
         match tab {
             GraphTab::General => ui.label("General tab content"),
         };

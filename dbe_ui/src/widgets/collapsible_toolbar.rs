@@ -6,7 +6,6 @@ use egui::{
     Widget,
 };
 use inline_tweak::tweak;
-use num_traits::Float;
 use serde::{Deserialize, Serialize};
 use std::any::Any;
 use std::borrow::Cow;
@@ -184,7 +183,8 @@ impl<Tab: SerializableAny + Eq + Hash> CollapsibleToolbar<'_, Tab> {
 
         let mut info = self.load_tabs_info(ctx, state_id);
         let is_expanded = info.selected_start.is_some() || info.selected_end.is_some();
-        let Some(res) = DPanel::show_animated_between(
+
+        let res = DPanel::show_animated_between(
             ctx,
             is_expanded,
             self.tabs_panel(tabs_id, self.side, ctx),
@@ -195,9 +195,7 @@ impl<Tab: SerializableAny + Eq + Hash> CollapsibleToolbar<'_, Tab> {
             |ui, how_expanded| {
                 self.show_expanding(ui, how_expanded, self.side, tabs_id, &mut info, viewer)
             },
-        ) else {
-            return None;
-        };
+        )?;
 
         if res.inner.changed() {
             self.save_tabs_info(ctx, state_id, info);
@@ -285,6 +283,7 @@ impl<Tab: SerializableAny + Eq + Hash> CollapsibleToolbar<'_, Tab> {
     ) -> Response {
         const MIN_SIZE: f32 = 100.0;
 
+        #[allow(clippy::too_many_arguments)]
         fn layout_tabs<Tab: SerializableAny>(
             ui: &mut Ui,
             tabs_panel_id: Id,
