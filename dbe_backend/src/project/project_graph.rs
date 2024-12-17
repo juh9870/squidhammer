@@ -21,7 +21,9 @@ pub struct NodeGroup {
 #[derive(Debug)]
 pub struct ProjectGraph {
     pub id: Uuid,
-    pub name: Option<String>,
+    pub name: String,
+    /// Whether the graph is a node group
+    pub is_node_group: bool,
     graph: GraphHolder,
     inputs_cache: SmallVec<[GraphInput; 1]>,
     outputs_cache: SmallVec<[GraphOutput; 1]>,
@@ -37,6 +39,14 @@ impl ProjectGraph {
     /// Get the graph data
     pub fn graph(&self) -> &Graph {
         match &self.graph {
+            GraphHolder::Graph(g) => g,
+            GraphHolder::Editing => panic!("Cannot borrow graph: graph is being edited"),
+        }
+    }
+
+    /// Get the graph data mutably
+    pub fn graph_mut(&mut self) -> &mut Graph {
+        match &mut self.graph {
             GraphHolder::Graph(g) => g,
             GraphHolder::Editing => panic!("Cannot borrow graph: graph is being edited"),
         }
@@ -73,6 +83,7 @@ impl ProjectGraph {
                 Ok(Self {
                     id: data.id,
                     name: data.name,
+                    is_node_group: data.is_node_group,
                     graph: GraphHolder::Graph(Box::new(graph)),
                     inputs_cache: Default::default(),
                     outputs_cache: Default::default(),
@@ -90,9 +101,11 @@ impl ProjectGraph {
 
                 let graph = Graph::parse_json(registry, dbg!(&mut data))
                     .context("failed to deserialize graph data")?;
+
                 Ok(Self {
                     id: Uuid::new_v4(),
-                    name: None,
+                    name: "".to_string(),
+                    is_node_group: false,
                     graph: GraphHolder::Graph(Box::new(graph)),
                     inputs_cache: Default::default(),
                     outputs_cache: Default::default(),
@@ -106,6 +119,7 @@ impl ProjectGraph {
 
         let serialized = SerializedGraphRepr::V1(PackedProjectGraph {
             id: self.id,
+            is_node_group: self.is_node_group,
             name: self.name.clone(),
             graph,
         });
@@ -139,7 +153,9 @@ struct PackedProjectGraph {
     #[serde(default = "default_uuid")]
     id: Uuid,
     #[serde(default)]
-    name: Option<String>,
+    is_node_group: bool,
+    #[serde(default)]
+    name: String,
     graph: JsonValue,
 }
 

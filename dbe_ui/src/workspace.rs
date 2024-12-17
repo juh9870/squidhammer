@@ -175,12 +175,8 @@ impl<Io> TabViewer for WorkspaceTabViewer<'_, Io> {
                     return;
                 };
 
-                CollapsibleToolbar::new(
-                    DPanelSide::Right,
-                    &[GraphTab::General],
-                    &[GraphTab::General],
-                )
-                .show_inside(ui, &mut GraphToolbarViewer);
+                CollapsibleToolbar::new(DPanelSide::Right, &[GraphTab::General], &[])
+                    .show_inside(ui, &mut GraphToolbarViewer { graph });
 
                 egui::CentralPanel::default()
                     .frame(Frame {

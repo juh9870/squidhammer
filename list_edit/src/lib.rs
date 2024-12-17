@@ -27,6 +27,27 @@ impl<T, NewItem: Fn(usize) -> T, CanDelete: Fn(usize, T) -> bool, IdSource: Hash
         self,
         ui: &mut Ui,
         items: &mut Vec<T>,
+        display: impl FnMut(&mut Ui, ItemState, &mut T),
+    ) {
+        self.show_custom(
+            ui,
+            items,
+            |items, i| {
+                items.remove(i);
+            },
+            |items, item| {
+                items.push(item);
+            },
+            display,
+        );
+    }
+
+    pub fn show_custom<Container: AsMut<[T]>>(
+        self,
+        ui: &mut Ui,
+        items: &mut Container,
+        remove: impl Fn(&mut Container, usize),
+        push: impl Fn(&mut Container, T),
         mut display: impl FnMut(&mut Ui, ItemState, &mut T),
     ) {
         let id = self.id.id();
@@ -36,6 +57,7 @@ impl<T, NewItem: Fn(usize) -> T, CanDelete: Fn(usize, T) -> bool, IdSource: Hash
             let mut last_item_width = 0.0;
             let response = dnd(ui, id).with_return_animation_time(0.0).show(
                 items
+                    .as_mut()
                     .iter_mut()
                     .enumerate()
                     .map(|(i, e)| DragWrapper(id.with(i), e)),
@@ -104,17 +126,18 @@ impl<T, NewItem: Fn(usize) -> T, CanDelete: Fn(usize, T) -> bool, IdSource: Hash
             );
 
             if response.is_drag_finished() {
-                response.update_vec(items);
+                response.update_vec(items.as_mut());
             }
 
             if let Some(id) = delete_id {
-                items.remove(id);
+                remove(items, id);
             }
 
             let add_button = egui::Button::new("➕").min_size(Vec2::new(last_item_width, 0.0));
 
             if ui.add(add_button).clicked() {
-                items.push((self.new_item)(items.len()));
+                let len = items.as_mut().len();
+                push(items, (self.new_item)(len));
             }
         });
     }

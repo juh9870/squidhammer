@@ -217,8 +217,16 @@ impl Graph {
         &self.inputs
     }
 
+    pub fn inputs_mut(&mut self) -> &mut SmallVec<[GraphInput; 1]> {
+        &mut self.inputs
+    }
+
     pub fn outputs(&self) -> &SmallVec<[GraphOutput; 1]> {
         &self.outputs
+    }
+
+    pub fn outputs_mut(&mut self) -> &mut SmallVec<[GraphOutput; 1]> {
+        &mut self.outputs
     }
 }
 

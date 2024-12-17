@@ -355,6 +355,7 @@
     "outputs": []
   },
   "id": "1c782a32-f8c5-4d08-a16a-bd1cf59b8230",
-  "name": null,
+  "is_node_group": false,
+  "name": "",
   "version": "V1"
 }

@@ -36,6 +36,7 @@ serde_json5 = { workspace = true }
 strip-ansi-escapes = { workspace = true }
 tracing = { workspace = true }
 ustr = { workspace = true }
+uuid = { workspace = true, features = ["v4"] }
 
 [package.metadata.release]
 release = false
