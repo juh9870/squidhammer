@@ -210,16 +210,21 @@ impl DbeApp {
 
         let global_drag_id = Id::from("dbe_toolbar_global_drag");
         CollapsibleToolbar::new(DPanelSide::Bottom, &[ToolPanel::Log], &[])
+            .default_selected_start(0)
             .global_drag_id(global_drag_id)
             .show(ctx, "bottom_toolbar", &mut ToolPanelViewer(self));
+
         CollapsibleToolbar::new(
             DPanelSide::Left,
             &[ToolPanel::ProjectTree, ToolPanel::Theme],
             &[],
         )
+        .default_selected_start(0)
         .global_drag_id(global_drag_id)
         .show(ctx, "left_toolbar", &mut ToolPanelViewer(self));
+
         CollapsibleToolbar::new(DPanelSide::Right, &[ToolPanel::Diagnostics], &[])
+            .default_selected_start(0)
             .global_drag_id(global_drag_id)
             .show(ctx, "right_toolbar", &mut ToolPanelViewer(self));
 

@@ -44,6 +44,9 @@ pub struct CollapsibleToolbar<'a, Tab: SerializableAny> {
     default_tabs_start: &'a [Tab],
     default_tabs_end: &'a [Tab],
 
+    default_selected_start: Option<usize>,
+    default_selected_end: Option<usize>,
+
     /// Frame used when the toolbar is expanded
     ///
     /// Defaults to [Frame::none()]
@@ -81,6 +84,8 @@ impl<'a, Tab: SerializableAny> CollapsibleToolbar<'a, Tab> {
             side,
             default_tabs_start,
             default_tabs_end,
+            default_selected_start: None,
+            default_selected_end: None,
             expanded_frame: None,
             content_frame: None,
             tabs_frame: None,
@@ -89,6 +94,30 @@ impl<'a, Tab: SerializableAny> CollapsibleToolbar<'a, Tab> {
             persist: false,
             global_drag_id: None,
         }
+    }
+
+    /// Specifies whether the state of the toolbar should be persisted between sessions
+    pub fn persist(mut self, persist: bool) -> Self {
+        self.persist = persist;
+        self
+    }
+
+    /// Specifies the index of the tab that should be selected by default in the start panel
+    ///
+    /// # Panics
+    /// Will panic if the index is out of bounds
+    pub fn default_selected_start(mut self, default_selected_start: usize) -> Self {
+        self.default_selected_start = Some(default_selected_start);
+        self
+    }
+
+    /// Specifies the index of the tab that should be selected by default in the end panel
+    ///
+    /// # Panics
+    /// Will panic if the index is out of bounds
+    pub fn default_selected_end(mut self, default_selected_end: usize) -> Self {
+        self.default_selected_end = Some(default_selected_end);
+        self
     }
 
     pub fn expanded_frame(mut self, expanded_frame: Frame) -> Self {
@@ -131,22 +160,22 @@ struct TabsInfo<Tab: 'static + Any + Clone + Send + Sync> {
 }
 
 impl<Tab: SerializableAny> TabsInfo<Tab> {
-    pub fn new(start: impl Into<Arc<Vec<Tab>>>, end: impl Into<Arc<Vec<Tab>>>) -> Self {
+    pub fn new(
+        start: impl Into<Arc<Vec<Tab>>>,
+        end: impl Into<Arc<Vec<Tab>>>,
+        selected_start: Option<usize>,
+        selected_end: Option<usize>,
+    ) -> Self {
         Self {
             start: start.into(),
             end: end.into(),
-            selected_start: None,
-            selected_end: None,
+            selected_start,
+            selected_end,
         }
     }
 }
 
 impl<Tab: SerializableAny + Eq + Hash> CollapsibleToolbar<'_, Tab> {
-    pub fn persist(mut self, persist: bool) -> Self {
-        self.persist = persist;
-        self
-    }
-
     pub fn show_inside(self, ui: &mut Ui, viewer: &mut impl ToolbarViewer<Tab = Tab>) -> Response {
         let tabs_id = ui.id().with("collapsible_toolbar");
         let state_id = tabs_id.with("state");
@@ -228,15 +257,12 @@ impl<Tab: SerializableAny + Eq + Hash> CollapsibleToolbar<'_, Tab> {
         info: &mut TabsInfo<Tab>,
         viewer: &mut impl ToolbarViewer<Tab = Tab>,
     ) -> Response {
-        let tabs_panel_id = tabs_id.with("tabs");
         let content_panel_id = tabs_id.with("content");
         ui.set_min_size(ui.available_size());
 
         let tabs_res = self
             .tabs_panel(tabs_id, side, ui.ctx())
-            .show_inside(ui, |ui| {
-                self.show_tabs(ui, side, tabs_panel_id, info, viewer)
-            })
+            .show_inside(ui, |ui| self.show_tabs(ui, side, tabs_id, info, viewer))
             .inner;
 
         CentralPanel::default()
@@ -623,6 +649,8 @@ impl<Tab: SerializableAny + Eq + Hash> CollapsibleToolbar<'_, Tab> {
                     TabsInfo::new(
                         self.default_tabs_start.to_vec(),
                         self.default_tabs_end.to_vec(),
+                        self.default_selected_start,
+                        self.default_selected_end,
                     )
                 })
             } else {
@@ -630,6 +658,8 @@ impl<Tab: SerializableAny + Eq + Hash> CollapsibleToolbar<'_, Tab> {
                     TabsInfo::new(
                         self.default_tabs_start.to_vec(),
                         self.default_tabs_end.to_vec(),
+                        self.default_selected_start,
+                        self.default_selected_end,
                     )
                 })
             }
@@ -697,6 +727,7 @@ fn record_tabs_size(ctx: &Context, tabs_id: Id, size: f32) {
     if size <= 1.0 {
         return;
     }
+
     ctx.memory_mut(|mem| {
         mem.data
             .insert_temp(tabs_id.with("tabs_height_tracker"), size);
