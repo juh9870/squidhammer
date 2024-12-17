@@ -297,6 +297,10 @@ impl<IO: ProjectIO> Project<IO> {
                 bail!("graph {:?} at path {} is not found", id, path);
             };
 
+            if graph.is_node_group {
+                continue;
+            }
+
             let cache = self.graphs.cache.entry(*id).or_default();
 
             let mut ctx = GraphExecutionContext::from_graph(
