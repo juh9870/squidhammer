@@ -12,7 +12,7 @@ fn main() -> anyhow::Result<()> {
             cmd!(sh, "cargo lrun -p ehce --features bevy/dynamic_linking").run()?;
         }
         XtaskCmd::Watch(_) => {
-            let check = "lcheck";
+            let check = "lclippy";
             cmd!(sh, "cargo watch -x {check}").run()?;
         }
         XtaskCmd::Fix(_) => {

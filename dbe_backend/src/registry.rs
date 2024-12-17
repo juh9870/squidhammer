@@ -136,6 +136,8 @@ impl EObject for EObjectType {
     }
 }
 
+// Allow large enum variants because we mainly consist of them once deserialized
+#[allow(clippy::large_enum_variant)]
 #[derive(Debug, Clone)]
 enum RegistryItem {
     Raw(String),
