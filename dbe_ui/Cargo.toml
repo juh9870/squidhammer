@@ -19,6 +19,7 @@ egui = { workspace = true }
 egui-modal = { workspace = true }
 egui-snarl = { workspace = true }
 egui-toast = { workspace = true }
+egui_colors = { workspace = true, features = ["serde"] }
 egui_dock = { workspace = true }
 egui_file = { workspace = true }
 egui_hooks = { workspace = true, features = ["serde"] }
@@ -30,7 +31,7 @@ miette = { workspace = true, features = ["fancy"] }
 num-traits = { workspace = true }
 random_color = { workspace = true }
 sanitise-file-name = { workspace = true }
-serde = { version = "1.0.214", features = ["derive"] }
+serde = { workspace = true, features = ["derive"] }
 serde_json5 = { workspace = true }
 strip-ansi-escapes = { workspace = true }
 tracing = { workspace = true }
