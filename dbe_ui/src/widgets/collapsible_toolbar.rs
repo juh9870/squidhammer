@@ -720,6 +720,7 @@ fn default_button_style(style: &mut Style) {
     style.visuals.widgets.inactive.bg_stroke = Stroke::NONE;
     style.visuals.widgets.hovered.bg_stroke = Stroke::NONE;
     style.visuals.selection.bg_fill = style.visuals.extreme_bg_color;
+    style.visuals.selection.stroke = style.visuals.widgets.active.fg_stroke;
     style.spacing.button_padding = vec2(tweak!(6.0), tweak!(4.0));
 }
 
