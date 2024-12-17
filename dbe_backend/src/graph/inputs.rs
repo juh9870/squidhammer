@@ -4,14 +4,14 @@ use uuid::Uuid;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct GraphInput {
-    pub ty: EDataType,
+    pub ty: Option<EDataType>,
     pub id: Uuid,
     pub name: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct GraphOutput {
-    pub ty: EDataType,
+    pub ty: Option<EDataType>,
     pub id: Uuid,
     pub name: String,
 }

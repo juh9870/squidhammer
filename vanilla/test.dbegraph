@@ -303,7 +303,18 @@
         12
       ]
     ],
-    "inputs": [],
+    "inputs": [
+      {
+        "id": "6d73d267-feac-4b59-952c-21f92a548f60",
+        "name": "input 0",
+        "ty": null
+      },
+      {
+        "id": "c69ea60e-5e0f-4dcb-909f-c685b1a81bb3",
+        "name": "input 1",
+        "ty": null
+      }
+    ],
     "nodes": [
       [
         0,
@@ -499,6 +510,7 @@
     "outputs": []
   },
   "id": "0ec96a2e-fcab-4d13-95d7-d89ea490f3cd",
-  "name": null,
+  "is_node_group": false,
+  "name": "test",
   "version": "V1"
 }
