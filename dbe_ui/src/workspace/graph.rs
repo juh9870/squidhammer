@@ -51,7 +51,7 @@ impl<'a> GraphViewer<'a> {
 
 impl<'a> SnarlViewer<SnarlNode> for GraphViewer<'a> {
     fn title(&mut self, node: &SnarlNode) -> String {
-        node.title(self.ctx.registry)
+        node.title(self.ctx.as_node_context())
     }
 
     fn show_header(
@@ -79,11 +79,11 @@ impl<'a> SnarlViewer<SnarlNode> for GraphViewer<'a> {
     }
 
     fn outputs(&mut self, node: &SnarlNode) -> usize {
-        node.outputs_count(self.ctx.registry)
+        node.outputs_count(self.ctx.as_node_context())
     }
 
     fn inputs(&mut self, node: &SnarlNode) -> usize {
-        node.inputs_count(self.ctx.registry)
+        node.inputs_count(self.ctx.as_node_context())
     }
 
     fn show_input(
@@ -395,7 +395,7 @@ impl<'a> SnarlViewer<SnarlNode> for GraphViewer<'a> {
                 for pin in pins {
                     m_try(|| {
                         let node = &snarl[pin.node];
-                        let data = node.try_input(self.ctx.registry, pin.input)?;
+                        let data = node.try_input(self.ctx.as_node_context(), pin.input)?;
                         match data.ty.ty() {
                             EDataType::Object { ident } => {
                                 if ui.button(ident.as_raw().unwrap()).clicked() {
@@ -500,7 +500,7 @@ fn pin_stroke(ty: EDataType, registry: &ETypesRegistry) -> Stroke {
 
 fn pin_info(ty: &NodePortType, registry: &ETypesRegistry) -> PinInfo {
     match ty {
-        NodePortType::Any => any_pin(),
+        NodePortType::BasedOnSource | NodePortType::BasedOnTarget => any_pin(),
         NodePortType::Specific(ty) => {
             let shape = match ty.ty() {
                 EDataType::Boolean
@@ -516,6 +516,7 @@ fn pin_info(ty: &NodePortType, registry: &ETypesRegistry) -> PinInfo {
                 .with_fill(pin_color(ty.ty(), registry))
                 .with_stroke(pin_stroke(ty.ty(), registry))
         }
+        NodePortType::Invalid => PinInfo::circle().with_fill(Color32::BLACK),
     }
 }
 

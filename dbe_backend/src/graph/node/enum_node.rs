@@ -5,7 +5,10 @@ use crate::etype::eobject::EObject;
 use crate::etype::EDataType;
 use crate::graph::node::commands::{SnarlCommand, SnarlCommands};
 use crate::graph::node::ports::NodePortType;
-use crate::graph::node::{impl_serde_node, InputData, Node, NodeFactory, OutputData, SnarlNode};
+use crate::graph::node::variables::ExecutionVariables;
+use crate::graph::node::{
+    impl_serde_node, InputData, Node, NodeContext, NodeFactory, OutputData, SnarlNode,
+};
 use crate::registry::ETypesRegistry;
 use crate::value::EValue;
 use egui_snarl::{InPin, InPinId, NodeId, OutPin};
@@ -49,7 +52,7 @@ impl EnumNode {
         }
 
         self.variant = Some(variant);
-        commands.push(SnarlCommand::DropInlineValuesRaw {
+        commands.push(SnarlCommand::DropInputsRaw {
             to: InPinId { node, input: 0 },
         });
         commands.push(SnarlCommand::DeletePinValue {
@@ -66,27 +69,23 @@ impl Node for EnumNode {
         EnumNodeFactory.id()
     }
 
-    fn title(&self, registry: &ETypesRegistry) -> String {
-        let Some((data, _variant)) = self.get_data(registry) else {
+    fn title(&self, context: NodeContext) -> String {
+        let Some((data, _variant)) = self.get_data(context.registry) else {
             return "Unknown enum variant".into();
         };
 
-        data.title(registry)
+        data.title(context.registry)
     }
 
-    fn inputs_count(&self, registry: &ETypesRegistry) -> usize {
-        let Some((_, _)) = self.get_data(registry) else {
+    fn inputs_count(&self, context: NodeContext) -> usize {
+        let Some((_, _)) = self.get_data(context.registry) else {
             return 0;
         };
         1
     }
 
-    fn input_unchecked(
-        &self,
-        registry: &ETypesRegistry,
-        input: usize,
-    ) -> miette::Result<InputData> {
-        let Some((_, variant)) = self.get_data(registry) else {
+    fn input_unchecked(&self, context: NodeContext, input: usize) -> miette::Result<InputData> {
+        let Some((_, variant)) = self.get_data(context.registry) else {
             panic!("Unknown enum variant");
         };
         if input != 0 {
@@ -98,19 +97,15 @@ impl Node for EnumNode {
         })
     }
 
-    fn outputs_count(&self, registry: &ETypesRegistry) -> usize {
-        let Some((_, _)) = self.get_data(registry) else {
+    fn outputs_count(&self, context: NodeContext) -> usize {
+        let Some((_, _)) = self.get_data(context.registry) else {
             return 0;
         };
         1
     }
 
-    fn output_unchecked(
-        &self,
-        registry: &ETypesRegistry,
-        output: usize,
-    ) -> miette::Result<OutputData> {
-        let Some((data, _)) = self.get_data(registry) else {
+    fn output_unchecked(&self, context: NodeContext, output: usize) -> miette::Result<OutputData> {
+        let Some((data, _)) = self.get_data(context.registry) else {
             panic!("Unknown enum variant");
         };
 
@@ -126,13 +121,13 @@ impl Node for EnumNode {
 
     fn try_connect(
         &mut self,
-        registry: &ETypesRegistry,
+        context: NodeContext,
         commands: &mut SnarlCommands,
         from: &OutPin,
         to: &InPin,
         incoming_type: &NodePortType,
-    ) -> miette::Result<()> {
-        let Some((data, _)) = self.get_data(registry) else {
+    ) -> miette::Result<bool> {
+        let Some((data, _)) = self.get_data(context.registry) else {
             panic!("Unknown enum variant");
         };
 
@@ -147,17 +142,17 @@ impl Node for EnumNode {
             }
         }
 
-        self._default_try_connect(registry, commands, from, to, incoming_type)?;
-        Ok(())
+        self._default_try_connect(context, commands, from, to, incoming_type)
     }
 
     fn execute(
         &self,
-        registry: &ETypesRegistry,
+        context: NodeContext,
         inputs: &[EValue],
         outputs: &mut Vec<EValue>,
+        _variables: &mut ExecutionVariables,
     ) -> miette::Result<()> {
-        let Some((_, _)) = self.get_data(registry) else {
+        let Some((_, _)) = self.get_data(context.registry) else {
             panic!("Unknown enum variant");
         };
 

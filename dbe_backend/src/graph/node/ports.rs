@@ -28,8 +28,12 @@ pub struct OutputData {
 
 #[derive(Debug, Clone, EnumIs)]
 pub enum NodePortType {
-    /// Port that accepts any connection
-    Any,
+    /// Invalid connection. Will not cause panics, but will always return null data
+    Invalid,
+    /// Input port that has custom logic for accepting connections
+    BasedOnSource,
+    /// Output port that accepts connections based on the target input port
+    BasedOnTarget,
     /// Port that accepts only connections of the specific type
     Specific(EItemInfo),
 }
@@ -37,14 +41,18 @@ pub enum NodePortType {
 impl NodePortType {
     pub fn default_value(&self, registry: &ETypesRegistry) -> DefaultEValue {
         match self {
-            NodePortType::Any => EValue::Null.into(),
+            NodePortType::BasedOnSource | NodePortType::Invalid | NodePortType::BasedOnTarget => {
+                EValue::Null.into()
+            }
             NodePortType::Specific(info) => info.default_value(registry),
         }
     }
 
     pub fn item_info(&self) -> Option<&EItemInfo> {
         match self {
-            NodePortType::Any => None,
+            NodePortType::BasedOnSource | NodePortType::Invalid | NodePortType::BasedOnTarget => {
+                None
+            }
             NodePortType::Specific(info) => Some(info),
         }
     }
@@ -57,15 +65,24 @@ impl NodePortType {
 
     pub fn ty(&self) -> EDataType {
         match self {
-            NodePortType::Any => EDataType::null(),
+            NodePortType::BasedOnSource | NodePortType::Invalid | NodePortType::BasedOnTarget => {
+                EDataType::null()
+            }
             NodePortType::Specific(info) => info.ty(),
         }
     }
 
     pub fn compatible(registry: &ETypesRegistry, from: &NodePortType, to: &NodePortType) -> bool {
         match (from, to) {
-            (NodePortType::Any, _) => false, // Any can't be converted to anything
-            (_, NodePortType::Any) => true,
+            (NodePortType::Invalid, _) => false, // Invalid never connects
+            (_, NodePortType::Invalid) => false, // Invalid never connects
+
+            (NodePortType::BasedOnTarget, _) => true, // BasedOnInput logic runs separately
+            (_, NodePortType::BasedOnTarget) => false, // BasedOnInput can't be on the right side
+
+            (NodePortType::BasedOnSource, _) => false, // Any can't be converted to anything
+            (NodePortType::Specific(_), NodePortType::BasedOnSource) => true, // Specific can be converted to Any
+
             (NodePortType::Specific(from), NodePortType::Specific(to)) => {
                 types_compatible(registry, from, to)
             }

@@ -3,7 +3,10 @@ use crate::etype::eitem::EItemInfo;
 use crate::etype::EDataType;
 use crate::graph::node::commands::{SnarlCommand, SnarlCommands};
 use crate::graph::node::ports::NodePortType;
-use crate::graph::node::{impl_serde_node, InputData, Node, NodeFactory, OutputData, SnarlNode};
+use crate::graph::node::{
+    impl_serde_node, ExecutionVariables, InputData, Node, NodeContext, NodeFactory, OutputData,
+    SnarlNode,
+};
 use crate::registry::ETypesRegistry;
 use crate::value::EValue;
 use egui_snarl::{InPin, InPinId, OutPin, OutPinId};
@@ -59,18 +62,14 @@ impl Node for ListNode {
         Ok(false)
     }
 
-    fn inputs_count(&self, _registry: &ETypesRegistry) -> usize {
+    fn inputs_count(&self, _context: NodeContext) -> usize {
         self.items_count + 1
     }
 
-    fn input_unchecked(
-        &self,
-        _registry: &ETypesRegistry,
-        input: usize,
-    ) -> miette::Result<InputData> {
+    fn input_unchecked(&self, _context: NodeContext, input: usize) -> miette::Result<InputData> {
         Ok(InputData {
             ty: if self.items_count == 0 && !self.fixed {
-                NodePortType::Any
+                NodePortType::BasedOnSource
             } else {
                 EItemInfo::simple_type(self.item).into()
             },
@@ -82,29 +81,25 @@ impl Node for ListNode {
         })
     }
 
-    fn outputs_count(&self, _registry: &ETypesRegistry) -> usize {
+    fn outputs_count(&self, _context: NodeContext) -> usize {
         1
     }
 
-    fn output_unchecked(
-        &self,
-        registry: &ETypesRegistry,
-        output: usize,
-    ) -> miette::Result<OutputData> {
+    fn output_unchecked(&self, context: NodeContext, output: usize) -> miette::Result<OutputData> {
         Ok(OutputData {
-            ty: EItemInfo::simple_type(registry.list_of(self.item)).into(),
+            ty: EItemInfo::simple_type(context.registry.list_of(self.item)).into(),
             name: output.to_string().into(),
         })
     }
 
     fn try_connect(
         &mut self,
-        registry: &ETypesRegistry,
+        context: NodeContext,
         commands: &mut SnarlCommands,
         from: &OutPin,
         to: &InPin,
         incoming_type: &NodePortType,
-    ) -> miette::Result<()> {
+    ) -> miette::Result<bool> {
         if self.items_count == 0 && self.item != incoming_type.ty() {
             self.item = incoming_type.ty();
             commands.push(SnarlCommand::ReconnectOutput {
@@ -115,16 +110,17 @@ impl Node for ListNode {
             })
         }
 
-        if self._default_try_connect(registry, commands, from, to, incoming_type)? {
+        if self._default_try_connect(context, commands, from, to, incoming_type)? {
             self.items_count += 1;
+            Ok(true)
+        } else {
+            Ok(false)
         }
-
-        Ok(())
     }
 
     fn try_disconnect(
         &mut self,
-        _registry: &ETypesRegistry,
+        _context: NodeContext,
         commands: &mut SnarlCommands,
         from: &OutPin,
         to: &InPin,
@@ -158,9 +154,10 @@ impl Node for ListNode {
 
     fn execute(
         &self,
-        registry: &ETypesRegistry,
+        context: NodeContext,
         inputs: &[EValue],
         outputs: &mut Vec<EValue>,
+        _variables: &mut ExecutionVariables,
     ) -> miette::Result<()> {
         let mut values = vec![];
         // TODO: check for inputs count to match items_count
@@ -169,7 +166,7 @@ impl Node for ListNode {
         }
         outputs.clear();
         outputs.push(EValue::List {
-            id: registry.list_id_of(self.item),
+            id: context.registry.list_id_of(self.item),
             values,
         });
         Ok(())

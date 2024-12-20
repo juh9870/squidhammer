@@ -293,23 +293,24 @@ impl<IO: ProjectIO> Project<IO> {
                 continue;
             };
 
-            let Some(graph) = self.graphs.graphs.get(id) else {
+            if let Some(result) = self.graphs.try_borrow_cache(*id, |graph, cache, graphs| {
+                if graph.is_node_group {
+                    return Ok(());
+                }
+
+                let mut ctx = GraphExecutionContext::from_graph(
+                    graph.graph(),
+                    &self.registry,
+                    Some(graphs),
+                    cache,
+                    SideEffectsContext::new(&mut side_effects, path.clone()),
+                );
+                ctx.full_eval(true)
+            }) {
+                result?;
+            } else {
                 bail!("graph {:?} at path {} is not found", id, path);
-            };
-
-            if graph.is_node_group {
-                continue;
             }
-
-            let cache = self.graphs.cache.entry(*id).or_default();
-
-            let mut ctx = GraphExecutionContext::from_graph(
-                graph.graph(),
-                &self.registry,
-                cache,
-                SideEffectsContext::new(&mut side_effects, path.clone()),
-            );
-            ctx.full_eval(true)?;
         }
 
         for path in generated {

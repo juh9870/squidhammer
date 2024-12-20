@@ -3,8 +3,8 @@ use super::{
 };
 use crate::etype::conversion::EItemInfoAdapter;
 use crate::graph::node::ports::{InputData, NodePortType, OutputData};
-use crate::graph::node::{Node, NodeFactory};
-use crate::registry::ETypesRegistry;
+use crate::graph::node::variables::ExecutionVariables;
+use crate::graph::node::{Node, NodeContext, NodeFactory};
 use crate::value::EValue;
 use miette::Context;
 use ustr::Ustr;
@@ -122,23 +122,23 @@ macro_rules! impl_functional_node {
                 self.id.into()
             }
 
-            fn inputs_count(&self, _registry: &ETypesRegistry) -> usize {
+            fn inputs_count(&self, _context: NodeContext) -> usize {
                 <Self as FunctionalNode>::inputs_count(self)
             }
 
-            fn input_unchecked(&self, _registry: &ETypesRegistry, input: usize) -> miette::Result<InputData> {
+            fn input_unchecked(&self, _context: NodeContext, input: usize) -> miette::Result<InputData> {
                 Ok(<Self as FunctionalNode>::input_unchecked(self, input))
             }
 
-            fn outputs_count(&self, _registry: &ETypesRegistry) -> usize {
+            fn outputs_count(&self, _context: NodeContext) -> usize {
                 <Self as FunctionalNode>::outputs_count(self)
             }
 
-            fn output_unchecked(&self, _registry: &ETypesRegistry, output: usize) -> miette::Result<OutputData> {
+            fn output_unchecked(&self, _context: NodeContext, output: usize) -> miette::Result<OutputData> {
                 Ok(<Self as FunctionalNode>::output_unchecked(self, output))
             }
 
-            fn execute(&self, _registry: &ETypesRegistry, inputs: &[EValue], outputs: &mut Vec<EValue>) -> miette::Result<()> {
+            fn execute(&self, _context: NodeContext, inputs: &[EValue], outputs: &mut Vec<EValue>, _variables: &mut ExecutionVariables) -> miette::Result<()> {
                 <Self as FunctionalNode>::execute(self, inputs, outputs)
             }
         }

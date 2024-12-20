@@ -1,8 +1,12 @@
 use crate::graph::cache::GraphCache;
+use crate::graph::inputs::{GraphInput, GraphOutput};
 use crate::graph::node::ports::NodePortType;
+use crate::graph::node::variables::ExecutionVariables;
+use crate::graph::node::NodeContext;
 use crate::graph::node::SnarlNode;
 use crate::graph::Graph;
 use crate::m_try;
+use crate::project::project_graph::ProjectGraphs;
 use crate::project::side_effects::SideEffectsContext;
 use crate::registry::ETypesRegistry;
 use crate::value::EValue;
@@ -11,12 +15,26 @@ use egui_snarl::{InPinId, NodeId, OutPinId, Snarl};
 use miette::{bail, miette, Context};
 use smallvec::SmallVec;
 
+macro_rules! node_context {
+    ($source:ident) => {
+        NodeContext {
+            registry: $source.registry,
+            inputs: $source.inputs,
+            outputs: $source.outputs,
+            graphs: $source.graphs,
+        }
+    };
+}
+
 #[derive(Debug)]
 pub struct GraphExecutionContext<'a, 'snarl> {
     pub snarl: &'snarl Snarl<SnarlNode>,
+    pub inputs: &'a SmallVec<[GraphInput; 1]>,
+    pub outputs: &'a SmallVec<[GraphOutput; 1]>,
     pub inline_values: &'a AHashMap<InPinId, EValue>,
     pub registry: &'a ETypesRegistry,
     pub side_effects: SideEffectsContext<'a>,
+    pub graphs: Option<&'a ProjectGraphs>,
     cache: &'a mut GraphCache,
 }
 
@@ -24,30 +42,41 @@ impl<'a> GraphExecutionContext<'a, 'a> {
     pub fn from_graph(
         graph: &'a Graph,
         registry: &'a ETypesRegistry,
+        graphs: Option<&'a ProjectGraphs>,
         cache: &'a mut GraphCache,
         side_effects: SideEffectsContext<'a>,
     ) -> Self {
         GraphExecutionContext {
             snarl: &graph.snarl,
+            inputs: &graph.inputs,
+            outputs: &graph.outputs,
             inline_values: &graph.inline_values,
             cache,
             registry,
             side_effects,
+            graphs,
         }
     }
 
+    #[allow(clippy::too_many_arguments)]
     pub(super) fn new(
         snarl: &'a Snarl<SnarlNode>,
+        inputs: &'a mut SmallVec<[GraphInput; 1]>,
+        outputs: &'a mut SmallVec<[GraphOutput; 1]>,
         inline_values: &'a AHashMap<InPinId, EValue>,
         registry: &'a ETypesRegistry,
+        graphs: Option<&'a ProjectGraphs>,
         side_effects: SideEffectsContext<'a>,
         cache: &'a mut GraphCache,
     ) -> Self {
         Self {
             snarl,
+            inputs,
+            outputs,
             inline_values,
             registry,
             side_effects,
+            graphs,
             cache,
         }
     }
@@ -167,7 +196,7 @@ impl<'a, 'snarl> GraphExecutionContext<'a, 'snarl> {
         node: &SnarlNode,
         side_effects: bool,
     ) -> miette::Result<EValue> {
-        let in_info = node.try_input(self.registry, id.input)?;
+        let in_info = node.try_input(node_context!(self), id.input)?;
         // trace!("Reading input #{} of node {:?}", id.input, id.node);
         m_try(|| {
             // TODO: check for valid types
@@ -175,7 +204,7 @@ impl<'a, 'snarl> GraphExecutionContext<'a, 'snarl> {
             let value = if slot.remotes.is_empty() {
                 match self.inline_input_value(slot.id, node)? {
                     None => node
-                        .default_input_value(self.registry, id.input)?
+                        .default_input_value(node_context!(self), id.input)?
                         .into_owned(),
                     Some(val) => val.clone(),
                 }
@@ -184,7 +213,7 @@ impl<'a, 'snarl> GraphExecutionContext<'a, 'snarl> {
                 let output = self.read_node_output_inner(stack, remote, side_effects)?;
                 if output.ty() != in_info.ty.ty() {
                     let remote_info =
-                        self.snarl[remote.node].try_output(self.registry, remote.output)?;
+                        self.snarl[remote.node].try_output(node_context!(self), remote.output)?;
 
                     NodePortType::convert_value(
                         self.registry,
@@ -227,7 +256,7 @@ impl<'a, 'snarl> GraphExecutionContext<'a, 'snarl> {
                 .get_node(id)
                 .ok_or_else(|| miette!("Node {:?} not found", id))?;
 
-            let inputs_count = node.inputs_count(self.registry);
+            let inputs_count = node.inputs_count(node_context!(self));
             let mut input_values = Vec::<EValue>::with_capacity(inputs_count);
 
             for i in 0..inputs_count {
@@ -239,18 +268,23 @@ impl<'a, 'snarl> GraphExecutionContext<'a, 'snarl> {
                 )?);
             }
 
-            let outputs_count = node.outputs_count(self.registry);
+            let outputs_count = node.outputs_count(node_context!(self));
             let mut outputs = Vec::with_capacity(outputs_count);
             if side_effects && node.has_side_effects() {
                 let side_effects = self.side_effects.with_node(id);
                 node.execute_side_effects(
-                    self.registry,
+                    node_context!(self),
                     &input_values,
                     &mut outputs,
                     side_effects,
                 )?;
             }
-            node.execute(self.registry, &input_values, &mut outputs)?;
+            node.execute(
+                node_context!(self),
+                &input_values,
+                &mut outputs,
+                &mut ExecutionVariables::new(false, &[], &mut None),
+            )?;
 
             // TODO: check for validity of returned values types
             self.cache.insert(id, outputs);
@@ -263,8 +297,11 @@ impl<'a, 'snarl> GraphExecutionContext<'a, 'snarl> {
 
 #[derive(Debug)]
 pub struct PartialGraphExecutionContext<'a> {
+    pub inputs: &'a SmallVec<[GraphInput; 1]>,
+    pub outputs: &'a SmallVec<[GraphOutput; 1]>,
     pub inline_values: &'a AHashMap<InPinId, EValue>,
     pub registry: &'a ETypesRegistry,
+    pub graphs: Option<&'a ProjectGraphs>,
     pub side_effects: SideEffectsContext<'a>,
     cache: &'a mut GraphCache,
 }
@@ -275,9 +312,12 @@ impl<'a> PartialGraphExecutionContext<'a> {
     ) -> (Self, &'snarl Snarl<SnarlNode>) {
         (
             PartialGraphExecutionContext {
+                inputs: ctx.inputs,
+                outputs: ctx.outputs,
                 inline_values: ctx.inline_values,
                 cache: ctx.cache,
                 registry: ctx.registry,
+                graphs: ctx.graphs,
                 side_effects: ctx.side_effects.clone(),
             },
             ctx.snarl,
@@ -287,14 +327,18 @@ impl<'a> PartialGraphExecutionContext<'a> {
     pub fn from_graph(
         graph: &'a Graph,
         registry: &'a ETypesRegistry,
+        graphs: Option<&'a ProjectGraphs>,
         cache: &'a mut GraphCache,
         side_effects: SideEffectsContext<'a>,
     ) -> (Self, &'a Snarl<SnarlNode>) {
         (
             PartialGraphExecutionContext {
+                inputs: &graph.inputs,
+                outputs: &graph.outputs,
                 inline_values: &graph.inline_values,
                 cache,
                 registry,
+                graphs,
                 side_effects,
             },
             &graph.snarl,
@@ -310,10 +354,13 @@ impl<'a> PartialGraphExecutionContext<'a> {
     {
         GraphExecutionContext {
             snarl,
+            inputs: self.inputs,
+            outputs: self.outputs,
             inline_values: self.inline_values,
             cache: self.cache,
             registry: self.registry,
             side_effects: self.side_effects.clone(),
+            graphs: self.graphs,
         }
     }
 }
