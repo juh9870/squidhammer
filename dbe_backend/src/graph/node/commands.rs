@@ -1,7 +1,8 @@
+use crate::etype::EDataType;
 use crate::graph::editing::GraphEditingContext;
-use crate::registry::ETypesRegistry;
 use egui_snarl::{InPinId, NodeId, OutPinId};
 use itertools::Itertools;
+use uuid::Uuid;
 
 #[derive(derive_more::Debug)]
 pub enum SnarlCommand {
@@ -11,6 +12,8 @@ pub enum SnarlCommand {
     Disconnect { from: OutPinId, to: InPinId },
     /// Disconnects all connections coming from the pin, marking the output pins' node as dirty
     DropOutputs { from: OutPinId },
+    /// Disconnects all connections to the pin, marking the input pin's node as dirty
+    DropInputs { to: InPinId },
     /// Deletes a node, running disconnection logic and marking connected nodes as dirty
     DeleteNode { node: NodeId },
     /// Disconnects and reconnects an output pin to an input pin, running the connected nodes' logic
@@ -41,7 +44,7 @@ pub enum SnarlCommand {
     ///
     /// This command bypasses node logic, and should only be used by the node
     /// itself, after the disconnect logic has been done
-    DropInlineValuesRaw { to: InPinId },
+    DropInputsRaw { to: InPinId },
     // Is this ever a good idea?
     // /// Disconnects all connections coming from the pin, marking the output pins' node as dirty
     // ///
@@ -56,6 +59,10 @@ pub enum SnarlCommand {
     ///
     /// This command bypasses node logic, and should only be used with caution
     OutputMovedRaw { from: OutPinId, to: OutPinId },
+    /// Sets the group input type. The command will panic if the input already has a type
+    SetGroupInputType { id: Uuid, ty: EDataType },
+    /// Sets the group output type. The command will panic if the output already has a type
+    SetGroupOutputType { id: Uuid, ty: EDataType },
     /// Runs a custom callback on the graph and execution context
     ///
     /// Don't forget to mark nodes as dirty if needed, either in the callback or as a separate command
@@ -65,14 +72,12 @@ pub enum SnarlCommand {
     },
 }
 
-type CustomCommand =
-    Box<dyn FnOnce(&mut GraphEditingContext, &ETypesRegistry) -> miette::Result<()>>;
+type CustomCommand = Box<dyn FnOnce(&mut GraphEditingContext) -> miette::Result<()>>;
 
 impl SnarlCommand {
     pub fn execute(
         self,
         ctx: &mut GraphEditingContext,
-        registry: &ETypesRegistry,
         commands: &mut SnarlCommands,
     ) -> miette::Result<()> {
         match self {
@@ -110,20 +115,18 @@ impl SnarlCommand {
                 ctx.mark_dirty(node);
             }
             SnarlCommand::Custom { cb } => {
-                cb(ctx, registry)?;
+                cb(ctx)?;
             }
             SnarlCommand::ReconnectOutput { id } => {
                 for pin in ctx.snarl.out_pin(id).remotes {
-                    SnarlCommand::Disconnect { from: id, to: pin }
-                        .execute(ctx, registry, commands)?;
-                    SnarlCommand::Connect { from: id, to: pin }.execute(ctx, registry, commands)?;
+                    SnarlCommand::Disconnect { from: id, to: pin }.execute(ctx, commands)?;
+                    SnarlCommand::Connect { from: id, to: pin }.execute(ctx, commands)?;
                 }
             }
             SnarlCommand::ReconnectInput { id } => {
                 for pin in ctx.snarl.in_pin(id).remotes {
-                    SnarlCommand::Disconnect { from: pin, to: id }
-                        .execute(ctx, registry, commands)?;
-                    SnarlCommand::Connect { from: pin, to: id }.execute(ctx, registry, commands)?;
+                    SnarlCommand::Disconnect { from: pin, to: id }.execute(ctx, commands)?;
+                    SnarlCommand::Connect { from: pin, to: id }.execute(ctx, commands)?;
                 }
             }
             SnarlCommand::Connect { from, to } => {
@@ -136,7 +139,7 @@ impl SnarlCommand {
                 let to = ctx.snarl.in_pin(to);
                 ctx.disconnect(&from, &to, commands)?;
             }
-            SnarlCommand::DropInlineValuesRaw { to } => {
+            SnarlCommand::DropInputsRaw { to } => {
                 ctx.snarl.drop_inputs(to);
                 ctx.mark_dirty(to.node);
             }
@@ -151,7 +154,12 @@ impl SnarlCommand {
             }
             SnarlCommand::DropOutputs { from } => {
                 for pin in ctx.snarl.out_pin(from).remotes {
-                    SnarlCommand::Disconnect { from, to: pin }.execute(ctx, registry, commands)?;
+                    SnarlCommand::Disconnect { from, to: pin }.execute(ctx, commands)?;
+                }
+            }
+            SnarlCommand::DropInputs { to } => {
+                for pin in ctx.snarl.in_pin(to).remotes {
+                    SnarlCommand::Disconnect { from: pin, to }.execute(ctx, commands)?;
                 }
             }
             SnarlCommand::DeleteNode { node } => {
@@ -164,7 +172,7 @@ impl SnarlCommand {
                         from: out_pin,
                         to: in_pin,
                     }
-                    .execute(ctx, registry, commands)?;
+                    .execute(ctx, commands)?;
                 }
                 // Disconnect all inputs
                 for (out_pin, in_pin) in
@@ -174,9 +182,31 @@ impl SnarlCommand {
                         from: out_pin,
                         to: in_pin,
                     }
-                    .execute(ctx, registry, commands)?;
+                    .execute(ctx, commands)?;
                 }
                 ctx.snarl.remove_node(node);
+            }
+            SnarlCommand::SetGroupInputType { ty, id } => {
+                let Some(input) = ctx.inputs.iter_mut().find(|i| i.id == id) else {
+                    panic!("Input {} not found", id);
+                };
+
+                if input.ty.is_some() {
+                    panic!("Input `{}` ({}) already has a type", input.name, id);
+                }
+
+                input.ty = Some(ty);
+            }
+            SnarlCommand::SetGroupOutputType { ty, id } => {
+                let Some(output) = ctx.outputs.iter_mut().find(|o| o.id == id) else {
+                    panic!("Output {} not found", id);
+                };
+
+                if output.ty.is_some() {
+                    panic!("Output `{}` ({}) already has a type", output.name, id);
+                }
+
+                output.ty = Some(ty);
             }
         }
         Ok(())
@@ -206,7 +236,7 @@ impl SnarlCommands {
             }
             let mut commands = std::mem::take(&mut self.commands);
             for command in commands.drain(..) {
-                command.execute(ctx, ctx.registry, self)?;
+                command.execute(ctx, self)?;
             }
             if self.commands.is_empty() {
                 self.commands = commands;

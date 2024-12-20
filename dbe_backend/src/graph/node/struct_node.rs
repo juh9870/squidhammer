@@ -1,7 +1,10 @@
 use crate::etype::eitem::EItemInfo;
 use crate::etype::eobject::EObject;
 use crate::etype::EDataType;
-use crate::graph::node::{impl_serde_node, InputData, Node, NodeFactory, OutputData, SnarlNode};
+use crate::graph::node::{
+    impl_serde_node, ExecutionVariables, InputData, Node, NodeContext, NodeFactory, OutputData,
+    SnarlNode,
+};
 use crate::registry::ETypesRegistry;
 use crate::value::id::ETypeId;
 use crate::value::EValue;
@@ -28,28 +31,24 @@ impl Node for StructNode {
         "struct_node".into()
     }
 
-    fn title(&self, registry: &ETypesRegistry) -> String {
-        let Some(data) = registry.get_struct(&self.id) else {
+    fn title(&self, context: NodeContext) -> String {
+        let Some(data) = context.registry.get_struct(&self.id) else {
             return format!("Unknown struct `{}`", self.id);
         };
 
-        data.title(registry)
+        data.title(context.registry)
     }
 
-    fn inputs_count(&self, registry: &ETypesRegistry) -> usize {
-        let Some(data) = registry.get_struct(&self.id) else {
+    fn inputs_count(&self, context: NodeContext) -> usize {
+        let Some(data) = context.registry.get_struct(&self.id) else {
             return 0;
         };
 
         data.fields.len()
     }
 
-    fn input_unchecked(
-        &self,
-        registry: &ETypesRegistry,
-        input: usize,
-    ) -> miette::Result<InputData> {
-        let Some(data) = registry.get_struct(&self.id) else {
+    fn input_unchecked(&self, context: NodeContext, input: usize) -> miette::Result<InputData> {
+        let Some(data) = context.registry.get_struct(&self.id) else {
             panic!("Unknown struct")
         };
 
@@ -61,19 +60,15 @@ impl Node for StructNode {
         })
     }
 
-    fn outputs_count(&self, registry: &ETypesRegistry) -> usize {
-        let Some(_) = registry.get_struct(&self.id) else {
+    fn outputs_count(&self, context: NodeContext) -> usize {
+        let Some(_) = context.registry.get_struct(&self.id) else {
             return 0;
         };
         1
     }
 
-    fn output_unchecked(
-        &self,
-        registry: &ETypesRegistry,
-        output: usize,
-    ) -> miette::Result<OutputData> {
-        let Some(_) = registry.get_struct(&self.id) else {
+    fn output_unchecked(&self, context: NodeContext, output: usize) -> miette::Result<OutputData> {
+        let Some(_) = context.registry.get_struct(&self.id) else {
             panic!("Unknown struct")
         };
 
@@ -89,11 +84,13 @@ impl Node for StructNode {
 
     fn execute(
         &self,
-        registry: &ETypesRegistry,
+        context: NodeContext,
         inputs: &[EValue],
         outputs: &mut Vec<EValue>,
+        _variables: &mut ExecutionVariables,
     ) -> miette::Result<()> {
-        let data = registry
+        let data = context
+            .registry
             .get_struct(&self.id)
             .ok_or_else(|| miette!("unknown struct `{}`", self.id))?;
 

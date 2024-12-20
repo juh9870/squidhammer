@@ -38,7 +38,7 @@ impl NodeView for RerouteViewer {
     ) -> miette::Result<PinInfo> {
         let registry = viewer.ctx.registry;
         let node = &snarl[pin.id.node];
-        let input_data = node.try_input(viewer.ctx.registry, pin.id.input)?;
+        let input_data = node.try_input(viewer.ctx.as_node_context(), pin.id.input)?;
         Ok(pin_info(&input_data.ty, registry))
     }
 
@@ -52,7 +52,7 @@ impl NodeView for RerouteViewer {
     ) -> miette::Result<PinInfo> {
         let registry = viewer.ctx.registry;
         let node = &snarl[pin.id.node];
-        let output_data = node.try_output(viewer.ctx.registry, pin.id.output)?;
+        let output_data = node.try_output(viewer.ctx.as_node_context(), pin.id.output)?;
         // let value = viewer.ctx.read_output(snarl, pin.id)?;
         // if value != EValue::Null {
         //     ui.label(value.to_string());

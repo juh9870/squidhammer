@@ -1,6 +1,9 @@
 use crate::etype::eitem::EItemInfo;
 use crate::etype::EDataType;
-use crate::graph::node::{impl_serde_node, InputData, Node, NodeFactory, OutputData, SnarlNode};
+use crate::graph::node::{
+    impl_serde_node, ExecutionVariables, InputData, Node, NodeContext, NodeFactory, OutputData,
+    SnarlNode,
+};
 use crate::project::side_effects::{SideEffect, SideEffectsContext};
 use crate::registry::ETypesRegistry;
 use crate::value::EValue;
@@ -20,35 +23,31 @@ impl Node for SavingNode {
         SavingNodeFactory.id()
     }
 
-    fn inputs_count(&self, _registry: &ETypesRegistry) -> usize {
+    fn inputs_count(&self, _context: NodeContext) -> usize {
         1
     }
 
-    fn input_unchecked(
-        &self,
-        registry: &ETypesRegistry,
-        input: usize,
-    ) -> miette::Result<InputData> {
+    fn input_unchecked(&self, context: NodeContext, input: usize) -> miette::Result<InputData> {
         if input != 0 {
             panic!("Saving node has only one input")
         }
 
         Ok(InputData {
             ty: EItemInfo::simple_type(EDataType::Object {
-                ident: registry.project_config().types_config.import,
+                ident: context.registry.project_config().types_config.import,
             })
             .into(),
             name: "item".into(),
         })
     }
 
-    fn outputs_count(&self, _registry: &ETypesRegistry) -> usize {
+    fn outputs_count(&self, _context: NodeContext) -> usize {
         0
     }
 
     fn output_unchecked(
         &self,
-        _registry: &ETypesRegistry,
+        _context: NodeContext,
         _output: usize,
     ) -> miette::Result<OutputData> {
         panic!("Saving node has no outputs")
@@ -60,7 +59,7 @@ impl Node for SavingNode {
 
     fn execute_side_effects(
         &self,
-        _registry: &ETypesRegistry,
+        _context: NodeContext,
         inputs: &[EValue],
         _outputs: &mut Vec<EValue>,
         mut side_effects: SideEffectsContext,
@@ -79,9 +78,10 @@ impl Node for SavingNode {
 
     fn execute(
         &self,
-        _registry: &ETypesRegistry,
+        _context: NodeContext,
         _inputs: &[EValue],
         _outputs: &mut Vec<EValue>,
+        _variables: &mut ExecutionVariables,
     ) -> miette::Result<()> {
         Ok(())
     }

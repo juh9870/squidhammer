@@ -5,9 +5,10 @@ use crate::graph::node::commands::{SnarlCommand, SnarlCommands};
 use crate::graph::node::enum_node::EnumNode;
 use crate::graph::node::list::ListNode;
 use crate::graph::node::struct_node::StructNode;
-use crate::graph::node::{get_snarl_node, SnarlNode};
+use crate::graph::node::{get_snarl_node, NodeContext, SnarlNode};
 use crate::graph::Graph;
 use crate::m_try;
+use crate::project::project_graph::ProjectGraphs;
 use crate::project::side_effects::SideEffectsContext;
 use crate::registry::{EObjectType, ETypesRegistry};
 use crate::value::id::{EListId, ETypeId};
@@ -20,6 +21,17 @@ use smallvec::SmallVec;
 use std::collections::hash_map::Entry;
 use ustr::Ustr;
 
+macro_rules! node_context {
+    ($source:ident) => {
+        NodeContext {
+            registry: $source.registry,
+            inputs: $source.inputs,
+            outputs: $source.outputs,
+            graphs: $source.graphs,
+        }
+    };
+}
+
 #[derive(Debug)]
 pub struct GraphEditingContext<'a, 'snarl> {
     pub snarl: &'snarl mut Snarl<SnarlNode>,
@@ -27,6 +39,7 @@ pub struct GraphEditingContext<'a, 'snarl> {
     pub inputs: &'a mut SmallVec<[GraphInput; 1]>,
     pub outputs: &'a mut SmallVec<[GraphOutput; 1]>,
     pub registry: &'a ETypesRegistry,
+    pub graphs: Option<&'a ProjectGraphs>,
     side_effects: SideEffectsContext<'a>,
     cache: &'a mut GraphCache,
 }
@@ -35,6 +48,7 @@ impl<'a> GraphEditingContext<'a, 'a> {
     pub fn from_graph(
         graph: &'a mut Graph,
         registry: &'a ETypesRegistry,
+        graphs: Option<&'a ProjectGraphs>,
         cache: &'a mut GraphCache,
         side_effects: SideEffectsContext<'a>,
     ) -> Self {
@@ -44,6 +58,7 @@ impl<'a> GraphEditingContext<'a, 'a> {
             inputs: &mut graph.inputs,
             outputs: &mut graph.outputs,
             registry,
+            graphs,
             side_effects,
             cache,
         }
@@ -54,11 +69,23 @@ impl<'a, 'snarl> GraphEditingContext<'a, 'snarl> {
     pub fn as_execution_context(&mut self) -> GraphExecutionContext {
         GraphExecutionContext::new(
             self.snarl,
+            self.inputs,
+            self.outputs,
             self.inline_values,
             self.registry,
+            self.graphs,
             self.side_effects.clone(),
             self.cache,
         )
+    }
+
+    pub fn as_node_context(&self) -> NodeContext {
+        NodeContext {
+            registry: self.registry,
+            inputs: self.inputs,
+            outputs: self.outputs,
+            graphs: self.graphs,
+        }
     }
 
     /// Ensures that the inline input value of the given pin is present
@@ -72,7 +99,7 @@ impl<'a, 'snarl> GraphEditingContext<'a, 'snarl> {
         match self.inline_values.entry(pin) {
             Entry::Occupied(_) => Ok(true),
             Entry::Vacant(e) => {
-                let value = node.default_input_value(self.registry, pin.input)?;
+                let value = node.default_input_value(node_context!(self), pin.input)?;
                 e.insert(value.into_owned());
                 Ok(true)
             }
@@ -99,13 +126,34 @@ impl<'a, 'snarl> GraphEditingContext<'a, 'snarl> {
         commands: &mut SnarlCommands,
     ) -> miette::Result<()> {
         m_try(|| {
-            let from_ty = &self.snarl[from.id.node]
-                .try_output(self.registry, from.id.output)?
-                .ty;
+            let from_node = &self.snarl[from.id.node];
 
-            let to_node = &mut self.snarl[to.id.node];
+            let from_pin = from_node.try_output(node_context!(self), from.id.output)?;
 
-            to_node.try_connect(self.registry, commands, from, to, from_ty)?;
+            let based_on_input = from_pin.ty.is_based_on_target();
+            let can_output = if based_on_input {
+                let to_node = &self.snarl[to.id.node];
+                let ty = to_node.try_input(node_context!(self), to.id.input)?;
+                from_node.can_output_to(node_context!(self), from, to, &ty.ty)?
+            } else {
+                true
+            };
+
+            if can_output {
+                let to_node = &mut self.snarl[to.id.node];
+                to_node.try_connect(node_context!(self), commands, from, to, &from_pin.ty)?;
+
+                if based_on_input {
+                    let from_node = &mut self.snarl[from.id.node];
+                    from_node.connected_to_output(
+                        node_context!(self),
+                        commands,
+                        from,
+                        to,
+                        &from_pin.ty,
+                    )?;
+                }
+            }
 
             Ok(())
         })
@@ -120,7 +168,7 @@ impl<'a, 'snarl> GraphEditingContext<'a, 'snarl> {
         to: &InPin,
         commands: &mut SnarlCommands,
     ) -> miette::Result<()> {
-        self.snarl[to.id.node].try_disconnect(self.registry, commands, from, to)?;
+        self.snarl[to.id.node].try_disconnect(node_context!(self), commands, from, to)?;
 
         commands.execute(self)
     }
@@ -206,6 +254,7 @@ pub struct PartialGraphEditingContext<'a> {
     pub inputs: &'a mut SmallVec<[GraphInput; 1]>,
     pub outputs: &'a mut SmallVec<[GraphOutput; 1]>,
     pub registry: &'a ETypesRegistry,
+    pub graphs: Option<&'a ProjectGraphs>,
     side_effects: SideEffectsContext<'a>,
     cache: &'a mut GraphCache,
 }
@@ -214,6 +263,7 @@ impl<'a> PartialGraphEditingContext<'a> {
     pub fn from_graph(
         graph: &'a mut Graph,
         registry: &'a ETypesRegistry,
+        graphs: Option<&'a ProjectGraphs>,
         cache: &'a mut GraphCache,
         side_effects: SideEffectsContext<'a>,
     ) -> (Self, &'a mut Snarl<SnarlNode>) {
@@ -223,6 +273,7 @@ impl<'a> PartialGraphEditingContext<'a> {
                 inputs: &mut graph.inputs,
                 cache,
                 registry,
+                graphs,
                 side_effects,
                 outputs: &mut graph.outputs,
             },
@@ -242,9 +293,19 @@ impl<'a> PartialGraphEditingContext<'a> {
             inline_values: self.inline_values,
             cache: self.cache,
             registry: self.registry,
+            graphs: self.graphs,
             side_effects: self.side_effects.clone(),
             inputs: self.inputs,
             outputs: self.outputs,
+        }
+    }
+
+    pub fn as_node_context(&self) -> NodeContext {
+        NodeContext {
+            registry: self.registry,
+            inputs: self.inputs,
+            outputs: self.outputs,
+            graphs: self.graphs,
         }
     }
 }

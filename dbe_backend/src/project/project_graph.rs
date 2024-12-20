@@ -200,6 +200,23 @@ impl ProjectGraphs {
         result
     }
 
+    pub fn try_borrow_cache<Fn: FnOnce(&ProjectGraph, &mut GraphCache, &Self) -> R, R>(
+        &mut self,
+        id: Uuid,
+        func: Fn,
+    ) -> Option<R> {
+        let graph = self.graphs.get(&id)?;
+        let mut cache = self
+            .cache
+            .get_mut(&id)
+            .map(std::mem::take)
+            .unwrap_or_default();
+        let result = func(graph, &mut cache, self);
+
+        self.cache.insert(id, cache);
+        Some(result)
+    }
+
     pub fn add_graph(
         &mut self,
         path: Utf8PathBuf,

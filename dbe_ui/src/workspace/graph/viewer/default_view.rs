@@ -74,7 +74,7 @@ impl NodeView for DefaultNodeView {
         snarl: &mut Snarl<SnarlNode>,
     ) -> miette::Result<()> {
         ui.label(node.0.to_string());
-        ui.label(snarl[node].title(viewer.ctx.registry));
+        ui.label(snarl[node].title(viewer.ctx.as_node_context()));
         Ok(())
     }
 
@@ -88,7 +88,7 @@ impl NodeView for DefaultNodeView {
     ) -> miette::Result<PinInfo> {
         let registry = viewer.ctx.registry;
         let node = &snarl[pin.id.node];
-        let input_data = node.try_input(viewer.ctx.registry, pin.id.input)?;
+        let input_data = node.try_input(viewer.ctx.as_node_context(), pin.id.input)?;
         let Some(info) = input_data.ty.item_info() else {
             return Ok(any_pin());
         };
@@ -157,7 +157,7 @@ impl NodeView for DefaultNodeView {
     ) -> miette::Result<PinInfo> {
         let registry = viewer.ctx.registry;
         let node = &snarl[pin.id.node];
-        let output_data = node.try_output(viewer.ctx.registry, pin.id.output)?;
+        let output_data = node.try_output(viewer.ctx.as_node_context(), pin.id.output)?;
         let value = viewer.ctx.as_full(snarl).read_output(pin.id)?;
         ui.horizontal(|ui| {
             ui.label(&*output_data.name);

@@ -1,8 +1,9 @@
 use crate::etype::eitem::EItemInfo;
 use crate::graph::node::commands::{SnarlCommand, SnarlCommands};
 use crate::graph::node::ports::NodePortType;
-use crate::graph::node::{InputData, Node, NodeFactory, OutputData, SnarlNode};
-use crate::registry::ETypesRegistry;
+use crate::graph::node::{
+    ExecutionVariables, InputData, Node, NodeContext, NodeFactory, OutputData, SnarlNode,
+};
 use crate::value::EValue;
 use egui_snarl::{InPin, InPinId, OutPin, OutPinId};
 use ustr::Ustr;
@@ -11,6 +12,7 @@ use ustr::Ustr;
 pub struct RerouteNode {
     inputs: Vec<EItemInfo>,
 }
+
 impl Node for RerouteNode {
     fn id(&self) -> Ustr {
         RerouteFactory.id()
@@ -20,18 +22,14 @@ impl Node for RerouteNode {
         Ok(false)
     }
 
-    fn inputs_count(&self, _registry: &ETypesRegistry) -> usize {
+    fn inputs_count(&self, _context: NodeContext) -> usize {
         self.inputs.len() + 1
     }
 
-    fn input_unchecked(
-        &self,
-        _registry: &ETypesRegistry,
-        input: usize,
-    ) -> miette::Result<InputData> {
+    fn input_unchecked(&self, _context: NodeContext, input: usize) -> miette::Result<InputData> {
         if input == self.inputs.len() {
             return Ok(InputData {
-                ty: NodePortType::Any,
+                ty: NodePortType::BasedOnSource,
                 name: "".into(),
             });
         }
@@ -41,15 +39,11 @@ impl Node for RerouteNode {
         })
     }
 
-    fn outputs_count(&self, _registry: &ETypesRegistry) -> usize {
+    fn outputs_count(&self, _context: NodeContext) -> usize {
         self.inputs.len()
     }
 
-    fn output_unchecked(
-        &self,
-        _registry: &ETypesRegistry,
-        output: usize,
-    ) -> miette::Result<OutputData> {
+    fn output_unchecked(&self, _context: NodeContext, output: usize) -> miette::Result<OutputData> {
         Ok(OutputData {
             ty: self.inputs[output].clone().into(),
             name: output.to_string().into(),
@@ -58,14 +52,14 @@ impl Node for RerouteNode {
 
     fn try_connect(
         &mut self,
-        registry: &ETypesRegistry,
+        context: NodeContext,
         commands: &mut SnarlCommands,
         from: &OutPin,
         to: &InPin,
         incoming_type: &NodePortType,
-    ) -> miette::Result<()> {
+    ) -> miette::Result<bool> {
         let Some(info) = incoming_type.item_info() else {
-            return Ok(());
+            return Ok(false);
         };
 
         let i = to.id.input;
@@ -83,13 +77,12 @@ impl Node for RerouteNode {
             })
         }
 
-        self._default_try_connect(registry, commands, from, to, incoming_type)?;
-        Ok(())
+        self._default_try_connect(context, commands, from, to, incoming_type)
     }
 
     fn try_disconnect(
         &mut self,
-        _registry: &ETypesRegistry,
+        _context: NodeContext,
         commands: &mut SnarlCommands,
         from: &OutPin,
         to: &InPin,
@@ -141,9 +134,10 @@ impl Node for RerouteNode {
 
     fn execute(
         &self,
-        _registry: &ETypesRegistry,
+        _context: NodeContext,
         inputs: &[EValue],
         outputs: &mut Vec<EValue>,
+        _variables: &mut ExecutionVariables,
     ) -> miette::Result<()> {
         for input in inputs.iter() {
             outputs.push(input.clone());

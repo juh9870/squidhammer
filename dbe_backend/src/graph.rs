@@ -1,7 +1,7 @@
 use crate::graph::editing::GraphEditingContext;
 use crate::graph::inputs::{GraphInput, GraphOutput};
 use crate::graph::node::commands::SnarlCommands;
-use crate::graph::node::{get_snarl_node, SnarlNode};
+use crate::graph::node::{get_snarl_node, NodeContext, SnarlNode};
 use crate::json_utils::JsonValue;
 use crate::m_try;
 use crate::project::side_effects::{SideEffects, SideEffectsContext};
@@ -71,6 +71,7 @@ impl Graph {
             let mut ctx = GraphEditingContext::from_graph(
                 &mut graph,
                 registry,
+                None,
                 &mut cache,
                 SideEffectsContext::new(&mut side_effects, "".into()),
             );
@@ -128,7 +129,15 @@ impl Graph {
                     .expect("Mappings should be correct");
 
                 let input_type = node
-                    .try_input(registry, in_pin.input)
+                    .try_input(
+                        NodeContext {
+                            registry,
+                            inputs: &graph.inputs,
+                            outputs: &graph.outputs,
+                            graphs: None,
+                        },
+                        in_pin.input,
+                    )
                     .with_context(|| format!("failed to get inputs for node {:?}", in_pin.node))?;
 
                 let Some(info) = input_type.ty.item_info() else {
