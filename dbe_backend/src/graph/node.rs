@@ -260,7 +260,7 @@ pub trait Node: DynClone + Debug + Send + Sync + Downcast + 'static {
         context: NodeContext,
         inputs: &[EValue],
         outputs: &mut Vec<EValue>,
-        variables: &mut ExecutionVariables,
+        variables: &mut ExecutionExtras,
     ) -> miette::Result<()>;
 
     fn _default_try_connect(
@@ -328,5 +328,5 @@ macro_rules! impl_serde_node {
     };
 }
 
-use crate::graph::node::variables::ExecutionVariables;
+use crate::graph::node::variables::ExecutionExtras;
 pub(crate) use impl_serde_node;

@@ -1,7 +1,7 @@
 use crate::etype::eitem::EItemInfo;
 use crate::etype::EDataType;
 use crate::graph::node::{
-    impl_serde_node, ExecutionVariables, InputData, Node, NodeContext, NodeFactory, OutputData,
+    impl_serde_node, ExecutionExtras, InputData, Node, NodeContext, NodeFactory, OutputData,
     SnarlNode,
 };
 use crate::project::side_effects::{SideEffect, SideEffectsContext};
@@ -81,7 +81,7 @@ impl Node for SavingNode {
         _context: NodeContext,
         _inputs: &[EValue],
         _outputs: &mut Vec<EValue>,
-        _variables: &mut ExecutionVariables,
+        _variables: &mut ExecutionExtras,
     ) -> miette::Result<()> {
         Ok(())
     }

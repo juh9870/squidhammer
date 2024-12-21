@@ -1,23 +1,27 @@
+use crate::project::side_effects::SideEffectsContext;
 use crate::value::EValue;
 use miette::{bail, miette};
 
 #[derive(Debug)]
-pub struct ExecutionVariables<'a> {
+pub struct ExecutionExtras<'a> {
     is_node_group: bool,
     group_inputs: &'a [EValue],
     group_outputs: &'a mut Option<Vec<EValue>>,
+    pub side_effects: SideEffectsContext<'a>,
 }
 
-impl<'a> ExecutionVariables<'a> {
+impl<'a> ExecutionExtras<'a> {
     pub fn new(
         is_node_group: bool,
         group_inputs: &'a [EValue],
         group_outputs: &'a mut Option<Vec<EValue>>,
+        side_effects: SideEffectsContext<'a>,
     ) -> Self {
         Self {
             is_node_group,
             group_inputs,
             group_outputs,
+            side_effects,
         }
     }
 

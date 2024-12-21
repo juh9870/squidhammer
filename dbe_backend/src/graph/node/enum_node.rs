@@ -5,7 +5,7 @@ use crate::etype::eobject::EObject;
 use crate::etype::EDataType;
 use crate::graph::node::commands::{SnarlCommand, SnarlCommands};
 use crate::graph::node::ports::NodePortType;
-use crate::graph::node::variables::ExecutionVariables;
+use crate::graph::node::variables::ExecutionExtras;
 use crate::graph::node::{
     impl_serde_node, InputData, Node, NodeContext, NodeFactory, OutputData, SnarlNode,
 };
@@ -150,7 +150,7 @@ impl Node for EnumNode {
         context: NodeContext,
         inputs: &[EValue],
         outputs: &mut Vec<EValue>,
-        _variables: &mut ExecutionVariables,
+        _variables: &mut ExecutionExtras,
     ) -> miette::Result<()> {
         let Some((_, _)) = self.get_data(context.registry) else {
             panic!("Unknown enum variant");

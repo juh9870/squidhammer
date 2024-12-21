@@ -298,14 +298,24 @@ impl<IO: ProjectIO> Project<IO> {
                     return Ok(());
                 }
 
+                let out_values = &mut None;
                 let mut ctx = GraphExecutionContext::from_graph(
                     graph.graph(),
                     &self.registry,
                     Some(graphs),
                     cache,
                     SideEffectsContext::new(&mut side_effects, path.clone()),
+                    &[],
+                    out_values,
                 );
-                ctx.full_eval(true)
+
+                ctx.full_eval(true)?;
+
+                if out_values.is_some() {
+                    bail!("graph {:?} at path {} has outputs", id, path);
+                }
+
+                Ok(())
             }) {
                 result?;
             } else {

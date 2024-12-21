@@ -1,15 +1,15 @@
-use crate::etype::eitem::EItemInfo;
 use crate::graph::inputs::GraphInput;
 use crate::graph::node::commands::{SnarlCommand, SnarlCommands};
-use crate::graph::node::groups::utils::{get_field, sync_fields};
+use crate::graph::node::groups::utils::{
+    get_field, get_port_output, map_group_inputs, sync_fields,
+};
 use crate::graph::node::ports::{InputData, NodePortType, OutputData};
 use crate::graph::node::{
-    impl_serde_node, ExecutionVariables, Node, NodeContext, NodeFactory, SnarlNode,
+    impl_serde_node, ExecutionExtras, Node, NodeContext, NodeFactory, SnarlNode,
 };
 use crate::registry::ETypesRegistry;
 use crate::value::EValue;
 use egui_snarl::{InPin, NodeId, OutPin};
-use miette::bail;
 use serde::{Deserialize, Serialize};
 use ustr::Ustr;
 use uuid::Uuid;
@@ -61,21 +61,7 @@ impl Node for GroupInputNode {
     }
 
     fn output_unchecked(&self, context: NodeContext, output: usize) -> miette::Result<OutputData> {
-        let Some(f) = self.get_field(context, output) else {
-            return Ok(OutputData {
-                ty: NodePortType::Invalid,
-                name: "!!deleted input!!".into(),
-            });
-        };
-
-        Ok(OutputData {
-            ty: f
-                .ty
-                .map(EItemInfo::simple_type)
-                .map(NodePortType::Specific)
-                .unwrap_or_else(|| NodePortType::BasedOnTarget),
-            name: f.name.as_str().into(),
-        })
+        get_port_output(context.inputs, &self.ids, output)
     }
 
     fn can_output_to(
@@ -124,24 +110,11 @@ impl Node for GroupInputNode {
         context: NodeContext,
         _inputs: &[EValue],
         outputs: &mut Vec<EValue>,
-        variables: &mut ExecutionVariables,
+        variables: &mut ExecutionExtras,
     ) -> miette::Result<()> {
         let inputs = variables.get_inputs()?;
 
-        outputs.clear();
-
-        // Fill the outputs with the input values in the order of the IDs
-        for (i, id) in self.ids.iter().enumerate() {
-            let input_pos = if context.inputs.get(i).is_some_and(|f| f.id == *id) {
-                i
-            } else if let Some(idx) = self.ids.iter().position(|f| f == id) {
-                idx
-            } else {
-                bail!("Input {} was deleted", id);
-            };
-
-            outputs.push(inputs[input_pos].clone());
-        }
+        map_group_inputs(context.inputs, &self.ids, inputs, outputs)?;
 
         Ok(())
     }

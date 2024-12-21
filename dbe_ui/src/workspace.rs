@@ -190,12 +190,15 @@ impl<Io> TabViewer for WorkspaceTabViewer<'_, Io> {
                     })
                     .show_inside(ui, |ui| {
                         self.0.graphs.edit_graph(*id, |graph, cache, graphs| {
+                            let outputs = &mut None;
                             let (ctx, snarl) = PartialGraphEditingContext::from_graph(
                                 graph,
                                 &self.0.registry,
                                 Some(graphs),
                                 cache,
                                 SideEffectsContext::new(&mut side_effects, tab.clone()),
+                                &[],
+                                outputs,
                             );
 
                             let mut viewer =

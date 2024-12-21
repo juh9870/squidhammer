@@ -3,6 +3,7 @@ use crate::value::EValue;
 use camino::Utf8PathBuf;
 use egui_snarl::NodeId;
 use miette::bail;
+use uuid::Uuid;
 
 #[derive(Debug)]
 pub enum SideEffect {
@@ -117,6 +118,13 @@ impl<'a> SideEffectsContext<'a> {
             node,
             index: 0,
         }
+    }
+
+    pub fn with_subgraph<'b>(&'b mut self, _subgraph: Uuid) -> SideEffectsContext<'b>
+    where
+        'a: 'b,
+    {
+        todo!("proper path stack system")
     }
 
     pub fn clone<'b>(&'b mut self) -> SideEffectsContext<'b>
