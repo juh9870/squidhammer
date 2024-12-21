@@ -20,6 +20,7 @@ pub trait GraphIoData {
     fn id(&self) -> &Uuid;
     fn name(&self) -> &str;
     fn ty(&self) -> Option<EDataType>;
+
     fn is_input() -> bool;
 }
 

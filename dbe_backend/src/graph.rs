@@ -68,12 +68,15 @@ impl Graph {
         m_try(|| {
             let mut side_effects = SideEffects::default();
             let mut cache = cache::GraphCache::default();
+            let out_values = &mut None;
             let mut ctx = GraphEditingContext::from_graph(
                 &mut graph,
                 registry,
                 None,
                 &mut cache,
                 SideEffectsContext::new(&mut side_effects, "".into()),
+                &[],
+                out_values,
             );
             let commands = &mut SnarlCommands::new();
 

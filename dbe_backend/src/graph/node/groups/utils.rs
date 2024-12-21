@@ -1,8 +1,12 @@
-use crate::graph::inputs::GraphIoData;
+use crate::etype::eitem::EItemInfo;
+use crate::graph::inputs::{GraphInput, GraphIoData, GraphOutput};
 use crate::graph::node::commands::{SnarlCommand, SnarlCommands};
+use crate::graph::node::ports::{InputData, NodePortType, OutputData};
+use crate::registry::ETypesRegistry;
+use crate::value::EValue;
 use egui_snarl::{InPinId, NodeId, OutPinId};
 use itertools::Itertools;
-use smallvec::SmallVec;
+use miette::bail;
 use uuid::Uuid;
 
 /// Gets the field at the given index, using the ID lookup table to account for
@@ -13,7 +17,7 @@ use uuid::Uuid;
 /// * `ids` - local index-to-ID lookup table
 /// * `index` - The index of the field to get
 pub fn get_field<'ctx, IO: GraphIoData>(
-    fields: &'ctx SmallVec<[IO; 1]>,
+    fields: &'ctx [IO],
     ids: &[Uuid],
     index: usize,
 ) -> Option<&'ctx IO> {
@@ -43,7 +47,7 @@ pub fn get_field<'ctx, IO: GraphIoData>(
 /// * `node_id` - The ID of the node
 pub fn sync_fields<IO: GraphIoData>(
     commands: &mut SnarlCommands,
-    fields: &SmallVec<[IO; 1]>,
+    fields: &[IO],
     ids: &mut Vec<Uuid>,
     node_id: NodeId,
 ) {
@@ -116,4 +120,115 @@ pub fn sync_fields<IO: GraphIoData>(
     }
 
     *ids = new_fields;
+}
+
+pub fn map_group_inputs(
+    inputs: &[GraphInput],
+    ids: &[Uuid],
+    in_values: &[EValue],
+    out_values: &mut Vec<EValue>,
+) -> miette::Result<()> {
+    out_values.clear();
+
+    // Fill the outputs with the input values in the order of the IDs
+    for (i, id) in ids.iter().enumerate() {
+        let input_pos = if inputs.get(i).is_some_and(|f| f.id == *id) {
+            i
+        } else if let Some(idx) = ids.iter().position(|f| f == id) {
+            idx
+        } else {
+            bail!("Input {} was deleted", id);
+        };
+
+        out_values.push(in_values[input_pos].clone());
+    }
+
+    Ok(())
+}
+
+pub fn map_group_outputs(
+    registry: &ETypesRegistry,
+    outputs: &[GraphOutput],
+    ids: &[Uuid],
+    in_values: &[EValue],
+    out_values: &mut Vec<EValue>,
+) -> miette::Result<()> {
+    out_values.clear();
+
+    // Fill the group outputs with the incoming values, matching the order of the IDs
+    // New outputs will be filled with default values
+    for (i, field) in outputs.iter().enumerate() {
+        let Some(input_pos) = (if ids.get(i).is_some_and(|id| id == &field.id) {
+            Some(i)
+        } else {
+            ids.iter().position(|f| f == &field.id)
+        }) else {
+            let default = field
+                .ty
+                .map(|f| f.default_value(registry).into_owned())
+                .unwrap_or_else(|| EValue::Null);
+            out_values.push(default);
+            continue;
+        };
+
+        out_values.push(in_values[input_pos].clone());
+    }
+
+    // Check is any output was removed and incoming value now has no matching output
+    for (i, id) in ids.iter().enumerate() {
+        if outputs.get(i).is_some_and(|f| f.id == *id) {
+            continue;
+        }
+        if outputs.iter().any(|f| f.id == *id) {
+            continue;
+        }
+
+        bail!("Output {} was deleted", id);
+    }
+
+    Ok(())
+}
+
+pub fn get_port_input<IO: GraphIoData>(
+    fields: &[IO],
+    ids: &[Uuid],
+    index: usize,
+) -> miette::Result<InputData> {
+    let Some(f) = get_field(fields, ids, index) else {
+        return Ok(InputData {
+            ty: NodePortType::Invalid,
+            name: "!!deleted input!!".into(),
+        });
+    };
+
+    Ok(InputData {
+        ty: f
+            .ty()
+            .map(EItemInfo::simple_type)
+            .map(NodePortType::Specific)
+            .unwrap_or_else(|| NodePortType::BasedOnSource),
+        name: f.name().into(),
+    })
+}
+
+pub fn get_port_output<IO: GraphIoData>(
+    fields: &[IO],
+    ids: &[Uuid],
+    index: usize,
+) -> miette::Result<OutputData> {
+    let Some(f) = get_field(fields, ids, index) else {
+        return Ok(OutputData {
+            ty: NodePortType::Invalid,
+            name: "!!deleted input!!".into(),
+        });
+    };
+
+    Ok(OutputData {
+        ty: f
+            .ty()
+            .map(EItemInfo::simple_type)
+            .map(NodePortType::Specific)
+            .unwrap_or_else(|| NodePortType::BasedOnSource),
+        name: f.name().into(),
+    })
 }

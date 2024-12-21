@@ -4,7 +4,7 @@ use crate::etype::EDataType;
 use crate::graph::node::commands::{SnarlCommand, SnarlCommands};
 use crate::graph::node::ports::NodePortType;
 use crate::graph::node::{
-    impl_serde_node, ExecutionVariables, InputData, Node, NodeContext, NodeFactory, OutputData,
+    impl_serde_node, ExecutionExtras, InputData, Node, NodeContext, NodeFactory, OutputData,
     SnarlNode,
 };
 use crate::registry::ETypesRegistry;
@@ -157,7 +157,7 @@ impl Node for ListNode {
         context: NodeContext,
         inputs: &[EValue],
         outputs: &mut Vec<EValue>,
-        _variables: &mut ExecutionVariables,
+        _variables: &mut ExecutionExtras,
     ) -> miette::Result<()> {
         let mut values = vec![];
         // TODO: check for inputs count to match items_count

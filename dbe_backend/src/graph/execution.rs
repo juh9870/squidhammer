@@ -1,7 +1,7 @@
 use crate::graph::cache::GraphCache;
 use crate::graph::inputs::{GraphInput, GraphOutput};
 use crate::graph::node::ports::NodePortType;
-use crate::graph::node::variables::ExecutionVariables;
+use crate::graph::node::variables::ExecutionExtras;
 use crate::graph::node::NodeContext;
 use crate::graph::node::SnarlNode;
 use crate::graph::Graph;
@@ -35,6 +35,8 @@ pub struct GraphExecutionContext<'a, 'snarl> {
     pub registry: &'a ETypesRegistry,
     pub side_effects: SideEffectsContext<'a>,
     pub graphs: Option<&'a ProjectGraphs>,
+    pub input_values: &'a [EValue],
+    pub output_values: &'a mut Option<Vec<EValue>>,
     cache: &'a mut GraphCache,
 }
 
@@ -45,6 +47,8 @@ impl<'a> GraphExecutionContext<'a, 'a> {
         graphs: Option<&'a ProjectGraphs>,
         cache: &'a mut GraphCache,
         side_effects: SideEffectsContext<'a>,
+        input_values: &'a [EValue],
+        output_values: &'a mut Option<Vec<EValue>>,
     ) -> Self {
         GraphExecutionContext {
             snarl: &graph.snarl,
@@ -55,6 +59,8 @@ impl<'a> GraphExecutionContext<'a, 'a> {
             registry,
             side_effects,
             graphs,
+            input_values,
+            output_values,
         }
     }
 
@@ -66,8 +72,10 @@ impl<'a> GraphExecutionContext<'a, 'a> {
         inline_values: &'a AHashMap<InPinId, EValue>,
         registry: &'a ETypesRegistry,
         graphs: Option<&'a ProjectGraphs>,
-        side_effects: SideEffectsContext<'a>,
         cache: &'a mut GraphCache,
+        side_effects: SideEffectsContext<'a>,
+        input_values: &'a [EValue],
+        output_values: &'a mut Option<Vec<EValue>>,
     ) -> Self {
         Self {
             snarl,
@@ -78,6 +86,8 @@ impl<'a> GraphExecutionContext<'a, 'a> {
             side_effects,
             graphs,
             cache,
+            input_values,
+            output_values,
         }
     }
 }
@@ -270,20 +280,25 @@ impl<'a, 'snarl> GraphExecutionContext<'a, 'snarl> {
 
             let outputs_count = node.outputs_count(node_context!(self));
             let mut outputs = Vec::with_capacity(outputs_count);
-            if side_effects && node.has_side_effects() {
-                let side_effects = self.side_effects.with_node(id);
-                node.execute_side_effects(
-                    node_context!(self),
-                    &input_values,
-                    &mut outputs,
-                    side_effects,
-                )?;
-            }
+            // if side_effects && node.has_side_effects() {
+            //     node.execute_side_effects(
+            //         node_context!(self),
+            //         &input_values,
+            //         &mut outputs,
+            //         side_effects,
+            //     )?;
+            // }
+            let side_effects = self.side_effects.with_node(id);
             node.execute(
                 node_context!(self),
                 &input_values,
                 &mut outputs,
-                &mut ExecutionVariables::new(false, &[], &mut None),
+                &mut ExecutionExtras::new(
+                    false,
+                    self.input_values,
+                    self.output_values,
+                    side_effects,
+                ),
             )?;
 
             // TODO: check for validity of returned values types
@@ -303,6 +318,8 @@ pub struct PartialGraphExecutionContext<'a> {
     pub registry: &'a ETypesRegistry,
     pub graphs: Option<&'a ProjectGraphs>,
     pub side_effects: SideEffectsContext<'a>,
+    pub input_values: &'a [EValue],
+    pub output_values: &'a mut Option<Vec<EValue>>,
     cache: &'a mut GraphCache,
 }
 
@@ -319,6 +336,8 @@ impl<'a> PartialGraphExecutionContext<'a> {
                 registry: ctx.registry,
                 graphs: ctx.graphs,
                 side_effects: ctx.side_effects.clone(),
+                input_values: ctx.input_values,
+                output_values: ctx.output_values,
             },
             ctx.snarl,
         )
@@ -330,6 +349,8 @@ impl<'a> PartialGraphExecutionContext<'a> {
         graphs: Option<&'a ProjectGraphs>,
         cache: &'a mut GraphCache,
         side_effects: SideEffectsContext<'a>,
+        input_values: &'a [EValue],
+        output_values: &'a mut Option<Vec<EValue>>,
     ) -> (Self, &'a Snarl<SnarlNode>) {
         (
             PartialGraphExecutionContext {
@@ -340,6 +361,8 @@ impl<'a> PartialGraphExecutionContext<'a> {
                 registry,
                 graphs,
                 side_effects,
+                input_values,
+                output_values,
             },
             &graph.snarl,
         )
@@ -361,6 +384,8 @@ impl<'a> PartialGraphExecutionContext<'a> {
             registry: self.registry,
             side_effects: self.side_effects.clone(),
             graphs: self.graphs,
+            input_values: self.input_values,
+            output_values: self.output_values,
         }
     }
 }

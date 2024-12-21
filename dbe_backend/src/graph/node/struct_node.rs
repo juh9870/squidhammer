@@ -2,7 +2,7 @@ use crate::etype::eitem::EItemInfo;
 use crate::etype::eobject::EObject;
 use crate::etype::EDataType;
 use crate::graph::node::{
-    impl_serde_node, ExecutionVariables, InputData, Node, NodeContext, NodeFactory, OutputData,
+    impl_serde_node, ExecutionExtras, InputData, Node, NodeContext, NodeFactory, OutputData,
     SnarlNode,
 };
 use crate::registry::ETypesRegistry;
@@ -87,7 +87,7 @@ impl Node for StructNode {
         context: NodeContext,
         inputs: &[EValue],
         outputs: &mut Vec<EValue>,
-        _variables: &mut ExecutionVariables,
+        _variables: &mut ExecutionExtras,
     ) -> miette::Result<()> {
         let data = context
             .registry

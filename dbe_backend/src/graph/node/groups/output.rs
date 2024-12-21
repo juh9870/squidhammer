@@ -1,15 +1,16 @@
-use crate::etype::eitem::EItemInfo;
 use crate::graph::inputs::GraphOutput;
-use crate::graph::node::commands::SnarlCommands;
-use crate::graph::node::groups::utils::{get_field, sync_fields};
+use crate::graph::node::commands::{SnarlCommand, SnarlCommands};
+use crate::graph::node::groups::utils::{
+    get_field, get_port_input, map_group_outputs, sync_fields,
+};
 use crate::graph::node::ports::{InputData, NodePortType, OutputData};
 use crate::graph::node::{
-    impl_serde_node, ExecutionVariables, Node, NodeContext, NodeFactory, SnarlNode,
+    impl_serde_node, ExecutionExtras, Node, NodeContext, NodeFactory, SnarlNode,
 };
 use crate::registry::ETypesRegistry;
 use crate::value::EValue;
-use egui_snarl::NodeId;
-use miette::bail;
+use egui_snarl::{InPin, NodeId, OutPin};
+use miette::miette;
 use serde::{Deserialize, Serialize};
 use ustr::Ustr;
 use uuid::Uuid;
@@ -53,21 +54,7 @@ impl Node for GroupOutputNode {
     }
 
     fn input_unchecked(&self, context: NodeContext, input: usize) -> miette::Result<InputData> {
-        let Some(f) = self.get_field(context, input) else {
-            return Ok(InputData {
-                ty: NodePortType::Invalid,
-                name: "!!deleted output!!".into(),
-            });
-        };
-
-        Ok(InputData {
-            ty: f
-                .ty
-                .map(EItemInfo::simple_type)
-                .map(NodePortType::Specific)
-                .unwrap_or_else(|| NodePortType::BasedOnSource),
-            name: f.name.as_str().into(),
-        })
+        get_port_input(context.outputs, &self.ids, input)
     }
 
     fn outputs_count(&self, _context: NodeContext) -> usize {
@@ -82,55 +69,50 @@ impl Node for GroupOutputNode {
         panic!("GroupOutputNode has no outputs")
     }
 
+    fn try_connect(
+        &mut self,
+        context: NodeContext,
+        commands: &mut SnarlCommands,
+        from: &OutPin,
+        to: &InPin,
+        incoming_type: &NodePortType,
+    ) -> miette::Result<bool> {
+        let field = self
+            .get_field(context, to.id.input)
+            .ok_or_else(|| miette!("Output {} was deleted", to.id.input))?;
+
+        if !incoming_type.is_specific() {
+            return Ok(false);
+        }
+
+        if field.ty.is_none() {
+            commands.push(SnarlCommand::SetGroupOutputType {
+                id: field.id,
+                ty: incoming_type.ty(),
+            })
+        }
+
+        self._default_try_connect(context, commands, from, to, incoming_type)
+    }
+
     fn execute(
         &self,
         context: NodeContext,
         inputs: &[EValue],
         _outputs: &mut Vec<EValue>,
-        variables: &mut ExecutionVariables,
+        variables: &mut ExecutionExtras,
     ) -> miette::Result<()> {
         let mut group_out = Vec::with_capacity(context.outputs.len());
 
-        // Fill the group outputs with the incoming values, matching the order of the IDs
-        // New outputs will be filled with default values
-        for (i, field) in context.outputs.iter().enumerate() {
-            let Some(input_pos) = (if self.ids.get(i).is_some_and(|id| id == &field.id) {
-                Some(i)
-            } else {
-                self.ids.iter().position(|f| f == &field.id)
-            }) else {
-                let default = field
-                    .ty
-                    .map(|f| f.default_value(context.registry).into_owned())
-                    .unwrap_or_else(|| EValue::Null);
-                group_out.push(default);
-                continue;
-            };
-
-            group_out.push(inputs[input_pos].clone());
-        }
-
-        // Check is any output was removed and incoming value now has no matching output
-        for (i, id) in self.ids.iter().enumerate() {
-            if context.outputs.get(i).is_some_and(|f| f.id == *id) {
-                continue;
-            }
-            if context.outputs.iter().any(|f| f.id == *id) {
-                continue;
-            }
-
-            bail!("Output {} was deleted", id);
-        }
+        map_group_outputs(
+            context.registry,
+            context.outputs,
+            &self.ids,
+            inputs,
+            &mut group_out,
+        )?;
 
         variables.set_outputs(group_out)?;
-
-        // for (i, input) in inputs.iter().enumerate() {
-        //     let Some(f) = self.get_field(context, i) else {
-        //         bail!("Output {} is missing", i);
-        //     };
-        //
-        //     variables.set(f.id, input.clone());
-        // }
 
         Ok(())
     }

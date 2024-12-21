@@ -42,6 +42,8 @@ pub struct GraphEditingContext<'a, 'snarl> {
     pub graphs: Option<&'a ProjectGraphs>,
     side_effects: SideEffectsContext<'a>,
     cache: &'a mut GraphCache,
+    input_values: &'a [EValue],
+    output_values: &'a mut Option<Vec<EValue>>,
 }
 
 impl<'a> GraphEditingContext<'a, 'a> {
@@ -51,6 +53,8 @@ impl<'a> GraphEditingContext<'a, 'a> {
         graphs: Option<&'a ProjectGraphs>,
         cache: &'a mut GraphCache,
         side_effects: SideEffectsContext<'a>,
+        input_values: &'a [EValue],
+        output_values: &'a mut Option<Vec<EValue>>,
     ) -> Self {
         GraphEditingContext {
             snarl: &mut graph.snarl,
@@ -61,6 +65,8 @@ impl<'a> GraphEditingContext<'a, 'a> {
             graphs,
             side_effects,
             cache,
+            input_values,
+            output_values,
         }
     }
 }
@@ -74,8 +80,10 @@ impl<'a, 'snarl> GraphEditingContext<'a, 'snarl> {
             self.inline_values,
             self.registry,
             self.graphs,
-            self.side_effects.clone(),
             self.cache,
+            self.side_effects.clone(),
+            self.input_values,
+            self.output_values,
         )
     }
 
@@ -256,6 +264,8 @@ pub struct PartialGraphEditingContext<'a> {
     pub registry: &'a ETypesRegistry,
     pub graphs: Option<&'a ProjectGraphs>,
     side_effects: SideEffectsContext<'a>,
+    input_values: &'a [EValue],
+    output_values: &'a mut Option<Vec<EValue>>,
     cache: &'a mut GraphCache,
 }
 
@@ -266,6 +276,8 @@ impl<'a> PartialGraphEditingContext<'a> {
         graphs: Option<&'a ProjectGraphs>,
         cache: &'a mut GraphCache,
         side_effects: SideEffectsContext<'a>,
+        input_values: &'a [EValue],
+        output_values: &'a mut Option<Vec<EValue>>,
     ) -> (Self, &'a mut Snarl<SnarlNode>) {
         (
             PartialGraphEditingContext {
@@ -275,7 +287,9 @@ impl<'a> PartialGraphEditingContext<'a> {
                 registry,
                 graphs,
                 side_effects,
+                input_values,
                 outputs: &mut graph.outputs,
+                output_values,
             },
             &mut graph.snarl,
         )
@@ -297,6 +311,8 @@ impl<'a> PartialGraphEditingContext<'a> {
             side_effects: self.side_effects.clone(),
             inputs: self.inputs,
             outputs: self.outputs,
+            input_values: self.input_values,
+            output_values: self.output_values,
         }
     }
 
