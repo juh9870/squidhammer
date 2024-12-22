@@ -10,7 +10,6 @@ use crate::graph::node::saving_node::SavingNodeFactory;
 use crate::graph::node::struct_node::StructNodeFactory;
 use crate::json_utils::JsonValue;
 use crate::project::project_graph::ProjectGraphs;
-use crate::project::side_effects::SideEffectsContext;
 use crate::registry::ETypesRegistry;
 use crate::value::EValue;
 use atomic_refcell::{AtomicRef, AtomicRefCell};
@@ -33,7 +32,6 @@ pub mod ports;
 pub mod reroute;
 pub mod saving_node;
 pub mod struct_node;
-pub mod subgraph_node;
 pub mod variables;
 
 static NODE_FACTORIES: LazyLock<AtomicRefCell<UstrMap<Arc<dyn NodeFactory>>>> =
@@ -60,6 +58,9 @@ fn default_nodes() -> impl Iterator<Item = (Ustr, Arc<dyn NodeFactory>)> {
     v.push(Arc::new(EnumNodeFactory));
     v.push(Arc::new(SavingNodeFactory));
     v.push(Arc::new(ListNodeFactory));
+    v.push(Arc::new(GroupOutputNodeFactory));
+    v.push(Arc::new(GroupInputNodeFactory));
+    v.push(Arc::new(SubgraphNodeFactory));
     v.into_iter().map(|item| (Ustr::from(&item.id()), item))
 }
 
@@ -243,18 +244,6 @@ pub trait Node: DynClone + Debug + Send + Sync + Downcast + 'static {
     }
 
     /// Execute the node
-    fn execute_side_effects(
-        &self,
-        context: NodeContext,
-        inputs: &[EValue],
-        outputs: &mut Vec<EValue>,
-        side_effects: SideEffectsContext<'_>,
-    ) -> miette::Result<()> {
-        let _ = (context, inputs, outputs, side_effects);
-        panic!("Node has no side effects")
-    }
-
-    /// Execute the node
     fn execute(
         &self,
         context: NodeContext,
@@ -328,5 +317,8 @@ macro_rules! impl_serde_node {
     };
 }
 
+use crate::graph::node::groups::input::GroupInputNodeFactory;
+use crate::graph::node::groups::output::GroupOutputNodeFactory;
+use crate::graph::node::groups::subgraph::SubgraphNodeFactory;
 use crate::graph::node::variables::ExecutionExtras;
 pub(crate) use impl_serde_node;

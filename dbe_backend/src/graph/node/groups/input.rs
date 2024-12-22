@@ -46,6 +46,11 @@ impl Node for GroupInputNode {
 
     fn update_state(&mut self, context: NodeContext, commands: &mut SnarlCommands, id: NodeId) {
         sync_fields(commands, context.inputs, &mut self.ids, id);
+
+        debug_assert_eq!(
+            self.ids,
+            context.inputs.iter().map(|o| o.id).collect::<Vec<_>>()
+        );
     }
 
     fn inputs_count(&self, _context: NodeContext) -> usize {
@@ -56,8 +61,8 @@ impl Node for GroupInputNode {
         panic!("GroupInputNode has no inputs")
     }
 
-    fn outputs_count(&self, context: NodeContext) -> usize {
-        context.inputs.len()
+    fn outputs_count(&self, _context: NodeContext) -> usize {
+        self.ids.len()
     }
 
     fn output_unchecked(&self, context: NodeContext, output: usize) -> miette::Result<OutputData> {
@@ -102,6 +107,8 @@ impl Node for GroupInputNode {
             id: field.id,
         });
 
+        commands.push(SnarlCommand::MarkDirty { node: from.id.node });
+
         Ok(())
     }
 
@@ -114,7 +121,9 @@ impl Node for GroupInputNode {
     ) -> miette::Result<()> {
         let inputs = variables.get_inputs()?;
 
-        map_group_inputs(context.inputs, &self.ids, inputs, outputs)?;
+        map_group_inputs(context.registry, context.inputs, &self.ids, inputs, outputs)?;
+
+        debug_assert_eq!(outputs.len(), self.outputs_count(context));
 
         Ok(())
     }
@@ -129,7 +138,7 @@ impl NodeFactory for GroupInputNodeFactory {
     }
 
     fn categories(&self) -> &'static [&'static str] {
-        &[]
+        &["node groups"]
     }
 
     fn create(&self) -> SnarlNode {

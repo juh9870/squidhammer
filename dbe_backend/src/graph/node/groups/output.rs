@@ -47,10 +47,15 @@ impl Node for GroupOutputNode {
 
     fn update_state(&mut self, context: NodeContext, commands: &mut SnarlCommands, id: NodeId) {
         sync_fields(commands, context.outputs, &mut self.ids, id);
+
+        debug_assert_eq!(
+            self.ids,
+            context.outputs.iter().map(|o| o.id).collect::<Vec<_>>()
+        );
     }
 
-    fn inputs_count(&self, context: NodeContext) -> usize {
-        context.outputs.len()
+    fn inputs_count(&self, _context: NodeContext) -> usize {
+        self.ids.len()
     }
 
     fn input_unchecked(&self, context: NodeContext, input: usize) -> miette::Result<InputData> {
@@ -95,6 +100,10 @@ impl Node for GroupOutputNode {
         self._default_try_connect(context, commands, from, to, incoming_type)
     }
 
+    fn has_side_effects(&self) -> bool {
+        true
+    }
+
     fn execute(
         &self,
         context: NodeContext,
@@ -112,6 +121,8 @@ impl Node for GroupOutputNode {
             &mut group_out,
         )?;
 
+        debug_assert_eq!(group_out.len(), self.inputs_count(context));
+
         variables.set_outputs(group_out)?;
 
         Ok(())
@@ -127,7 +138,7 @@ impl NodeFactory for GroupOutputNodeFactory {
     }
 
     fn categories(&self) -> &'static [&'static str] {
-        &[]
+        &["node groups"]
     }
 
     fn create(&self) -> SnarlNode {

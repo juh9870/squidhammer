@@ -1,8 +1,8 @@
 use crate::workspace::graph::viewer::NodeView;
 use crate::workspace::graph::GraphViewer;
 use camino::Utf8PathBuf;
-use dbe_backend::graph::node::saving_node::SavingNode;
-use dbe_backend::graph::node::SnarlNode;
+use dbe_backend::graph::node::saving_node::{SavingNode, SavingNodeFactory};
+use dbe_backend::graph::node::{NodeFactory, SnarlNode};
 use egui::Ui;
 use egui_hooks::UseHookExt;
 use egui_snarl::{InPin, NodeId, OutPin, Snarl};
@@ -15,7 +15,7 @@ pub struct SavingNodeViewer;
 
 impl NodeView for SavingNodeViewer {
     fn id(&self) -> Ustr {
-        "write_item".into()
+        SavingNodeFactory.id()
     }
 
     fn has_body(&self, _viewer: &mut GraphViewer, _node: &SnarlNode) -> miette::Result<bool> {

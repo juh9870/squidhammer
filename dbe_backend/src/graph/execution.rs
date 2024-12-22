@@ -35,6 +35,7 @@ pub struct GraphExecutionContext<'a, 'snarl> {
     pub registry: &'a ETypesRegistry,
     pub side_effects: SideEffectsContext<'a>,
     pub graphs: Option<&'a ProjectGraphs>,
+    pub is_node_group: bool,
     pub input_values: &'a [EValue],
     pub output_values: &'a mut Option<Vec<EValue>>,
     cache: &'a mut GraphCache,
@@ -47,6 +48,7 @@ impl<'a> GraphExecutionContext<'a, 'a> {
         graphs: Option<&'a ProjectGraphs>,
         cache: &'a mut GraphCache,
         side_effects: SideEffectsContext<'a>,
+        is_node_group: bool,
         input_values: &'a [EValue],
         output_values: &'a mut Option<Vec<EValue>>,
     ) -> Self {
@@ -59,6 +61,7 @@ impl<'a> GraphExecutionContext<'a, 'a> {
             registry,
             side_effects,
             graphs,
+            is_node_group,
             input_values,
             output_values,
         }
@@ -74,6 +77,7 @@ impl<'a> GraphExecutionContext<'a, 'a> {
         graphs: Option<&'a ProjectGraphs>,
         cache: &'a mut GraphCache,
         side_effects: SideEffectsContext<'a>,
+        is_node_group: bool,
         input_values: &'a [EValue],
         output_values: &'a mut Option<Vec<EValue>>,
     ) -> Self {
@@ -88,6 +92,7 @@ impl<'a> GraphExecutionContext<'a, 'a> {
             cache,
             input_values,
             output_values,
+            is_node_group,
         }
     }
 }
@@ -294,7 +299,7 @@ impl<'a, 'snarl> GraphExecutionContext<'a, 'snarl> {
                 &input_values,
                 &mut outputs,
                 &mut ExecutionExtras::new(
-                    false,
+                    self.is_node_group,
                     self.input_values,
                     self.output_values,
                     side_effects,
@@ -318,6 +323,7 @@ pub struct PartialGraphExecutionContext<'a> {
     pub registry: &'a ETypesRegistry,
     pub graphs: Option<&'a ProjectGraphs>,
     pub side_effects: SideEffectsContext<'a>,
+    pub is_node_group: bool,
     pub input_values: &'a [EValue],
     pub output_values: &'a mut Option<Vec<EValue>>,
     cache: &'a mut GraphCache,
@@ -336,6 +342,7 @@ impl<'a> PartialGraphExecutionContext<'a> {
                 registry: ctx.registry,
                 graphs: ctx.graphs,
                 side_effects: ctx.side_effects.clone(),
+                is_node_group: ctx.is_node_group,
                 input_values: ctx.input_values,
                 output_values: ctx.output_values,
             },
@@ -349,6 +356,7 @@ impl<'a> PartialGraphExecutionContext<'a> {
         graphs: Option<&'a ProjectGraphs>,
         cache: &'a mut GraphCache,
         side_effects: SideEffectsContext<'a>,
+        is_node_group: bool,
         input_values: &'a [EValue],
         output_values: &'a mut Option<Vec<EValue>>,
     ) -> (Self, &'a Snarl<SnarlNode>) {
@@ -361,6 +369,7 @@ impl<'a> PartialGraphExecutionContext<'a> {
                 registry,
                 graphs,
                 side_effects,
+                is_node_group,
                 input_values,
                 output_values,
             },
@@ -384,6 +393,7 @@ impl<'a> PartialGraphExecutionContext<'a> {
             registry: self.registry,
             side_effects: self.side_effects.clone(),
             graphs: self.graphs,
+            is_node_group: self.is_node_group,
             input_values: self.input_values,
             output_values: self.output_values,
         }

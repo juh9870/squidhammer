@@ -77,9 +77,8 @@ impl DbeApp {
             if project.files.contains_key(&path) {
                 report_error(miette!("File already exists"))
             } else {
-                project
-                    .files
-                    .insert(path.clone(), ProjectFile::Graph(Default::default()));
+                let id = project.graphs.insert_new_graph();
+                project.files.insert(path.clone(), ProjectFile::Graph(id));
                 app.open_tab_for(ctx, path);
             }
         })
@@ -175,6 +174,8 @@ impl<Io> TabViewer for WorkspaceTabViewer<'_, Io> {
                     return;
                 };
 
+                let is_node_group = graph.is_node_group;
+
                 CollapsibleToolbar::new(DPanelSide::Right, &[GraphTab::General], &[])
                     .show_inside(ui, &mut GraphToolbarViewer { graph });
 
@@ -197,6 +198,7 @@ impl<Io> TabViewer for WorkspaceTabViewer<'_, Io> {
                                 Some(graphs),
                                 cache,
                                 SideEffectsContext::new(&mut side_effects, tab.clone()),
+                                is_node_group,
                                 &[],
                                 outputs,
                             );

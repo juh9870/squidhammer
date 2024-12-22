@@ -119,10 +119,13 @@ pub fn sync_fields<IO: GraphIoData>(
         }
     }
 
+    commands.push(SnarlCommand::MarkDirty { node: node_id });
+
     *ids = new_fields;
 }
 
 pub fn map_group_inputs(
+    registry: &ETypesRegistry,
     inputs: &[GraphInput],
     ids: &[Uuid],
     in_values: &[EValue],
@@ -140,7 +143,17 @@ pub fn map_group_inputs(
             bail!("Input {} was deleted", id);
         };
 
-        out_values.push(in_values[input_pos].clone());
+        out_values.push(
+            in_values
+                .get(input_pos)
+                .cloned()
+                .or_else(|| {
+                    inputs[input_pos]
+                        .ty
+                        .map(|ty| ty.default_value(registry).into_owned())
+                })
+                .unwrap_or_else(|| EValue::Null),
+        );
     }
 
     Ok(())
@@ -197,7 +210,7 @@ pub fn get_port_input<IO: GraphIoData>(
     let Some(f) = get_field(fields, ids, index) else {
         return Ok(InputData {
             ty: NodePortType::Invalid,
-            name: "!!deleted input!!".into(),
+            name: "!!unknown input!!".into(),
         });
     };
 
@@ -219,7 +232,7 @@ pub fn get_port_output<IO: GraphIoData>(
     let Some(f) = get_field(fields, ids, index) else {
         return Ok(OutputData {
             ty: NodePortType::Invalid,
-            name: "!!deleted input!!".into(),
+            name: "!!unknown output!!".into(),
         });
     };
 
@@ -228,7 +241,7 @@ pub fn get_port_output<IO: GraphIoData>(
             .ty()
             .map(EItemInfo::simple_type)
             .map(NodePortType::Specific)
-            .unwrap_or_else(|| NodePortType::BasedOnSource),
+            .unwrap_or_else(|| NodePortType::BasedOnTarget),
         name: f.name().into(),
     })
 }

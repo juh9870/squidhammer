@@ -305,6 +305,7 @@ impl<IO: ProjectIO> Project<IO> {
                     Some(graphs),
                     cache,
                     SideEffectsContext::new(&mut side_effects, path.clone()),
+                    graph.is_node_group,
                     &[],
                     out_values,
                 );

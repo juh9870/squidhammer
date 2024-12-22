@@ -41,6 +41,7 @@ pub struct GraphEditingContext<'a, 'snarl> {
     pub registry: &'a ETypesRegistry,
     pub graphs: Option<&'a ProjectGraphs>,
     side_effects: SideEffectsContext<'a>,
+    is_node_group: bool,
     cache: &'a mut GraphCache,
     input_values: &'a [EValue],
     output_values: &'a mut Option<Vec<EValue>>,
@@ -53,6 +54,7 @@ impl<'a> GraphEditingContext<'a, 'a> {
         graphs: Option<&'a ProjectGraphs>,
         cache: &'a mut GraphCache,
         side_effects: SideEffectsContext<'a>,
+        is_node_group: bool,
         input_values: &'a [EValue],
         output_values: &'a mut Option<Vec<EValue>>,
     ) -> Self {
@@ -64,6 +66,7 @@ impl<'a> GraphEditingContext<'a, 'a> {
             registry,
             graphs,
             side_effects,
+            is_node_group,
             cache,
             input_values,
             output_values,
@@ -82,6 +85,7 @@ impl<'a, 'snarl> GraphEditingContext<'a, 'snarl> {
             self.graphs,
             self.cache,
             self.side_effects.clone(),
+            self.is_node_group,
             self.input_values,
             self.output_values,
         )
@@ -152,13 +156,14 @@ impl<'a, 'snarl> GraphEditingContext<'a, 'snarl> {
                 to_node.try_connect(node_context!(self), commands, from, to, &from_pin.ty)?;
 
                 if based_on_input {
+                    let to_pin = to_node.try_input(node_context!(self), to.id.input)?;
                     let from_node = &mut self.snarl[from.id.node];
                     from_node.connected_to_output(
                         node_context!(self),
                         commands,
                         from,
                         to,
-                        &from_pin.ty,
+                        &to_pin.ty,
                     )?;
                 }
             }
@@ -264,6 +269,7 @@ pub struct PartialGraphEditingContext<'a> {
     pub registry: &'a ETypesRegistry,
     pub graphs: Option<&'a ProjectGraphs>,
     side_effects: SideEffectsContext<'a>,
+    is_node_group: bool,
     input_values: &'a [EValue],
     output_values: &'a mut Option<Vec<EValue>>,
     cache: &'a mut GraphCache,
@@ -276,6 +282,7 @@ impl<'a> PartialGraphEditingContext<'a> {
         graphs: Option<&'a ProjectGraphs>,
         cache: &'a mut GraphCache,
         side_effects: SideEffectsContext<'a>,
+        is_node_group: bool,
         input_values: &'a [EValue],
         output_values: &'a mut Option<Vec<EValue>>,
     ) -> (Self, &'a mut Snarl<SnarlNode>) {
@@ -287,6 +294,7 @@ impl<'a> PartialGraphEditingContext<'a> {
                 registry,
                 graphs,
                 side_effects,
+                is_node_group,
                 input_values,
                 outputs: &mut graph.outputs,
                 output_values,
@@ -313,6 +321,7 @@ impl<'a> PartialGraphEditingContext<'a> {
             outputs: self.outputs,
             input_values: self.input_values,
             output_values: self.output_values,
+            is_node_group: self.is_node_group,
         }
     }
 
