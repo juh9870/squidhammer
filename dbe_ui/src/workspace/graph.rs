@@ -307,6 +307,74 @@ impl<'a> SnarlViewer<SnarlNode> for GraphViewer<'a> {
         });
     }
 
+    fn has_dropped_wire_menu(&mut self, _src_pins: AnyPins, _snarl: &mut Snarl<SnarlNode>) -> bool {
+        true
+    }
+
+    fn show_dropped_wire_menu(
+        &mut self,
+        pos: Pos2,
+        ui: &mut Ui,
+        _scale: f32,
+        src_pins: AnyPins,
+        snarl: &mut Snarl<SnarlNode>,
+    ) {
+        match src_pins {
+            AnyPins::Out(_) => ui.close_menu(),
+            AnyPins::In(pins) => {
+                for pin in pins {
+                    m_try(|| {
+                        let node = &snarl[pin.node];
+                        let data = node.try_input(self.ctx.as_node_context(), pin.input)?;
+                        match data.ty.ty() {
+                            EDataType::Object { ident } => {
+                                if ui.button(ident.as_raw().unwrap()).clicked() {
+                                    let node = self.ctx.as_full(snarl).create_object_node(
+                                        ident,
+                                        pos,
+                                        &mut self.commands,
+                                    )?;
+                                    let out_pin = &snarl.out_pin(OutPinId { node, output: 0 });
+                                    let in_pin = snarl.in_pin(*pin);
+                                    self.ctx.as_full(snarl).connect(
+                                        out_pin,
+                                        &in_pin,
+                                        &mut self.commands,
+                                    )?;
+                                    ui.close_menu();
+                                }
+                            }
+                            EDataType::List { id } => {
+                                if ui.button("List").clicked() {
+                                    let node = self.ctx.as_full(snarl).create_list_node(
+                                        id,
+                                        pos,
+                                        &mut self.commands,
+                                    )?;
+                                    let out_pin = &snarl.out_pin(OutPinId { node, output: 0 });
+                                    let in_pin = snarl.in_pin(*pin);
+                                    self.ctx.as_full(snarl).connect(
+                                        out_pin,
+                                        &in_pin,
+                                        &mut self.commands,
+                                    )?;
+                                    ui.close_menu();
+                                }
+                            }
+                            // TODO: search by output type
+                            _ => ui.close_menu(),
+                        }
+                        Ok(())
+                    })
+                    .unwrap_or_else(|err| {
+                        report_error(err);
+                        ui.close_menu()
+                    })
+                }
+            }
+        }
+    }
+
     fn has_node_menu(&mut self, _node: &SnarlNode) -> bool {
         true
     }
@@ -380,74 +448,6 @@ impl<'a> SnarlViewer<SnarlNode> for GraphViewer<'a> {
             Ok(())
         }) {
             report_error(err);
-        }
-    }
-
-    fn has_dropped_wire_menu(&mut self, _src_pins: AnyPins, _snarl: &mut Snarl<SnarlNode>) -> bool {
-        true
-    }
-
-    fn show_dropped_wire_menu(
-        &mut self,
-        pos: Pos2,
-        ui: &mut Ui,
-        _scale: f32,
-        src_pins: AnyPins,
-        snarl: &mut Snarl<SnarlNode>,
-    ) {
-        match src_pins {
-            AnyPins::Out(_) => ui.close_menu(),
-            AnyPins::In(pins) => {
-                for pin in pins {
-                    m_try(|| {
-                        let node = &snarl[pin.node];
-                        let data = node.try_input(self.ctx.as_node_context(), pin.input)?;
-                        match data.ty.ty() {
-                            EDataType::Object { ident } => {
-                                if ui.button(ident.as_raw().unwrap()).clicked() {
-                                    let node = self.ctx.as_full(snarl).create_object_node(
-                                        ident,
-                                        pos,
-                                        &mut self.commands,
-                                    )?;
-                                    let out_pin = &snarl.out_pin(OutPinId { node, output: 0 });
-                                    let in_pin = snarl.in_pin(*pin);
-                                    self.ctx.as_full(snarl).connect(
-                                        out_pin,
-                                        &in_pin,
-                                        &mut self.commands,
-                                    )?;
-                                    ui.close_menu();
-                                }
-                            }
-                            EDataType::List { id } => {
-                                if ui.button("List").clicked() {
-                                    let node = self.ctx.as_full(snarl).create_list_node(
-                                        id,
-                                        pos,
-                                        &mut self.commands,
-                                    )?;
-                                    let out_pin = &snarl.out_pin(OutPinId { node, output: 0 });
-                                    let in_pin = snarl.in_pin(*pin);
-                                    self.ctx.as_full(snarl).connect(
-                                        out_pin,
-                                        &in_pin,
-                                        &mut self.commands,
-                                    )?;
-                                    ui.close_menu();
-                                }
-                            }
-                            // TODO: search by output type
-                            _ => ui.close_menu(),
-                        }
-                        Ok(())
-                    })
-                    .unwrap_or_else(|err| {
-                        report_error(err);
-                        ui.close_menu()
-                    })
-                }
-            }
         }
     }
 }
