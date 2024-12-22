@@ -37,10 +37,16 @@ impl SubgraphNode {
 
     fn get_graph<'ctx>(&self, context: NodeContext<'ctx>) -> miette::Result<&'ctx ProjectGraph> {
         let graphs = context.graphs.ok_or_else(|| miette!("No graph context"))?;
-        graphs
+        let graph = graphs
             .graphs
             .get(&self.graph_id)
-            .ok_or_else(|| miette!("No graph context"))
+            .ok_or_else(|| miette!("No graph context"))?;
+
+        if !graph.is_node_group {
+            bail!("Graph `{}` ({}) is not a node group", graph.name, graph.id);
+        }
+
+        Ok(graph)
     }
 }
 
