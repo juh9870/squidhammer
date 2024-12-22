@@ -54,7 +54,7 @@ fn graphs_combobox(ui: &mut Ui, selected: &mut Uuid, graphs: &ProjectGraphs) {
                     .graphs
                     .get(selected)
                     .map(|g| g.display_name())
-                    .unwrap_or_else(|| "!!deleted graph!!".to_string()),
+                    .unwrap_or_else(|| "!!unknown graph!!".to_string()),
             )
             .show_ui(ui, |ui| {
                 let mut search_query = ui.use_state(|| "".to_string(), *selected).into_var();
@@ -65,6 +65,9 @@ fn graphs_combobox(ui: &mut Ui, selected: &mut Uuid, graphs: &ProjectGraphs) {
                 let query = if query.is_empty() { None } else { Some(query) };
 
                 for (id, graph) in graphs.graphs.iter().filter(|(_, g)| {
+                    if !g.is_node_group {
+                        return false;
+                    }
                     let Some(q) = query else { return true };
                     g.display_name().contains(q)
                 }) {
