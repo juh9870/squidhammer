@@ -75,6 +75,7 @@ impl Graph {
                 None,
                 &mut cache,
                 SideEffectsContext::new(&mut side_effects, "".into()),
+                true,
                 &[],
                 out_values,
             );

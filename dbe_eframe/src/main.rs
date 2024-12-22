@@ -30,6 +30,8 @@ fn main() -> eframe::Result<()> {
                     name.starts_with("core::ops::function::FnOnce::call_once")
                         || name.starts_with("core::panicking::panic_display")
                         || name.starts_with("core::option::expect_failed")
+                        || name.starts_with("core::panicking::assert_failed_inner")
+                        || name.starts_with("core::panicking::assert_failed")
                 }) {
                     return false;
                 }

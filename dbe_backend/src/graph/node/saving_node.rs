@@ -4,7 +4,7 @@ use crate::graph::node::{
     impl_serde_node, ExecutionExtras, InputData, Node, NodeContext, NodeFactory, OutputData,
     SnarlNode,
 };
-use crate::project::side_effects::{SideEffect, SideEffectsContext};
+use crate::project::side_effects::SideEffect;
 use crate::registry::ETypesRegistry;
 use crate::value::EValue;
 use camino::Utf8PathBuf;
@@ -57,32 +57,23 @@ impl Node for SavingNode {
         true
     }
 
-    fn execute_side_effects(
+    fn execute(
         &self,
         _context: NodeContext,
         inputs: &[EValue],
         _outputs: &mut Vec<EValue>,
-        mut side_effects: SideEffectsContext,
+        variables: &mut ExecutionExtras,
     ) -> miette::Result<()> {
         match &self.path {
-            None => side_effects.push(SideEffect::EmitTransientFile {
+            None => variables.side_effects.push(SideEffect::EmitTransientFile {
                 value: inputs[0].clone(),
             }),
-            Some(path) => side_effects.push(SideEffect::EmitPersistentFile {
+            Some(path) => variables.side_effects.push(SideEffect::EmitPersistentFile {
                 value: inputs[0].clone(),
                 path: path.clone(),
             }),
         }
-        Ok(())
-    }
 
-    fn execute(
-        &self,
-        _context: NodeContext,
-        _inputs: &[EValue],
-        _outputs: &mut Vec<EValue>,
-        _variables: &mut ExecutionExtras,
-    ) -> miette::Result<()> {
         Ok(())
     }
 }

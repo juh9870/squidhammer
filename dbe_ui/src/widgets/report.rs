@@ -48,7 +48,7 @@ pub fn diagnostic_widget(ui: &mut Ui, diagnostic: &Diagnostic) {
         ..Default::default()
     };
 
-    frame.show(ui, |ui| {
+    let res = frame.show(ui, |ui| {
         let text = format_error(&diagnostic.info, false);
         let text = text.trim();
         let idx = text.find('\n');
@@ -70,6 +70,10 @@ pub fn diagnostic_widget(ui: &mut Ui, diagnostic: &Diagnostic) {
         } else {
             ui.colored_label(color, strip_ansi_escapes::strip_str(text));
         }
+    });
+
+    res.response.on_hover_ui(|ui| {
+        ui.label(format_error(&diagnostic.info, true).trim());
     });
 }
 

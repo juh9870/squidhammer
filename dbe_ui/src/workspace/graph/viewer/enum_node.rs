@@ -1,7 +1,7 @@
 use crate::workspace::graph::viewer::NodeView;
 use crate::workspace::graph::GraphViewer;
-use dbe_backend::graph::node::enum_node::EnumNode;
-use dbe_backend::graph::node::SnarlNode;
+use dbe_backend::graph::node::enum_node::{EnumNode, EnumNodeFactory};
+use dbe_backend::graph::node::{NodeFactory, SnarlNode};
 use egui::Ui;
 use egui_snarl::{InPin, NodeId, OutPin, Snarl};
 use miette::bail;
@@ -12,7 +12,7 @@ pub struct EnumNodeViewer;
 
 impl NodeView for EnumNodeViewer {
     fn id(&self) -> Ustr {
-        "enum_node".into()
+        EnumNodeFactory.id()
     }
 
     fn has_body(&self, _viewer: &mut GraphViewer, _node: &SnarlNode) -> miette::Result<bool> {

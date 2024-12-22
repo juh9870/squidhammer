@@ -36,6 +36,17 @@ enum GraphHolder {
 }
 
 impl ProjectGraph {
+    pub fn new(id: Uuid) -> Self {
+        Self {
+            id,
+            name: "".to_string(),
+            is_node_group: false,
+            graph: GraphHolder::Graph(Box::default()),
+            inputs_cache: Default::default(),
+            outputs_cache: Default::default(),
+        }
+    }
+
     /// Get the graph data
     pub fn graph(&self) -> &Graph {
         match &self.graph {
@@ -65,6 +76,16 @@ impl ProjectGraph {
         match self.graph {
             GraphHolder::Graph(ref g) => g.outputs(),
             GraphHolder::Editing => &self.outputs_cache,
+        }
+    }
+
+    pub fn display_name(&self) -> String {
+        let trimmed = self.name.trim();
+
+        if trimmed.is_empty() {
+            format!("Graph {:8}", self.id)
+        } else {
+            trimmed.to_string()
         }
     }
 
@@ -215,6 +236,19 @@ impl ProjectGraphs {
 
         self.cache.insert(id, cache);
         Some(result)
+    }
+
+    pub fn insert_new_graph(&mut self) -> Uuid {
+        let id = loop {
+            let id = Uuid::new_v4();
+            if !self.graphs.contains_key(&id) {
+                break id;
+            }
+        };
+
+        self.graphs.insert(id, ProjectGraph::new(id));
+
+        id
     }
 
     pub fn add_graph(

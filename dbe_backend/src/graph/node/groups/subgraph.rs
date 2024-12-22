@@ -20,7 +20,7 @@ use uuid::Uuid;
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct SubgraphNode {
-    graph: Uuid,
+    pub graph_id: Uuid,
     inputs: Vec<Uuid>,
     outputs: Vec<Uuid>,
 }
@@ -30,14 +30,11 @@ impl SubgraphNode {
         Default::default()
     }
 
-    pub fn get_graph<'ctx>(
-        &self,
-        context: NodeContext<'ctx>,
-    ) -> miette::Result<&'ctx ProjectGraph> {
+    fn get_graph<'ctx>(&self, context: NodeContext<'ctx>) -> miette::Result<&'ctx ProjectGraph> {
         let graphs = context.graphs.ok_or_else(|| miette!("No graph context"))?;
         graphs
             .graphs
-            .get(&self.graph)
+            .get(&self.graph_id)
             .ok_or_else(|| miette!("No graph context"))
     }
 }
@@ -86,7 +83,12 @@ impl Node for SubgraphNode {
 
     fn output_unchecked(&self, context: NodeContext, output: usize) -> miette::Result<OutputData> {
         let graph = self.get_graph(context)?;
-        get_port_output(graph.outputs(), &self.inputs, output)
+        get_port_output(graph.outputs(), &self.outputs, output)
+    }
+
+    fn has_side_effects(&self) -> bool {
+        // TODO: check inner nodes
+        true
     }
 
     fn execute(
@@ -106,7 +108,13 @@ impl Node for SubgraphNode {
         let mut graph_out = None;
 
         m_try(|| {
-            map_group_inputs(graph.inputs(), &self.inputs, inputs, &mut graph_in)?;
+            map_group_inputs(
+                context.registry,
+                graph.inputs(),
+                &self.inputs,
+                inputs,
+                &mut graph_in,
+            )?;
 
             // TODO: caching for subgraphs
             let mut cache = GraphCache::default();
@@ -116,6 +124,7 @@ impl Node for SubgraphNode {
                 context.graphs,
                 &mut cache,
                 variables.side_effects.clone(), // TODO: proper side effects context
+                true,
                 &graph_in,
                 &mut graph_out,
             );
@@ -158,7 +167,7 @@ impl NodeFactory for SubgraphNodeFactory {
     }
 
     fn categories(&self) -> &'static [&'static str] {
-        &[]
+        &["node groups"]
     }
 
     fn create(&self) -> SnarlNode {

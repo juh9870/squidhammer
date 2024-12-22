@@ -56,7 +56,7 @@ impl<'a> SnarlViewer<SnarlNode> for GraphViewer<'a> {
 
     fn show_header(
         &mut self,
-        node: NodeId,
+        node_id: NodeId,
         inputs: &[InPin],
         outputs: &[OutPin],
         ui: &mut Ui,
@@ -64,7 +64,12 @@ impl<'a> SnarlViewer<SnarlNode> for GraphViewer<'a> {
         snarl: &mut Snarl<SnarlNode>,
     ) {
         m_try(|| {
-            get_viewer(&snarl[node].id()).show_header(self, node, inputs, outputs, ui, scale, snarl)
+            let node = &mut snarl[node_id];
+            node.update_state(self.ctx.as_node_context(), &mut self.commands, node_id);
+            self.commands.execute(&mut self.ctx.as_full(snarl))?;
+
+            get_viewer(&snarl[node_id].id())
+                .show_header(self, node_id, inputs, outputs, ui, scale, snarl)
         })
         .unwrap_or_else(|err| {
             ui.set_max_width(128.0);
@@ -137,7 +142,7 @@ impl<'a> SnarlViewer<SnarlNode> for GraphViewer<'a> {
 
     fn show_body(
         &mut self,
-        node: NodeId,
+        node_id: NodeId,
         inputs: &[InPin],
         outputs: &[OutPin],
         ui: &mut Ui,
@@ -145,7 +150,8 @@ impl<'a> SnarlViewer<SnarlNode> for GraphViewer<'a> {
         snarl: &mut Snarl<SnarlNode>,
     ) {
         m_try(|| {
-            get_viewer(&snarl[node].id()).show_body(self, node, inputs, outputs, ui, scale, snarl)
+            get_viewer(&snarl[node_id].id())
+                .show_body(self, node_id, inputs, outputs, ui, scale, snarl)
         })
         .unwrap_or_else(|err| {
             diagnostic_widget(
