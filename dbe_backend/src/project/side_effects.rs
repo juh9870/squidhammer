@@ -2,6 +2,7 @@ use crate::project::{Project, ProjectFile};
 use crate::value::EValue;
 use camino::Utf8PathBuf;
 use egui_snarl::NodeId;
+use maybe_owned::MaybeOwnedMut;
 use miette::bail;
 use uuid::Uuid;
 
@@ -11,7 +12,7 @@ pub enum SideEffect {
     EmitTransientFile { value: EValue },
 }
 
-type SideEffectEmitter = (Utf8PathBuf, NodeId, usize);
+type SideEffectEmitter = (Utf8PathBuf, Vec<SideEffectPathItem>, usize);
 
 impl SideEffect {
     pub fn execute<Io>(
@@ -38,7 +39,7 @@ impl SideEffect {
                 let tmp_path = project.registry.project_config().emitted_dir.join(format!(
                     "{}.n{}.{}.json",
                     sanitise_file_name::sanitise(emitter.0.as_str()),
-                    emitter.1 .0,
+                    emitter.1[0].to_string(project),
                     emitter.2
                 ));
                 project
@@ -90,12 +91,33 @@ impl SideEffects {
     }
 }
 
+#[derive(Debug, Clone, Eq, PartialEq, Hash)]
+pub enum SideEffectPathItem {
+    Node(NodeId),
+    Subgraph(Uuid),
+}
+
+impl SideEffectPathItem {
+    pub fn to_string<IO>(&self, project: &Project<IO>) -> String {
+        match self {
+            SideEffectPathItem::Node(id) => id.0.to_string(),
+            SideEffectPathItem::Subgraph(id) => project
+                .graphs
+                .graphs
+                .get(id)
+                .map(|subgraph| subgraph.name.clone())
+                .unwrap_or_else(|| id.to_string()),
+        }
+    }
+}
+
 #[derive(Debug)]
 pub struct SideEffectsContext<'a> {
     effect: &'a mut SideEffects,
     file: Utf8PathBuf,
-    node: NodeId,
+    path: MaybeOwnedMut<'a, Vec<SideEffectPathItem>>,
     index: usize,
+    pop_on_drop: bool,
 }
 
 impl<'a> SideEffectsContext<'a> {
@@ -103,8 +125,9 @@ impl<'a> SideEffectsContext<'a> {
         Self {
             effect,
             file,
-            node: NodeId(0),
+            path: MaybeOwnedMut::Owned(Vec::with_capacity(2)),
             index: 0,
+            pop_on_drop: false,
         }
     }
 
@@ -112,19 +135,28 @@ impl<'a> SideEffectsContext<'a> {
     where
         'a: 'b,
     {
+        self.path.push(SideEffectPathItem::Node(node));
         SideEffectsContext {
             effect: self.effect,
             file: self.file.clone(),
-            node,
+            path: MaybeOwnedMut::Borrowed(&mut self.path),
             index: 0,
+            pop_on_drop: true,
         }
     }
 
-    pub fn with_subgraph<'b>(&'b mut self, _subgraph: Uuid) -> SideEffectsContext<'b>
+    pub fn with_subgraph<'b>(&'b mut self, subgraph: Uuid) -> SideEffectsContext<'b>
     where
         'a: 'b,
     {
-        todo!("proper path stack system")
+        self.path.push(SideEffectPathItem::Subgraph(subgraph));
+        SideEffectsContext {
+            effect: self.effect,
+            file: self.file.clone(),
+            path: MaybeOwnedMut::Borrowed(&mut self.path),
+            index: 0,
+            pop_on_drop: true,
+        }
     }
 
     pub fn clone<'b>(&'b mut self) -> SideEffectsContext<'b>
@@ -134,14 +166,23 @@ impl<'a> SideEffectsContext<'a> {
         SideEffectsContext {
             effect: self.effect,
             file: self.file.clone(),
-            node: self.node,
+            path: MaybeOwnedMut::Borrowed(&mut self.path),
             index: 0,
+            pop_on_drop: false,
         }
     }
 
     pub fn push(&mut self, effect: SideEffect) {
-        let emitter = (self.file.clone(), self.node, self.index);
+        let emitter = (self.file.clone(), self.path.clone(), self.index);
         self.effect.push(emitter, effect);
         self.index += 1;
+    }
+}
+
+impl Drop for SideEffectsContext<'_> {
+    fn drop(&mut self) {
+        if self.pop_on_drop {
+            self.path.pop();
+        }
     }
 }

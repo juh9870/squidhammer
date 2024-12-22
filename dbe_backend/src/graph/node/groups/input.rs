@@ -45,7 +45,7 @@ impl Node for GroupInputNode {
     }
 
     fn update_state(&mut self, context: NodeContext, commands: &mut SnarlCommands, id: NodeId) {
-        sync_fields(commands, context.inputs, &mut self.ids, id);
+        sync_fields(commands, context.inputs, &mut self.ids, None, id);
 
         debug_assert_eq!(
             self.ids,

@@ -1,4 +1,5 @@
 use crate::etype::eitem::EItemInfo;
+use crate::etype::EDataType;
 use crate::graph::inputs::{GraphInput, GraphIoData, GraphOutput};
 use crate::graph::node::commands::{SnarlCommand, SnarlCommands};
 use crate::graph::node::ports::{InputData, NodePortType, OutputData};
@@ -49,6 +50,7 @@ pub fn sync_fields<IO: GraphIoData>(
     commands: &mut SnarlCommands,
     fields: &[IO],
     ids: &mut Vec<Uuid>,
+    types: Option<&mut Vec<EDataType>>,
     node_id: NodeId,
 ) {
     if ids.len() == fields.len()
@@ -122,6 +124,15 @@ pub fn sync_fields<IO: GraphIoData>(
     commands.push(SnarlCommand::MarkDirty { node: node_id });
 
     *ids = new_fields;
+
+    if let Some(types) = types {
+        types.clear();
+        types.extend(
+            fields
+                .iter()
+                .map(|f| f.ty().unwrap_or_else(EDataType::null)),
+        );
+    }
 }
 
 pub fn map_group_inputs(

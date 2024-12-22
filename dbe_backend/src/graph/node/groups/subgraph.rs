@@ -1,3 +1,5 @@
+use crate::etype::eitem::EItemInfo;
+use crate::etype::EDataType;
 use crate::graph::cache::GraphCache;
 use crate::graph::execution::GraphExecutionContext;
 use crate::graph::node::commands::SnarlCommands;
@@ -23,6 +25,9 @@ pub struct SubgraphNode {
     pub graph_id: Uuid,
     inputs: Vec<Uuid>,
     outputs: Vec<Uuid>,
+
+    input_types: Vec<EDataType>,
+    output_types: Vec<EDataType>,
 }
 
 impl SubgraphNode {
@@ -58,30 +63,48 @@ impl Node for SubgraphNode {
             return;
         };
 
-        sync_fields(commands, graph.inputs(), &mut self.inputs, id);
-        sync_fields(commands, graph.outputs(), &mut self.outputs, id);
+        sync_fields(
+            commands,
+            graph.inputs(),
+            &mut self.inputs,
+            Some(&mut self.input_types),
+            id,
+        );
+        sync_fields(
+            commands,
+            graph.outputs(),
+            &mut self.outputs,
+            Some(&mut self.output_types),
+            id,
+        );
     }
 
-    fn inputs_count(&self, context: NodeContext) -> usize {
-        let Ok(graph) = self.get_graph(context) else {
-            return 0;
-        };
-        graph.inputs().len()
+    fn inputs_count(&self, _context: NodeContext) -> usize {
+        self.inputs.len()
     }
 
     fn input_unchecked(&self, context: NodeContext, input: usize) -> miette::Result<InputData> {
+        if context.graphs.is_none() {
+            return Ok(InputData {
+                ty: EItemInfo::simple_type(self.input_types[input]).into(),
+                name: Default::default(),
+            });
+        }
         let graph = self.get_graph(context)?;
         get_port_input(graph.inputs(), &self.inputs, input)
     }
 
-    fn outputs_count(&self, context: NodeContext) -> usize {
-        let Ok(graph) = self.get_graph(context) else {
-            return 0;
-        };
-        graph.outputs().len()
+    fn outputs_count(&self, _context: NodeContext) -> usize {
+        self.outputs.len()
     }
 
     fn output_unchecked(&self, context: NodeContext, output: usize) -> miette::Result<OutputData> {
+        if context.graphs.is_none() {
+            return Ok(OutputData {
+                ty: EItemInfo::simple_type(self.output_types[output]).into(),
+                name: Default::default(),
+            });
+        }
         let graph = self.get_graph(context)?;
         get_port_output(graph.outputs(), &self.outputs, output)
     }
@@ -130,6 +153,8 @@ impl Node for SubgraphNode {
             );
 
             ctx.full_eval(true)?;
+
+            drop(ctx);
 
             if graph.outputs().is_empty() {
                 return Ok(());

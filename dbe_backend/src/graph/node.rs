@@ -159,7 +159,7 @@ pub trait Node: DynClone + Debug + Send + Sync + Downcast + 'static {
     fn try_input(&self, context: NodeContext, input: usize) -> miette::Result<InputData> {
         let count = self.inputs_count(context);
         if input >= count {
-            bail!("input index {} out of bounds (max {})", input, count - 1)
+            bail!("input index {} out of bounds (length {})", input, count)
         } else {
             self.input_unchecked(context, input)
         }
@@ -168,7 +168,7 @@ pub trait Node: DynClone + Debug + Send + Sync + Downcast + 'static {
     fn try_output(&self, context: NodeContext, output: usize) -> miette::Result<OutputData> {
         let count = self.outputs_count(context);
         if output >= count {
-            bail!("output index {} out of bounds (max {})", output, count - 1)
+            bail!("output index {} out of bounds (length {})", output, count)
         } else {
             self.output_unchecked(context, output)
         }

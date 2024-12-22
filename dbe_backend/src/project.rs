@@ -312,6 +312,8 @@ impl<IO: ProjectIO> Project<IO> {
 
                 ctx.full_eval(true)?;
 
+                drop(ctx);
+
                 if out_values.is_some() {
                     bail!("graph {:?} at path {} has outputs", id, path);
                 }
