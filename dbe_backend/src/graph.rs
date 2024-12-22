@@ -113,6 +113,8 @@ impl Graph {
                 .execute(&mut ctx)
                 .with_context(|| "failed to execute commands")?;
 
+            drop(ctx);
+
             if !side_effects.is_empty() {
                 panic!("Side effects are not supported during deserialization");
             }

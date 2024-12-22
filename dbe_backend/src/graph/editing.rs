@@ -48,6 +48,7 @@ pub struct GraphEditingContext<'a, 'snarl> {
 }
 
 impl<'a> GraphEditingContext<'a, 'a> {
+    #[allow(clippy::too_many_arguments)]
     pub fn from_graph(
         graph: &'a mut Graph,
         registry: &'a ETypesRegistry,
@@ -276,6 +277,7 @@ pub struct PartialGraphEditingContext<'a> {
 }
 
 impl<'a> PartialGraphEditingContext<'a> {
+    #[allow(clippy::too_many_arguments)]
     pub fn from_graph(
         graph: &'a mut Graph,
         registry: &'a ETypesRegistry,

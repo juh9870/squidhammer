@@ -94,7 +94,8 @@ impl NodeView for DefaultNodeView {
         };
         let mut shown = false;
         if pin.remotes.is_empty() {
-            if let Some(value) = viewer.ctx.as_full(snarl).get_inline_input_mut(pin.id)? {
+            let mut full_ctx = viewer.ctx.as_full(snarl);
+            if let Some(value) = full_ctx.get_inline_input_mut(pin.id)? {
                 if has_inline_editor(registry, input_data.ty.ty(), true) {
                     let editor = editor_for_item(registry, info);
                     let res = ui.vertical(|ui| {
@@ -108,8 +109,9 @@ impl NodeView for DefaultNodeView {
                     });
 
                     if res.inner.changed {
-                        viewer.ctx.as_full(snarl).mark_dirty(pin.id.node);
+                        full_ctx.mark_dirty(pin.id.node);
                     }
+
                     shown = true;
                 } else {
                     ui.horizontal(|ui| {

@@ -42,6 +42,7 @@ pub struct GraphExecutionContext<'a, 'snarl> {
 }
 
 impl<'a> GraphExecutionContext<'a, 'a> {
+    #[allow(clippy::too_many_arguments)]
     pub fn from_graph(
         graph: &'a Graph,
         registry: &'a ETypesRegistry,
@@ -350,6 +351,7 @@ impl<'a> PartialGraphExecutionContext<'a> {
         )
     }
 
+    #[allow(clippy::too_many_arguments)]
     pub fn from_graph(
         graph: &'a Graph,
         registry: &'a ETypesRegistry,
