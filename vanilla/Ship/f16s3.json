@@ -4,7 +4,6 @@
       "AutoAimingArc": 80,
       "Image": "",
       "Offset": 0,
-      "PlatformType": 0,
       "Position": {
         "x": 0.9,
         "y": 0
@@ -15,18 +14,10 @@
       "WeaponClass": "C"
     }
   ],
-  "BaseWeightModifier": 0,
-  "BuiltinDevices": [],
   "CellsExpansions": 0,
   "ColliderTolerance": 0.02,
   "Description": "",
-  "EnergyResistance": 0,
   "EngineColor": "#40FF4D00",
-  "EnginePosition": {
-    "x": 0,
-    "y": 0
-  },
-  "EngineSize": 0,
   "Engines": [
     {
       "Position": {
@@ -56,18 +47,14 @@
     "TurnRateBonus": 0,
     "VelocityBonus": 0
   },
-  "HeatResistance": 0,
   "IconImage": "slime2",
   "IconScale": 1,
   "Id": 122,
   "ItemType": 6,
-  "KineticResistance": 0,
   "Layout": "000044440000000144441000000122221000001322223100001122221100001322223100001122221100001322223100000025520000000055550000000055550000000005500000",
   "ModelImage": "slime2",
   "ModelScale": 2,
   "Name": "$f16_Cruiser",
-  "Regeneration": false,
-  "ShipCategory": 0,
   "ShipRarity": 0,
   "ShipType": 0,
   "SizeClass": 2

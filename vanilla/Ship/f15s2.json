@@ -4,7 +4,6 @@
       "AutoAimingArc": 80,
       "Image": "scavenger_arm",
       "Offset": 0,
-      "PlatformType": 0,
       "Position": {
         "x": 0.6,
         "y": -0.4
@@ -18,7 +17,6 @@
       "AutoAimingArc": 0,
       "Image": "",
       "Offset": 0,
-      "PlatformType": 0,
       "Position": {
         "x": 0.5,
         "y": 0.6
@@ -29,18 +27,10 @@
       "WeaponClass": "T"
     }
   ],
-  "BaseWeightModifier": 0,
-  "BuiltinDevices": [],
   "CellsExpansions": 0,
   "ColliderTolerance": 0.02,
   "Description": "",
-  "EnergyResistance": 0,
   "EngineColor": "#40FF7F00",
-  "EnginePosition": {
-    "x": 0,
-    "y": 0
-  },
-  "EngineSize": 0,
   "Engines": [
     {
       "Position": {
@@ -68,18 +58,14 @@
     "TurnRateBonus": 0,
     "VelocityBonus": 0
   },
-  "HeatResistance": 0,
   "IconImage": "fs2",
   "IconScale": 0.9,
   "Id": 116,
   "ItemType": 6,
-  "KineticResistance": 0,
   "Layout": "0000333444000000033334443000000433344430000044333333330000443333333300004433333333000004333333300000003333330000000003333000000000033330000000000333300000000005555000000000555555000000000555500000",
   "ModelImage": "fs2",
   "ModelScale": 1.8,
   "Name": "$f15_Cruiser",
-  "Regeneration": false,
-  "ShipCategory": 0,
   "ShipRarity": 0,
   "ShipType": 0,
   "SizeClass": 2

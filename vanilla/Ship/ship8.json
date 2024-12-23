@@ -4,7 +4,6 @@
       "AutoAimingArc": 0,
       "Image": "",
       "Offset": 0,
-      "PlatformType": 0,
       "Position": {
         "x": 0.6,
         "y": 0
@@ -15,18 +14,10 @@
       "WeaponClass": "L"
     }
   ],
-  "BaseWeightModifier": 0,
-  "BuiltinDevices": [],
   "CellsExpansions": 0,
   "ColliderTolerance": 0.02,
   "Description": "",
-  "EnergyResistance": 0,
   "EngineColor": "#40FF00CB",
-  "EnginePosition": {
-    "x": 0,
-    "y": 0
-  },
-  "EngineSize": 0,
   "Engines": [
     {
       "Position": {
@@ -54,18 +45,14 @@
     "TurnRateBonus": 1,
     "VelocityBonus": 1
   },
-  "HeatResistance": 0,
   "IconImage": "ship8",
   "IconScale": 1,
   "Id": 136,
   "ItemType": 6,
-  "KineticResistance": 0,
   "Layout": "000000000000000000000040000002444200022252220112555211000050000000000000000000000",
   "ModelImage": "ship8",
   "ModelScale": 1.2,
   "Name": "$ship_8",
-  "Regeneration": false,
-  "ShipCategory": 0,
   "ShipRarity": 0,
   "ShipType": 0,
   "SizeClass": -1

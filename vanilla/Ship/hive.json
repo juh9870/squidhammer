@@ -1,17 +1,9 @@
 {
   "Barrels": [],
-  "BaseWeightModifier": 0,
-  "BuiltinDevices": [],
   "CellsExpansions": 0,
   "ColliderTolerance": 0.02,
   "Description": "",
-  "EnergyResistance": 0,
   "EngineColor": "#407F7FFF",
-  "EnginePosition": {
-    "x": 0,
-    "y": 0
-  },
-  "EngineSize": 0,
   "Engines": [],
   "Faction": 1,
   "Features": {
@@ -33,18 +25,14 @@
     "TurnRateBonus": 0,
     "VelocityBonus": 0
   },
-  "HeatResistance": 0,
   "IconImage": "hive",
   "IconScale": 1,
   "Id": 124,
   "ItemType": 6,
-  "KineticResistance": 0,
   "Layout": "000000000000000000000000000011111110000000000001111111111100000000011111111111110000000111111212111111000001111112222211111100001111112222211111100011111122222221111110011112222222222211110011122222222222221110011112222222222211110011122222222222221110011112222222222211110011111122222221111100001111112222211111100001111112222211111100000111111212111111000000011111111111110000000001111111111100000000000011111110000000000000000000000000000",
   "ModelImage": "hive",
   "ModelScale": 12,
   "Name": "hive",
-  "Regeneration": false,
-  "ShipCategory": 0,
   "ShipRarity": 0,
   "ShipType": 3,
   "SizeClass": 2

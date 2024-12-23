@@ -4,7 +4,6 @@
       "AutoAimingArc": 0,
       "Image": "",
       "Offset": 0,
-      "PlatformType": 0,
       "Position": {
         "x": 0.9,
         "y": 0
@@ -15,18 +14,10 @@
       "WeaponClass": "L"
     }
   ],
-  "BaseWeightModifier": 0,
-  "BuiltinDevices": [],
   "CellsExpansions": 0,
   "ColliderTolerance": 0.02,
   "Description": "",
-  "EnergyResistance": 0,
   "EngineColor": "#40FFF096",
-  "EnginePosition": {
-    "x": 0,
-    "y": 0
-  },
-  "EngineSize": 0,
   "Engines": [
     {
       "Position": {
@@ -54,18 +45,14 @@
     "TurnRateBonus": 0,
     "VelocityBonus": 0
   },
-  "HeatResistance": 0,
   "IconImage": "f7s1_2",
   "IconScale": 0.5,
   "Id": 51,
   "ItemType": 6,
-  "KineticResistance": 0,
   "Layout": "0000040000000000400000000004000000000141000000002220000011122211100011222110000002520000000005000000000050000000005550000",
   "ModelImage": "f7s1_2",
   "ModelScale": 1,
   "Name": "$f7_Scout2",
-  "Regeneration": false,
-  "ShipCategory": 0,
   "ShipRarity": 1,
   "ShipType": 0,
   "SizeClass": -1

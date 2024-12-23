@@ -4,7 +4,6 @@
       "AutoAimingArc": 0,
       "Image": "",
       "Offset": 0,
-      "PlatformType": 0,
       "Position": {
         "x": -0.25,
         "y": 0.75
@@ -18,7 +17,6 @@
       "AutoAimingArc": 0,
       "Image": "",
       "Offset": 0,
-      "PlatformType": 0,
       "Position": {
         "x": -0.25,
         "y": -0.75
@@ -29,18 +27,10 @@
       "WeaponClass": "M"
     }
   ],
-  "BaseWeightModifier": 0,
-  "BuiltinDevices": [],
   "CellsExpansions": 0,
   "ColliderTolerance": 0.02,
   "Description": "",
-  "EnergyResistance": 0,
   "EngineColor": "#40FF00CB",
-  "EnginePosition": {
-    "x": 0,
-    "y": 0
-  },
-  "EngineSize": 0,
   "Engines": [
     {
       "Position": {
@@ -68,18 +58,14 @@
     "TurnRateBonus": 0,
     "VelocityBonus": 2
   },
-  "HeatResistance": 0,
   "IconImage": "ship3",
   "IconScale": 1,
   "Id": 130,
   "ItemType": 6,
-  "KineticResistance": 0,
   "Layout": "000000020000000000000020000000000000020000000000000222000000000000222000000000000222000000000001222100000000011222110000044111222111440044111222111440044100020001440000005555500000000005555500000000005050500000000005000500000",
   "ModelImage": "ship3",
   "ModelScale": 2.5,
   "Name": "$ship_3",
-  "Regeneration": false,
-  "ShipCategory": 0,
   "ShipRarity": 0,
   "ShipType": 0,
   "SizeClass": 1
