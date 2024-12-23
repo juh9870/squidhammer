@@ -18,6 +18,7 @@ use miette::{bail, miette, Context, IntoDiagnostic, Report};
 use serde::{Deserialize, Serialize};
 use std::collections::{BTreeMap, BTreeSet};
 use std::path::{Path, PathBuf};
+use tracing::info;
 use uuid::Uuid;
 use walkdir::WalkDir;
 
@@ -341,7 +342,9 @@ impl<IO: ProjectIO> Project<IO> {
         clear_validation_cache(&self.registry);
         // Double validate to ensure that validation cache is populated
         self.validate_all()?;
-        self.validate_all()
+        self.validate_all()?;
+        info!("Project built and validated successfully");
+        Ok(())
     }
 
     pub fn validate_all(&mut self) -> miette::Result<()> {
