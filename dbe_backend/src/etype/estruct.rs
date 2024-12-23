@@ -14,6 +14,7 @@ use ahash::AHashMap;
 use itertools::Itertools;
 use miette::{bail, miette, Context};
 use std::collections::BTreeMap;
+use tracing::warn;
 use ustr::{Ustr, UstrMap};
 
 #[derive(Debug, Clone)]
@@ -194,8 +195,9 @@ impl EStructData {
         if !inline {
             let data = j_fields(json_data)?;
             if !data.is_empty() {
-                bail!(
-                    "struct contains unknown fields: {}",
+                warn!(
+                    "struct `{}` contains unknown fields: {}",
+                    self.ident,
                     data.keys().map(|k| format!("`{k}`")).join(", ")
                 )
             }
