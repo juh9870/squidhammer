@@ -4,7 +4,7 @@ use codegen_schema::schema::{
 };
 use convert_case::{Case, Casing};
 use itertools::Itertools;
-use std::collections::{BTreeMap, HashMap};
+use std::collections::{BTreeMap, HashMap, HashSet};
 use std::path::Path;
 use std::sync::LazyLock;
 use tracing::error_span;
@@ -13,9 +13,21 @@ const SPECIAL_FIELDS: LazyLock<HashMap<&str, &str>> = LazyLock::new(|| {
     let entries = [
         (
             "eh:objects/component_data::AmmunitionId$0",
-            "object \"AmmunitionId\" \"sys:optional\" alias=\"Ammunition\" {\t\tobject \"Item\" \"sys:ids/numeric_ref\" {\t\t\tconst \"Id\" \"eh:ids/any_ammunition\"\t\t}\t}",
+            "object \"AmmunitionId\" \"sys:optional\" alias=\"Ammunition\" {\n\t\tobject \"Item\" \"sys:ids/numeric_ref\" {\n\t\t\tconst \"Id\" \"eh:ids/any_ammunition\"\n\t\t}\n\t}",
         ),
         ("eh:objects/component_data::AmmunitionId$1", ""),
+    ];
+
+    entries.iter().copied().collect()
+});
+
+const NO_DEPRECATION: LazyLock<HashSet<&str>> = LazyLock::new(|| {
+    let entries = [
+        "eh:objects/faction_data::Hidden$0",
+        "eh:objects/faction_data::Hostile$0",
+        "eh:objects/drone_bay_data::ImprovedAi$0",
+        "eh:objects/component_data::CellType$0",
+        "eh:objects/component_data::WeaponSlotType$0",
     ];
 
     entries.iter().copied().collect()
@@ -206,6 +218,8 @@ impl Ctx {
         let mut encountered = HashMap::new();
 
         for member in members {
+            let _guard = error_span!("Member", name = member.name).entered();
+
             let times_encountered = encountered.entry(member.name.clone()).or_insert(0);
             let field_path = format!("{}::{}${}", id, member.name, times_encountered);
             *times_encountered += 1;
@@ -221,7 +235,14 @@ impl Ctx {
                 continue;
             }
 
-            let _guard = error_span!("Member", name = member.name).entered();
+            if member
+                .options
+                .as_ref()
+                .is_some_and(|opts| opts.contains("obsolete"))
+                && !NO_DEPRECATION.contains(&field_path.as_str())
+            {
+                continue;
+            }
 
             let mut args = vec![];
             let mut generics = vec![];

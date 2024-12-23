@@ -28,7 +28,6 @@ struct title="ComponentStatsData" {
 	number "WeaponDamageModifier" min=-100 max=100
 	number "WeaponRangeModifier" min=-100 max=100
 	number "WeaponEnergyCostModifier" min=-100 max=100
-	number "AlterWeaponPlatform" type="int"
 	number "AutoAimingArc" min=0 max=360
 	number "TurretTurnSpeed" min=-1000 max=1000
 }

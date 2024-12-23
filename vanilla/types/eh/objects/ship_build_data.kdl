@@ -18,7 +18,6 @@ struct title="ShipBuildData" {
 	list "Components" {
 		object "Item" "eh:objects/installed_component"
 	}
-	boolean "NotAvailableInGame"
 	object "Perks" "eh:objects/ship_build_perks"
 	boolean "ExtendedLayout"
 	boolean "RandomColor"

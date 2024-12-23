@@ -10,5 +10,4 @@ struct title="ComponentRestrictions" {
 			const "Id" "eh:objects/component_group_tag"
 		}
 	}
-	string "UniqueComponentTag"
 }
