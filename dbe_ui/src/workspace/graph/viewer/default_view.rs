@@ -92,7 +92,6 @@ impl NodeView for DefaultNodeView {
         let Some(info) = input_data.ty.item_info() else {
             return Ok(any_pin());
         };
-        let mut shown = false;
         if pin.remotes.is_empty() {
             let mut full_ctx = viewer.ctx.as_full(snarl);
             if let Some(value) = full_ctx.get_inline_input_mut(pin.id)? {
@@ -111,38 +110,12 @@ impl NodeView for DefaultNodeView {
                     if res.inner.changed {
                         full_ctx.mark_dirty(pin.id.node);
                     }
-
-                    shown = true;
                 } else {
                     ui.horizontal(|ui| {
                         ui.label(&*input_data.name);
                         ui.label(format_value(value));
                     });
-                    shown = true;
                 }
-            }
-        }
-
-        if !shown {
-            let mut value = viewer.ctx.as_full(snarl).read_input(pin.id)?;
-            if has_inline_editor(registry, input_data.ty.ty(), false) {
-                let editor = editor_for_item(registry, info);
-                ui.add_enabled_ui(true, |ui| {
-                    ui.vertical(|ui| {
-                        editor.show(
-                            ui,
-                            registry,
-                            viewer.diagnostics.enter_field(input_data.name.as_str()),
-                            &input_data.name,
-                            &mut value,
-                        )
-                    });
-                });
-            } else {
-                ui.horizontal(|ui| {
-                    ui.label(&*input_data.name);
-                    ui.label(format_value(&value));
-                });
             }
         }
 
@@ -160,10 +133,8 @@ impl NodeView for DefaultNodeView {
         let registry = viewer.ctx.registry;
         let node = &snarl[pin.id.node];
         let output_data = node.try_output(viewer.ctx.as_node_context(), pin.id.output)?;
-        let value = viewer.ctx.as_full(snarl).read_output(pin.id)?;
         ui.horizontal(|ui| {
             ui.label(&*output_data.name);
-            ui.label(format_value(&value));
         });
 
         Ok(pin_info(&output_data.ty, registry))
