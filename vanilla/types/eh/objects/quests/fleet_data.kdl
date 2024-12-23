@@ -2,16 +2,11 @@ struct title="FleetData" {
 	object "Factions" "eh:objects/quests/faction_filter"
 	number "LevelBonus" min=-10000 max=10000 type="int"
 	boolean "NoRandomShips"
-	number "CombatTimeLimit" min=0 max=999 type="int"
-	object "LootCondition" "eh:enums/quests/reward_condition"
-	object "ExpCondition" "eh:enums/quests/reward_condition"
 	list "SpecificShips" {
 		object "Item" "sys:ids/numeric_ref" {
 			const "Id" "eh:objects/ship_build"
 		}
 	}
-	boolean "NoShipChanging"
-	boolean "PlayerHasOneShip"
 	object "CombatRules" "sys:optional" {
 		object "Item" "sys:ids/numeric_ref" {
 			const "Id" "eh:objects/quests/combat_rules"

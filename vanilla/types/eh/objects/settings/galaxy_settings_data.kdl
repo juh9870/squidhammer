@@ -32,11 +32,6 @@ struct title="GalaxySettingsData" singleton=true {
 			const "Id" "eh:objects/quests/quest"
 		}
 	}
-	object "StartingInvenory" "sys:optional" {
-		object "Item" "sys:ids/numeric_ref" {
-			const "Id" "eh:objects/quests/loot"
-		}
-	}
 	object "SurvivalCombatRules" "sys:optional" {
 		object "Item" "sys:ids/numeric_ref" {
 			const "Id" "eh:objects/quests/combat_rules"

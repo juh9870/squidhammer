@@ -24,17 +24,4 @@ struct title="ShipData" {
 	object "Features" "eh:objects/ship_features"
 	object "CellsExpansions" "eh:enums/toggle_state"
 	number "ColliderTolerance" default=0.02 min=0 max=1
-	object "EnginePosition" "sys:vec2"
-	number "EngineSize"
-	number "ShipCategory" type="int"
-	number "EnergyResistance"
-	number "KineticResistance"
-	number "HeatResistance"
-	boolean "Regeneration"
-	list "BuiltinDevices" {
-		object "Item" "sys:ids/numeric_ref" {
-			const "Id" "eh:objects/device"
-		}
-	}
-	number "BaseWeightModifier"
 }
