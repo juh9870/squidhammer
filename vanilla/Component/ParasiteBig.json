@@ -32,8 +32,7 @@
     "MaxComponentAmount": 0,
     "NotForMechanicShips": true,
     "NotForOrganicShips": false,
-    "ShipSizes": [],
-    "UniqueComponentTag": ""
+    "ShipSizes": []
   },
   "WeaponId": 111,
   "WeaponSlotType": "S"

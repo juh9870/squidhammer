@@ -4,7 +4,6 @@
       "AutoAimingArc": 360,
       "Image": "",
       "Offset": 0.7,
-      "PlatformType": 0,
       "Position": {
         "x": 0,
         "y": 0
@@ -15,18 +14,10 @@
       "WeaponClass": "LC"
     }
   ],
-  "BaseWeightModifier": 0,
-  "BuiltinDevices": [],
   "CellsExpansions": 0,
   "ColliderTolerance": 0.02,
   "Description": "",
-  "EnergyResistance": 0,
   "EngineColor": "#40FFF096",
-  "EnginePosition": {
-    "x": 0,
-    "y": 0
-  },
-  "EngineSize": 0,
   "Engines": [
     {
       "Position": {
@@ -54,18 +45,14 @@
     "TurnRateBonus": 0,
     "VelocityBonus": 0
   },
-  "HeatResistance": 0,
   "IconImage": "flagship5",
   "IconScale": 1.4,
   "Id": 6,
   "ItemType": 6,
-  "KineticResistance": 0,
   "Layout": "000000000000000000000000000011111110000000000002222222222200000000112222222222211000001112222222222211100001112222222222211100001112222222222211100011111122000221111110011111120444021111110011111104444401111110011111104444401111110011111104444401111110011111120444021111110011111322000223111110001111222222222111100001555222222222555100000555222222222555000000555155515551555000000001155515551100000000000055515550000000000000000000000000000",
   "ModelImage": "flagship5",
   "ModelScale": 5,
   "Name": "$f5_Flagship",
-  "Regeneration": false,
-  "ShipCategory": 0,
   "ShipRarity": 0,
   "ShipType": 4,
   "SizeClass": 4

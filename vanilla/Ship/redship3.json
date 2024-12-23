@@ -4,7 +4,6 @@
       "AutoAimingArc": 0,
       "Image": "",
       "Offset": 0,
-      "PlatformType": 0,
       "Position": {
         "x": 0.33,
         "y": 0.78
@@ -18,7 +17,6 @@
       "AutoAimingArc": 0,
       "Image": "",
       "Offset": 0,
-      "PlatformType": 0,
       "Position": {
         "x": 0.33,
         "y": -0.78
@@ -29,18 +27,10 @@
       "WeaponClass": "TL"
     }
   ],
-  "BaseWeightModifier": 0,
-  "BuiltinDevices": [],
   "CellsExpansions": 0,
   "ColliderTolerance": 0.02,
   "Description": "",
-  "EnergyResistance": 0,
   "EngineColor": "#40FF1000",
-  "EnginePosition": {
-    "x": 0,
-    "y": 0
-  },
-  "EngineSize": 0,
   "Engines": [
     {
       "Position": {
@@ -75,18 +65,14 @@
     "TurnRateBonus": 0,
     "VelocityBonus": 0
   },
-  "HeatResistance": 0,
   "IconImage": "red_ship3",
   "IconScale": 1,
   "Id": 147,
   "ItemType": 6,
-  "KineticResistance": 0,
   "Layout": "0000000000000000001110000000000111000000000111110000440122222104444112222211444411222221144441122222114444112222211440011155511100001015551010000000555000000000005000000",
   "ModelImage": "red_ship3",
   "ModelScale": 4,
   "Name": "$redship3",
-  "Regeneration": false,
-  "ShipCategory": 0,
   "ShipRarity": 0,
   "ShipType": 0,
   "SizeClass": 2

@@ -4,7 +4,6 @@
       "AutoAimingArc": 0,
       "Image": "",
       "Offset": 0,
-      "PlatformType": 0,
       "Position": {
         "x": 1,
         "y": 0
@@ -18,7 +17,6 @@
       "AutoAimingArc": 0,
       "Image": "",
       "Offset": 0,
-      "PlatformType": 0,
       "Position": {
         "x": 0.6,
         "y": 0.22
@@ -32,7 +30,6 @@
       "AutoAimingArc": 0,
       "Image": "",
       "Offset": 0,
-      "PlatformType": 0,
       "Position": {
         "x": 0.6,
         "y": -0.22
@@ -46,7 +43,6 @@
       "AutoAimingArc": 0,
       "Image": "",
       "Offset": 0,
-      "PlatformType": 0,
       "Position": {
         "x": 0.3,
         "y": 0.45
@@ -60,7 +56,6 @@
       "AutoAimingArc": 0,
       "Image": "",
       "Offset": 0,
-      "PlatformType": 0,
       "Position": {
         "x": 0.3,
         "y": -0.45
@@ -71,18 +66,10 @@
       "WeaponClass": "T"
     }
   ],
-  "BaseWeightModifier": 0,
-  "BuiltinDevices": [],
   "CellsExpansions": 0,
   "ColliderTolerance": 0.02,
   "Description": "",
-  "EnergyResistance": 0,
   "EngineColor": "#40FFFFB4",
-  "EnginePosition": {
-    "x": 0,
-    "y": 0
-  },
-  "EngineSize": 0,
   "Engines": [
     {
       "Position": {
@@ -110,18 +97,14 @@
     "TurnRateBonus": 0,
     "VelocityBonus": 0
   },
-  "HeatResistance": 0,
   "IconImage": "fns7",
   "IconScale": 0.9,
   "Id": 74,
   "ItemType": 6,
-  "KineticResistance": 0,
   "Layout": "0000000440000000000000044000000000000002200000000000004224000000000000422400000000004042240400000000404224040000000042222224000000011112211110000001111221111000000111222211100000011122221110000000022222200000000005555550000000000055550000000000000550000000",
   "ModelImage": "fns7",
   "ModelScale": 2.4,
   "Name": "$fn_Battleship",
-  "Regeneration": false,
-  "ShipCategory": 0,
   "ShipRarity": 0,
   "ShipType": 0,
   "SizeClass": 3

@@ -12,7 +12,6 @@
   "QuickCombatRules": 2,
   "ShipMinSpawnDistance": "IF(size == Destroyer, 5, size == Cruiser, 15, size == Battleship, 50, size == Titan, 100, 0)",
   "StarbaseCombatRules": 4,
-  "StartingInvenory": null,
   "StartingInventory": 12,
   "StartingShipBuilds": [
     39,

@@ -4,7 +4,6 @@
       "AutoAimingArc": 80,
       "Image": "scavenger_arm",
       "Offset": 0,
-      "PlatformType": 0,
       "Position": {
         "x": 0.45,
         "y": -0.5
@@ -15,18 +14,10 @@
       "WeaponClass": "L"
     }
   ],
-  "BaseWeightModifier": 0,
-  "BuiltinDevices": [],
   "CellsExpansions": 0,
   "ColliderTolerance": 0.02,
   "Description": "",
-  "EnergyResistance": 0,
   "EngineColor": "#40FF7F00",
-  "EnginePosition": {
-    "x": 0,
-    "y": 0
-  },
-  "EngineSize": 0,
   "Engines": [
     {
       "Position": {
@@ -54,18 +45,14 @@
     "TurnRateBonus": 0,
     "VelocityBonus": 0
   },
-  "HeatResistance": 0,
   "IconImage": "fs1",
   "IconScale": 0.7,
   "Id": 115,
   "ItemType": 6,
-  "KineticResistance": 0,
   "Layout": "003334400033334440033334440033333330033333330033333330033535330005555500000555000",
   "ModelImage": "fs1",
   "ModelScale": 1.2,
   "Name": "$f15_Destroyer",
-  "Regeneration": false,
-  "ShipCategory": 0,
   "ShipRarity": 0,
   "ShipType": 0,
   "SizeClass": 1

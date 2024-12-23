@@ -4,7 +4,6 @@
       "AutoAimingArc": 0,
       "Image": "",
       "Offset": 0,
-      "PlatformType": 0,
       "Position": {
         "x": -0.5,
         "y": 0
@@ -18,7 +17,6 @@
       "AutoAimingArc": 0,
       "Image": "",
       "Offset": 0,
-      "PlatformType": 0,
       "Position": {
         "x": -1,
         "y": 0
@@ -29,18 +27,10 @@
       "WeaponClass": "C"
     }
   ],
-  "BaseWeightModifier": 0,
-  "BuiltinDevices": [],
   "CellsExpansions": 0,
   "ColliderTolerance": 0.02,
   "Description": "",
-  "EnergyResistance": 0,
   "EngineColor": "#40B86A39",
-  "EnginePosition": {
-    "x": 0,
-    "y": 0
-  },
-  "EngineSize": 0,
   "Engines": [
     {
       "Position": {
@@ -68,18 +58,14 @@
     "TurnRateBonus": 0,
     "VelocityBonus": 0
   },
-  "HeatResistance": 0,
   "IconImage": "f6s2",
   "IconScale": 0.7,
   "Id": 46,
   "ItemType": 6,
-  "KineticResistance": 0,
   "Layout": "0000111000000013223000001132221000011322210000044222000005442225000050040050000000400000000004000000000040000000000000000",
   "ModelImage": "f6s2",
   "ModelScale": 1.2,
   "Name": "$f6_Destroyer",
-  "Regeneration": false,
-  "ShipCategory": 0,
   "ShipRarity": 0,
   "ShipType": 0,
   "SizeClass": 1

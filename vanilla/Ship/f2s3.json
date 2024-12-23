@@ -4,7 +4,6 @@
       "AutoAimingArc": 0,
       "Image": "",
       "Offset": 0,
-      "PlatformType": 0,
       "Position": {
         "x": 0.9,
         "y": 0
@@ -15,18 +14,10 @@
       "WeaponClass": "S"
     }
   ],
-  "BaseWeightModifier": 0,
-  "BuiltinDevices": [],
   "CellsExpansions": 0,
   "ColliderTolerance": 0.02,
   "Description": "",
-  "EnergyResistance": 0,
   "EngineColor": "#40FFBABA",
-  "EnginePosition": {
-    "x": 0,
-    "y": 0
-  },
-  "EngineSize": 0,
   "Engines": [
     {
       "Position": {
@@ -54,18 +45,14 @@
     "TurnRateBonus": 0,
     "VelocityBonus": 0
   },
-  "HeatResistance": 0,
   "IconImage": "f2s3",
   "IconScale": 0.7,
   "Id": 26,
   "ItemType": 6,
-  "KineticResistance": 0,
   "Layout": "0000000000000044000001114411100112222110113222231111322223111132222311111255211110055550010000000000",
   "ModelImage": "f2s3",
   "ModelScale": 1.5,
   "Name": "$f2_Cruiser",
-  "Regeneration": false,
-  "ShipCategory": 0,
   "ShipRarity": 0,
   "ShipType": 0,
   "SizeClass": 2

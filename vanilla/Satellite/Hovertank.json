@@ -4,7 +4,6 @@
       "AutoAimingArc": 360,
       "Image": "hovertank_gun",
       "Offset": 0,
-      "PlatformType": 0,
       "Position": {
         "x": -0.2,
         "y": 0

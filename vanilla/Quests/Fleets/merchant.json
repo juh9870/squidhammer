@@ -1,7 +1,5 @@
 {
   "CombatRules": null,
-  "CombatTimeLimit": 0,
-  "ExpCondition": 0,
   "Factions": {
     "List": [],
     "Type": 3
@@ -9,9 +7,6 @@
   "Id": 2,
   "ItemType": 18,
   "LevelBonus": 20,
-  "LootCondition": 0,
   "NoRandomShips": false,
-  "NoShipChanging": false,
-  "PlayerHasOneShip": false,
   "SpecificShips": []
 }

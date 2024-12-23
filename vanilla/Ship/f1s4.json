@@ -4,7 +4,6 @@
       "AutoAimingArc": 0,
       "Image": "",
       "Offset": 0,
-      "PlatformType": 0,
       "Position": {
         "x": -0.4,
         "y": 0.85
@@ -18,7 +17,6 @@
       "AutoAimingArc": 0,
       "Image": "",
       "Offset": 0,
-      "PlatformType": 0,
       "Position": {
         "x": -0.5,
         "y": 0.5
@@ -32,7 +30,6 @@
       "AutoAimingArc": 0,
       "Image": "",
       "Offset": 0,
-      "PlatformType": 0,
       "Position": {
         "x": -0.5,
         "y": -0.5
@@ -46,7 +43,6 @@
       "AutoAimingArc": 0,
       "Image": "",
       "Offset": 0,
-      "PlatformType": 0,
       "Position": {
         "x": -0.4,
         "y": -0.85
@@ -57,18 +53,10 @@
       "WeaponClass": "C"
     }
   ],
-  "BaseWeightModifier": 0,
-  "BuiltinDevices": [],
   "CellsExpansions": 0,
   "ColliderTolerance": 0.02,
   "Description": "",
-  "EnergyResistance": 0,
   "EngineColor": "#40FFF096",
-  "EnginePosition": {
-    "x": 0,
-    "y": 0
-  },
-  "EngineSize": 0,
   "Engines": [
     {
       "Position": {
@@ -96,18 +84,14 @@
     "TurnRateBonus": 0,
     "VelocityBonus": 0
   },
-  "HeatResistance": 0,
   "IconImage": "f1s4",
   "IconScale": 0.9,
   "Id": 21,
   "ItemType": 6,
-  "KineticResistance": 0,
   "Layout": "000000111000000000000222000000000000222000000000000222000000000000222000000000000333000000000000333000000000000111000000000000333000000000000333000000004041222140400014142222241410014142222241410004145555541400000005555500000",
   "ModelImage": "f1s4",
   "ModelScale": 2,
   "Name": "$f1_Battleship",
-  "Regeneration": false,
-  "ShipCategory": 0,
   "ShipRarity": 0,
   "ShipType": 0,
   "SizeClass": 3

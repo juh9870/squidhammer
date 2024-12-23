@@ -4,7 +4,6 @@
       "AutoAimingArc": 20,
       "Image": "",
       "Offset": 0,
-      "PlatformType": 0,
       "Position": {
         "x": 0.9,
         "y": 0.35
@@ -18,7 +17,6 @@
       "AutoAimingArc": 0,
       "Image": "",
       "Offset": 0,
-      "PlatformType": 0,
       "Position": {
         "x": 0.86,
         "y": -0.31
@@ -32,7 +30,6 @@
       "AutoAimingArc": 20,
       "Image": "",
       "Offset": 0,
-      "PlatformType": 0,
       "Position": {
         "x": 0.84,
         "y": 0.46
@@ -46,7 +43,6 @@
       "AutoAimingArc": 20,
       "Image": "",
       "Offset": 0,
-      "PlatformType": 0,
       "Position": {
         "x": 0.72,
         "y": -0.44
@@ -60,7 +56,6 @@
       "AutoAimingArc": 20,
       "Image": "",
       "Offset": 0,
-      "PlatformType": 0,
       "Position": {
         "x": 0.82,
         "y": 0.57
@@ -74,7 +69,6 @@
       "AutoAimingArc": 0,
       "Image": "",
       "Offset": 0,
-      "PlatformType": 0,
       "Position": {
         "x": 0.2,
         "y": -0.8
@@ -88,7 +82,6 @@
       "AutoAimingArc": 0,
       "Image": "",
       "Offset": 0,
-      "PlatformType": 0,
       "Position": {
         "x": 0.2,
         "y": 0.93
@@ -102,7 +95,6 @@
       "AutoAimingArc": 0,
       "Image": "",
       "Offset": 0,
-      "PlatformType": 0,
       "Position": {
         "x": 0.2,
         "y": -0.9
@@ -113,18 +105,10 @@
       "WeaponClass": "M"
     }
   ],
-  "BaseWeightModifier": 0,
-  "BuiltinDevices": [],
   "CellsExpansions": 0,
   "ColliderTolerance": 0.02,
   "Description": "",
-  "EnergyResistance": 0,
   "EngineColor": "#20FFFFFF",
-  "EnginePosition": {
-    "x": 0,
-    "y": 0
-  },
-  "EngineSize": 0,
   "Engines": [
     {
       "Position": {
@@ -152,18 +136,14 @@
     "TurnRateBonus": 0,
     "VelocityBonus": 0
   },
-  "HeatResistance": 0,
   "IconImage": "flagship0",
   "IconScale": 1.2,
   "Id": 1,
   "ItemType": 6,
-  "KineticResistance": 0,
   "Layout": "000000000000000000000000000041111040400000000404041111140400000000404141111140400000000414141111141400000000414133333331400000000411322222233100000001133222222223444000001332222222222444000444332222222222331444444332222222222331444011332222222222331110001132222222222331000000113222222223311000000011322222233311000000001133333333310000000000111555551100000000000015555551000000000000005555550000000000000000555500000000000000000000000000000",
   "ModelImage": "flagship0",
   "ModelScale": 5,
   "Name": "$f0_Flagship",
-  "Regeneration": false,
-  "ShipCategory": 0,
   "ShipRarity": 0,
   "ShipType": 4,
   "SizeClass": 4

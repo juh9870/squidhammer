@@ -4,7 +4,6 @@
       "AutoAimingArc": 20,
       "Image": "",
       "Offset": 0,
-      "PlatformType": 0,
       "Position": {
         "x": 0.4,
         "y": 0.9
@@ -18,7 +17,6 @@
       "AutoAimingArc": 20,
       "Image": "",
       "Offset": 0,
-      "PlatformType": 0,
       "Position": {
         "x": 0.4,
         "y": -0.9
@@ -32,7 +30,6 @@
       "AutoAimingArc": 20,
       "Image": "",
       "Offset": 0,
-      "PlatformType": 0,
       "Position": {
         "x": 0.2,
         "y": 0
@@ -43,18 +40,10 @@
       "WeaponClass": ""
     }
   ],
-  "BaseWeightModifier": 0,
-  "BuiltinDevices": [],
   "CellsExpansions": 0,
   "ColliderTolerance": 0.02,
   "Description": "",
-  "EnergyResistance": 0,
   "EngineColor": "#40FFFFFF",
-  "EnginePosition": {
-    "x": 0,
-    "y": 0
-  },
-  "EngineSize": 0,
   "Engines": [
     {
       "Position": {
@@ -82,18 +71,14 @@
     "TurnRateBonus": 0,
     "VelocityBonus": 0
   },
-  "HeatResistance": 0,
   "IconImage": "unknown_ship",
   "IconScale": 0.5,
   "Id": 84,
   "ItemType": 6,
-  "KineticResistance": 0,
   "Layout": "0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000330000003300000000000033000000330000004400330000000000330044440033000000000033004444003333344443333300444400333334444333330044443333333444433333334433333333344443333333330033333334444333333300003333333333333333330000005555555555555500000000555555555555550000000000550000005500000000000055000000550000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
   "ModelImage": "space_invader",
   "ModelScale": 3,
   "Name": "Space Invader",
-  "Regeneration": false,
-  "ShipCategory": 0,
   "ShipRarity": 0,
   "ShipType": 3,
   "SizeClass": 3

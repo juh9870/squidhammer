@@ -4,7 +4,6 @@
       "AutoAimingArc": 0,
       "Image": "",
       "Offset": 0,
-      "PlatformType": 0,
       "Position": {
         "x": 1,
         "y": 0
@@ -15,18 +14,10 @@
       "WeaponClass": "T"
     }
   ],
-  "BaseWeightModifier": 0,
-  "BuiltinDevices": [],
   "CellsExpansions": 0,
   "ColliderTolerance": 0.02,
   "Description": "",
-  "EnergyResistance": 0,
   "EngineColor": "#4098E5FF",
-  "EnginePosition": {
-    "x": 0,
-    "y": 0
-  },
-  "EngineSize": 0,
   "Engines": [
     {
       "Position": {
@@ -54,18 +45,14 @@
     "TurnRateBonus": 0,
     "VelocityBonus": 0
   },
-  "HeatResistance": 0,
   "IconImage": "f3s1_2",
   "IconScale": 0.6,
   "Id": 30,
   "ItemType": 6,
-  "KineticResistance": 0,
   "Layout": "0004400000044000000440000012210000322300032222300322223000555500",
   "ModelImage": "f3s1_2",
   "ModelScale": 1,
   "Name": "$f3_Scout2",
-  "Regeneration": false,
-  "ShipCategory": 0,
   "ShipRarity": 1,
   "ShipType": 0,
   "SizeClass": -1

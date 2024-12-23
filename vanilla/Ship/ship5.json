@@ -4,7 +4,6 @@
       "AutoAimingArc": 360,
       "Image": "turret",
       "Offset": 0,
-      "PlatformType": 0,
       "Position": {
         "x": 0.35,
         "y": 0
@@ -15,18 +14,10 @@
       "WeaponClass": "C"
     }
   ],
-  "BaseWeightModifier": 0,
-  "BuiltinDevices": [],
   "CellsExpansions": 0,
   "ColliderTolerance": 0.02,
   "Description": "",
-  "EnergyResistance": 0,
   "EngineColor": "#4000FBFF",
-  "EnginePosition": {
-    "x": 0,
-    "y": 0
-  },
-  "EngineSize": 0,
   "Engines": [
     {
       "Position": {
@@ -68,18 +59,14 @@
     "TurnRateBonus": 0,
     "VelocityBonus": 0
   },
-  "HeatResistance": 0,
   "IconImage": "ship5",
   "IconScale": 1,
   "Id": 133,
   "ItemType": 6,
-  "KineticResistance": 0,
   "Layout": "000000111000000000000111000000000001111100000000001444100000000004444400000000004444400000000002222200000000002222200000000112222211000001112222211100001512222215100001502222205100000502252205000000500555005000000000050000000",
   "ModelImage": "ship5",
   "ModelScale": 2.5,
   "Name": "$ship_5",
-  "Regeneration": false,
-  "ShipCategory": 0,
   "ShipRarity": 0,
   "ShipType": 0,
   "SizeClass": 3

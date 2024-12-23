@@ -4,7 +4,6 @@
       "AutoAimingArc": 20,
       "Image": "",
       "Offset": 0,
-      "PlatformType": 0,
       "Position": {
         "x": 0.2,
         "y": 0.5
@@ -18,7 +17,6 @@
       "AutoAimingArc": 20,
       "Image": "",
       "Offset": 0,
-      "PlatformType": 0,
       "Position": {
         "x": 0.3,
         "y": 0
@@ -32,7 +30,6 @@
       "AutoAimingArc": 20,
       "Image": "",
       "Offset": 0,
-      "PlatformType": 0,
       "Position": {
         "x": 0.2,
         "y": -0.5
@@ -43,18 +40,10 @@
       "WeaponClass": "S"
     }
   ],
-  "BaseWeightModifier": 0,
-  "BuiltinDevices": [],
   "CellsExpansions": 0,
   "ColliderTolerance": 0.02,
   "Description": "",
-  "EnergyResistance": 0,
   "EngineColor": "#80FFFFFF",
-  "EnginePosition": {
-    "x": 0,
-    "y": 0
-  },
-  "EngineSize": 0,
   "Engines": [
     {
       "Position": {
@@ -82,18 +71,14 @@
     "TurnRateBonus": 0,
     "VelocityBonus": 0
   },
-  "HeatResistance": 0,
   "IconImage": "fns4",
   "IconScale": 1,
   "Id": 69,
   "ItemType": 6,
-  "KineticResistance": 0,
   "Layout": "0000010100000000001010000000000101000000000010100000000002020000000040242040000044224224400004422222440000442222244000000022200000000002250000000000555000000000055500000",
   "ModelImage": "fns4",
   "ModelScale": 2,
   "Name": "$fn_Destroyer",
-  "Regeneration": false,
-  "ShipCategory": 0,
   "ShipRarity": 0,
   "ShipType": 0,
   "SizeClass": 2

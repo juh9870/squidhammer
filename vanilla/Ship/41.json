@@ -4,7 +4,6 @@
       "AutoAimingArc": 0,
       "Image": "",
       "Offset": 0,
-      "PlatformType": 0,
       "Position": {
         "x": 0.5,
         "y": 0
@@ -15,18 +14,10 @@
       "WeaponClass": ""
     }
   ],
-  "BaseWeightModifier": 0,
-  "BuiltinDevices": [],
   "CellsExpansions": 0,
   "ColliderTolerance": 0.02,
   "Description": "",
-  "EnergyResistance": 0,
   "EngineColor": "#40B4FFB4",
-  "EnginePosition": {
-    "x": 0,
-    "y": 0
-  },
-  "EngineSize": 0,
   "Engines": [
     {
       "Position": {
@@ -56,18 +47,14 @@
     "TurnRateBonus": 0,
     "VelocityBonus": 0
   },
-  "HeatResistance": 0,
   "IconImage": "drone4",
   "IconScale": 0.5,
   "Id": 89,
   "ItemType": 6,
-  "KineticResistance": 0,
   "Layout": "040121050",
   "ModelImage": "drone4",
   "ModelScale": 0.5,
   "Name": "Drone",
-  "Regeneration": false,
-  "ShipCategory": 0,
   "ShipRarity": 0,
   "ShipType": 1,
   "SizeClass": -1

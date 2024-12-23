@@ -4,7 +4,6 @@
       "AutoAimingArc": 0,
       "Image": "",
       "Offset": 0,
-      "PlatformType": 0,
       "Position": {
         "x": 1,
         "y": 0
@@ -15,18 +14,10 @@
       "WeaponClass": "S"
     }
   ],
-  "BaseWeightModifier": 0,
-  "BuiltinDevices": [],
   "CellsExpansions": 0,
   "ColliderTolerance": 0.02,
   "Description": "",
-  "EnergyResistance": 0,
   "EngineColor": "#40F0D2B4",
-  "EnginePosition": {
-    "x": 0,
-    "y": 0
-  },
-  "EngineSize": 0,
   "Engines": [
     {
       "Position": {
@@ -54,18 +45,14 @@
     "TurnRateBonus": 0,
     "VelocityBonus": 0
   },
-  "HeatResistance": 0,
   "IconImage": "f9s1",
   "IconScale": 0.5,
   "Id": 59,
   "ItemType": 6,
-  "KineticResistance": 0,
   "Layout": "000141000000242000000242000000242000000121000001222100000121000000555000000505000",
   "ModelImage": "f9s1",
   "ModelScale": 1.2,
   "Name": "$f9_Scout",
-  "Regeneration": false,
-  "ShipCategory": 0,
   "ShipRarity": 0,
   "ShipType": 0,
   "SizeClass": -1

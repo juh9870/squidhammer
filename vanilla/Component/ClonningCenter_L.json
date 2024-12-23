@@ -28,8 +28,7 @@
     "NotForOrganicShips": false,
     "ShipSizes": [
       3
-    ],
-    "UniqueComponentTag": ""
+    ]
   },
   "WeaponId": null,
   "WeaponSlotType": ""

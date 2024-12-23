@@ -4,7 +4,6 @@
       "AutoAimingArc": 0,
       "Image": "",
       "Offset": 0,
-      "PlatformType": 0,
       "Position": {
         "x": 0,
         "y": 0.9
@@ -18,7 +17,6 @@
       "AutoAimingArc": 0,
       "Image": "",
       "Offset": 0,
-      "PlatformType": 0,
       "Position": {
         "x": 0,
         "y": -0.9
@@ -32,7 +30,6 @@
       "AutoAimingArc": 80,
       "Image": "",
       "Offset": 0.85,
-      "PlatformType": 0,
       "Position": {
         "x": 0,
         "y": 0
@@ -43,18 +40,10 @@
       "WeaponClass": "L"
     }
   ],
-  "BaseWeightModifier": 0,
-  "BuiltinDevices": [],
   "CellsExpansions": 0,
   "ColliderTolerance": 0.02,
   "Description": "",
-  "EnergyResistance": 0,
   "EngineColor": "#40FFF096",
-  "EnginePosition": {
-    "x": 0,
-    "y": 0
-  },
-  "EngineSize": 0,
   "Engines": [
     {
       "Position": {
@@ -82,18 +71,14 @@
     "TurnRateBonus": 0,
     "VelocityBonus": 0
   },
-  "HeatResistance": 0,
   "IconImage": "flagship7",
   "IconScale": 1.2,
   "Id": 8,
   "ItemType": 6,
-  "KineticResistance": 0,
   "Layout": "000000000000000000000000000011111110000000000001222222222100000000122222222222221000001222222222222222100002222222222222222200002222222222222222200044222222222222222440044222222000222222440044222220444022222440011112220444022211110011112220444022211110011112222000222211110011112222222222211110011112222555222211110001112225555522211100000112255555552211000000111155555551111000000001155555551100000000000055555550000000000000000000000000000",
   "ModelImage": "flagship7",
   "ModelScale": 5,
   "Name": "$f7_Flagship",
-  "Regeneration": false,
-  "ShipCategory": 0,
   "ShipRarity": 0,
   "ShipType": 4,
   "SizeClass": 4
