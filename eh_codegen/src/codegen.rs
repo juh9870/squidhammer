@@ -4,9 +4,22 @@ use codegen_schema::schema::{
 };
 use convert_case::{Case, Casing};
 use itertools::Itertools;
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, HashMap};
 use std::path::Path;
+use std::sync::LazyLock;
 use tracing::error_span;
+
+const SPECIAL_FIELDS: LazyLock<HashMap<&str, &str>> = LazyLock::new(|| {
+    let entries = [
+        (
+            "eh:objects/component_data::AmmunitionId$0",
+            "object \"AmmunitionId\" \"sys:optional\" alias=\"Ammunition\" {\t\tobject \"Item\" \"sys:ids/numeric_ref\" {\t\t\tconst \"Id\" \"eh:ids/any_ammunition\"\t\t}\t}",
+        ),
+        ("eh:objects/component_data::AmmunitionId$1", ""),
+    ];
+
+    entries.iter().copied().collect()
+});
 
 #[derive(Debug, Default)]
 pub struct Ctx {
@@ -190,7 +203,24 @@ impl Ctx {
 
         let typeid_fmt = |id: String| format!("\"{}\"", typeid(&self.typeids, id,));
 
+        let mut encountered = HashMap::new();
+
         for member in members {
+            let times_encountered = encountered.entry(member.name.clone()).or_insert(0);
+            let field_path = format!("{}::{}${}", id, member.name, times_encountered);
+            *times_encountered += 1;
+
+            if member.name == "AmmunitionId" {
+                dbg!(&field_path);
+            }
+
+            if let Some(special) = SPECIAL_FIELDS.get(&field_path.as_str()) {
+                if !special.is_empty() {
+                    code += &format!("\n\t{}", special.trim());
+                }
+                continue;
+            }
+
             let _guard = error_span!("Member", name = member.name).entered();
 
             let mut args = vec![];
