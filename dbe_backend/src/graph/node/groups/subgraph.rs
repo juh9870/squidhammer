@@ -152,7 +152,7 @@ impl Node for SubgraphNode {
                 context.registry,
                 context.graphs,
                 &mut cache,
-                variables.side_effects.clone(), // TODO: proper side effects context
+                variables.side_effects.with_subgraph(self.graph_id),
                 true,
                 &graph_in,
                 &mut graph_out,
