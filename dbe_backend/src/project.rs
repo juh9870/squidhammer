@@ -3,6 +3,7 @@ use crate::graph::execution::GraphExecutionContext;
 use crate::json_utils::formatter::DBEJsonFormatter;
 use crate::json_utils::{json_kind, JsonValue};
 use crate::m_try;
+use crate::project::docs::{Docs, DocsFile};
 use crate::project::io::{FilesystemIO, ProjectIO};
 use crate::project::project_graph::{ProjectGraph, ProjectGraphs};
 use crate::project::side_effects::SideEffectsContext;
@@ -22,17 +23,20 @@ use tracing::info;
 use uuid::Uuid;
 use walkdir::WalkDir;
 
+pub mod docs;
 pub mod io;
 pub mod project_graph;
 pub mod side_effects;
 
 pub const EXTENSION_GRAPH: &str = "dbegraph";
 pub const EXTENSION_VALUE: &str = "dbevalue";
+pub const EXTENSION_DOCS: &str = "docs.toml";
 
 #[derive(Debug)]
 pub struct Project<IO> {
     /// Types registry
     pub registry: ETypesRegistry,
+    pub docs: Docs,
     /// Diagnostic context
     pub diagnostics: DiagnosticContext,
     /// Files present in the project
@@ -145,6 +149,7 @@ impl<IO: ProjectIO> Project<IO> {
         let mut import_jsons = BTreeMap::<Utf8PathBuf, (JsonValue, Option<EDataType>)>::new();
         let mut types_jsons = BTreeMap::<Utf8PathBuf, JsonValue>::new();
         let mut graphs = BTreeMap::<Utf8PathBuf, JsonValue>::new();
+        let mut docs = Docs::default();
 
         fn utf8str(path: &Utf8Path, data: Vec<u8>) -> miette::Result<String> {
             String::from_utf8(data).into_diagnostic().with_context(|| {
@@ -164,6 +169,7 @@ impl<IO: ProjectIO> Project<IO> {
 
             let path = Utf8Path::from_path(relative)
                 .ok_or_else(|| miette!("Got non-UTF8 path at {}", relative.display()))?;
+            let lower_path = path.as_str().to_lowercase();
 
             let Some(ext) = path.extension() else {
                 continue;
@@ -200,6 +206,14 @@ impl<IO: ProjectIO> Project<IO> {
                             .context("failed to deserialize graph JSON")?;
                         graphs.insert(path.to_path_buf(), data);
                     }
+                    "toml" if lower_path.ends_with(EXTENSION_DOCS) => {
+                        let data =
+                            toml::de::from_str::<DocsFile>(&utf8str(path, io.read_file(path)?)?)
+                                .into_diagnostic()
+                                .context("failed to deserialize docs TOML")?;
+
+                        docs.add_file(data, path.to_path_buf())?;
+                    }
                     "toml"
                         if path != "project.toml"
                             && path.starts_with(&config.types_config.root) =>
@@ -207,7 +221,7 @@ impl<IO: ProjectIO> Project<IO> {
                         let data =
                             toml::de::from_str::<JsonValue>(&utf8str(path, io.read_file(path)?)?)
                                 .into_diagnostic()
-                                .context("failed to deserialize TOML")?;
+                                .context("failed to deserialize types config TOML")?;
                         types_jsons.insert(path.to_path_buf(), data);
                     }
                     _ => {}
@@ -222,6 +236,7 @@ impl<IO: ProjectIO> Project<IO> {
 
         let mut project = Self {
             registry,
+            docs,
             diagnostics: Default::default(),
             files: Default::default(),
             graphs: Default::default(),
