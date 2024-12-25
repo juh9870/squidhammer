@@ -9,6 +9,7 @@ use serde::{Deserialize, Serialize};
 use std::borrow::Cow;
 
 pub mod colors;
+pub mod docs;
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum ToolPanel {
@@ -16,6 +17,7 @@ pub enum ToolPanel {
     Diagnostics,
     Log,
     Theme,
+    Docs,
 }
 
 pub struct ToolPanelViewer<'a>(pub &'a mut DbeApp);
@@ -29,6 +31,7 @@ impl ToolbarViewer for ToolPanelViewer<'_> {
             ToolPanel::Diagnostics => "Diagnostics".into(),
             ToolPanel::Log => "Log".into(),
             ToolPanel::Theme => "Theme".into(),
+            ToolPanel::Docs => "Docs".into(),
         }
     }
 
@@ -45,6 +48,9 @@ impl ToolbarViewer for ToolPanelViewer<'_> {
             }
             ToolPanel::Theme => {
                 colors_tab(ui, self.0);
+            }
+            ToolPanel::Docs => {
+                docs::docs_tab(ui, self.0);
             }
         }
     }

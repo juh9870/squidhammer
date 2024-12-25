@@ -74,6 +74,10 @@ pub fn get_snarl_node(id: &Ustr) -> Option<SnarlNode> {
     NODE_FACTORIES.borrow().get(id).map(|f| f.create())
 }
 
+pub fn get_node_factory(id: &Ustr) -> Option<Arc<dyn NodeFactory>> {
+    NODE_FACTORIES.borrow().get(id).cloned()
+}
+
 pub fn all_node_factories() -> AtomicRef<'static, UstrMap<Arc<dyn NodeFactory>>> {
     NODE_FACTORIES.borrow()
 }

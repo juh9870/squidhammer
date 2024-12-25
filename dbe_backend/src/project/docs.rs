@@ -1,5 +1,6 @@
 use ahash::AHashMap;
 use camino::Utf8PathBuf;
+use duplicate::duplicate_item;
 use miette::bail;
 use serde::{Deserialize, Serialize};
 use std::collections::hash_map::Entry;
@@ -12,7 +13,7 @@ pub struct Docs {
 }
 
 impl Docs {
-    pub fn add_file(&mut self, file: DocsFile, location: Utf8PathBuf) -> miette::Result<()> {
+    pub fn add_file(&mut self, mut file: DocsFile, location: Utf8PathBuf) -> miette::Result<()> {
         match (file.nodes.len(), file.types.len()) {
             (0, 0) => {
                 // nothing to do
@@ -31,6 +32,8 @@ impl Docs {
                 bail!("Nodes and types cannot be documented in the same file, and only one of either can be documented in a single file");
             }
         }
+
+        file.validate()?;
 
         for (name, node) in file.nodes {
             match self.nodes.entry(name) {
@@ -80,19 +83,51 @@ pub struct DocsFile {
     pub types: AHashMap<String, TypeDocs>,
 }
 
+impl DocsFile {
+    pub fn validate(&mut self) -> miette::Result<()> {
+        for node in self.nodes.values_mut() {
+            validate_nonempty(&mut node.title, "title")?;
+            validate_dd(node)?;
+            for input in &mut node.inputs {
+                validate_nonempty(&mut input.title, "input title")?;
+                validate_nonempty(&mut input.id, "input id")?;
+                validate_dd(input)?;
+            }
+            for output in &mut node.outputs {
+                validate_nonempty(&mut output.title, "output title")?;
+                validate_nonempty(&mut output.id, "output id")?;
+                validate_dd(output)?;
+            }
+        }
+
+        for ty in self.types.values_mut() {
+            validate_dd(ty)?;
+            for field in ty.fields.values_mut() {
+                validate_dd(field)?;
+            }
+            for variant in ty.variants.values_mut() {
+                validate_dd(variant)?;
+            }
+        }
+
+        Ok(())
+    }
+}
+
 #[derive(Debug, Serialize, Deserialize)]
 pub struct NodeDocs {
     pub title: String,
     pub description: String,
     #[serde(default)]
     pub docs: String,
-    pub inputs: AHashMap<String, NodeIODocs>,
-    pub outputs: AHashMap<String, NodeIODocs>,
+    pub inputs: Vec<NodeIODocs>,
+    pub outputs: Vec<NodeIODocs>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct NodeIODocs {
     pub title: String,
+    pub id: String,
     #[serde(default)]
     pub description: String,
     #[serde(default)]
@@ -139,5 +174,56 @@ impl<T> Deref for WithLocation<T> {
 impl<T> DerefMut for WithLocation<T> {
     fn deref_mut(&mut self) -> &mut Self::Target {
         &mut self.value
+    }
+}
+
+fn validate_nonempty(s: &mut String, field_name: &str) -> miette::Result<()> {
+    *s = s.trim().to_string();
+    if s.is_empty() {
+        bail!("{} cannot be empty", field_name);
+    }
+    Ok(())
+}
+
+fn validate_dd(docs: &mut impl DocsDescription) -> miette::Result<()> {
+    validate_nonempty(docs.description_mut(), "description")?;
+
+    let docs = docs.docs_mut();
+    *docs = docs.trim().to_string();
+
+    Ok(())
+}
+
+pub trait DocsDescription {
+    fn description(&self) -> &str;
+    fn docs(&self) -> &str;
+
+    fn description_mut(&mut self) -> &mut String;
+    fn docs_mut(&mut self) -> &mut String;
+}
+
+#[duplicate_item(
+    ImplDocs;
+    [NodeDocs];
+    [NodeIODocs];
+    [TypeDocs];
+    [FieldDocs];
+    [VariantDocs];
+)]
+impl DocsDescription for ImplDocs {
+    fn description(&self) -> &str {
+        &self.description
+    }
+
+    fn docs(&self) -> &str {
+        &self.docs
+    }
+
+    fn description_mut(&mut self) -> &mut String {
+        &mut self.description
+    }
+
+    fn docs_mut(&mut self) -> &mut String {
+        &mut self.docs
     }
 }
