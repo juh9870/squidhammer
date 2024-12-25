@@ -9,7 +9,7 @@ use std::path::Path;
 use std::sync::LazyLock;
 use tracing::error_span;
 
-const SPECIAL_FIELDS: LazyLock<HashMap<&str, &str>> = LazyLock::new(|| {
+static SPECIAL_FIELDS: LazyLock<HashMap<&str, &str>> = LazyLock::new(|| {
     let entries = [
         (
             "eh:objects/component_data::AmmunitionId$0",
@@ -21,7 +21,7 @@ const SPECIAL_FIELDS: LazyLock<HashMap<&str, &str>> = LazyLock::new(|| {
     entries.iter().copied().collect()
 });
 
-const NO_DEPRECATION: LazyLock<HashSet<&str>> = LazyLock::new(|| {
+static NO_DEPRECATION: LazyLock<HashSet<&str>> = LazyLock::new(|| {
     let entries = [
         "eh:objects/faction_data::Hidden$0",
         "eh:objects/faction_data::Hostile$0",
