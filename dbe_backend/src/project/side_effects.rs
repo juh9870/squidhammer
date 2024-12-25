@@ -1,10 +1,18 @@
+use crate::m_try;
+use crate::project::side_effects::mappings::Mappings;
 use crate::project::{Project, ProjectFile};
+use crate::registry::ETypesRegistry;
 use crate::value::EValue;
-use camino::Utf8PathBuf;
+use ahash::AHashMap;
+use camino::{Utf8Path, Utf8PathBuf};
 use egui_snarl::NodeId;
 use maybe_owned::MaybeOwnedMut;
-use miette::bail;
+use miette::{bail, WrapErr};
+use std::collections::{btree_map, hash_map, BTreeMap};
+use std::hash::{Hash, Hasher};
 use uuid::Uuid;
+
+pub mod mappings;
 
 #[derive(Debug)]
 pub enum SideEffect {
@@ -24,7 +32,7 @@ impl SideEffect {
             SideEffect::EmitPersistentFile { value, path } => {
                 match project.files.get(&path) {
                     None => {}
-                    Some(ProjectFile::GeneratedValue(_)) => {
+                    Some(ProjectFile::GeneratedValue(..)) => {
                         // ok to overwrite
                     }
                     Some(_) => {
@@ -55,12 +63,14 @@ impl SideEffect {
 #[derive(Debug, Default)]
 pub struct SideEffects {
     effects: Vec<(SideEffectEmitter, SideEffect)>,
+    mappings: AHashMap<Utf8PathBuf, (u64, Mappings)>,
 }
 
 impl SideEffects {
     pub fn new() -> Self {
         Self {
             effects: Vec::new(),
+            mappings: Default::default(),
         }
     }
 
@@ -87,8 +97,80 @@ impl SideEffects {
                 self.effects = effects;
             }
         }
+
+        self.save_mappings(project)?;
+
         Ok(())
     }
+
+    pub fn save_mappings<Io>(&mut self, project: &mut Project<Io>) -> miette::Result<()> {
+        for (path, (hash, mappings)) in &mut self.mappings {
+            m_try(|| {
+                match project.files.entry(path.clone()) {
+                    btree_map::Entry::Vacant(entry) => {
+                        if mappings.has_persistent_ids() {
+                            let value = mappings.as_evalue(&project.registry)?;
+                            *hash = hash_of(&value);
+                            entry.insert(ProjectFile::Value(value));
+                        }
+                    }
+                    btree_map::Entry::Occupied(mut entry) => {
+                        let old = entry.get();
+                        let ProjectFile::Value(old) = old else {
+                            bail!("File `{}` is not a value (persistent)", path);
+                        };
+
+                        let file_hash = hash_of(old);
+
+                        if file_hash != *hash {
+                            bail!(
+                                "Mapping file `{}` has been modified by other side effects",
+                                path
+                            );
+                        }
+
+                        let value = mappings.as_evalue(&project.registry)?;
+                        *hash = hash_of(&value);
+                        entry.insert(ProjectFile::Value(value));
+                    }
+                }
+                Ok(())
+            })
+            .with_context(|| format!("failed to save mappings at `{}`", path))?;
+        }
+
+        Ok(())
+    }
+
+    pub fn load_mappings(
+        &mut self,
+        registry: &ETypesRegistry,
+        files: &BTreeMap<Utf8PathBuf, ProjectFile>,
+        path: &Utf8Path,
+        ranges: &EValue,
+    ) -> miette::Result<&mut Mappings> {
+        m_try(|| match self.mappings.entry(path.to_path_buf()) {
+            hash_map::Entry::Occupied(entry) => Ok(&mut entry.into_mut().1),
+            hash_map::Entry::Vacant(entry) => match files.get(path) {
+                None => Ok(&mut entry.insert((0, Mappings::new(ranges)?)).1),
+                Some(file) => {
+                    let ProjectFile::Value(value) = file else {
+                        bail!("File `{}` is not a value (persistent)", path);
+                    };
+                    let hash = hash_of(value);
+                    let mappings = Mappings::from_evalue(registry, value)?;
+                    Ok(&mut entry.insert((hash, mappings)).1)
+                }
+            },
+        })
+        .with_context(|| format!("failed to load mappings at `{}`", path))
+    }
+}
+
+fn hash_of(value: impl Hash) -> u64 {
+    let mut hasher = ahash::AHasher::default();
+    value.hash(&mut hasher);
+    hasher.finish()
 }
 
 #[derive(Debug, Clone, Eq, PartialEq, Hash)]
@@ -112,77 +194,174 @@ impl SideEffectPathItem {
 }
 
 #[derive(Debug)]
-pub struct SideEffectsContext<'a> {
-    effect: &'a mut SideEffects,
-    file: Utf8PathBuf,
-    path: MaybeOwnedMut<'a, Vec<SideEffectPathItem>>,
-    index: usize,
-    pop_on_drop: bool,
+pub enum SideEffectsContext<'a> {
+    Context {
+        effects: &'a mut SideEffects,
+        files: &'a BTreeMap<Utf8PathBuf, ProjectFile>,
+        file: Utf8PathBuf,
+        path: MaybeOwnedMut<'a, Vec<SideEffectPathItem>>,
+        index: MaybeOwnedMut<'a, usize>,
+        pop_on_drop: bool,
+    },
+    Unavailable,
 }
 
 impl<'a> SideEffectsContext<'a> {
-    pub fn new(effect: &'a mut SideEffects, file: Utf8PathBuf) -> Self {
-        Self {
-            effect,
+    pub fn new(
+        effect: &'a mut SideEffects,
+        file: Utf8PathBuf,
+        project_files: &'a BTreeMap<Utf8PathBuf, ProjectFile>,
+    ) -> Self {
+        Self::Context {
+            effects: effect,
+            files: project_files,
             file,
             path: MaybeOwnedMut::Owned(Vec::with_capacity(2)),
-            index: 0,
+            index: MaybeOwnedMut::Owned(0),
             pop_on_drop: false,
         }
+    }
+
+    pub fn unavailable() -> Self {
+        Self::Unavailable
+    }
+
+    pub fn is_available(&self) -> bool {
+        matches!(self, Self::Context { .. })
     }
 
     pub fn with_node<'b>(&'b mut self, node: NodeId) -> SideEffectsContext<'b>
     where
         'a: 'b,
     {
-        self.path.push(SideEffectPathItem::Node(node));
-        SideEffectsContext {
-            effect: self.effect,
-            file: self.file.clone(),
-            path: MaybeOwnedMut::Borrowed(&mut self.path),
-            index: 0,
-            pop_on_drop: true,
-        }
+        let Self::Context { path, .. } = self else {
+            return Self::Unavailable;
+        };
+        path.push(SideEffectPathItem::Node(node));
+        self.clone_inner(true)
     }
 
     pub fn with_subgraph<'b>(&'b mut self, subgraph: Uuid) -> SideEffectsContext<'b>
     where
         'a: 'b,
     {
-        self.path.push(SideEffectPathItem::Subgraph(subgraph));
-        SideEffectsContext {
-            effect: self.effect,
-            file: self.file.clone(),
-            path: MaybeOwnedMut::Borrowed(&mut self.path),
-            index: 0,
-            pop_on_drop: true,
-        }
+        let Self::Context { path, .. } = self else {
+            return Self::Unavailable;
+        };
+        path.push(SideEffectPathItem::Subgraph(subgraph));
+        self.clone_inner(true)
     }
 
     pub fn clone<'b>(&'b mut self) -> SideEffectsContext<'b>
     where
         'a: 'b,
     {
-        SideEffectsContext {
-            effect: self.effect,
-            file: self.file.clone(),
-            path: MaybeOwnedMut::Borrowed(&mut self.path),
-            index: 0,
-            pop_on_drop: false,
+        self.clone_inner(false)
+    }
+
+    pub fn clone_inner<'b>(&'b mut self, pop_on_drop: bool) -> SideEffectsContext<'b>
+    where
+        'a: 'b,
+    {
+        match self {
+            SideEffectsContext::Context {
+                effects,
+                files,
+                file,
+                path,
+                index,
+                pop_on_drop: _,
+            } => SideEffectsContext::Context {
+                effects,
+                files,
+                file: file.clone(),
+                path: MaybeOwnedMut::Borrowed(path),
+                index: MaybeOwnedMut::Borrowed(index),
+                pop_on_drop,
+            },
+            SideEffectsContext::Unavailable => SideEffectsContext::Unavailable,
         }
     }
 
-    pub fn push(&mut self, effect: SideEffect) {
-        let emitter = (self.file.clone(), self.path.clone(), self.index);
-        self.effect.push(emitter, effect);
-        self.index += 1;
+    pub fn push(&mut self, effect: SideEffect) -> miette::Result<()> {
+        match self {
+            SideEffectsContext::Context {
+                effects,
+                file,
+                path,
+                index,
+                ..
+            } => {
+                let emitter = (file.clone(), path.clone(), **index);
+                effects.push(emitter, effect);
+                **index += 1;
+                Ok(())
+            }
+            SideEffectsContext::Unavailable => {
+                bail!("Side effects context is unavailable");
+            }
+        }
     }
+
+    pub fn load_mappings(
+        &mut self,
+        registry: &ETypesRegistry,
+        path: &Utf8Path,
+        ranges: &EValue,
+    ) -> miette::Result<&mut Mappings> {
+        match self {
+            SideEffectsContext::Context { effects, files, .. } => {
+                effects.load_mappings(registry, files, path, ranges)
+            }
+            SideEffectsContext::Unavailable => bail!("Side effects context is unavailable"),
+        }
+    }
+
+    // /// Grants edit access to a persistent file in the project.
+    // ///
+    // /// Will bail if the file is not found or is not a persistent value.
+    // pub fn edit_persistent_file_in_place(
+    //     &mut self,
+    //     path: Utf8PathBuf,
+    // ) -> miette::Result<&mut EValue> {
+    //     let Self::Context {
+    //         files,
+    //         effects,
+    //         ..
+    //     } = self else {
+    //         bail!("Side effects context is unavailable");
+    //     };
+    //
+    //     let file = files.get(&path).ok_or_else(|| {
+    //         miette!("File `{}` not found in project", path)
+    //     })?;
+    //
+    //     let val = match effects.changed_files.entry(path.clone()) {
+    //         Entry::Vacant(e) => {
+    //             e.insert(match file {
+    //                 ProjectFile::Value(value) => value.clone(),
+    //                 ProjectFile::GeneratedValue(_) => bail!("File `{}` is not persistent", path),
+    //                 _ => bail!("File `{}` is not a value", path),
+    //             })
+    //         }
+    //         Entry::Occupied(e) => {
+    //             e.into_mut()
+    //         }
+    //     };
+    //
+    //     Ok(val)
+    // }
 }
 
 impl Drop for SideEffectsContext<'_> {
     fn drop(&mut self) {
-        if self.pop_on_drop {
-            self.path.pop();
+        if let SideEffectsContext::Context {
+            path, pop_on_drop, ..
+        } = self
+        {
+            if *pop_on_drop {
+                path.pop();
+            }
         }
     }
 }

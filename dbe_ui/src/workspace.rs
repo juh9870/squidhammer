@@ -142,7 +142,6 @@ impl<Io> TabViewer for WorkspaceTabViewer<'_, Io> {
 
         let mut diagnostics = self.0.diagnostics.enter(tab.as_str());
 
-        let mut side_effects = Default::default();
         match data {
             ProjectFile::Value(value) => {
                 let editor = editor_for_value(&self.0.registry, value);
@@ -197,7 +196,7 @@ impl<Io> TabViewer for WorkspaceTabViewer<'_, Io> {
                                 &self.0.registry,
                                 Some(graphs),
                                 cache,
-                                SideEffectsContext::new(&mut side_effects, tab.clone()),
+                                SideEffectsContext::unavailable(),
                                 is_node_group,
                                 &[],
                                 outputs,
@@ -229,6 +228,5 @@ impl<Io> TabViewer for WorkspaceTabViewer<'_, Io> {
         }
 
         drop(diagnostics);
-        side_effects.execute(self.0).unwrap();
     }
 }

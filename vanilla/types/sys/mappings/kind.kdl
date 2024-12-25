@@ -1,0 +1,5 @@
+enum title="Mapping Kind" {
+    const "Any" 0
+    const "NewId" 1
+    const "ExistingId" 2
+}
