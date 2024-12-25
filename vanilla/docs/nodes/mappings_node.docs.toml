@@ -12,10 +12,11 @@ file, while new IDs will be generated according to the ranges provided.
 
 Node will fail if a new ID is requested and all configured ranges are exhausted
 """
-outputs = {}
+outputs = []
 
-[nodes.mappings.inputs.path]
+[[nodes.mappings.inputs]]
 title = "Path"
+id = "path"
 description = "Path to the mapping file"
 docs = """
 The path to the mapping file. This file will be created if it does not exist, \
@@ -25,22 +26,26 @@ Only persistent mappings will be stored, and the file will not be created if \
 there are no persistent mappings.
 """
 
-[nodes.mappings.inputs.default_ranges]
+[[nodes.mappings.inputs]]
 title = "Default Ranges"
+id = "default_ranges"
 description = "Default ranges for the mappings. These are only used if the mapping file is not yet created"
 
-[nodes.mappings.inputs.persistent]
+[[nodes.mappings.inputs]]
 title = "Persistent"
+id = "persistent"
 description = "Marks the mappings as persistent. Persistent markings will be consistent across runs, while non-persistent mappings are not saved to disk and may change between runs"
 docs = """
-# Persistent mappings
+Possible values:
+
+#### Persistent mappings
 Persistent mappings are a sane default for when you work with known string IDs \
 that are generally not expected to change, or require to stay consistent between runs.
 Persistent mappings are saved permanently, and will not be removed withot \
 manual cleanup, so they are not a good choice for cases where IDs are dynamicly \
 generated and prone to change.
 
-# Non-persistent mappings
+#### Non-persistent mappings
 Non-persistent mappings are useful for dynamicly generated IDs, that are not \
 required to stay consistent between runs. The main advantage of non-persistent \
 mappings is that if structure of dynamicly generated IDs changes, the mappings \
@@ -49,17 +54,20 @@ will NOT need a manual cleanup.
 Non-persistent mappings are still guaranteed to be stable within a single run
 """
 
-[nodes.mappings.inputs.kind]
+[[nodes.mappings.inputs]]
 title = "Kind"
+id = "kind"
 description = "Determines whenever mapping is expected to be a new mapping, an existing mapping, or any of the two"
 docs = """
-### Any
+Possible values:
+
+#### Any
 Any kind of mapping is allowed. This is the default value.
 
 Usage of this mapping will not mark the mapping as "created", and so another \
 node with `NewId` can use it at a later time.
 
-### NewId
+#### NewId
 New ID is expected. This is useful for when you need to ensure that the string \
 ID is not already used elsewhere.
 
@@ -67,8 +75,8 @@ This will mark the mapping as "created", and so another node with `NewId` will \
 not be able to use it, and will throw an error, but will allow nodes with \
 `ExistingId` to use it.
 
-### ExistingId
-> **Existing ID mapping is not yet implemented, blocked due to multistage runtime**
+#### ExistingId
+> **Existing ID mapping is not yet implemented, blocked on multistage runtime**
 
 An existing ID is expected.
 
@@ -76,6 +84,7 @@ This will only work if the mapping was already created by a node with `NewId` \
 in the **previous** stage of the execution. It will **not** respect IDs created in the same stage
 """
 
-[nodes.mappings.inputs.input]
+[[nodes.mappings.inputs]]
 title = "Input"
+id = "input"
 description = "Input string ID to map to a numeric ID"
