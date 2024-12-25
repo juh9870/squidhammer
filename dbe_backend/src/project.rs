@@ -26,6 +26,9 @@ pub mod io;
 pub mod project_graph;
 pub mod side_effects;
 
+pub const EXTENSION_GRAPH: &str = "dbegraph";
+pub const EXTENSION_VALUE: &str = "dbevalue";
+
 #[derive(Debug)]
 pub struct Project<IO> {
     /// Types registry
@@ -54,13 +57,19 @@ pub enum ProjectFile {
     BadValue(Report),
 }
 
+#[derive(Debug, Serialize, Deserialize)]
+struct MiscJson {
+    ty: EDataType,
+    value: JsonValue,
+}
+
 impl ProjectFile {
     pub fn is_value(&self) -> bool {
-        matches!(self, ProjectFile::Value(_))
+        matches!(self, ProjectFile::Value(..))
     }
 
     pub fn is_generated(&self) -> bool {
-        matches!(self, ProjectFile::GeneratedValue(_))
+        matches!(self, ProjectFile::GeneratedValue(..))
     }
 
     pub fn is_graph(&self) -> bool {
@@ -133,7 +142,7 @@ impl<IO: ProjectIO> Project<IO> {
         mut io: IO,
     ) -> miette::Result<Self> {
         let mut registry_items = BTreeMap::new();
-        let mut editor_jsons = BTreeMap::<Utf8PathBuf, JsonValue>::new();
+        let mut import_jsons = BTreeMap::<Utf8PathBuf, (JsonValue, Option<EDataType>)>::new();
         let mut types_jsons = BTreeMap::<Utf8PathBuf, JsonValue>::new();
         let mut graphs = BTreeMap::<Utf8PathBuf, JsonValue>::new();
 
@@ -175,10 +184,17 @@ impl<IO: ProjectIO> Project<IO> {
                         if path.starts_with(&config.types_config.root) {
                             types_jsons.insert(path.to_path_buf(), data);
                         } else {
-                            editor_jsons.insert(path.to_path_buf(), data);
+                            import_jsons.insert(path.to_path_buf(), (data, None));
                         }
                     }
-                    "dbegraph" => {
+                    EXTENSION_VALUE => {
+                        let data: MiscJson =
+                            serde_json5::from_str(&utf8str(path, io.read_file(path)?)?)
+                                .into_diagnostic()
+                                .context("failed to deserialize dbefile JSON")?;
+                        import_jsons.insert(path.to_path_buf(), (data.value, Some(data.ty)));
+                    }
+                    EXTENSION_GRAPH => {
                         let data = serde_json5::from_str(&utf8str(path, io.read_file(path)?)?)
                             .into_diagnostic()
                             .context("failed to deserialize graph JSON")?;
@@ -231,9 +247,9 @@ impl<IO: ProjectIO> Project<IO> {
             }
         }
 
-        for (path, json) in editor_jsons {
+        for (path, (json, ty)) in import_jsons {
             let item = match project
-                .deserialize_json(json)
+                .deserialize_json(json, ty)
                 .with_context(|| format!("failed to deserialize JSON at `{}`", path))
             {
                 Ok(data) => {
@@ -285,46 +301,50 @@ impl<IO: ProjectIO> Project<IO> {
     pub fn evaluate_graphs(&mut self) -> miette::Result<()> {
         let mut side_effects = side_effects::SideEffects::new();
         let mut generated = vec![];
-        for (path, file) in &mut self.files {
-            if file.is_generated() {
-                generated.push(path.clone());
-                continue;
-            }
-            let ProjectFile::Graph(id) = file else {
-                continue;
-            };
-
-            if let Some(result) = self.graphs.try_borrow_cache(*id, |graph, cache, graphs| {
-                if graph.is_node_group {
+        for (path, file) in &self.files {
+            m_try(|| {
+                if file.is_generated() {
+                    generated.push(path.clone());
                     return Ok(());
                 }
+                let ProjectFile::Graph(id) = file else {
+                    return Ok(());
+                };
 
-                let out_values = &mut None;
-                let mut ctx = GraphExecutionContext::from_graph(
-                    graph.graph(),
-                    &self.registry,
-                    Some(graphs),
-                    cache,
-                    SideEffectsContext::new(&mut side_effects, path.clone()),
-                    graph.is_node_group,
-                    &[],
-                    out_values,
-                );
+                if let Some(result) = self.graphs.try_borrow_cache(*id, |graph, cache, graphs| {
+                    if graph.is_node_group {
+                        return Ok(());
+                    }
 
-                ctx.full_eval(true)?;
+                    let out_values = &mut None;
+                    let mut ctx = GraphExecutionContext::from_graph(
+                        graph.graph(),
+                        &self.registry,
+                        Some(graphs),
+                        cache,
+                        SideEffectsContext::new(&mut side_effects, path.clone(), &self.files),
+                        graph.is_node_group,
+                        &[],
+                        out_values,
+                    );
 
-                drop(ctx);
+                    ctx.full_eval(true)?;
 
-                if out_values.is_some() {
-                    bail!("graph {:?} at path {} has outputs", id, path);
+                    drop(ctx);
+
+                    if out_values.is_some() {
+                        bail!("graph {:?} at path {} has outputs", id, path);
+                    }
+
+                    Ok(())
+                }) {
+                    result?;
+                } else {
+                    bail!("graph {:?} at path {} is not found", id, path);
                 }
-
                 Ok(())
-            }) {
-                result?;
-            } else {
-                bail!("graph {:?} at path {} is not found", id, path);
-            }
+            })
+            .with_context(|| format!("failed to evaluate graph at `{}`", path))?
         }
 
         for path in generated {
@@ -382,12 +402,30 @@ impl<IO: ProjectIO> Project<IO> {
         for (path, file) in &self.files {
             self.to_delete.remove(path);
             let mut generated = false;
+            fn wrap_if_dbe(path: &Utf8Path, value: &EValue, json: JsonValue) -> JsonValue {
+                if path
+                    .extension()
+                    .is_some_and(|ext| ext.to_lowercase().ends_with(EXTENSION_VALUE))
+                {
+                    let json = MiscJson {
+                        ty: value.ty(),
+                        value: json,
+                    };
+
+                    serde_json::value::to_value(&json)
+                        .expect("serialization of MiscJson should not fail")
+                } else {
+                    json
+                }
+            }
             let json_string = m_try(|| {
                 let json = match file {
-                    ProjectFile::Value(value) => self.serialize_json(value)?,
+                    ProjectFile::Value(value) => {
+                        wrap_if_dbe(path, value, self.serialize_json(value)?)
+                    }
                     ProjectFile::GeneratedValue(value) => {
                         generated = true;
-                        self.serialize_json(value)?
+                        wrap_if_dbe(path, value, self.serialize_json(value)?)
                     }
                     ProjectFile::Graph(id) => {
                         let Some(graph) = self.graphs.graphs.get(id) else {
@@ -468,13 +506,16 @@ impl<IO: ProjectIO> Project<IO> {
         Ok(())
     }
 
-    fn deserialize_json(&self, mut value: JsonValue) -> miette::Result<EValue> {
-        let object = self
-            .registry
-            .get_object(&self.registry.project_config().types_config.import)
-            .expect("Config was validated");
+    fn deserialize_json(
+        &self,
+        mut value: JsonValue,
+        ty: Option<EDataType>,
+    ) -> miette::Result<EValue> {
+        let ty = ty.unwrap_or_else(|| EDataType::Object {
+            ident: self.registry.project_config().types_config.import,
+        });
 
-        object.parse_json(&self.registry, &mut value, false)
+        ty.parse_json(&self.registry, &mut value, false)
     }
 
     fn serialize_json(&self, value: &EValue) -> miette::Result<JsonValue> {

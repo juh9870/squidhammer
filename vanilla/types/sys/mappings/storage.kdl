@@ -1,0 +1,9 @@
+struct title="Mappings" {
+    map "values" {
+        string "Key"
+        number "Item"
+    }
+    list "ranges" {
+        object "Item" "sys:math/range"
+    }
+}

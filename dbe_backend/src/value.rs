@@ -13,7 +13,7 @@ use miette::{bail, miette, Context};
 use std::collections::BTreeMap;
 use std::fmt::{Display, Formatter};
 use std::hash::Hash;
-use strum::EnumDiscriminants;
+use strum::{EnumDiscriminants, EnumIs};
 use ustr::Ustr;
 
 pub mod id;
@@ -21,7 +21,17 @@ pub mod id;
 pub type ENumber = OrderedFloat<f64>;
 
 #[derive(
-    Debug, Clone, Serialize, Deserialize, Eq, PartialEq, Hash, EnumDiscriminants, Ord, PartialOrd,
+    Debug,
+    Clone,
+    Serialize,
+    Deserialize,
+    Eq,
+    PartialEq,
+    Hash,
+    EnumDiscriminants,
+    Ord,
+    PartialOrd,
+    EnumIs,
 )]
 #[strum_discriminants(derive(Ord, PartialOrd), vis())]
 #[serde(tag = "type")]

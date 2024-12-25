@@ -3,11 +3,15 @@ use crate::graph::inputs::{GraphInput, GraphOutput};
 use crate::graph::node::commands::{SnarlCommand, SnarlCommands};
 use crate::graph::node::enum_node::EnumNodeFactory;
 use crate::graph::node::functional::functional_nodes;
+use crate::graph::node::groups::input::GroupInputNodeFactory;
+use crate::graph::node::groups::output::GroupOutputNodeFactory;
+use crate::graph::node::groups::subgraph::SubgraphNodeFactory;
 use crate::graph::node::list::ListNodeFactory;
 use crate::graph::node::ports::{InputData, NodePortType, OutputData};
 use crate::graph::node::reroute::RerouteFactory;
 use crate::graph::node::saving_node::SavingNodeFactory;
 use crate::graph::node::struct_node::StructNodeFactory;
+use crate::graph::node::variables::ExecutionExtras;
 use crate::json_utils::JsonValue;
 use crate::project::project_graph::ProjectGraphs;
 use crate::registry::ETypesRegistry;
@@ -28,6 +32,7 @@ pub mod enum_node;
 pub mod functional;
 pub mod groups;
 pub mod list;
+pub mod mappings;
 pub mod ports;
 pub mod reroute;
 pub mod saving_node;
@@ -61,6 +66,7 @@ fn default_nodes() -> impl Iterator<Item = (Ustr, Arc<dyn NodeFactory>)> {
     v.push(Arc::new(GroupOutputNodeFactory));
     v.push(Arc::new(GroupInputNodeFactory));
     v.push(Arc::new(SubgraphNodeFactory));
+    v.push(Arc::new(MappingsNodeFactory));
     v.into_iter().map(|item| (Ustr::from(&item.id()), item))
 }
 
@@ -80,6 +86,10 @@ pub trait NodeFactory: Send + Sync + Debug + 'static {
     fn id(&self) -> Ustr;
     fn categories(&self) -> &'static [&'static str];
     fn create(&self) -> SnarlNode;
+    fn register_required_types(&self, registry: &mut ETypesRegistry) -> miette::Result<()> {
+        let _ = (registry,);
+        Ok(())
+    }
 }
 
 #[derive(Debug, Copy, Clone)]
@@ -317,8 +327,5 @@ macro_rules! impl_serde_node {
     };
 }
 
-use crate::graph::node::groups::input::GroupInputNodeFactory;
-use crate::graph::node::groups::output::GroupOutputNodeFactory;
-use crate::graph::node::groups::subgraph::SubgraphNodeFactory;
-use crate::graph::node::variables::ExecutionExtras;
+use crate::graph::node::mappings::MappingsNodeFactory;
 pub(crate) use impl_serde_node;

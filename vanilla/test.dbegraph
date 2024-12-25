@@ -110,6 +110,26 @@
           "input": 0,
           "node": 9
         }
+      ],
+      [
+        {
+          "node": 13,
+          "output": 0
+        },
+        {
+          "input": 0,
+          "node": 14
+        }
+      ],
+      [
+        {
+          "node": 14,
+          "output": 0
+        },
+        {
+          "input": 0,
+          "node": 4
+        }
       ]
     ],
     "inline_values": [
@@ -133,13 +153,6 @@
           "node": 2
         },
         5
-      ],
-      [
-        {
-          "input": 0,
-          "node": 4
-        },
-        9870
       ],
       [
         {
@@ -300,6 +313,46 @@
           "node": 11
         },
         12
+      ],
+      [
+        {
+          "input": 0,
+          "node": 13
+        },
+        "mappings/test"
+      ],
+      [
+        {
+          "input": 1,
+          "node": 13
+        },
+        [
+          {
+            "end": 2000,
+            "start": 1000
+          }
+        ]
+      ],
+      [
+        {
+          "input": 2,
+          "node": 13
+        },
+        true
+      ],
+      [
+        {
+          "input": 3,
+          "node": 13
+        },
+        1
+      ],
+      [
+        {
+          "input": 4,
+          "node": 13
+        },
+        "test3"
       ]
     ],
     "inputs": [
@@ -522,6 +575,32 @@
           "pos": {
             "x": 587.7698364257812,
             "y": -284.9183349609375
+          }
+        }
+      ],
+      [
+        13,
+        {
+          "data": null,
+          "id": "mappings",
+          "open": true,
+          "pos": {
+            "x": -975.259033203125,
+            "y": -649.139892578125
+          }
+        }
+      ],
+      [
+        14,
+        {
+          "data": {
+            "id": "sys:ids/numeric<Id='eh:objects/component'>"
+          },
+          "id": "struct_node",
+          "open": true,
+          "pos": {
+            "x": -605.3860473632812,
+            "y": -597.3819580078125
           }
         }
       ]

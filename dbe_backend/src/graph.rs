@@ -4,7 +4,7 @@ use crate::graph::node::commands::SnarlCommands;
 use crate::graph::node::{get_snarl_node, NodeContext, SnarlNode};
 use crate::json_utils::JsonValue;
 use crate::m_try;
-use crate::project::side_effects::{SideEffects, SideEffectsContext};
+use crate::project::side_effects::SideEffectsContext;
 use crate::registry::ETypesRegistry;
 use crate::value::EValue;
 use ahash::AHashMap;
@@ -66,7 +66,6 @@ impl Graph {
         };
 
         m_try(|| {
-            let mut side_effects = SideEffects::default();
             let mut cache = cache::GraphCache::default();
             let out_values = &mut None;
             let mut ctx = GraphEditingContext::from_graph(
@@ -74,7 +73,7 @@ impl Graph {
                 registry,
                 None,
                 &mut cache,
-                SideEffectsContext::new(&mut side_effects, "".into()),
+                SideEffectsContext::unavailable(),
                 true,
                 &[],
                 out_values,
@@ -114,10 +113,6 @@ impl Graph {
                 .with_context(|| "failed to execute commands")?;
 
             drop(ctx);
-
-            if !side_effects.is_empty() {
-                panic!("Side effects are not supported during deserialization");
-            }
 
             Ok(())
         })

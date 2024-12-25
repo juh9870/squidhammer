@@ -183,12 +183,9 @@ impl EDataType {
                 json_expected(data.as_str(), data, "string").map(|s| s.to_string().into())
             }
             EDataType::Object { ident } => {
-                let obj = registry.get_object(ident).ok_or_else(|| {
-                    miette!(
-                        "!!INTERNAL ERROR!! object id was not present in registry: `{}`",
-                        ident
-                    )
-                })?;
+                let obj = registry
+                    .get_object(ident)
+                    .ok_or_else(|| miette!("object id was not present in registry: `{}`", ident))?;
 
                 obj.parse_json(registry, data, inline)
             }

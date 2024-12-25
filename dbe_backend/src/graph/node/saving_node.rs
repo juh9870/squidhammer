@@ -67,11 +67,13 @@ impl Node for SavingNode {
         match &self.path {
             None => variables.side_effects.push(SideEffect::EmitTransientFile {
                 value: inputs[0].clone(),
-            }),
-            Some(path) => variables.side_effects.push(SideEffect::EmitPersistentFile {
-                value: inputs[0].clone(),
-                path: path.clone(),
-            }),
+            })?,
+            Some(path) => variables
+                .side_effects
+                .push(SideEffect::EmitPersistentFile {
+                    value: inputs[0].clone(),
+                    path: path.clone(),
+                })?,
         }
 
         Ok(())

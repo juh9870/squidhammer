@@ -6,6 +6,7 @@ use crate::etype::eobject::EObject;
 use crate::etype::estruct::EStructData;
 use crate::etype::property::{default_properties, ObjectPropertyId};
 use crate::etype::EDataType;
+use crate::graph::node::all_node_factories;
 use crate::json_utils::repr::{JsonRepr, Repr};
 use crate::json_utils::JsonValue;
 use crate::project::ProjectConfig;
@@ -24,10 +25,17 @@ use std::any::{Any, TypeId};
 use std::collections::btree_map::Entry;
 use std::collections::BTreeMap;
 use std::fmt::Debug;
-use std::sync::Arc;
+use std::sync::{Arc, LazyLock};
 use ustr::{Ustr, UstrMap};
 
 pub mod config;
+
+pub static OPTIONAL_STRING_ID: LazyLock<ETypeId> =
+    LazyLock::new(|| ETypeId::from_raw("sys:optional<Item=string>".into()));
+pub static OPTIONAL_BOOLEAN_ID: LazyLock<ETypeId> =
+    LazyLock::new(|| ETypeId::from_raw("sys:optional<Item=boolean>".into()));
+pub static OPTIONAL_NUMBER_ID: LazyLock<ETypeId> =
+    LazyLock::new(|| ETypeId::from_raw("sys:optional<Item=number>".into()));
 
 #[derive(Debug, Copy, Clone)]
 pub struct ListData {
@@ -157,12 +165,16 @@ impl RegistryItem {
 
 #[derive(Debug)]
 pub struct ETypesRegistry {
+    /// Main storage for types in the system
     types: BTreeMap<ETypeId, RegistryItem>,
+    /// Storage for lists
     lists: RwLock<BTreeMap<EListId, ListData>>,
+    /// Storage for maps
     maps: RwLock<BTreeMap<EMapId, MapData>>,
+    /// Cache for default values
     default_objects_cache: AtomicRefCell<BTreeMap<ETypeId, Arc<EValue>>>,
+    /// Main project configuration
     project_config: ProjectConfig,
-    // editors: AHashMap<String, Box<dyn EFieldEditorConstructor>>,
     /// Read/write data used by various editors, validators, etc
     extra_data: RwLock<BTreeMap<TypeId, Arc<dyn Any + Send + Sync>>>,
     /// Read/write cache storage
@@ -191,7 +203,6 @@ impl ETypesRegistry {
             types,
             lists: Default::default(),
             maps: Default::default(),
-            // editors: default_editors().into_iter().collect(),
             default_objects_cache: Default::default(),
             project_config,
             extra_data: Default::default(),
@@ -199,7 +210,15 @@ impl ETypesRegistry {
             extra_config: Default::default(),
         };
 
-        reg.deserialize_all().context("failed to deserialize types")
+        let reg = reg
+            .deserialize_all()
+            .context("failed to deserialize types")?
+            .register_node_requirements()
+            .context("failed to register node requirements")?
+            .register_optionals()
+            .context("failed to register optional types")?;
+
+        Ok(reg)
     }
 
     pub fn all_objects(&self) -> impl Iterator<Item = &EObjectType> {
@@ -513,6 +532,35 @@ impl ETypesRegistry {
                 .all(|e| matches!(e, RegistryItem::Ready(_))),
             "All items should be deserialized"
         );
+
+        Ok(self)
+    }
+
+    fn register_node_requirements(mut self) -> miette::Result<Self> {
+        for factory in all_node_factories().values() {
+            factory
+                .register_required_types(&mut self)
+                .with_context(|| {
+                    format!(
+                        "failed to register types required by node `{}`",
+                        factory.id()
+                    )
+                })?;
+        }
+
+        Ok(self)
+    }
+
+    fn register_optionals(mut self) -> miette::Result<Self> {
+        for ty in [EDataType::Boolean, EDataType::Number, EDataType::String] {
+            self.make_generic(
+                ETypeId::from_raw("sys:optional".into()),
+                [(Ustr::from("Item"), EItemInfo::simple_type(ty))]
+                    .into_iter()
+                    .collect(),
+            )
+            .with_context(|| format!("failed to register optional {}", ty.name()))?;
+        }
 
         Ok(self)
     }

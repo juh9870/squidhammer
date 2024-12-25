@@ -1,0 +1,4 @@
+struct graph_inline=true title="Range" {
+    number "start"
+    number "end"
+}

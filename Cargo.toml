@@ -44,6 +44,7 @@ inline_tweak = "1.1.1"
 itertools = "0.13.0"
 knuffel = { git = "https://github.com/TheLostLambda/knuffel.git", rev = "744bf56c1fc64b87f7c47d67470ff7898970dc70" } # TODO: upgrade to https://github.com/TheLostLambda/knus
 lockfree-object-pool = "0.1.6"
+maybe-owned = "0.3.4"
 miette = "7.2.0"
 num-traits = "0.2.19"
 num_cpus = "1.16.0"
@@ -70,7 +71,6 @@ tracing-subscriber = "0.3.18"
 ustr = "1.0.0"
 uuid = "1.11.0"
 walkdir = "2.5.0"
-maybe-owned = "0.3.4"
 
 # Workspace crates
 dbe_backend = { path = "dbe_backend" }
