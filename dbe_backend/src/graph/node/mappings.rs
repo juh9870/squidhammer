@@ -54,7 +54,7 @@ impl Node for MappingsNode {
                         .list_of(EDataType::Object { ident: *RANGE_ID }),
                 )
                 .into(),
-                name: "default ranges".into(),
+                name: "default_ranges".into(),
             }),
             2 => Ok(InputData {
                 ty: EItemInfo::simple_type(EDataType::Boolean).into(),
@@ -69,7 +69,7 @@ impl Node for MappingsNode {
                 name: "input".into(),
             }),
             _ => {
-                panic!("Mappings node has only two inputs");
+                panic!("Mappings node has only five inputs");
             }
         }
     }
@@ -128,7 +128,10 @@ impl Node for MappingsNode {
         let id = match kind_idx.0 {
             0.0 => mappings.get_id_raw(value.to_string(), **persistent)?,
             1.0 => mappings.new_id(value.to_string(), **persistent)?,
-            2.0 => mappings.existing_id(value)?,
+            // 2.0 => mappings.existing_id(value)?,
+            2.0 => bail!(
+                "existing ID mapping is not yet implemented, blocked due to multistage runtime"
+            ), // TODO: allow once multi-stage runtime is implemented
             _ => bail!("invalid kind index: {}", kind_idx.0),
         };
 
