@@ -4,10 +4,11 @@ use dbe_backend::graph::node::{get_node_factory, NodeFactory};
 use dbe_backend::project::docs::{DocsDescription, NodeDocs, TypeDocs};
 use dbe_backend::registry::{EObjectType, ETypesRegistry};
 use dbe_backend::value::id::ETypeId;
-use egui::{RichText, Ui, Widget, WidgetText};
+use egui::{RichText, TextEdit, Ui, Widget, WidgetText};
 use egui_commonmark::CommonMarkCache;
 use egui_hooks::UseHookExt;
 use inline_tweak::tweak;
+use std::borrow::Cow;
 use std::ops::{Deref, DerefMut};
 use strum::EnumIs;
 use ustr::Ustr;
@@ -22,6 +23,7 @@ pub enum SelectedDocs {
 
 pub fn docs_tab(ui: &mut Ui, app: &mut DbeApp) {
     let mut selection = ui.use_state(|| SelectedDocs::None, ()).into_var();
+    let mut search_text = ui.use_state(String::new, selection.clone()).into_var();
     ui.horizontal(|ui| {
         ui.label("Documentation");
         if ui
@@ -35,14 +37,39 @@ pub fn docs_tab(ui: &mut Ui, app: &mut DbeApp) {
     let Some(project) = &app.project else {
         return;
     };
+
     egui::ScrollArea::vertical().show(ui, |ui| match selection.deref_mut() {
         SelectedDocs::None => {
+            TextEdit::singleline(search_text.deref_mut())
+                .hint_text("Search")
+                .ui(ui);
+
+            let search_query = search_text.trim();
+
+            fn search<'a>(query: &str, title: &'a str, id: &'a str) -> (bool, Cow<'a, str>) {
+                if query.is_empty() {
+                    return (true, title.into());
+                }
+                let title_contains = title.contains(query);
+                let id_contains = id.contains(query);
+                let content = if !title_contains && id_contains {
+                    Cow::Owned(format!("{} ({})", title, id))
+                } else {
+                    Cow::Borrowed(title)
+                };
+                (title_contains || id_contains, content)
+            }
+
             ui.collapsing("Nodes", |ui| {
                 for (node_id, docs) in &project.docs.nodes {
-                    let Some(factory) = get_node_factory(&Ustr::from(node_id)) else {
+                    let Some(_) = get_node_factory(&Ustr::from(node_id)) else {
                         continue;
                     };
-                    if ui.button(&docs.title).clicked() {
+                    let (found, name) = search(search_query, &docs.title, node_id);
+                    if !found {
+                        continue;
+                    }
+                    if ui.button(name).clicked() {
                         *selection = SelectedDocs::Node(node_id.clone());
                     }
                 }
@@ -53,7 +80,13 @@ pub fn docs_tab(ui: &mut Ui, app: &mut DbeApp) {
                     let Some(ty) = project.registry.get_object(type_id) else {
                         continue;
                     };
-                    if ui.button(ty.title(&project.registry)).clicked() {
+                    let title = ty.title(&project.registry);
+                    let id = type_id.to_string();
+                    let (found, title) = search(search_query, &title, &id);
+                    if !found {
+                        continue;
+                    }
+                    if ui.button(title).clicked() {
                         *selection = SelectedDocs::Type(*type_id);
                     }
                 }
