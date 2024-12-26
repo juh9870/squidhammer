@@ -3,43 +3,81 @@ use dbe_backend::etype::eobject::EObject;
 use dbe_backend::graph::node::{get_node_factory, NodeFactory};
 use dbe_backend::project::docs::{DocsDescription, NodeDocs, TypeDocs};
 use dbe_backend::registry::{EObjectType, ETypesRegistry};
+use dbe_backend::value::id::ETypeId;
 use egui::{RichText, Ui, Widget, WidgetText};
 use egui_commonmark::CommonMarkCache;
+use egui_hooks::UseHookExt;
 use inline_tweak::tweak;
-use std::ops::Deref;
+use std::ops::{Deref, DerefMut};
+use strum::EnumIs;
 use ustr::Ustr;
 
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Default, EnumIs)]
+pub enum SelectedDocs {
+    #[default]
+    None,
+    Node(String),
+    Type(ETypeId),
+}
+
 pub fn docs_tab(ui: &mut Ui, app: &mut DbeApp) {
-    ui.label("Documentation");
+    let mut selection = ui.use_state(|| SelectedDocs::None, ()).into_var();
+    ui.horizontal(|ui| {
+        ui.label("Documentation");
+        if ui
+            .add_enabled(!selection.is_none(), egui::Button::new("Back"))
+            .clicked()
+        {
+            *selection = SelectedDocs::None;
+        }
+    });
+
     let Some(project) = &app.project else {
         return;
     };
-    egui::ScrollArea::vertical().show(ui, |ui| {
-        ui.collapsing("Nodes", |ui| {
-            for (node_id, docs) in &project.docs.nodes {
-                let Some(factory) = get_node_factory(&Ustr::from(node_id)) else {
-                    continue;
-                };
-                egui::CollapsingHeader::new(&docs.title)
-                    .id_salt(node_id)
-                    .show(ui, |ui| {
-                        node_docs(ui, factory.deref(), docs);
-                    });
-            }
-        });
+    egui::ScrollArea::vertical().show(ui, |ui| match selection.deref_mut() {
+        SelectedDocs::None => {
+            ui.collapsing("Nodes", |ui| {
+                for (node_id, docs) in &project.docs.nodes {
+                    let Some(factory) = get_node_factory(&Ustr::from(node_id)) else {
+                        continue;
+                    };
+                    if ui.button(&docs.title).clicked() {
+                        *selection = SelectedDocs::Node(node_id.clone());
+                    }
+                }
+            });
 
-        ui.collapsing("Types", |ui| {
-            for (type_id, docs) in &project.docs.types {
-                let Some(ty) = project.registry.get_object(type_id) else {
-                    continue;
-                };
-                egui::CollapsingHeader::new(ty.title(&project.registry))
-                    .id_salt(type_id)
-                    .show(ui, |ui| {
-                        type_docs(ui, &project.registry, ty, docs);
-                    });
+            ui.collapsing("Types", |ui| {
+                for (type_id, _) in &project.docs.types {
+                    let Some(ty) = project.registry.get_object(type_id) else {
+                        continue;
+                    };
+                    if ui.button(ty.title(&project.registry)).clicked() {
+                        *selection = SelectedDocs::Type(*type_id);
+                    }
+                }
+            });
+        }
+        SelectedDocs::Node(name) => {
+            if let (Some(docs), Some(node)) = (
+                project.docs.nodes.get(name),
+                get_node_factory(&Ustr::from(name)),
+            ) {
+                node_docs(ui, node.deref(), docs);
+            } else {
+                *selection = SelectedDocs::None;
             }
-        })
+        }
+        SelectedDocs::Type(ty) => {
+            if let (Some(docs), Some(ty)) =
+                (project.docs.types.get(ty), project.registry.get_object(ty))
+            {
+                type_docs(ui, &project.registry, ty, docs);
+            } else {
+                *selection = SelectedDocs::None;
+            }
+        }
     });
 }
 

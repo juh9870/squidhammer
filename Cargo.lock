@@ -1174,6 +1174,7 @@ dependencies = [
  "serde",
  "serde_json5",
  "strip-ansi-escapes",
+ "strum",
  "tracing",
  "ustr",
  "uuid",
