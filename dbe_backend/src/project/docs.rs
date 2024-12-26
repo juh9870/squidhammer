@@ -1,3 +1,4 @@
+use crate::value::id::ETypeId;
 use ahash::AHashMap;
 use camino::Utf8PathBuf;
 use duplicate::duplicate_item;
@@ -9,7 +10,7 @@ use std::ops::{Deref, DerefMut};
 #[derive(Debug, Default)]
 pub struct Docs {
     pub nodes: AHashMap<String, WithLocation<NodeDocs>>,
-    pub types: AHashMap<String, WithLocation<TypeDocs>>,
+    pub types: AHashMap<ETypeId, WithLocation<TypeDocs>>,
 }
 
 impl Docs {
@@ -80,7 +81,7 @@ pub struct DocsFile {
     #[serde(default)]
     pub nodes: AHashMap<String, NodeDocs>,
     #[serde(default)]
-    pub types: AHashMap<String, TypeDocs>,
+    pub types: AHashMap<ETypeId, TypeDocs>,
 }
 
 impl DocsFile {
@@ -102,10 +103,12 @@ impl DocsFile {
 
         for ty in self.types.values_mut() {
             validate_dd(ty)?;
-            for field in ty.fields.values_mut() {
+            for field in &mut ty.fields {
+                validate_nonempty(&mut field.id, "field id")?;
                 validate_dd(field)?;
             }
-            for variant in ty.variants.values_mut() {
+            for variant in &mut ty.variants {
+                validate_nonempty(&mut variant.id, "variant id")?;
                 validate_dd(variant)?;
             }
         }
@@ -139,12 +142,15 @@ pub struct TypeDocs {
     pub description: String,
     #[serde(default)]
     pub docs: String,
-    pub fields: AHashMap<String, FieldDocs>,
-    pub variants: AHashMap<String, VariantDocs>,
+    #[serde(default)]
+    pub fields: Vec<FieldDocs>,
+    #[serde(default)]
+    pub variants: Vec<VariantDocs>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct FieldDocs {
+    pub id: String,
     pub description: String,
     #[serde(default)]
     pub docs: String,
@@ -152,6 +158,7 @@ pub struct FieldDocs {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct VariantDocs {
+    pub id: String,
     pub description: String,
     #[serde(default)]
     pub docs: String,
@@ -185,6 +192,10 @@ fn validate_nonempty(s: &mut String, field_name: &str) -> miette::Result<()> {
     Ok(())
 }
 
+fn trim(s: &mut String) {
+    *s = s.trim().to_string();
+}
+
 fn validate_dd(docs: &mut impl DocsDescription) -> miette::Result<()> {
     validate_nonempty(docs.description_mut(), "description")?;
 
@@ -200,6 +211,11 @@ pub trait DocsDescription {
 
     fn description_mut(&mut self) -> &mut String;
     fn docs_mut(&mut self) -> &mut String;
+}
+
+pub trait DocsTitled {
+    fn title(&self) -> &str;
+    fn title_mut(&mut self) -> &mut String;
 }
 
 #[duplicate_item(

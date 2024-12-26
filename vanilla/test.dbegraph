@@ -469,7 +469,7 @@
           "data": {
             "variant": {
               "ident": "sys:optional<Item=sys:ids/numeric_ref<Id='eh:objects/device'>>",
-              "variant": "some"
+              "variant": "Some"
             }
           },
           "id": "enum_node",

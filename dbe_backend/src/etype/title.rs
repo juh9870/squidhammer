@@ -1,6 +1,7 @@
 use crate::etype::eobject::EObject;
 use crate::etype::property::default_properties::PROP_OBJECT_TITLE;
 use crate::registry::ETypesRegistry;
+use itertools::Itertools;
 use runtime_format::{FormatArgs, FormatKey, FormatKeyError};
 use std::cell::OnceCell;
 use std::fmt::Formatter;
@@ -70,17 +71,20 @@ struct FmtTitle<'a, T: EObject>(&'a T, &'a ETypesRegistry);
 
 impl<'a, T: EObject> FormatKey for FmtTitle<'a, T> {
     fn fmt(&self, key: &str, f: &mut Formatter<'_>) -> Result<(), FormatKeyError> {
-        let Some(pos) = self
+        let Some((pos, name)) = self
             .0
             .generic_arguments_names()
             .iter()
-            .position(|e| e.as_str() == key)
+            .find_position(|e| e.as_str() == key)
         else {
             return write!(f, "!!Unknown key `{}`!!", key).map_err(FormatKeyError::Fmt);
         };
 
-        let item = &self.0.generic_arguments_values()[pos];
-        let ty = item.ty();
-        write!(f, "{}", ty.title(self.1)).map_err(FormatKeyError::Fmt)
+        if let Some(item) = &self.0.generic_arguments_values().get(pos) {
+            let ty = item.ty();
+            write!(f, "{}", ty.title(self.1)).map_err(FormatKeyError::Fmt)
+        } else {
+            write!(f, "{}", name).map_err(FormatKeyError::Fmt)
+        }
     }
 }

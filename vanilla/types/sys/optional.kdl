@@ -1,4 +1,4 @@
 enum "Item" editor="enum" title="Option<{Item}>" kind="toggle" port="hollow" graph_autoconvert_recursive=true graph_autoconvert_variant="some" {
-    const "none" null
-    generic "some" "Item"
+    const "None" null
+    generic "Some" "Item"
 }

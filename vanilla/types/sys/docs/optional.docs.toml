@@ -1,0 +1,15 @@
+[types.'sys:optional']
+title = "Optional"
+description = "A type that represents an optional value"
+docs = """
+This type is similar to "nullable" types in programming, where value may or \
+may not be present.
+"""
+
+[[types.'sys:optional'.variants]]
+id = "None"
+description = "No value is present"
+
+[[types.'sys:optional'.variants]]
+id = "Some"
+description = "A value is present"
