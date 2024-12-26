@@ -192,13 +192,15 @@ pub fn type_docs(ui: &mut Ui, registry: &ETypesRegistry, ty: &EObjectType, docs:
     show_description(ui, docs, &mut md_cache);
 
     ui.style_mut().visuals.indent_has_left_vline = false;
-    if ty.as_enum().is_some() {
+    if !docs.variants.is_empty() {
         ui.label(RichText::new("Variants").heading());
         ui.separator();
         for docs in &docs.variants {
             show_collapsing_description(ui, docs, &mut md_cache, &docs.id);
         }
-    } else {
+    }
+
+    if !docs.fields.is_empty() {
         ui.label(RichText::new("Fields").heading());
         ui.separator();
         for docs in &docs.fields {
