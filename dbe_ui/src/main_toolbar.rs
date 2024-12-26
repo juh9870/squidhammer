@@ -11,7 +11,7 @@ use std::borrow::Cow;
 pub mod colors;
 pub mod docs;
 
-#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum ToolPanel {
     ProjectTree,
     Diagnostics,
