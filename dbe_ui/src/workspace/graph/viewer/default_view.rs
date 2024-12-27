@@ -1,5 +1,5 @@
 use crate::ui_props::PROP_OBJECT_GRAPH_INLINE;
-use crate::workspace::editors::editor_for_item;
+use crate::workspace::editors::{editor_for_item, EditorContext};
 use crate::workspace::graph::viewer::NodeView;
 use crate::workspace::graph::{any_pin, pin_info, GraphViewer};
 use dbe_backend::etype::eobject::EObject;
@@ -7,7 +7,7 @@ use dbe_backend::etype::EDataType;
 use dbe_backend::graph::node::SnarlNode;
 use dbe_backend::registry::ETypesRegistry;
 use dbe_backend::value::EValue;
-use egui::Ui;
+use egui::{Ui, Widget};
 use egui_snarl::ui::PinInfo;
 use egui_snarl::{InPin, NodeId, OutPin, Snarl};
 use std::fmt::Debug;
@@ -16,7 +16,7 @@ use ustr::Ustr;
 #[derive(Debug)]
 pub struct DefaultNodeView;
 
-fn format_value(value: &EValue) -> String {
+pub fn format_value(value: &EValue) -> String {
     match value {
         EValue::Null => "null".to_string(),
         EValue::Boolean { value } => value.to_string(),
@@ -37,7 +37,7 @@ fn format_value(value: &EValue) -> String {
     }
 }
 
-fn has_inline_editor(registry: &ETypesRegistry, ty: EDataType, editable: bool) -> bool {
+pub fn has_inline_editor(registry: &ETypesRegistry, ty: EDataType, editable: bool) -> bool {
     match ty {
         EDataType::Boolean => editable,
         EDataType::Number => editable,
@@ -87,10 +87,27 @@ impl NodeView for DefaultNodeView {
         snarl: &mut Snarl<SnarlNode>,
     ) -> miette::Result<PinInfo> {
         let registry = viewer.ctx.registry;
+        let docs = viewer.ctx.docs.expect("Docs should be set at this point");
         let node = &snarl[pin.id.node];
+        let node_ident = node.id();
         let input_data = node.try_input(viewer.ctx.as_node_context(), pin.id.input)?;
         let Some(info) = input_data.ty.item_info() else {
             return Ok(any_pin());
+        };
+        let ctx = EditorContext::new(registry, docs);
+        let docs_ui = |ui: &mut Ui| {
+            let mut shown = false;
+            if let Some(ty) = docs.nodes.get(node_ident.as_str()) {
+                if let Some(input_docs) =
+                    ty.inputs.iter().find(|i| i.id == input_data.name.as_str())
+                {
+                    ui.label(&input_docs.description);
+                    shown = true;
+                }
+            }
+            if !shown {
+                ui.label("No documentation available");
+            }
         };
         if pin.remotes.is_empty() {
             let mut full_ctx = viewer.ctx.as_full(snarl);
@@ -100,7 +117,7 @@ impl NodeView for DefaultNodeView {
                     let res = ui.vertical(|ui| {
                         editor.show(
                             ui,
-                            registry,
+                            ctx.with_label_hover_ui(docs_ui),
                             viewer.diagnostics.enter_field(input_data.name.as_str()),
                             &input_data.name,
                             value,
@@ -112,11 +129,20 @@ impl NodeView for DefaultNodeView {
                     }
                 } else {
                     ui.horizontal(|ui| {
-                        ui.label(&*input_data.name);
+                        egui::Label::new(&*input_data.name)
+                            .ui(ui)
+                            .on_hover_ui(docs_ui);
                         ui.label(format_value(value));
                     });
                 }
             }
+        } else {
+            ui.horizontal(|ui| {
+                egui::Label::new(&*input_data.name)
+                    .selectable(false)
+                    .ui(ui)
+                    .on_hover_ui(docs_ui);
+            });
         }
 
         Ok(pin_info(&input_data.ty, registry))
@@ -133,8 +159,28 @@ impl NodeView for DefaultNodeView {
         let registry = viewer.ctx.registry;
         let node = &snarl[pin.id.node];
         let output_data = node.try_output(viewer.ctx.as_node_context(), pin.id.output)?;
+        let docs = viewer.ctx.docs.expect("Docs should be set at this point");
+        let docs_ui = |ui: &mut Ui| {
+            let mut shown = false;
+            if let Some(ty) = docs.nodes.get(node.id().as_str()) {
+                if let Some(input_docs) = ty
+                    .outputs
+                    .iter()
+                    .find(|i| i.id == output_data.name.as_str())
+                {
+                    ui.label(&input_docs.description);
+                    shown = true;
+                }
+            }
+            if !shown {
+                ui.label("No documentation available");
+            }
+        };
         ui.horizontal(|ui| {
-            ui.label(&*output_data.name);
+            egui::Label::new(&*output_data.name)
+                .selectable(false)
+                .ui(ui)
+                .on_hover_ui(docs_ui);
         });
 
         Ok(pin_info(&output_data.ty, registry))

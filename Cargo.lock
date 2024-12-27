@@ -1152,6 +1152,7 @@ dependencies = [
  "cansi",
  "csscolorparser",
  "dbe_backend",
+ "derive_more",
  "downcast-rs",
  "dyn-clone",
  "egui",

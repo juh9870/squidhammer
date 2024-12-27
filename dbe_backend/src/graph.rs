@@ -72,6 +72,7 @@ impl Graph {
                 &mut graph,
                 registry,
                 None,
+                None,
                 &mut cache,
                 SideEffectsContext::unavailable(),
                 true,

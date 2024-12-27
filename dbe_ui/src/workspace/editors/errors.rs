@@ -1,7 +1,8 @@
 use crate::workspace::editors::utils::{labeled_error, EditorSize};
-use crate::workspace::editors::{cast_props, DynProps, Editor, EditorProps, EditorResponse};
+use crate::workspace::editors::{
+    cast_props, DynProps, Editor, EditorContext, EditorProps, EditorResponse,
+};
 use dbe_backend::diagnostic::context::DiagnosticContextRef;
-use dbe_backend::registry::ETypesRegistry;
 use dbe_backend::value::EValue;
 use egui::Ui;
 use miette::miette;
@@ -17,7 +18,7 @@ impl Editor for ErrorEditor {
     fn edit(
         &self,
         ui: &mut Ui,
-        _reg: &ETypesRegistry,
+        _ctx: EditorContext,
         _diagnostics: DiagnosticContextRef,
         field_name: &str,
         _value: &mut EValue,

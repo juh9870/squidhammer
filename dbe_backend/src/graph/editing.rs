@@ -8,6 +8,7 @@ use crate::graph::node::struct_node::StructNode;
 use crate::graph::node::{get_snarl_node, NodeContext, SnarlNode};
 use crate::graph::Graph;
 use crate::m_try;
+use crate::project::docs::Docs;
 use crate::project::project_graph::ProjectGraphs;
 use crate::project::side_effects::SideEffectsContext;
 use crate::registry::{EObjectType, ETypesRegistry};
@@ -39,6 +40,7 @@ pub struct GraphEditingContext<'a, 'snarl> {
     pub inputs: &'a mut SmallVec<[GraphInput; 1]>,
     pub outputs: &'a mut SmallVec<[GraphOutput; 1]>,
     pub registry: &'a ETypesRegistry,
+    pub docs: Option<&'a Docs>,
     pub graphs: Option<&'a ProjectGraphs>,
     side_effects: SideEffectsContext<'a>,
     is_node_group: bool,
@@ -52,6 +54,7 @@ impl<'a> GraphEditingContext<'a, 'a> {
     pub fn from_graph(
         graph: &'a mut Graph,
         registry: &'a ETypesRegistry,
+        docs: Option<&'a Docs>,
         graphs: Option<&'a ProjectGraphs>,
         cache: &'a mut GraphCache,
         side_effects: SideEffectsContext<'a>,
@@ -65,6 +68,7 @@ impl<'a> GraphEditingContext<'a, 'a> {
             inputs: &mut graph.inputs,
             outputs: &mut graph.outputs,
             registry,
+            docs,
             graphs,
             side_effects,
             is_node_group,
@@ -268,6 +272,7 @@ pub struct PartialGraphEditingContext<'a> {
     pub inputs: &'a mut SmallVec<[GraphInput; 1]>,
     pub outputs: &'a mut SmallVec<[GraphOutput; 1]>,
     pub registry: &'a ETypesRegistry,
+    pub docs: Option<&'a Docs>,
     pub graphs: Option<&'a ProjectGraphs>,
     side_effects: SideEffectsContext<'a>,
     is_node_group: bool,
@@ -281,6 +286,7 @@ impl<'a> PartialGraphEditingContext<'a> {
     pub fn from_graph(
         graph: &'a mut Graph,
         registry: &'a ETypesRegistry,
+        docs: Option<&'a Docs>,
         graphs: Option<&'a ProjectGraphs>,
         cache: &'a mut GraphCache,
         side_effects: SideEffectsContext<'a>,
@@ -294,6 +300,7 @@ impl<'a> PartialGraphEditingContext<'a> {
                 inputs: &mut graph.inputs,
                 cache,
                 registry,
+                docs,
                 graphs,
                 side_effects,
                 is_node_group,
@@ -317,6 +324,7 @@ impl<'a> PartialGraphEditingContext<'a> {
             inline_values: self.inline_values,
             cache: self.cache,
             registry: self.registry,
+            docs: self.docs,
             graphs: self.graphs,
             side_effects: self.side_effects.clone(),
             inputs: self.inputs,

@@ -1,5 +1,5 @@
 use crate::workspace::editors::utils::{unsupported, EditorSize};
-use crate::workspace::editors::{DynProps, Editor, EditorResponse};
+use crate::workspace::editors::{DynProps, Editor, EditorContext, EditorResponse};
 use dbe_backend::diagnostic::context::DiagnosticContextRef;
 use dbe_backend::etype::eitem::EItemInfo;
 use dbe_backend::etype::EDataType;
@@ -54,7 +54,7 @@ impl<T: Editor> Editor for WrappedEditor<T> {
     fn edit(
         &self,
         ui: &mut Ui,
-        reg: &ETypesRegistry,
+        ctx: EditorContext,
         diagnostics: DiagnosticContextRef,
         field_name: &str,
         value: &mut EValue,
@@ -73,6 +73,6 @@ impl<T: Editor> Editor for WrappedEditor<T> {
         };
 
         self.editor
-            .edit(ui, reg, diagnostics, field_name, field, props)
+            .edit(ui, ctx, diagnostics, field_name, field, props)
     }
 }

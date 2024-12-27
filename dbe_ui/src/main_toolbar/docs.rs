@@ -141,7 +141,7 @@ fn show_collapsing_description(
     md_cache: &mut CommonMarkCache,
     title: &str,
 ) {
-    egui::CollapsingHeader::new(RichText::new(title).strong().size(tweak!(14.0)))
+    CollapsingHeader::new(RichText::new(title).strong().size(tweak!(14.0)))
         .default_open(true)
         .show(ui, |ui| {
             show_description(ui, docs, md_cache);

@@ -192,10 +192,6 @@ fn validate_nonempty(s: &mut String, field_name: &str) -> miette::Result<()> {
     Ok(())
 }
 
-fn trim(s: &mut String) {
-    *s = s.trim().to_string();
-}
-
 fn validate_dd(docs: &mut impl DocsDescription) -> miette::Result<()> {
     validate_nonempty(docs.description_mut(), "description")?;
 

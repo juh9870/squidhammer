@@ -1,5 +1,7 @@
 use crate::workspace::editors::utils::{labeled_error, labeled_field, EditorSize};
-use crate::workspace::editors::{cast_props, DynProps, Editor, EditorProps, EditorResponse};
+use crate::workspace::editors::{
+    cast_props, DynProps, Editor, EditorContext, EditorProps, EditorResponse,
+};
 use dbe_backend::diagnostic::context::DiagnosticContextRef;
 use dbe_backend::etype::econst::ETypeConst;
 use dbe_backend::etype::eitem::EItemInfo;
@@ -32,7 +34,7 @@ impl Editor for ConstEditor {
     fn edit(
         &self,
         ui: &mut Ui,
-        _reg: &ETypesRegistry,
+        ctx: EditorContext,
         _diagnostics: DiagnosticContextRef,
         field_name: &str,
         value: &mut EValue,
@@ -46,7 +48,9 @@ impl Editor for ConstEditor {
             }
         }
 
-        labeled_field(ui, field_name, |ui| ui.label(value.to_string()));
+        labeled_field(ui, field_name, ctx.label_hover_ui, |ui| {
+            ui.label(value.to_string())
+        });
 
         EditorResponse::unchanged()
     }

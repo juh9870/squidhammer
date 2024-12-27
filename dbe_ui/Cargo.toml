@@ -13,6 +13,7 @@ camino = { workspace = true }
 cansi = { workspace = true }
 csscolorparser = { workspace = true }
 dbe_backend = { workspace = true }
+derive_more = { workspace = true, features = ["debug"] }
 downcast-rs = { workspace = true }
 dyn-clone = { workspace = true }
 egui = { workspace = true }
