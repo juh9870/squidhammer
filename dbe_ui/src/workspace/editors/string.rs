@@ -1,6 +1,8 @@
 use crate::ui_props::PROP_FIELD_MULTILINE;
 use crate::workspace::editors::utils::{labeled_field, unsupported, EditorSize};
-use crate::workspace::editors::{cast_props, DynProps, Editor, EditorProps, EditorResponse};
+use crate::workspace::editors::{
+    cast_props, DynProps, Editor, EditorContext, EditorProps, EditorResponse,
+};
 use dbe_backend::diagnostic::context::DiagnosticContextRef;
 use dbe_backend::etype::eitem::EItemInfo;
 use dbe_backend::registry::ETypesRegistry;
@@ -31,7 +33,7 @@ impl Editor for StringEditor {
     fn edit(
         &self,
         ui: &mut Ui,
-        _reg: &ETypesRegistry,
+        ctx: EditorContext,
         _diagnostics: DiagnosticContextRef,
         field_name: &str,
         value: &mut EValue,
@@ -41,7 +43,7 @@ impl Editor for StringEditor {
             unsupported!(ui, field_name, value, self);
         };
         let props = cast_props::<StringProps>(props);
-        let res = labeled_field(ui, field_name, |ui| {
+        let res = labeled_field(ui, field_name, ctx.label_hover_ui, |ui| {
             if props.multiline {
                 TextEdit::multiline(value)
             } else {

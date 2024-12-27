@@ -4,7 +4,8 @@ use crate::workspace::editors::utils::{
     inline_error, labeled_error, labeled_field, prop, unsupported, EditorSize,
 };
 use crate::workspace::editors::{
-    cast_props, editor_for_item, DynProps, Editor, EditorData, EditorProps, EditorResponse,
+    cast_props, editor_for_item, DynProps, Editor, EditorContext, EditorData, EditorProps,
+    EditorResponse,
 };
 use dbe_backend::diagnostic::context::DiagnosticContextRef;
 use dbe_backend::etype::econst::ETypeConst;
@@ -66,7 +67,7 @@ impl Editor for EnumEditor {
     fn edit(
         &self,
         ui: &mut Ui,
-        reg: &ETypesRegistry,
+        mut ctx: EditorContext,
         diagnostics: DiagnosticContextRef,
         field_name: &str,
         value: &mut EValue,
@@ -81,9 +82,10 @@ impl Editor for EnumEditor {
         };
 
         let props = cast_props::<EnumEditorProps>(props);
+        let hover_ui = ctx.label_hover_ui.take();
 
         let Some(mut editor) =
-            EnumEditorData::init(ui, reg, diagnostics, field_name, variant, value)
+            EnumEditorData::init(ui, ctx, diagnostics, field_name, variant, value)
         else {
             return EditorResponse::unchanged();
         };
@@ -105,7 +107,7 @@ impl Editor for EnumEditor {
                         true,
                     )
                     .show_header(ui, |ui| {
-                        labeled_field(ui, field_name, |ui| editor.toggle_editor(ui))
+                        labeled_field(ui, field_name, hover_ui, |ui| editor.toggle_editor(ui))
                     })
                     .body_unindented(|ui| editor.body(ui))
                     .2
@@ -121,7 +123,7 @@ impl Editor for EnumEditor {
                     ui.with_layout(
                         egui::Layout::from_main_dir_and_cross_align(dir, Align::Min),
                         |ui| {
-                            labeled_field(ui, field_name, |ui| editor.toggle_editor(ui));
+                            labeled_field(ui, field_name, hover_ui, |ui| editor.toggle_editor(ui));
                             editor.body(ui)
                         },
                     )
@@ -136,14 +138,14 @@ impl Editor for EnumEditor {
                         true,
                     )
                     .show_header(ui, |ui| {
-                        labeled_field(ui, field_name, |ui| editor.picker(ui))
+                        labeled_field(ui, field_name, hover_ui, |ui| editor.picker(ui))
                     })
                     .body_unindented(|ui| editor.body(ui))
                     .2
                     .map(|r| r.inner)
                     .unwrap_or(EditorResponse::unchanged())
                 } else {
-                    labeled_field(ui, field_name, |ui| editor.picker(ui));
+                    labeled_field(ui, field_name, hover_ui, |ui| editor.picker(ui));
                     editor.body(ui)
                 }
             }
@@ -159,7 +161,7 @@ pub struct EnumEditorProps {
 impl EditorProps for EnumEditorProps {}
 
 struct EnumEditorData<'a> {
-    registry: &'a ETypesRegistry,
+    ctx: EditorContext<'a>,
     diagnostics: DiagnosticContextRef<'a>,
     field_name: &'a str,
     variant: &'a mut EEnumVariantId,
@@ -175,21 +177,21 @@ struct EnumEditorData<'a> {
 impl<'a> EnumEditorData<'a> {
     pub fn init(
         ui: &mut Ui,
-        registry: &'a ETypesRegistry,
+        ctx: EditorContext<'a>,
         diagnostics: DiagnosticContextRef<'a>,
         field_name: &'a str,
         variant: &'a mut EEnumVariantId,
         value: &'a mut EValue,
     ) -> Option<Self> {
-        let Some((enum_data, selected_variant)) = variant.enum_variant(registry) else {
+        let Some((enum_data, selected_variant)) = variant.enum_variant(ctx.registry) else {
             labeled_error(ui, field_name, miette!("Failed to find enum variant"));
             return None;
         };
 
-        let editor = editor_for_item(registry, &selected_variant.data);
+        let editor = editor_for_item(ctx.registry, &selected_variant.data);
 
         Some(Self {
-            registry,
+            ctx,
             diagnostics,
             field_name,
             variant,
@@ -225,12 +227,12 @@ impl<'a> EnumEditorData<'a> {
 
     fn change_variant(&mut self, new_variant: EEnumVariantId) {
         *self.variant = new_variant;
-        match new_variant.variant(self.registry) {
+        match new_variant.variant(self.ctx.registry) {
             None => {
                 error!(id=?new_variant, "Failed to obtain enum variant for ID")
             }
             Some(variant) => {
-                *self.value = variant.default_value(self.registry).into_owned();
+                *self.value = variant.default_value(self.ctx.registry).into_owned();
             }
         }
     }
@@ -311,7 +313,7 @@ impl<'a> EnumEditorData<'a> {
 
             let res = self
                 .editor
-                .show(ui, self.registry, d.enter_inline(), "", self.value);
+                .show(ui, self.ctx, d.enter_inline(), "", self.value);
 
             diagnostics_column(ui, d.get_reports_shallow());
 

@@ -1,14 +1,16 @@
 use crate::widgets::report::diagnostics_column;
-use crate::workspace::editors::utils::{labeled_field, unsupported, EditorResultExt, EditorSize};
+use crate::workspace::editors::utils::{
+    docs_label, labeled_field, unsupported, EditorResultExt, EditorSize,
+};
 use crate::workspace::editors::{
-    cast_props, editor_for_item, DynProps, Editor, EditorProps, EditorResponse,
+    cast_props, editor_for_item, DynProps, Editor, EditorContext, EditorProps, EditorResponse,
 };
 use dbe_backend::diagnostic::context::DiagnosticContextRef;
 use dbe_backend::etype::eitem::EItemInfo;
 use dbe_backend::etype::property::default_properties::PROP_FIELD_INLINE;
 use dbe_backend::registry::ETypesRegistry;
 use dbe_backend::value::EValue;
-use egui::{Ui, Widget};
+use egui::Ui;
 use itertools::Itertools;
 use miette::miette;
 
@@ -35,7 +37,7 @@ impl Editor for StructEditor {
     fn edit(
         &self,
         ui: &mut Ui,
-        reg: &ETypesRegistry,
+        mut ctx: EditorContext,
         mut diagnostics: DiagnosticContextRef,
         field_name: &str,
         value: &mut EValue,
@@ -46,15 +48,17 @@ impl Editor for StructEditor {
         };
 
         let props = cast_props::<StructProps>(props);
+        let hover_ui = ctx.label_hover_ui.take();
 
         let mut changed = false;
-        reg.get_struct(ident)
+        ctx.registry
+            .get_struct(ident)
             .ok_or_else(|| miette!("unknown struct `{}`", ident))
             .then_draw(ui, |ui, data| {
                 let items = data
                     .fields
                     .iter()
-                    .map(|f| (f, editor_for_item(reg, &f.ty)))
+                    .map(|f| (f, editor_for_item(ctx.registry, &f.ty)))
                     .collect_vec();
 
                 let inline =
@@ -67,8 +71,18 @@ impl Editor for StructEditor {
                             .ok_or_else(|| miette!("field `{}` is missing", field.name))
                             .then_draw(ui, |ui, value| {
                                 let mut d = diagnostics.enter_field(field.name.as_str());
+                                let mut ctx = ctx.copy_no_ui();
+                                if let Some(ty) = ctx.docs.types.get(ident) {
+                                    if let Some(field_docs) =
+                                        ty.fields.iter().find(|f| f.id == field.name.as_str())
+                                    {
+                                        ctx = ctx.with_label_hover_ui(|ui| {
+                                            ui.label(field_docs.description.as_str());
+                                        });
+                                    }
+                                }
                                 if editor
-                                    .show(ui, reg, d.enter_inline(), field.name.as_ref(), value)
+                                    .show(ui, ctx, d.enter_inline(), field.name.as_ref(), value)
                                     .changed
                                 {
                                     changed = true;
@@ -80,7 +94,7 @@ impl Editor for StructEditor {
 
                 if inline {
                     ui.horizontal(|ui| {
-                        labeled_field(ui, field_name, draw_fields);
+                        labeled_field(ui, field_name, hover_ui, draw_fields);
                     });
                 } else if props.inline {
                     draw_fields(ui);
@@ -97,7 +111,7 @@ impl Editor for StructEditor {
                         true,
                     )
                     .show_header(ui, |ui| {
-                        egui::Label::new(field_name).selectable(false).ui(ui);
+                        docs_label(ui, field_name, hover_ui);
                     })
                     .body(|ui| {
                         ui.vertical(|ui| {

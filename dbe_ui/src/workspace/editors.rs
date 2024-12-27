@@ -17,6 +17,7 @@ use dbe_backend::etype::eitem::EItemInfo;
 use dbe_backend::etype::eobject::EObject;
 use dbe_backend::etype::property::FieldPropertyId;
 use dbe_backend::etype::EDataType;
+use dbe_backend::project::docs::Docs;
 use dbe_backend::registry::{EObjectType, ETypesRegistry};
 use dbe_backend::value::EValue;
 use downcast_rs::{impl_downcast, Downcast};
@@ -121,12 +122,45 @@ trait Editor: std::any::Any + Send + Sync + Debug {
     fn edit(
         &self,
         ui: &mut Ui,
-        reg: &ETypesRegistry,
+        ctx: EditorContext,
         diagnostics: DiagnosticContextRef,
         field_name: &str,
         value: &mut EValue,
         props: &DynProps,
     ) -> EditorResponse;
+}
+
+type LabelHoverUi<'a> = Option<Box<dyn FnOnce(&mut Ui) + 'a>>;
+
+#[derive(derive_more::Debug)]
+pub struct EditorContext<'a> {
+    registry: &'a ETypesRegistry,
+    docs: &'a Docs,
+    #[debug(skip)]
+    label_hover_ui: LabelHoverUi<'a>,
+}
+
+impl<'a> EditorContext<'a> {
+    pub fn new(registry: &'a ETypesRegistry, docs: &'a Docs) -> Self {
+        Self {
+            registry,
+            docs,
+            label_hover_ui: None,
+        }
+    }
+
+    pub fn with_label_hover_ui(mut self, label_hover_ui: impl FnOnce(&mut Ui) + 'a) -> Self {
+        self.label_hover_ui = Some(Box::new(label_hover_ui));
+        self
+    }
+
+    pub fn copy_no_ui(&self) -> Self {
+        Self {
+            registry: self.registry,
+            docs: self.docs,
+            label_hover_ui: None,
+        }
+    }
 }
 
 pub struct EditorData(&'static dyn Editor, DynProps);
@@ -211,13 +245,13 @@ impl EditorData {
     pub fn show(
         &self,
         ui: &mut Ui,
-        reg: &ETypesRegistry,
+        ctx: EditorContext,
         diagnostics: DiagnosticContextRef,
         field_name: &str,
         value: &mut EValue,
     ) -> EditorResponse {
         let Self(editor, props) = self;
-        editor.edit(ui, reg, diagnostics, field_name, value, props)
+        editor.edit(ui, ctx, diagnostics, field_name, value, props)
     }
 
     pub fn size(&self) -> EditorSize {

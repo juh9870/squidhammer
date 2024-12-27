@@ -1,7 +1,7 @@
 use crate::error::report_error;
 use crate::widgets::collapsible_toolbar::CollapsibleToolbar;
 use crate::widgets::dpanel::DPanelSide;
-use crate::workspace::editors::editor_for_value;
+use crate::workspace::editors::{editor_for_value, EditorContext};
 use crate::workspace::graph::toolbar::{GraphTab, GraphToolbarViewer};
 use crate::DbeApp;
 use camino::Utf8PathBuf;
@@ -146,7 +146,13 @@ impl<Io> TabViewer for WorkspaceTabViewer<'_, Io> {
             ProjectFile::Value(value) => {
                 let editor = editor_for_value(&self.0.registry, value);
 
-                let res = editor.show(ui, &self.0.registry, diagnostics.as_readonly(), "", value);
+                let res = editor.show(
+                    ui,
+                    EditorContext::new(&self.0.registry, &self.0.docs),
+                    diagnostics.as_readonly(),
+                    "",
+                    value,
+                );
 
                 if res.changed {
                     trace!(%tab, "tab value changed, revalidating");
@@ -156,6 +162,27 @@ impl<Io> TabViewer for WorkspaceTabViewer<'_, Io> {
                         report_error(err);
                     }
                 }
+
+                ui.add_space(ui.ctx().screen_rect().height() * 0.5);
+                ui.separator();
+            }
+            ProjectFile::GeneratedValue(value) => {
+                let editor = editor_for_value(&self.0.registry, value);
+
+                ui.label("Generated value, do not edit");
+                ui.separator();
+                ui.add_enabled_ui(false, |ui| {
+                    let res = editor.show(
+                        ui,
+                        EditorContext::new(&self.0.registry, &self.0.docs),
+                        diagnostics.as_readonly(),
+                        "",
+                        value,
+                    );
+                    if res.changed {
+                        panic!("Generated value was edited");
+                    }
+                });
 
                 ui.add_space(ui.ctx().screen_rect().height() * 0.5);
                 ui.separator();
@@ -194,6 +221,7 @@ impl<Io> TabViewer for WorkspaceTabViewer<'_, Io> {
                             let (ctx, snarl) = PartialGraphEditingContext::from_graph(
                                 graph,
                                 &self.0.registry,
+                                Some(&self.0.docs),
                                 Some(graphs),
                                 cache,
                                 SideEffectsContext::unavailable(),
@@ -208,22 +236,6 @@ impl<Io> TabViewer for WorkspaceTabViewer<'_, Io> {
                             snarl.show(&mut viewer, &SnarlStyle::default(), tab.to_string(), ui);
                         })
                     });
-            }
-            ProjectFile::GeneratedValue(value) => {
-                let editor = editor_for_value(&self.0.registry, value);
-
-                ui.label("Generated value, do not edit");
-                ui.separator();
-                ui.add_enabled_ui(false, |ui| {
-                    let res =
-                        editor.show(ui, &self.0.registry, diagnostics.as_readonly(), "", value);
-                    if res.changed {
-                        panic!("Generated value was edited");
-                    }
-                });
-
-                ui.add_space(ui.ctx().screen_rect().height() * 0.5);
-                ui.separator();
             }
         }
 
