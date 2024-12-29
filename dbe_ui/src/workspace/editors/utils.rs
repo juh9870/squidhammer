@@ -162,7 +162,7 @@ pub fn inline_error(ui: &mut Ui, err: impl Into<miette::Error>) {
 
 pub fn labeled_field<T>(
     ui: &mut Ui,
-    label: impl Into<WidgetText>,
+    label: &str,
     ctx: EditorContext,
     content: impl FnOnce(&mut Ui) -> T,
 ) -> InnerResponse<T> {

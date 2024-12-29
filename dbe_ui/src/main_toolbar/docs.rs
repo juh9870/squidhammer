@@ -4,7 +4,7 @@ use dbe_backend::graph::node::{get_node_factory, NodeFactory};
 use dbe_backend::project::docs::{Docs, DocsDescription, NodeDocs, TypeDocs};
 use dbe_backend::registry::{EObjectType, ETypesRegistry};
 use dbe_backend::value::id::ETypeId;
-use egui::{CollapsingHeader, RichText, TextEdit, Ui, Widget, WidgetText};
+use egui::{CollapsingHeader, RichText, ScrollArea, TextEdit, Ui, Widget, WidgetText, Window};
 use egui_commonmark::CommonMarkCache;
 use egui_hooks::UseHookExt;
 use inline_tweak::tweak;
@@ -209,6 +209,59 @@ pub fn type_docs(ui: &mut Ui, registry: &ETypesRegistry, ty: &EObjectType, docs:
     }
 }
 
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Hash)]
+enum DocsWindowRef {
+    Node(Ustr),
+    Type(ETypeId),
+}
+
+impl DocsWindowRef {
+    fn title<'docs>(&self, docs: &'docs Docs, registry: &ETypesRegistry) -> Cow<'docs, str> {
+        match self {
+            DocsWindowRef::Node(node) => docs
+                .nodes
+                .get(node.as_str())
+                .map(|d| d.title.as_str())
+                .map(Cow::Borrowed)
+                .unwrap_or_else(|| Cow::Borrowed(node.as_str())),
+            DocsWindowRef::Type(ty) => registry
+                .get_object(ty)
+                .map(|ty| Cow::Owned(ty.title(registry)))
+                .unwrap_or_else(|| Cow::Owned(ty.to_string())),
+        }
+    }
+
+    fn has_docs(&self, docs: &Docs) -> bool {
+        match self {
+            DocsWindowRef::Node(node) => docs.nodes.contains_key(node.as_str()),
+            DocsWindowRef::Type(ty) => docs.types.contains_key(ty),
+        }
+    }
+
+    fn show(&self, ui: &mut Ui, docs: &Docs, registry: &ETypesRegistry) {
+        let mut shown = false;
+        match self {
+            DocsWindowRef::Node(node) => {
+                if let (Some(docs), Some(factory)) =
+                    (docs.nodes.get(node.as_str()), get_node_factory(node))
+                {
+                    node_docs(ui, &*factory, docs);
+                    shown = true;
+                }
+            }
+            DocsWindowRef::Type(ty) => {
+                if let (Some(docs), Some(ty)) = (docs.types.get(ty), registry.get_object(ty)) {
+                    type_docs(ui, registry, ty, docs);
+                    shown = true;
+                }
+            }
+        }
+        if !shown {
+            ui.label("No documentation available");
+        }
+    }
+}
+
 #[derive(Debug, Clone, EnumIs)]
 pub enum DocsRef<'a> {
     NodeInput(Ustr, &'a str),
@@ -249,16 +302,10 @@ impl<'a> DocsRef<'a> {
 
     pub fn get_parent_title<'b>(&self, docs: &'b Docs, registry: &ETypesRegistry) -> Cow<'b, str> {
         match self {
-            DocsRef::NodeInput(node, _) | DocsRef::NodeOutput(node, _) => docs
-                .nodes
-                .get(node.as_str())
-                .map(|n| n.title.as_str())
-                .map(Cow::Borrowed)
-                .unwrap_or_else(|| Cow::Borrowed(node.as_str())),
-            DocsRef::TypeField(ty, _) => registry
-                .get_object(ty)
-                .map(|ty| Cow::Owned(ty.title(registry)))
-                .unwrap_or_else(|| Cow::Owned(ty.to_string())),
+            DocsRef::NodeInput(node, _) | DocsRef::NodeOutput(node, _) => {
+                DocsWindowRef::Node(*node).title(docs, registry)
+            }
+            DocsRef::TypeField(ty, _) => DocsWindowRef::Type(*ty).title(docs, registry),
             _ => panic!("{:?} doesn't have a field structure", self),
         }
     }
@@ -290,7 +337,7 @@ impl<'a> DocsRef<'a> {
 
 pub fn docs_label(
     ui: &mut Ui,
-    label: impl Into<WidgetText>,
+    label: &str,
     docs: &Docs,
     registry: &ETypesRegistry,
     docs_ref: DocsRef,
@@ -305,46 +352,73 @@ pub fn docs_label(
         return;
     }
 
-    res.on_hover_ui(|ui| match docs_ref {
-        DocsRef::Custom(text) => {
-            ui.label(text);
-        }
-        DocsRef::None => {
-            unreachable!()
-        }
-        _ if docs_ref.has_field_structure() => {
-            let description = if let Some(desc) = docs_ref.get_description(docs) {
-                if desc.is_empty() {
-                    NO_DOCS
-                } else {
-                    desc
-                }
-            } else {
-                NO_DOCS
-            };
-            let parent_title = docs_ref.get_parent_title(docs, registry);
-            let field_title = docs_ref.get_field_title(docs);
-            let label = match docs_ref {
-                DocsRef::NodeInput(_, _) => {
-                    format!("{} <- {}", parent_title, field_title)
-                }
-                DocsRef::NodeOutput(_, _) => {
-                    format!("{} -> {}", parent_title, field_title)
-                }
-                DocsRef::TypeField(_, _) => {
-                    format!("{}.{}", parent_title, field_title)
-                }
-                DocsRef::Custom(_) | DocsRef::None => {
-                    unreachable!()
-                }
-            };
+    let docs_window_ref = match &docs_ref {
+        DocsRef::NodeInput(node, _) | DocsRef::NodeOutput(node, _) => DocsWindowRef::Node(*node),
+        DocsRef::TypeField(ty, _) => DocsWindowRef::Type(*ty),
+        _ => return,
+    };
 
-            ui.label(label);
-            ui.separator();
-            ui.label(description);
+    let mut show_window = ui.use_state(|| false, docs_window_ref).into_var();
+
+    res.on_hover_ui(|ui| {
+        match &docs_ref {
+            DocsRef::Custom(text) => {
+                ui.label(*text);
+            }
+            DocsRef::None => {
+                unreachable!()
+            }
+            _ if docs_ref.has_field_structure() => {
+                let description = if let Some(desc) = docs_ref.get_description(docs) {
+                    if desc.is_empty() {
+                        NO_DOCS
+                    } else {
+                        desc
+                    }
+                } else {
+                    NO_DOCS
+                };
+                let parent_title = docs_ref.get_parent_title(docs, registry);
+                let field_title = docs_ref.get_field_title(docs);
+                let label = match docs_ref {
+                    DocsRef::NodeInput(_, _) => {
+                        format!("{} <- {}", parent_title, field_title)
+                    }
+                    DocsRef::NodeOutput(_, _) => {
+                        format!("{} -> {}", parent_title, field_title)
+                    }
+                    DocsRef::TypeField(_, _) => {
+                        format!("{}.{}", parent_title, field_title)
+                    }
+                    DocsRef::Custom(_) | DocsRef::None => {
+                        unreachable!()
+                    }
+                };
+
+                ui.label(label);
+                ui.separator();
+                ui.label(description);
+            }
+            _ => {
+                unimplemented!()
+            }
         }
-        _ => {
-            unimplemented!()
+
+        if docs_window_ref.has_docs(docs) && ui.button("View full docs").clicked() {
+            *show_window = true;
         }
     });
+
+    if *show_window {
+        Window::new(docs_window_ref.title(docs, registry))
+            .id(ui.id().with(label).with("docs_window"))
+            .open(&mut show_window)
+            .default_height(300.0)
+            .collapsible(false)
+            .show(ui.ctx(), |ui| {
+                ScrollArea::vertical().show(ui, |ui| {
+                    docs_window_ref.show(ui, docs, registry);
+                })
+            });
+    }
 }

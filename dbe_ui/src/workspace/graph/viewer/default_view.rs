@@ -120,14 +120,14 @@ impl NodeView for DefaultNodeView {
                     }
                 } else {
                     ui.horizontal(|ui| {
-                        docs_label(ui, &*input_data.name, docs, registry, DocsRef::None);
+                        docs_label(ui, &input_data.name, docs, registry, DocsRef::None);
                         ui.label(format_value(value));
                     });
                 }
             }
         } else {
             ui.horizontal(|ui| {
-                docs_label(ui, &*input_data.name, docs, registry, DocsRef::None);
+                docs_label(ui, &input_data.name, docs, registry, DocsRef::None);
             });
         }
 
@@ -149,7 +149,7 @@ impl NodeView for DefaultNodeView {
         ui.horizontal(|ui| {
             docs_label(
                 ui,
-                &*output_data.name,
+                &output_data.name,
                 docs,
                 registry,
                 DocsRef::NodeOutput(node.id(), output_data.name.as_str()),
