@@ -48,9 +48,7 @@ impl Editor for ConstEditor {
             }
         }
 
-        labeled_field(ui, field_name, ctx.label_hover_ui, |ui| {
-            ui.label(value.to_string())
-        });
+        labeled_field(ui, field_name, ctx, |ui| ui.label(value.to_string()));
 
         EditorResponse::unchanged()
     }

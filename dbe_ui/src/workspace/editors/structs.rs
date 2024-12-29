@@ -1,7 +1,6 @@
+use crate::main_toolbar::docs::{docs_label, DocsRef};
 use crate::widgets::report::diagnostics_column;
-use crate::workspace::editors::utils::{
-    docs_label, labeled_field, unsupported, EditorResultExt, EditorSize,
-};
+use crate::workspace::editors::utils::{labeled_field, unsupported, EditorResultExt, EditorSize};
 use crate::workspace::editors::{
     cast_props, editor_for_item, DynProps, Editor, EditorContext, EditorProps, EditorResponse,
 };
@@ -48,7 +47,7 @@ impl Editor for StructEditor {
         };
 
         let props = cast_props::<StructProps>(props);
-        let hover_ui = ctx.label_hover_ui.take();
+        let docs_ctx = ctx.replace_docs_ref(DocsRef::None);
 
         let mut changed = false;
         ctx.registry
@@ -71,16 +70,10 @@ impl Editor for StructEditor {
                             .ok_or_else(|| miette!("field `{}` is missing", field.name))
                             .then_draw(ui, |ui, value| {
                                 let mut d = diagnostics.enter_field(field.name.as_str());
-                                let mut ctx = ctx.copy_no_ui();
-                                if let Some(ty) = ctx.docs.types.get(ident) {
-                                    if let Some(field_docs) =
-                                        ty.fields.iter().find(|f| f.id == field.name.as_str())
-                                    {
-                                        ctx = ctx.with_label_hover_ui(|ui| {
-                                            ui.label(field_docs.description.as_str());
-                                        });
-                                    }
-                                }
+                                let ctx = ctx.copy_with_docs(DocsRef::TypeField(
+                                    *ident,
+                                    field.name.as_str(),
+                                ));
                                 if editor
                                     .show(ui, ctx, d.enter_inline(), field.name.as_ref(), value)
                                     .changed
@@ -94,7 +87,7 @@ impl Editor for StructEditor {
 
                 if inline {
                     ui.horizontal(|ui| {
-                        labeled_field(ui, field_name, hover_ui, draw_fields);
+                        labeled_field(ui, field_name, docs_ctx, draw_fields);
                     });
                 } else if props.inline {
                     draw_fields(ui);
@@ -111,7 +104,13 @@ impl Editor for StructEditor {
                         true,
                     )
                     .show_header(ui, |ui| {
-                        docs_label(ui, field_name, hover_ui);
+                        docs_label(
+                            ui,
+                            field_name,
+                            docs_ctx.docs,
+                            docs_ctx.registry,
+                            docs_ctx.docs_ref,
+                        );
                     })
                     .body(|ui| {
                         ui.vertical(|ui| {

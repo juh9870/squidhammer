@@ -24,7 +24,7 @@ impl Editor for BooleanEditor {
         let Ok(value) = value.try_as_boolean_mut() else {
             unsupported!(ui, field_name, value, self);
         };
-        let res = labeled_field(ui, field_name, ctx.label_hover_ui, |ui| {
+        let res = labeled_field(ui, field_name, ctx, |ui| {
             ui.toggle_value(value, if *value { "⏹ True" } else { "☐ False" })
         });
 

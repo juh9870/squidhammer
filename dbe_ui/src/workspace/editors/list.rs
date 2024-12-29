@@ -1,5 +1,6 @@
+use crate::main_toolbar::docs::{docs_label, DocsRef};
 use crate::widgets::report::diagnostics_column;
-use crate::workspace::editors::utils::{docs_label, unsupported, EditorResultExt, EditorSize};
+use crate::workspace::editors::utils::{unsupported, EditorResultExt, EditorSize};
 use crate::workspace::editors::{editor_for_type, DynProps, Editor, EditorContext, EditorResponse};
 use dbe_backend::diagnostic::context::DiagnosticContextRef;
 use dbe_backend::value::EValue;
@@ -29,7 +30,7 @@ impl Editor for ListEditor {
         };
 
         let mut changed = false;
-        let hover_ui = ctx.label_hover_ui.take();
+        let docs_ctx = ctx.replace_docs_ref(DocsRef::None);
 
         ctx.registry
             .get_list(id)
@@ -41,7 +42,13 @@ impl Editor for ListEditor {
                     values.len() < 20,
                 )
                 .show_header(ui, |ui| {
-                    docs_label(ui, field_name, hover_ui);
+                    docs_label(
+                        ui,
+                        field_name,
+                        docs_ctx.docs,
+                        docs_ctx.registry,
+                        docs_ctx.docs_ref,
+                    );
                 })
                 .body_unindented(|ui| {
                     let ty = list_data.value_type;
@@ -51,7 +58,13 @@ impl Editor for ListEditor {
                         .show(ui, values, |ui, i, val| {
                             let mut d = diagnostics.enter_index(i.index);
                             if editor
-                                .show(ui, ctx.copy_no_ui(), d.enter_inline(), "", val)
+                                .show(
+                                    ui,
+                                    ctx.copy_with_docs(DocsRef::None),
+                                    d.enter_inline(),
+                                    "",
+                                    val,
+                                )
                                 .changed
                             {
                                 changed = true;
