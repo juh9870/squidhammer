@@ -7,6 +7,7 @@ use crate::etype::property::default_properties::{
 };
 use crate::etype::EDataType;
 use crate::json_utils::repr::JsonRepr;
+use crate::project::docs::DocsRef;
 use crate::registry::ETypesRegistry;
 use crate::value::EValue;
 use miette::bail;
@@ -18,12 +19,48 @@ use ustr::Ustr;
 pub struct InputData {
     pub ty: NodePortType,
     pub name: Ustr,
+    pub custom_docs: Option<DocsRef>,
+}
+
+impl InputData {
+    pub fn new(ty: NodePortType, name: Ustr) -> Self {
+        Self {
+            ty,
+            name,
+            custom_docs: None,
+        }
+    }
+
+    pub fn with_custom_docs(self, custom_docs: DocsRef) -> Self {
+        Self {
+            custom_docs: Some(custom_docs),
+            ..self
+        }
+    }
 }
 
 #[derive(Debug, Clone)]
 pub struct OutputData {
     pub ty: NodePortType,
     pub name: Ustr,
+    pub custom_docs: Option<DocsRef>,
+}
+
+impl OutputData {
+    pub fn new(ty: NodePortType, name: Ustr) -> Self {
+        Self {
+            ty,
+            name,
+            custom_docs: None,
+        }
+    }
+
+    pub fn with_custom_docs(self, custom_docs: DocsRef) -> Self {
+        Self {
+            custom_docs: Some(custom_docs),
+            ..self
+        }
+    }
 }
 
 #[derive(Debug, Clone, EnumIs)]

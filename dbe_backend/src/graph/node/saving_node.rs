@@ -32,13 +32,13 @@ impl Node for SavingNode {
             panic!("Saving node has only one input")
         }
 
-        Ok(InputData {
-            ty: EItemInfo::simple_type(EDataType::Object {
+        Ok(InputData::new(
+            EItemInfo::simple_type(EDataType::Object {
                 ident: context.registry.project_config().types_config.import,
             })
             .into(),
-            name: "item".into(),
-        })
+            "item".into(),
+        ))
     }
 
     fn outputs_count(&self, _context: NodeContext) -> usize {

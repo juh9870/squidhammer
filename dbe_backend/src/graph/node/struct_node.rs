@@ -5,6 +5,7 @@ use crate::graph::node::{
     impl_serde_node, ExecutionExtras, InputData, Node, NodeContext, NodeFactory, OutputData,
     SnarlNode,
 };
+use crate::project::docs::DocsRef;
 use crate::registry::ETypesRegistry;
 use crate::value::id::ETypeId;
 use crate::value::EValue;
@@ -54,10 +55,8 @@ impl Node for StructNode {
 
         let field = &data.fields[input];
 
-        Ok(InputData {
-            ty: field.ty.clone().into(),
-            name: field.name,
-        })
+        Ok(InputData::new(field.ty.clone().into(), field.name)
+            .with_custom_docs(DocsRef::TypeField(self.id, field.name)))
     }
 
     fn outputs_count(&self, context: NodeContext) -> usize {
@@ -76,10 +75,10 @@ impl Node for StructNode {
             panic!("Struct only has one output")
         }
 
-        Ok(OutputData {
-            ty: EItemInfo::simple_type(EDataType::Object { ident: self.id }).into(),
-            name: "output".into(),
-        })
+        Ok(OutputData::new(
+            EItemInfo::simple_type(EDataType::Object { ident: self.id }).into(),
+            "output".into(),
+        ))
     }
 
     fn execute(

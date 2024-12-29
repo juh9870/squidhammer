@@ -99,10 +99,7 @@ macro_rules! impl_functional_node {
                 let ty = enumerate!(get_edata_type(input), $($in)*);
 
                 #[allow(unreachable_code)]
-                InputData {
-                    name: self.input_names[input].into(),
-                    ty: NodePortType::Specific(ty),
-                }
+                InputData::new(NodePortType::Specific(ty), self.input_names[input].into(),)
             }
 
             fn output_unchecked(&self, output: usize) -> OutputData {
@@ -172,10 +169,7 @@ macro_rules! impl_functional_output {
                 let ty = enumerate!(get_edata_type(output), $($out)*);
 
                 #[allow(unreachable_code)]
-                OutputData {
-                    name: names[output].into(),
-                    ty: NodePortType::Specific(ty),
-                }
+                OutputData::new(NodePortType::Specific(ty),names[output].into())
             }
 
             fn write_results(self, outputs: &mut Vec<EValue>) -> miette::Result<()> {

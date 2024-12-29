@@ -219,20 +219,19 @@ pub fn get_port_input<IO: GraphIoData>(
     index: usize,
 ) -> miette::Result<InputData> {
     let Some(f) = get_field(fields, ids, index) else {
-        return Ok(InputData {
-            ty: NodePortType::Invalid,
-            name: "!!unknown input!!".into(),
-        });
+        return Ok(InputData::new(
+            NodePortType::Invalid,
+            "!!unknown input!!".into(),
+        ));
     };
 
-    Ok(InputData {
-        ty: f
-            .ty()
+    Ok(InputData::new(
+        f.ty()
             .map(EItemInfo::simple_type)
             .map(NodePortType::Specific)
             .unwrap_or_else(|| NodePortType::BasedOnSource),
-        name: f.name().into(),
-    })
+        f.name().into(),
+    ))
 }
 
 pub fn get_port_output<IO: GraphIoData>(
@@ -241,18 +240,17 @@ pub fn get_port_output<IO: GraphIoData>(
     index: usize,
 ) -> miette::Result<OutputData> {
     let Some(f) = get_field(fields, ids, index) else {
-        return Ok(OutputData {
-            ty: NodePortType::Invalid,
-            name: "!!unknown output!!".into(),
-        });
+        return Ok(OutputData::new(
+            NodePortType::Invalid,
+            "!!unknown output!!".into(),
+        ));
     };
 
-    Ok(OutputData {
-        ty: f
-            .ty()
+    Ok(OutputData::new(
+        f.ty()
             .map(EItemInfo::simple_type)
             .map(NodePortType::Specific)
             .unwrap_or_else(|| NodePortType::BasedOnTarget),
-        name: f.name().into(),
-    })
+        f.name().into(),
+    ))
 }
