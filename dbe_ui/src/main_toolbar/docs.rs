@@ -6,7 +6,9 @@ use dbe_backend::project::docs::{
 };
 use dbe_backend::registry::{EObjectType, ETypesRegistry};
 use dbe_backend::value::id::ETypeId;
-use egui::{CollapsingHeader, RichText, ScrollArea, TextEdit, Ui, Widget, WidgetText, Window};
+use egui::{
+    CollapsingHeader, RichText, ScrollArea, TextBuffer, TextEdit, Ui, Widget, WidgetText, Window,
+};
 use egui_commonmark::CommonMarkCache;
 use egui_hooks::UseHookExt;
 use inline_tweak::tweak;
@@ -263,7 +265,7 @@ pub fn docs_label(
     res.on_hover_ui(|ui| {
         match &docs_ref {
             DocsRef::Custom(text) => {
-                ui.label(*text);
+                ui.label(text.as_str());
             }
             DocsRef::None => {
                 unreachable!()

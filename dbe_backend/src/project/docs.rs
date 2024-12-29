@@ -276,15 +276,15 @@ impl DocsWindowRef {
 }
 
 #[derive(Debug, Clone, EnumIs)]
-pub enum DocsRef<'a> {
-    NodeInput(Ustr, &'a str),
-    NodeOutput(Ustr, &'a str),
-    TypeField(ETypeId, &'a str),
-    Custom(&'a str),
+pub enum DocsRef {
+    NodeInput(Ustr, Ustr),
+    NodeOutput(Ustr, Ustr),
+    TypeField(ETypeId, Ustr),
+    Custom(Cow<'static, str>),
     None,
 }
 
-impl<'a> DocsRef<'a> {
+impl DocsRef {
     pub fn has_field_structure(&self) -> bool {
         matches!(
             self,
@@ -292,22 +292,22 @@ impl<'a> DocsRef<'a> {
         )
     }
 
-    pub fn get_description(&'a self, docs: &'a Docs) -> Option<&'a str> {
+    pub fn get_description<'docs>(&self, docs: &'docs Docs) -> Option<&'docs str> {
         match self {
             DocsRef::NodeInput(node, input) => docs
                 .nodes
                 .get(node.as_str())
-                .and_then(|d| d.inputs.iter().find(|i| i.id == *input))
+                .and_then(|d| d.inputs.iter().find(|i| i.id == input.as_str()))
                 .map(|i| i.description.as_str()),
             DocsRef::NodeOutput(node, output) => docs
                 .nodes
                 .get(node.as_str())
-                .and_then(|d| d.outputs.iter().find(|i| i.id == *output))
+                .and_then(|d| d.outputs.iter().find(|i| i.id == output.as_str()))
                 .map(|o| o.description.as_str()),
             DocsRef::TypeField(ty, field) => docs
                 .types
                 .get(ty)
-                .and_then(|d| d.fields.iter().find(|i| i.id == *field))
+                .and_then(|d| d.fields.iter().find(|i| i.id == field.as_str()))
                 .map(|f| f.description.as_str()),
             _ => None,
         }
@@ -323,26 +323,23 @@ impl<'a> DocsRef<'a> {
         }
     }
 
-    pub fn get_field_title<'b>(&self, docs: &'b Docs) -> Cow<'a, str>
-    where
-        'b: 'a,
-    {
+    pub fn get_field_title<'docs>(&self, docs: &'docs Docs) -> Cow<'docs, str> {
         match self {
             DocsRef::NodeInput(node, input) => docs
                 .nodes
                 .get(node.as_str())
-                .and_then(|d| d.inputs.iter().find(|i| i.id == *input))
+                .and_then(|d| d.inputs.iter().find(|i| i.id == input.as_str()))
                 .map(|i| i.title.as_str())
-                .unwrap_or_else(|| input)
+                .unwrap_or_else(|| input.as_str())
                 .into(),
             DocsRef::NodeOutput(node, output) => docs
                 .nodes
                 .get(node.as_str())
-                .and_then(|d| d.outputs.iter().find(|i| i.id == *output))
+                .and_then(|d| d.outputs.iter().find(|i| i.id == output.as_str()))
                 .map(|o| o.title.as_str())
-                .unwrap_or_else(|| output)
+                .unwrap_or_else(|| output.as_str())
                 .into(),
-            DocsRef::TypeField(_, field) => (*field).into(),
+            DocsRef::TypeField(_, field) => field.as_str().into(),
             _ => panic!("{:?} doesn't have a field structure", self),
         }
     }

@@ -135,11 +135,11 @@ trait Editor: std::any::Any + Send + Sync + Debug {
 pub struct EditorContext<'a> {
     registry: &'a ETypesRegistry,
     docs: &'a Docs,
-    docs_ref: DocsRef<'a>,
+    docs_ref: DocsRef,
 }
 
 impl<'a> EditorContext<'a> {
-    pub fn new(registry: &'a ETypesRegistry, docs: &'a Docs, docs_ref: DocsRef<'a>) -> Self {
+    pub fn new(registry: &'a ETypesRegistry, docs: &'a Docs, docs_ref: DocsRef) -> Self {
         Self {
             registry,
             docs,
@@ -147,7 +147,7 @@ impl<'a> EditorContext<'a> {
         }
     }
 
-    pub fn copy_with_docs(&self, docs_ref: DocsRef<'a>) -> Self {
+    pub fn copy_with_docs(&self, docs_ref: DocsRef) -> Self {
         Self {
             registry: self.registry,
             docs: self.docs,
@@ -157,7 +157,7 @@ impl<'a> EditorContext<'a> {
 
     /// Returns the context with the current docs ref, leaving [self] context
     /// with the ref from `docs_ref`
-    pub fn replace_docs_ref(&mut self, docs_ref: DocsRef<'a>) -> Self {
+    pub fn replace_docs_ref(&mut self, docs_ref: DocsRef) -> Self {
         Self {
             registry: self.registry,
             docs: self.docs,
