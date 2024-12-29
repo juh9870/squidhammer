@@ -1,7 +1,9 @@
+use crate::main_toolbar::docs::docs_hover;
 use crate::workspace::graph::viewer::NodeView;
 use crate::workspace::graph::GraphViewer;
 use dbe_backend::graph::node::enum_node::{EnumNode, EnumNodeFactory};
 use dbe_backend::graph::node::{NodeFactory, SnarlNode};
+use dbe_backend::project::docs::DocsRef;
 use egui::Ui;
 use egui_snarl::{InPin, NodeId, OutPin, Snarl};
 use miette::bail;
@@ -38,13 +40,25 @@ impl NodeView for EnumNodeViewer {
             bail!("Enum variant {:?} not found", variant_id);
         };
 
-        egui::ComboBox::new("variant", "Variant")
+        let res = egui::ComboBox::new("variant", "Variant")
             .selected_text(variant.name())
             .show_ui(ui, |ui| {
                 for (variant, id) in data.variants_with_ids() {
                     ui.selectable_value(&mut variant_id, *id, variant.name());
                 }
             });
+
+        docs_hover(
+            ui,
+            res.response,
+            "variant",
+            viewer
+                .ctx
+                .docs
+                .expect("docs should be present when viewing data"),
+            viewer.ctx.registry,
+            DocsRef::EnumVariant(variant_id.enum_id(), variant_id.variant_name()),
+        );
 
         node.set_variant(&mut viewer.commands, node_id, variant_id)?;
         viewer.commands.execute(&mut viewer.ctx.as_full(snarl))?;
