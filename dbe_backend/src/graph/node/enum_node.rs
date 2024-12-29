@@ -9,6 +9,7 @@ use crate::graph::node::variables::ExecutionExtras;
 use crate::graph::node::{
     impl_serde_node, InputData, Node, NodeContext, NodeFactory, OutputData, SnarlNode,
 };
+use crate::project::docs::DocsRef;
 use crate::registry::ETypesRegistry;
 use crate::value::EValue;
 use egui_snarl::{InPin, InPinId, NodeId, OutPin};
@@ -85,13 +86,14 @@ impl Node for EnumNode {
     }
 
     fn input_unchecked(&self, context: NodeContext, input: usize) -> miette::Result<InputData> {
-        let Some((_, variant)) = self.get_data(context.registry) else {
+        let Some((enum_data, variant)) = self.get_data(context.registry) else {
             panic!("Unknown enum variant");
         };
         if input != 0 {
             panic!("Enum only has one input");
         }
-        Ok(InputData::new(variant.data.clone().into(), variant.name))
+        Ok(InputData::new(variant.data.clone().into(), variant.name)
+            .with_custom_docs(DocsRef::EnumVariant(enum_data.ident, variant.name)))
     }
 
     fn outputs_count(&self, context: NodeContext) -> usize {

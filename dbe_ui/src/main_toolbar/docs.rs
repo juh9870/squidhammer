@@ -7,7 +7,8 @@ use dbe_backend::project::docs::{
 use dbe_backend::registry::{EObjectType, ETypesRegistry};
 use dbe_backend::value::id::ETypeId;
 use egui::{
-    CollapsingHeader, RichText, ScrollArea, TextBuffer, TextEdit, Ui, Widget, WidgetText, Window,
+    CollapsingHeader, Response, RichText, ScrollArea, TextBuffer, TextEdit, Ui, Widget, WidgetText,
+    Window,
 };
 use egui_commonmark::CommonMarkCache;
 use egui_hooks::UseHookExt;
@@ -248,8 +249,19 @@ pub fn docs_label(
     registry: &ETypesRegistry,
     docs_ref: DocsRef,
 ) {
-    const NO_DOCS: &str = "No documentation available";
     let res = egui::Label::new(label).selectable(false).ui(ui);
+    docs_hover(ui, res, label, docs, registry, docs_ref);
+}
+
+pub fn docs_hover(
+    ui: &mut Ui,
+    res: Response,
+    id_salt: &str,
+    docs: &Docs,
+    registry: &ETypesRegistry,
+    docs_ref: DocsRef,
+) {
+    const NO_DOCS: &str = "No documentation available";
 
     if docs_ref.is_none() {
         if cfg!(debug_assertions) {
@@ -292,6 +304,9 @@ pub fn docs_label(
                     DocsRef::TypeField(_, _) => {
                         format!("{}.{}", parent_title, field_title)
                     }
+                    DocsRef::EnumVariant(_, _) => {
+                        format!("{}::{}", parent_title, field_title)
+                    }
                     DocsRef::Custom(_) | DocsRef::None => {
                         unreachable!()
                     }
@@ -306,21 +321,25 @@ pub fn docs_label(
             }
         }
 
-        if docs_window_ref.has_docs(docs) && ui.button("View full docs").clicked() {
+        if docs_window_ref.is_some_and(|r| r.has_docs(docs))
+            && ui.button("View full docs").clicked()
+        {
             *show_window = true;
         }
     });
 
     if *show_window {
-        Window::new(docs_window_ref.title(docs, registry))
-            .id(ui.id().with(label).with("docs_window"))
-            .open(&mut show_window)
-            .default_height(300.0)
-            .collapsible(false)
-            .show(ui.ctx(), |ui| {
-                ScrollArea::vertical().show(ui, |ui| {
-                    show_window_ref(ui, docs, registry, &docs_window_ref);
-                })
-            });
+        if let Some(docs_window_ref) = docs_window_ref {
+            Window::new(docs_window_ref.title(docs, registry))
+                .id(ui.id().with(id_salt).with("docs_window"))
+                .open(&mut show_window)
+                .default_height(300.0)
+                .collapsible(false)
+                .show(ui.ctx(), |ui| {
+                    ScrollArea::vertical().show(ui, |ui| {
+                        show_window_ref(ui, docs, registry, &docs_window_ref);
+                    })
+                });
+        }
     }
 }

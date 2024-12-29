@@ -280,16 +280,20 @@ pub enum DocsRef {
     NodeInput(Ustr, Ustr),
     NodeOutput(Ustr, Ustr),
     TypeField(ETypeId, Ustr),
+    EnumVariant(ETypeId, Ustr),
     Custom(Cow<'static, str>),
     None,
 }
 
 impl DocsRef {
     pub fn has_field_structure(&self) -> bool {
-        matches!(
-            self,
-            DocsRef::NodeInput(_, _) | DocsRef::NodeOutput(_, _) | DocsRef::TypeField(_, _)
-        )
+        match self {
+            DocsRef::NodeInput(_, _)
+            | DocsRef::NodeOutput(_, _)
+            | DocsRef::TypeField(_, _)
+            | DocsRef::EnumVariant(_, _) => true,
+            DocsRef::Custom(_) | DocsRef::None => false,
+        }
     }
 
     pub fn get_description<'docs>(&self, docs: &'docs Docs) -> Option<&'docs str> {
@@ -309,7 +313,15 @@ impl DocsRef {
                 .get(ty)
                 .and_then(|d| d.fields.iter().find(|i| i.id == field.as_str()))
                 .map(|f| f.description.as_str()),
-            _ => None,
+            DocsRef::EnumVariant(ty, variant) => docs
+                .types
+                .get(ty)
+                .and_then(|d| d.variants.iter().find(|i| i.id == variant.as_str()))
+                .map(|f| f.description.as_str()),
+
+            DocsRef::Custom(_) | DocsRef::None => {
+                panic!("{:?} doesn't have a field structure", self)
+            }
         }
     }
 
@@ -318,8 +330,12 @@ impl DocsRef {
             DocsRef::NodeInput(node, _) | DocsRef::NodeOutput(node, _) => {
                 DocsWindowRef::Node(*node).title(docs, registry)
             }
-            DocsRef::TypeField(ty, _) => DocsWindowRef::Type(*ty).title(docs, registry),
-            _ => panic!("{:?} doesn't have a field structure", self),
+            DocsRef::TypeField(ty, _) | DocsRef::EnumVariant(ty, _) => {
+                DocsWindowRef::Type(*ty).title(docs, registry)
+            }
+            DocsRef::Custom(_) | DocsRef::None => {
+                panic!("{:?} doesn't have a field structure", self)
+            }
         }
     }
 
@@ -340,17 +356,23 @@ impl DocsRef {
                 .unwrap_or_else(|| output.as_str())
                 .into(),
             DocsRef::TypeField(_, field) => field.as_str().into(),
-            _ => panic!("{:?} doesn't have a field structure", self),
+            DocsRef::EnumVariant(_, variant) => variant.as_str().into(),
+
+            DocsRef::Custom(_) | DocsRef::None => {
+                panic!("{:?} doesn't have a field structure", self)
+            }
         }
     }
 
-    pub fn as_window_ref(&self) -> DocsWindowRef {
+    pub fn as_window_ref(&self) -> Option<DocsWindowRef> {
         match self {
             DocsRef::NodeInput(node, _) | DocsRef::NodeOutput(node, _) => {
-                DocsWindowRef::Node(*node)
+                Some(DocsWindowRef::Node(*node))
             }
-            DocsRef::TypeField(ty, _) => DocsWindowRef::Type(*ty),
-            _ => DocsWindowRef::Node(Ustr::default()),
+            DocsRef::TypeField(ty, _) | DocsRef::EnumVariant(ty, _) => {
+                Some(DocsWindowRef::Type(*ty))
+            }
+            DocsRef::Custom(_) | DocsRef::None => None,
         }
     }
 }

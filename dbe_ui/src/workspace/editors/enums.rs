@@ -1,3 +1,4 @@
+use crate::main_toolbar::docs::docs_hover;
 use crate::ui_props::PROP_FIELD_KIND;
 use crate::widgets::report::diagnostics_column;
 use crate::workspace::editors::utils::{
@@ -240,7 +241,7 @@ impl<'a> EnumEditorData<'a> {
 
     fn picker(&mut self, ui: &mut Ui) {
         let mut selected = *self.variant;
-        egui::ComboBox::from_id_salt(self.field_name)
+        let res = egui::ComboBox::from_id_salt(self.field_name)
             .selected_text(self.selected_variant.name.as_str())
             // .width(ui.available_width())
             .show_ui(ui, |ui| {
@@ -248,6 +249,16 @@ impl<'a> EnumEditorData<'a> {
                     ui.selectable_value(&mut selected, *id, variant.name.as_str());
                 }
             });
+
+        docs_hover(
+            ui,
+            res.response,
+            self.field_name,
+            self.ctx.docs,
+            self.ctx.registry,
+            DocsRef::EnumVariant(selected.enum_id(), selected.variant_name()),
+        );
+
         if &selected != self.variant {
             self.change_variant(selected)
         }
