@@ -1,4 +1,5 @@
 use crate::m_try;
+use crate::main_toolbar::docs::DocsRef;
 use crate::ui_props::{PROP_FIELD_EDITOR, PROP_OBJECT_EDITOR};
 use crate::workspace::editors::boolean::BooleanEditor;
 use crate::workspace::editors::consts::ConstEditor;
@@ -130,35 +131,37 @@ trait Editor: std::any::Any + Send + Sync + Debug {
     ) -> EditorResponse;
 }
 
-type LabelHoverUi<'a> = Option<Box<dyn FnOnce(&mut Ui) + 'a>>;
-
-#[derive(derive_more::Debug)]
+#[derive(Debug)]
 pub struct EditorContext<'a> {
     registry: &'a ETypesRegistry,
     docs: &'a Docs,
-    #[debug(skip)]
-    label_hover_ui: LabelHoverUi<'a>,
+    docs_ref: DocsRef<'a>,
 }
 
 impl<'a> EditorContext<'a> {
-    pub fn new(registry: &'a ETypesRegistry, docs: &'a Docs) -> Self {
+    pub fn new(registry: &'a ETypesRegistry, docs: &'a Docs, docs_ref: DocsRef<'a>) -> Self {
         Self {
             registry,
             docs,
-            label_hover_ui: None,
+            docs_ref,
         }
     }
 
-    pub fn with_label_hover_ui(mut self, label_hover_ui: impl FnOnce(&mut Ui) + 'a) -> Self {
-        self.label_hover_ui = Some(Box::new(label_hover_ui));
-        self
-    }
-
-    pub fn copy_no_ui(&self) -> Self {
+    pub fn copy_with_docs(&self, docs_ref: DocsRef<'a>) -> Self {
         Self {
             registry: self.registry,
             docs: self.docs,
-            label_hover_ui: None,
+            docs_ref,
+        }
+    }
+
+    /// Returns the context with the current docs ref, leaving [self] context
+    /// with the ref from `docs_ref`
+    pub fn replace_docs_ref(&mut self, docs_ref: DocsRef<'a>) -> Self {
+        Self {
+            registry: self.registry,
+            docs: self.docs,
+            docs_ref: std::mem::replace(&mut self.docs_ref, docs_ref),
         }
     }
 }

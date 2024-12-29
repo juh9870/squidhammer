@@ -58,7 +58,7 @@ impl Editor for NumberEditor {
 
         let props = cast_props::<NumericProps>(props);
 
-        let changed = labeled_field(ui, field_name, ctx.label_hover_ui, |ui| {
+        let changed = labeled_field(ui, field_name, ctx, |ui| {
             if self.slider {
                 ui.add(
                     Slider::new(&mut value.0, props.range.clone()).logarithmic(props.logarithmic),

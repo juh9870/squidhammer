@@ -43,7 +43,7 @@ impl Editor for StringEditor {
             unsupported!(ui, field_name, value, self);
         };
         let props = cast_props::<StringProps>(props);
-        let res = labeled_field(ui, field_name, ctx.label_hover_ui, |ui| {
+        let res = labeled_field(ui, field_name, ctx, |ui| {
             if props.multiline {
                 TextEdit::multiline(value)
             } else {

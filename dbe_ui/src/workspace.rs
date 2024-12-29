@@ -1,4 +1,5 @@
 use crate::error::report_error;
+use crate::main_toolbar::docs::DocsRef;
 use crate::widgets::collapsible_toolbar::CollapsibleToolbar;
 use crate::widgets::dpanel::DPanelSide;
 use crate::workspace::editors::{editor_for_value, EditorContext};
@@ -148,7 +149,7 @@ impl<Io> TabViewer for WorkspaceTabViewer<'_, Io> {
 
                 let res = editor.show(
                     ui,
-                    EditorContext::new(&self.0.registry, &self.0.docs),
+                    EditorContext::new(&self.0.registry, &self.0.docs, DocsRef::None),
                     diagnostics.as_readonly(),
                     "",
                     value,
@@ -174,7 +175,7 @@ impl<Io> TabViewer for WorkspaceTabViewer<'_, Io> {
                 ui.add_enabled_ui(false, |ui| {
                     let res = editor.show(
                         ui,
-                        EditorContext::new(&self.0.registry, &self.0.docs),
+                        EditorContext::new(&self.0.registry, &self.0.docs, DocsRef::None),
                         diagnostics.as_readonly(),
                         "",
                         value,

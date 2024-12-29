@@ -1,8 +1,8 @@
-use crate::workspace::editors::{LabelHoverUi, Props};
+use crate::workspace::editors::{EditorContext, Props};
 use dbe_backend::etype::econst::ETypeConst;
 use dbe_backend::etype::property::FieldProperty;
 use dbe_backend::value::EValue;
-use egui::{InnerResponse, RichText, Ui, Widget, WidgetText};
+use egui::{InnerResponse, RichText, Ui, WidgetText};
 use itertools::Itertools;
 use miette::miette;
 use std::collections::BTreeMap;
@@ -163,29 +163,13 @@ pub fn inline_error(ui: &mut Ui, err: impl Into<miette::Error>) {
 pub fn labeled_field<T>(
     ui: &mut Ui,
     label: impl Into<WidgetText>,
-    hover_ui: LabelHoverUi,
+    ctx: EditorContext,
     content: impl FnOnce(&mut Ui) -> T,
 ) -> InnerResponse<T> {
     ui.horizontal(|ui| {
-        let text = label.into();
-        if !text.is_empty() {
-            docs_label(ui, text, hover_ui);
-        }
+        docs_label(ui, label, ctx.docs, ctx.registry, ctx.docs_ref);
         content(ui)
     })
-}
-
-/// TODO: reuse this for node io docs
-pub fn docs_label(ui: &mut Ui, label: impl Into<WidgetText>, hover_ui: LabelHoverUi) {
-    let res = egui::Label::new(label).selectable(false).ui(ui);
-
-    if let Some(hover_ui) = hover_ui {
-        res.on_hover_ui(|ui| {
-            hover_ui(ui);
-        });
-    } else {
-        res.on_hover_text("No documentation available");
-    }
 }
 
 pub fn labeled_error(ui: &mut Ui, label: impl Into<WidgetText>, err: impl Into<miette::Error>) {
@@ -207,4 +191,5 @@ macro_rules! unsupported {
     };
 }
 
+use crate::main_toolbar::docs::docs_label;
 pub(crate) use unsupported;

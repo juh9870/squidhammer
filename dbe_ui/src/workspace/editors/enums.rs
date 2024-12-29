@@ -1,3 +1,4 @@
+use crate::main_toolbar::docs::DocsRef;
 use crate::ui_props::PROP_FIELD_KIND;
 use crate::widgets::report::diagnostics_column;
 use crate::workspace::editors::utils::{
@@ -82,7 +83,7 @@ impl Editor for EnumEditor {
         };
 
         let props = cast_props::<EnumEditorProps>(props);
-        let hover_ui = ctx.label_hover_ui.take();
+        let docs_ctx = ctx.replace_docs_ref(DocsRef::None);
 
         let Some(mut editor) =
             EnumEditorData::init(ui, ctx, diagnostics, field_name, variant, value)
@@ -107,7 +108,7 @@ impl Editor for EnumEditor {
                         true,
                     )
                     .show_header(ui, |ui| {
-                        labeled_field(ui, field_name, hover_ui, |ui| editor.toggle_editor(ui))
+                        labeled_field(ui, field_name, docs_ctx, |ui| editor.toggle_editor(ui))
                     })
                     .body_unindented(|ui| editor.body(ui))
                     .2
@@ -123,7 +124,7 @@ impl Editor for EnumEditor {
                     ui.with_layout(
                         egui::Layout::from_main_dir_and_cross_align(dir, Align::Min),
                         |ui| {
-                            labeled_field(ui, field_name, hover_ui, |ui| editor.toggle_editor(ui));
+                            labeled_field(ui, field_name, docs_ctx, |ui| editor.toggle_editor(ui));
                             editor.body(ui)
                         },
                     )
@@ -138,14 +139,14 @@ impl Editor for EnumEditor {
                         true,
                     )
                     .show_header(ui, |ui| {
-                        labeled_field(ui, field_name, hover_ui, |ui| editor.picker(ui))
+                        labeled_field(ui, field_name, docs_ctx, |ui| editor.picker(ui))
                     })
                     .body_unindented(|ui| editor.body(ui))
                     .2
                     .map(|r| r.inner)
                     .unwrap_or(EditorResponse::unchanged())
                 } else {
-                    labeled_field(ui, field_name, hover_ui, |ui| editor.picker(ui));
+                    labeled_field(ui, field_name, docs_ctx, |ui| editor.picker(ui));
                     editor.body(ui)
                 }
             }

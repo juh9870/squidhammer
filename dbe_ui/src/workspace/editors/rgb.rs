@@ -1,3 +1,4 @@
+use crate::main_toolbar::docs::DocsRef;
 use crate::workspace::editors::utils::{
     ensure_field, get_values, labeled_field, set_values, unsupported, EditorResultExt, EditorSize,
 };
@@ -26,7 +27,7 @@ impl Editor for RgbEditor {
     fn edit(
         &self,
         ui: &mut Ui,
-        ctx: EditorContext,
+        mut ctx: EditorContext,
         _diagnostics: DiagnosticContextRef,
         field_name: &str,
         value: &mut EValue,
@@ -40,7 +41,7 @@ impl Editor for RgbEditor {
         let mut changed = false;
         CollapsingState::load_with_default_open(ui.ctx(), ui.id().with(field_name), false)
             .show_header(ui, |ui| {
-                labeled_field(ui, field_name, ctx.label_hover_ui, |ui| {
+                labeled_field(ui, field_name, ctx.replace_docs_ref(DocsRef::None), |ui| {
                     if self.with_alpha {
                         get_values::<f32, _, 4>(fields, ["r", "g", "b", "a"]).then_draw(
                             ui,
@@ -79,7 +80,7 @@ impl Editor for RgbEditor {
                 ui.vertical(|ui| {
                     for name in field_names {
                         ensure_field(ui, fields, name, |ui, value: &mut ENumber| {
-                            labeled_field(ui, name, None, |ui| {
+                            labeled_field(ui, name, ctx.copy_with_docs(DocsRef::None), |ui| {
                                 if ui
                                     .add(DragValue::new(&mut value.0).range(0..=1).speed(0.01))
                                     .changed()

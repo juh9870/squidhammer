@@ -1,7 +1,7 @@
 use crate::DbeApp;
 use dbe_backend::etype::eobject::EObject;
 use dbe_backend::graph::node::{get_node_factory, NodeFactory};
-use dbe_backend::project::docs::{DocsDescription, NodeDocs, TypeDocs};
+use dbe_backend::project::docs::{Docs, DocsDescription, NodeDocs, TypeDocs};
 use dbe_backend::registry::{EObjectType, ETypesRegistry};
 use dbe_backend::value::id::ETypeId;
 use egui::{CollapsingHeader, RichText, TextEdit, Ui, Widget, WidgetText};
@@ -207,4 +207,144 @@ pub fn type_docs(ui: &mut Ui, registry: &ETypesRegistry, ty: &EObjectType, docs:
             show_collapsing_description(ui, docs, &mut md_cache, &docs.id);
         }
     }
+}
+
+#[derive(Debug, Clone, EnumIs)]
+pub enum DocsRef<'a> {
+    NodeInput(Ustr, &'a str),
+    NodeOutput(Ustr, &'a str),
+    TypeField(ETypeId, &'a str),
+    Custom(&'a str),
+    None,
+}
+
+impl<'a> DocsRef<'a> {
+    pub fn has_field_structure(&self) -> bool {
+        matches!(
+            self,
+            DocsRef::NodeInput(_, _) | DocsRef::NodeOutput(_, _) | DocsRef::TypeField(_, _)
+        )
+    }
+
+    pub fn get_description(&'a self, docs: &'a Docs) -> Option<&'a str> {
+        match self {
+            DocsRef::NodeInput(node, input) => docs
+                .nodes
+                .get(node.as_str())
+                .and_then(|d| d.inputs.iter().find(|i| i.id == *input))
+                .map(|i| i.description.as_str()),
+            DocsRef::NodeOutput(node, output) => docs
+                .nodes
+                .get(node.as_str())
+                .and_then(|d| d.outputs.iter().find(|i| i.id == *output))
+                .map(|o| o.description.as_str()),
+            DocsRef::TypeField(ty, field) => docs
+                .types
+                .get(ty)
+                .and_then(|d| d.fields.iter().find(|i| i.id == *field))
+                .map(|f| f.description.as_str()),
+            _ => None,
+        }
+    }
+
+    pub fn get_parent_title<'b>(&self, docs: &'b Docs, registry: &ETypesRegistry) -> Cow<'b, str> {
+        match self {
+            DocsRef::NodeInput(node, _) | DocsRef::NodeOutput(node, _) => docs
+                .nodes
+                .get(node.as_str())
+                .map(|n| n.title.as_str())
+                .map(Cow::Borrowed)
+                .unwrap_or_else(|| Cow::Borrowed(node.as_str())),
+            DocsRef::TypeField(ty, _) => registry
+                .get_object(ty)
+                .map(|ty| Cow::Owned(ty.title(registry)))
+                .unwrap_or_else(|| Cow::Owned(ty.to_string())),
+            _ => panic!("{:?} doesn't have a field structure", self),
+        }
+    }
+
+    pub fn get_field_title<'b>(&self, docs: &'b Docs) -> Cow<'a, str>
+    where
+        'b: 'a,
+    {
+        match self {
+            DocsRef::NodeInput(node, input) => docs
+                .nodes
+                .get(node.as_str())
+                .and_then(|d| d.inputs.iter().find(|i| i.id == *input))
+                .map(|i| i.title.as_str())
+                .unwrap_or_else(|| input)
+                .into(),
+            DocsRef::NodeOutput(node, output) => docs
+                .nodes
+                .get(node.as_str())
+                .and_then(|d| d.outputs.iter().find(|i| i.id == *output))
+                .map(|o| o.title.as_str())
+                .unwrap_or_else(|| output)
+                .into(),
+            DocsRef::TypeField(_, field) => (*field).into(),
+            _ => panic!("{:?} doesn't have a field structure", self),
+        }
+    }
+}
+
+pub fn docs_label(
+    ui: &mut Ui,
+    label: impl Into<WidgetText>,
+    docs: &Docs,
+    registry: &ETypesRegistry,
+    docs_ref: DocsRef,
+) {
+    const NO_DOCS: &str = "No documentation available";
+    let res = egui::Label::new(label).selectable(false).ui(ui);
+
+    if docs_ref.is_none() {
+        if cfg!(debug_assertions) {
+            res.on_hover_text("DocsRef is None");
+        }
+        return;
+    }
+
+    res.on_hover_ui(|ui| match docs_ref {
+        DocsRef::Custom(text) => {
+            ui.label(text);
+        }
+        DocsRef::None => {
+            unreachable!()
+        }
+        _ if docs_ref.has_field_structure() => {
+            let description = if let Some(desc) = docs_ref.get_description(docs) {
+                if desc.is_empty() {
+                    NO_DOCS
+                } else {
+                    desc
+                }
+            } else {
+                NO_DOCS
+            };
+            let parent_title = docs_ref.get_parent_title(docs, registry);
+            let field_title = docs_ref.get_field_title(docs);
+            let label = match docs_ref {
+                DocsRef::NodeInput(_, _) => {
+                    format!("{} <- {}", parent_title, field_title)
+                }
+                DocsRef::NodeOutput(_, _) => {
+                    format!("{} -> {}", parent_title, field_title)
+                }
+                DocsRef::TypeField(_, _) => {
+                    format!("{}.{}", parent_title, field_title)
+                }
+                DocsRef::Custom(_) | DocsRef::None => {
+                    unreachable!()
+                }
+            };
+
+            ui.label(label);
+            ui.separator();
+            ui.label(description);
+        }
+        _ => {
+            unimplemented!()
+        }
+    });
 }
