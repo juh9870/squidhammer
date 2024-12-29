@@ -67,18 +67,18 @@ impl Node for ListNode {
     }
 
     fn input_unchecked(&self, _context: NodeContext, input: usize) -> miette::Result<InputData> {
-        Ok(InputData {
-            ty: if self.items_count == 0 && !self.fixed {
+        Ok(InputData::new(
+            if self.items_count == 0 && !self.fixed {
                 NodePortType::BasedOnSource
             } else {
                 EItemInfo::simple_type(self.item).into()
             },
-            name: if input == self.items_count {
+            if input == self.items_count {
                 "+".into()
             } else {
                 input.to_string().into()
             },
-        })
+        ))
     }
 
     fn outputs_count(&self, _context: NodeContext) -> usize {
@@ -86,10 +86,10 @@ impl Node for ListNode {
     }
 
     fn output_unchecked(&self, context: NodeContext, output: usize) -> miette::Result<OutputData> {
-        Ok(OutputData {
-            ty: EItemInfo::simple_type(context.registry.list_of(self.item)).into(),
-            name: output.to_string().into(),
-        })
+        Ok(OutputData::new(
+            EItemInfo::simple_type(context.registry.list_of(self.item)).into(),
+            output.to_string().into(),
+        ))
     }
 
     fn try_connect(

@@ -96,11 +96,10 @@ impl NodeView for DefaultNodeView {
         let Some(info) = input_data.ty.item_info() else {
             return Ok(any_pin());
         };
-        let ctx = EditorContext::new(
-            registry,
-            docs,
-            DocsRef::NodeInput(node_ident, input_data.name),
-        );
+        let docs_ref = input_data
+            .custom_docs
+            .unwrap_or(DocsRef::NodeInput(node_ident, input_data.name));
+        let ctx = EditorContext::new(registry, docs, docs_ref);
         if pin.remotes.is_empty() {
             let mut full_ctx = viewer.ctx.as_full(snarl);
             if let Some(value) = full_ctx.get_inline_input_mut(pin.id)? {
@@ -121,14 +120,14 @@ impl NodeView for DefaultNodeView {
                     }
                 } else {
                     ui.horizontal(|ui| {
-                        docs_label(ui, &input_data.name, docs, registry, DocsRef::None);
+                        docs_label(ui, &input_data.name, docs, registry, ctx.docs_ref);
                         ui.label(format_value(value));
                     });
                 }
             }
         } else {
             ui.horizontal(|ui| {
-                docs_label(ui, &input_data.name, docs, registry, DocsRef::None);
+                docs_label(ui, &input_data.name, docs, registry, ctx.docs_ref);
             });
         }
 
@@ -147,14 +146,11 @@ impl NodeView for DefaultNodeView {
         let node = &snarl[pin.id.node];
         let output_data = node.try_output(viewer.ctx.as_node_context(), pin.id.output)?;
         let docs = viewer.ctx.docs.expect("Docs should be set at this point");
+        let docs_ref = output_data
+            .custom_docs
+            .unwrap_or_else(|| DocsRef::NodeOutput(node.id(), output_data.name));
         ui.horizontal(|ui| {
-            docs_label(
-                ui,
-                &output_data.name,
-                docs,
-                registry,
-                DocsRef::NodeOutput(node.id(), output_data.name),
-            );
+            docs_label(ui, &output_data.name, docs, registry, docs_ref);
         });
 
         Ok(pin_info(&output_data.ty, registry))

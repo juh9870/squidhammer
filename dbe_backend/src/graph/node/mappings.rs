@@ -43,31 +43,31 @@ impl Node for MappingsNode {
 
     fn input_unchecked(&self, context: NodeContext, input: usize) -> miette::Result<InputData> {
         match input {
-            0 => Ok(InputData {
-                ty: EItemInfo::simple_type(EDataType::String).into(),
-                name: "path".into(),
-            }),
-            1 => Ok(InputData {
-                ty: EItemInfo::simple_type(
+            0 => Ok(InputData::new(
+                EItemInfo::simple_type(EDataType::String).into(),
+                "path".into(),
+            )),
+            1 => Ok(InputData::new(
+                EItemInfo::simple_type(
                     context
                         .registry
                         .list_of(EDataType::Object { ident: *RANGE_ID }),
                 )
                 .into(),
-                name: "default_ranges".into(),
-            }),
-            2 => Ok(InputData {
-                ty: EItemInfo::simple_type(EDataType::Boolean).into(),
-                name: "persistent".into(),
-            }),
-            3 => Ok(InputData {
-                ty: EItemInfo::simple_type(EDataType::Object { ident: *KIND_ID }).into(),
-                name: "kind".into(),
-            }),
-            4 => Ok(InputData {
-                ty: EItemInfo::simple_type(EDataType::String).into(),
-                name: "input".into(),
-            }),
+                "default_ranges".into(),
+            )),
+            2 => Ok(InputData::new(
+                EItemInfo::simple_type(EDataType::Boolean).into(),
+                "persistent".into(),
+            )),
+            3 => Ok(InputData::new(
+                EItemInfo::simple_type(EDataType::Object { ident: *KIND_ID }).into(),
+                "kind".into(),
+            )),
+            4 => Ok(InputData::new(
+                EItemInfo::simple_type(EDataType::String).into(),
+                "input".into(),
+            )),
             _ => {
                 panic!("Mappings node has only five inputs");
             }
@@ -83,10 +83,10 @@ impl Node for MappingsNode {
             panic!("Mappings node has only one output");
         }
 
-        Ok(OutputData {
-            ty: EItemInfo::simple_type(EDataType::Number).into(),
-            name: "output".into(),
-        })
+        Ok(OutputData::new(
+            EItemInfo::simple_type(EDataType::Number).into(),
+            "output".into(),
+        ))
     }
 
     fn has_side_effects(&self) -> bool {

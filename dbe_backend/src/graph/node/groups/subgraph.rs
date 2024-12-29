@@ -91,10 +91,10 @@ impl Node for SubgraphNode {
 
     fn input_unchecked(&self, context: NodeContext, input: usize) -> miette::Result<InputData> {
         if context.graphs.is_none() {
-            return Ok(InputData {
-                ty: EItemInfo::simple_type(self.input_types[input]).into(),
-                name: Default::default(),
-            });
+            return Ok(InputData::new(
+                EItemInfo::simple_type(self.input_types[input]).into(),
+                Default::default(),
+            ));
         }
         let graph = self.get_graph(context)?;
         get_port_input(graph.inputs(), &self.inputs, input)
@@ -106,10 +106,10 @@ impl Node for SubgraphNode {
 
     fn output_unchecked(&self, context: NodeContext, output: usize) -> miette::Result<OutputData> {
         if context.graphs.is_none() {
-            return Ok(OutputData {
-                ty: EItemInfo::simple_type(self.output_types[output]).into(),
-                name: Default::default(),
-            });
+            return Ok(OutputData::new(
+                EItemInfo::simple_type(self.output_types[output]).into(),
+                Default::default(),
+            ));
         }
         let graph = self.get_graph(context)?;
         get_port_output(graph.outputs(), &self.outputs, output)

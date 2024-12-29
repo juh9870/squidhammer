@@ -91,10 +91,7 @@ impl Node for EnumNode {
         if input != 0 {
             panic!("Enum only has one input");
         }
-        Ok(InputData {
-            ty: variant.data.clone().into(),
-            name: variant.name,
-        })
+        Ok(InputData::new(variant.data.clone().into(), variant.name))
     }
 
     fn outputs_count(&self, context: NodeContext) -> usize {
@@ -113,10 +110,10 @@ impl Node for EnumNode {
             panic!("Enum only has one output");
         }
 
-        Ok(OutputData {
-            ty: EItemInfo::simple_type(EDataType::Object { ident: data.ident }).into(),
-            name: "output".into(),
-        })
+        Ok(OutputData::new(
+            EItemInfo::simple_type(EDataType::Object { ident: data.ident }).into(),
+            "output".into(),
+        ))
     }
 
     fn try_connect(

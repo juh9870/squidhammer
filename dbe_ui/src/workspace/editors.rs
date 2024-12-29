@@ -133,9 +133,9 @@ trait Editor: std::any::Any + Send + Sync + Debug {
 
 #[derive(Debug)]
 pub struct EditorContext<'a> {
-    registry: &'a ETypesRegistry,
-    docs: &'a Docs,
-    docs_ref: DocsRef,
+    pub registry: &'a ETypesRegistry,
+    pub docs: &'a Docs,
+    pub docs_ref: DocsRef,
 }
 
 impl<'a> EditorContext<'a> {

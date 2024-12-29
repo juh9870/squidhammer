@@ -28,15 +28,12 @@ impl Node for RerouteNode {
 
     fn input_unchecked(&self, _context: NodeContext, input: usize) -> miette::Result<InputData> {
         if input == self.inputs.len() {
-            return Ok(InputData {
-                ty: NodePortType::BasedOnSource,
-                name: "".into(),
-            });
+            return Ok(InputData::new(NodePortType::BasedOnSource, "".into()));
         }
-        Ok(InputData {
-            ty: self.inputs[input].clone().into(),
-            name: input.to_string().into(),
-        })
+        Ok(InputData::new(
+            self.inputs[input].clone().into(),
+            input.to_string().into(),
+        ))
     }
 
     fn outputs_count(&self, _context: NodeContext) -> usize {
@@ -44,10 +41,10 @@ impl Node for RerouteNode {
     }
 
     fn output_unchecked(&self, _context: NodeContext, output: usize) -> miette::Result<OutputData> {
-        Ok(OutputData {
-            ty: self.inputs[output].clone().into(),
-            name: output.to_string().into(),
-        })
+        Ok(OutputData::new(
+            self.inputs[output].clone().into(),
+            output.to_string().into(),
+        ))
     }
 
     fn try_connect(
