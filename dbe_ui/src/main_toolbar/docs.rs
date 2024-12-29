@@ -1,7 +1,9 @@
 use crate::DbeApp;
 use dbe_backend::etype::eobject::EObject;
 use dbe_backend::graph::node::{get_node_factory, NodeFactory};
-use dbe_backend::project::docs::{Docs, DocsDescription, NodeDocs, TypeDocs};
+use dbe_backend::project::docs::{
+    Docs, DocsDescription, DocsRef, DocsWindowRef, NodeDocs, TypeDocs,
+};
 use dbe_backend::registry::{EObjectType, ETypesRegistry};
 use dbe_backend::value::id::ETypeId;
 use egui::{CollapsingHeader, RichText, ScrollArea, TextEdit, Ui, Widget, WidgetText, Window};
@@ -38,7 +40,7 @@ pub fn docs_tab(ui: &mut Ui, app: &mut DbeApp) {
         return;
     };
 
-    egui::ScrollArea::vertical().show(ui, |ui| match selection.deref_mut() {
+    ScrollArea::vertical().show(ui, |ui| match selection.deref_mut() {
         SelectedDocs::None => {
             TextEdit::singleline(search_text.deref_mut())
                 .hint_text("Search")
@@ -209,129 +211,31 @@ pub fn type_docs(ui: &mut Ui, registry: &ETypesRegistry, ty: &EObjectType, docs:
     }
 }
 
-#[derive(Debug, Copy, Clone, Eq, PartialEq, Hash)]
-enum DocsWindowRef {
-    Node(Ustr),
-    Type(ETypeId),
-}
-
-impl DocsWindowRef {
-    fn title<'docs>(&self, docs: &'docs Docs, registry: &ETypesRegistry) -> Cow<'docs, str> {
-        match self {
-            DocsWindowRef::Node(node) => docs
-                .nodes
-                .get(node.as_str())
-                .map(|d| d.title.as_str())
-                .map(Cow::Borrowed)
-                .unwrap_or_else(|| Cow::Borrowed(node.as_str())),
-            DocsWindowRef::Type(ty) => registry
-                .get_object(ty)
-                .map(|ty| Cow::Owned(ty.title(registry)))
-                .unwrap_or_else(|| Cow::Owned(ty.to_string())),
-        }
-    }
-
-    fn has_docs(&self, docs: &Docs) -> bool {
-        match self {
-            DocsWindowRef::Node(node) => docs.nodes.contains_key(node.as_str()),
-            DocsWindowRef::Type(ty) => docs.types.contains_key(ty),
-        }
-    }
-
-    fn show(&self, ui: &mut Ui, docs: &Docs, registry: &ETypesRegistry) {
-        let mut shown = false;
-        match self {
-            DocsWindowRef::Node(node) => {
-                if let (Some(docs), Some(factory)) =
-                    (docs.nodes.get(node.as_str()), get_node_factory(node))
-                {
-                    node_docs(ui, &*factory, docs);
-                    shown = true;
-                }
-            }
-            DocsWindowRef::Type(ty) => {
-                if let (Some(docs), Some(ty)) = (docs.types.get(ty), registry.get_object(ty)) {
-                    type_docs(ui, registry, ty, docs);
-                    shown = true;
-                }
+fn show_window_ref(
+    ui: &mut Ui,
+    docs: &Docs,
+    registry: &ETypesRegistry,
+    window_ref: &DocsWindowRef,
+) {
+    let mut shown = false;
+    match window_ref {
+        DocsWindowRef::Node(node) => {
+            if let (Some(docs), Some(factory)) =
+                (docs.nodes.get(node.as_str()), get_node_factory(node))
+            {
+                node_docs(ui, &*factory, docs);
+                shown = true;
             }
         }
-        if !shown {
-            ui.label("No documentation available");
-        }
-    }
-}
-
-#[derive(Debug, Clone, EnumIs)]
-pub enum DocsRef<'a> {
-    NodeInput(Ustr, &'a str),
-    NodeOutput(Ustr, &'a str),
-    TypeField(ETypeId, &'a str),
-    Custom(&'a str),
-    None,
-}
-
-impl<'a> DocsRef<'a> {
-    pub fn has_field_structure(&self) -> bool {
-        matches!(
-            self,
-            DocsRef::NodeInput(_, _) | DocsRef::NodeOutput(_, _) | DocsRef::TypeField(_, _)
-        )
-    }
-
-    pub fn get_description(&'a self, docs: &'a Docs) -> Option<&'a str> {
-        match self {
-            DocsRef::NodeInput(node, input) => docs
-                .nodes
-                .get(node.as_str())
-                .and_then(|d| d.inputs.iter().find(|i| i.id == *input))
-                .map(|i| i.description.as_str()),
-            DocsRef::NodeOutput(node, output) => docs
-                .nodes
-                .get(node.as_str())
-                .and_then(|d| d.outputs.iter().find(|i| i.id == *output))
-                .map(|o| o.description.as_str()),
-            DocsRef::TypeField(ty, field) => docs
-                .types
-                .get(ty)
-                .and_then(|d| d.fields.iter().find(|i| i.id == *field))
-                .map(|f| f.description.as_str()),
-            _ => None,
-        }
-    }
-
-    pub fn get_parent_title<'b>(&self, docs: &'b Docs, registry: &ETypesRegistry) -> Cow<'b, str> {
-        match self {
-            DocsRef::NodeInput(node, _) | DocsRef::NodeOutput(node, _) => {
-                DocsWindowRef::Node(*node).title(docs, registry)
+        DocsWindowRef::Type(ty) => {
+            if let (Some(docs), Some(ty)) = (docs.types.get(ty), registry.get_object(ty)) {
+                type_docs(ui, registry, ty, docs);
+                shown = true;
             }
-            DocsRef::TypeField(ty, _) => DocsWindowRef::Type(*ty).title(docs, registry),
-            _ => panic!("{:?} doesn't have a field structure", self),
         }
     }
-
-    pub fn get_field_title<'b>(&self, docs: &'b Docs) -> Cow<'a, str>
-    where
-        'b: 'a,
-    {
-        match self {
-            DocsRef::NodeInput(node, input) => docs
-                .nodes
-                .get(node.as_str())
-                .and_then(|d| d.inputs.iter().find(|i| i.id == *input))
-                .map(|i| i.title.as_str())
-                .unwrap_or_else(|| input)
-                .into(),
-            DocsRef::NodeOutput(node, output) => docs
-                .nodes
-                .get(node.as_str())
-                .and_then(|d| d.outputs.iter().find(|i| i.id == *output))
-                .map(|o| o.title.as_str())
-                .unwrap_or_else(|| output)
-                .into(),
-            DocsRef::TypeField(_, field) => (*field).into(),
-            _ => panic!("{:?} doesn't have a field structure", self),
-        }
+    if !shown {
+        ui.label("No documentation available");
     }
 }
 
@@ -352,11 +256,7 @@ pub fn docs_label(
         return;
     }
 
-    let docs_window_ref = match &docs_ref {
-        DocsRef::NodeInput(node, _) | DocsRef::NodeOutput(node, _) => DocsWindowRef::Node(*node),
-        DocsRef::TypeField(ty, _) => DocsWindowRef::Type(*ty),
-        _ => return,
-    };
+    let docs_window_ref = docs_ref.as_window_ref();
 
     let mut show_window = ui.use_state(|| false, docs_window_ref).into_var();
 
@@ -417,7 +317,7 @@ pub fn docs_label(
             .collapsible(false)
             .show(ui.ctx(), |ui| {
                 ScrollArea::vertical().show(ui, |ui| {
-                    docs_window_ref.show(ui, docs, registry);
+                    show_window_ref(ui, docs, registry, &docs_window_ref);
                 })
             });
     }

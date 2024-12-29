@@ -1,11 +1,16 @@
+use crate::etype::eobject::EObject;
+use crate::registry::ETypesRegistry;
 use crate::value::id::ETypeId;
 use ahash::AHashMap;
 use camino::Utf8PathBuf;
 use duplicate::duplicate_item;
 use miette::bail;
 use serde::{Deserialize, Serialize};
+use std::borrow::Cow;
 use std::collections::hash_map::Entry;
 use std::ops::{Deref, DerefMut};
+use strum::EnumIs;
+use ustr::Ustr;
 
 #[derive(Debug, Default)]
 pub struct Docs {
@@ -237,5 +242,118 @@ impl DocsDescription for ImplDocs {
 
     fn docs_mut(&mut self) -> &mut String {
         &mut self.docs
+    }
+}
+
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Hash)]
+pub enum DocsWindowRef {
+    Node(Ustr),
+    Type(ETypeId),
+}
+
+impl DocsWindowRef {
+    pub fn title<'docs>(&self, docs: &'docs Docs, registry: &ETypesRegistry) -> Cow<'docs, str> {
+        match self {
+            DocsWindowRef::Node(node) => docs
+                .nodes
+                .get(node.as_str())
+                .map(|d| d.title.as_str())
+                .map(Cow::Borrowed)
+                .unwrap_or_else(|| Cow::Borrowed(node.as_str())),
+            DocsWindowRef::Type(ty) => registry
+                .get_object(ty)
+                .map(|ty| Cow::Owned(ty.title(registry)))
+                .unwrap_or_else(|| Cow::Owned(ty.to_string())),
+        }
+    }
+
+    pub fn has_docs(&self, docs: &Docs) -> bool {
+        match self {
+            DocsWindowRef::Node(node) => docs.nodes.contains_key(node.as_str()),
+            DocsWindowRef::Type(ty) => docs.types.contains_key(ty),
+        }
+    }
+}
+
+#[derive(Debug, Clone, EnumIs)]
+pub enum DocsRef<'a> {
+    NodeInput(Ustr, &'a str),
+    NodeOutput(Ustr, &'a str),
+    TypeField(ETypeId, &'a str),
+    Custom(&'a str),
+    None,
+}
+
+impl<'a> DocsRef<'a> {
+    pub fn has_field_structure(&self) -> bool {
+        matches!(
+            self,
+            DocsRef::NodeInput(_, _) | DocsRef::NodeOutput(_, _) | DocsRef::TypeField(_, _)
+        )
+    }
+
+    pub fn get_description(&'a self, docs: &'a Docs) -> Option<&'a str> {
+        match self {
+            DocsRef::NodeInput(node, input) => docs
+                .nodes
+                .get(node.as_str())
+                .and_then(|d| d.inputs.iter().find(|i| i.id == *input))
+                .map(|i| i.description.as_str()),
+            DocsRef::NodeOutput(node, output) => docs
+                .nodes
+                .get(node.as_str())
+                .and_then(|d| d.outputs.iter().find(|i| i.id == *output))
+                .map(|o| o.description.as_str()),
+            DocsRef::TypeField(ty, field) => docs
+                .types
+                .get(ty)
+                .and_then(|d| d.fields.iter().find(|i| i.id == *field))
+                .map(|f| f.description.as_str()),
+            _ => None,
+        }
+    }
+
+    pub fn get_parent_title<'b>(&self, docs: &'b Docs, registry: &ETypesRegistry) -> Cow<'b, str> {
+        match self {
+            DocsRef::NodeInput(node, _) | DocsRef::NodeOutput(node, _) => {
+                DocsWindowRef::Node(*node).title(docs, registry)
+            }
+            DocsRef::TypeField(ty, _) => DocsWindowRef::Type(*ty).title(docs, registry),
+            _ => panic!("{:?} doesn't have a field structure", self),
+        }
+    }
+
+    pub fn get_field_title<'b>(&self, docs: &'b Docs) -> Cow<'a, str>
+    where
+        'b: 'a,
+    {
+        match self {
+            DocsRef::NodeInput(node, input) => docs
+                .nodes
+                .get(node.as_str())
+                .and_then(|d| d.inputs.iter().find(|i| i.id == *input))
+                .map(|i| i.title.as_str())
+                .unwrap_or_else(|| input)
+                .into(),
+            DocsRef::NodeOutput(node, output) => docs
+                .nodes
+                .get(node.as_str())
+                .and_then(|d| d.outputs.iter().find(|i| i.id == *output))
+                .map(|o| o.title.as_str())
+                .unwrap_or_else(|| output)
+                .into(),
+            DocsRef::TypeField(_, field) => (*field).into(),
+            _ => panic!("{:?} doesn't have a field structure", self),
+        }
+    }
+
+    pub fn as_window_ref(&self) -> DocsWindowRef {
+        match self {
+            DocsRef::NodeInput(node, _) | DocsRef::NodeOutput(node, _) => {
+                DocsWindowRef::Node(*node)
+            }
+            DocsRef::TypeField(ty, _) => DocsWindowRef::Type(*ty),
+            _ => DocsWindowRef::Node(Ustr::default()),
+        }
     }
 }

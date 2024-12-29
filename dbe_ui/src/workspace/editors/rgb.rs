@@ -1,9 +1,9 @@
-use crate::main_toolbar::docs::DocsRef;
 use crate::workspace::editors::utils::{
     ensure_field, get_values, labeled_field, set_values, unsupported, EditorResultExt, EditorSize,
 };
 use crate::workspace::editors::{DynProps, Editor, EditorContext, EditorResponse};
 use dbe_backend::diagnostic::context::DiagnosticContextRef;
+use dbe_backend::project::docs::DocsRef;
 use dbe_backend::value::{ENumber, EValue};
 use egui::collapsing_header::CollapsingState;
 use egui::{DragValue, Ui};

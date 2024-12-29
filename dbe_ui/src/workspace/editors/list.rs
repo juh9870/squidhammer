@@ -1,8 +1,9 @@
-use crate::main_toolbar::docs::{docs_label, DocsRef};
+use crate::main_toolbar::docs::docs_label;
 use crate::widgets::report::diagnostics_column;
 use crate::workspace::editors::utils::{unsupported, EditorResultExt, EditorSize};
 use crate::workspace::editors::{editor_for_type, DynProps, Editor, EditorContext, EditorResponse};
 use dbe_backend::diagnostic::context::DiagnosticContextRef;
+use dbe_backend::project::docs::DocsRef;
 use dbe_backend::value::EValue;
 use egui::collapsing_header::CollapsingState;
 use egui::Ui;

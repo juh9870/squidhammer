@@ -1,5 +1,4 @@
 use crate::error::report_error;
-use crate::main_toolbar::docs::DocsRef;
 use crate::widgets::collapsible_toolbar::CollapsibleToolbar;
 use crate::widgets::dpanel::DPanelSide;
 use crate::workspace::editors::{editor_for_value, EditorContext};
@@ -7,6 +6,7 @@ use crate::workspace::graph::toolbar::{GraphTab, GraphToolbarViewer};
 use crate::DbeApp;
 use camino::Utf8PathBuf;
 use dbe_backend::graph::editing::PartialGraphEditingContext;
+use dbe_backend::project::docs::DocsRef;
 use dbe_backend::project::side_effects::SideEffectsContext;
 use dbe_backend::project::{Project, ProjectFile};
 use dbe_backend::validation::validate;
