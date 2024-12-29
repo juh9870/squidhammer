@@ -99,7 +99,7 @@ impl NodeView for DefaultNodeView {
         let ctx = EditorContext::new(
             registry,
             docs,
-            DocsRef::NodeInput(node_ident, input_data.name.as_str()),
+            DocsRef::NodeInput(node_ident, input_data.name),
         );
         if pin.remotes.is_empty() {
             let mut full_ctx = viewer.ctx.as_full(snarl);
@@ -153,7 +153,7 @@ impl NodeView for DefaultNodeView {
                 &output_data.name,
                 docs,
                 registry,
-                DocsRef::NodeOutput(node.id(), output_data.name.as_str()),
+                DocsRef::NodeOutput(node.id(), output_data.name),
             );
         });
 

@@ -71,10 +71,8 @@ impl Editor for StructEditor {
                             .ok_or_else(|| miette!("field `{}` is missing", field.name))
                             .then_draw(ui, |ui, value| {
                                 let mut d = diagnostics.enter_field(field.name.as_str());
-                                let ctx = ctx.copy_with_docs(DocsRef::TypeField(
-                                    *ident,
-                                    field.name.as_str(),
-                                ));
+                                let ctx =
+                                    ctx.copy_with_docs(DocsRef::TypeField(*ident, field.name));
                                 if editor
                                     .show(ui, ctx, d.enter_inline(), field.name.as_ref(), value)
                                     .changed
