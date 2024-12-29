@@ -64,6 +64,18 @@ impl ETypeId {
             types_root.as_ref(),
         )?))
     }
+
+    pub fn strip_generics(&self) -> Self {
+        match self.0 {
+            EditorId::Temp(_) => *self,
+            EditorId::Persistent(id) => {
+                let Some(id) = id.split('<').next() else {
+                    return *self;
+                };
+                Self(EditorId::Persistent(id.into()))
+            }
+        }
+    }
 }
 
 // id_type!(EValueIdStr);

@@ -69,7 +69,7 @@ pub fn docs_tab(ui: &mut Ui, app: &mut DbeApp) {
             CollapsingHeader::new("Nodes")
                 .open(force_show)
                 .show(ui, |ui| {
-                    for (node_id, docs) in &project.docs.nodes {
+                    for (node_id, docs) in project.docs.all_nodes() {
                         let Some(_) = get_node_factory(&Ustr::from(node_id)) else {
                             continue;
                         };
@@ -78,7 +78,7 @@ pub fn docs_tab(ui: &mut Ui, app: &mut DbeApp) {
                             continue;
                         }
                         if ui.button(name).clicked() {
-                            *selection = SelectedDocs::Node(node_id.clone());
+                            *selection = SelectedDocs::Node(node_id.to_string());
                         }
                     }
                 });
@@ -86,8 +86,8 @@ pub fn docs_tab(ui: &mut Ui, app: &mut DbeApp) {
             CollapsingHeader::new("Types")
                 .open(force_show)
                 .show(ui, |ui| {
-                    for (type_id, _) in &project.docs.types {
-                        let Some(ty) = project.registry.get_object(type_id) else {
+                    for (type_id, _) in project.docs.all_types() {
+                        let Some(ty) = project.registry.get_object(&type_id) else {
                             continue;
                         };
                         let title = ty.title(&project.registry);
@@ -97,14 +97,14 @@ pub fn docs_tab(ui: &mut Ui, app: &mut DbeApp) {
                             continue;
                         }
                         if ui.button(title).clicked() {
-                            *selection = SelectedDocs::Type(*type_id);
+                            *selection = SelectedDocs::Type(type_id);
                         }
                     }
                 });
         }
         SelectedDocs::Node(name) => {
             if let (Some(docs), Some(node)) = (
-                project.docs.nodes.get(name),
+                project.docs.get_node(name),
                 get_node_factory(&Ustr::from(name)),
             ) {
                 node_docs(ui, node.deref(), docs);
@@ -114,7 +114,7 @@ pub fn docs_tab(ui: &mut Ui, app: &mut DbeApp) {
         }
         SelectedDocs::Type(ty) => {
             if let (Some(docs), Some(ty)) =
-                (project.docs.types.get(ty), project.registry.get_object(ty))
+                (project.docs.get_type(ty), project.registry.get_object(ty))
             {
                 type_docs(ui, &project.registry, ty, docs);
             } else {
@@ -224,14 +224,14 @@ fn show_window_ref(
     match window_ref {
         DocsWindowRef::Node(node) => {
             if let (Some(docs), Some(factory)) =
-                (docs.nodes.get(node.as_str()), get_node_factory(node))
+                (docs.get_node(node.as_str()), get_node_factory(node))
             {
                 node_docs(ui, &*factory, docs);
                 shown = true;
             }
         }
         DocsWindowRef::Type(ty) => {
-            if let (Some(docs), Some(ty)) = (docs.types.get(ty), registry.get_object(ty)) {
+            if let (Some(docs), Some(ty)) = (docs.get_type(ty), registry.get_object(ty)) {
                 type_docs(ui, registry, ty, docs);
                 shown = true;
             }

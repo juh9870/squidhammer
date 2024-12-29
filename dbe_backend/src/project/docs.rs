@@ -14,8 +14,8 @@ use ustr::Ustr;
 
 #[derive(Debug, Default)]
 pub struct Docs {
-    pub nodes: AHashMap<String, WithLocation<NodeDocs>>,
-    pub types: AHashMap<ETypeId, WithLocation<TypeDocs>>,
+    nodes: AHashMap<String, WithLocation<NodeDocs>>,
+    types: AHashMap<ETypeId, WithLocation<TypeDocs>>,
 }
 
 impl Docs {
@@ -79,6 +79,26 @@ impl Docs {
 
         Ok(())
     }
+
+    pub fn all_nodes(&self) -> impl Iterator<Item = (&str, &NodeDocs)> {
+        self.nodes.iter().map(|(k, v)| (k.as_str(), &v.value))
+    }
+
+    pub fn all_types(&self) -> impl Iterator<Item = (ETypeId, &TypeDocs)> {
+        self.types.iter().map(|(k, v)| (*k, &v.value))
+    }
+
+    pub fn get_node(&self, name: &str) -> Option<&NodeDocs> {
+        self.nodes.get(name).map(|n| &n.value)
+    }
+
+    pub fn get_type(&self, ty: &ETypeId) -> Option<&TypeDocs> {
+        // first try getting as-is, then without generics
+        self.types
+            .get(ty)
+            .map(|t| &t.value)
+            .or_else(|| self.types.get(&ty.strip_generics()).map(|t| &t.value))
+    }
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -123,6 +143,7 @@ impl DocsFile {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct NodeDocs {
     pub title: String,
     pub description: String,
@@ -133,6 +154,7 @@ pub struct NodeDocs {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct NodeIODocs {
     pub title: String,
     pub id: String,
@@ -143,6 +165,7 @@ pub struct NodeIODocs {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct TypeDocs {
     pub description: String,
     #[serde(default)]
@@ -154,6 +177,7 @@ pub struct TypeDocs {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct FieldDocs {
     pub id: String,
     pub description: String,
@@ -162,6 +186,7 @@ pub struct FieldDocs {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct VariantDocs {
     pub id: String,
     pub description: String,
@@ -255,8 +280,7 @@ impl DocsWindowRef {
     pub fn title<'docs>(&self, docs: &'docs Docs, registry: &ETypesRegistry) -> Cow<'docs, str> {
         match self {
             DocsWindowRef::Node(node) => docs
-                .nodes
-                .get(node.as_str())
+                .get_node(node.as_str())
                 .map(|d| d.title.as_str())
                 .map(Cow::Borrowed)
                 .unwrap_or_else(|| Cow::Borrowed(node.as_str())),
@@ -269,8 +293,8 @@ impl DocsWindowRef {
 
     pub fn has_docs(&self, docs: &Docs) -> bool {
         match self {
-            DocsWindowRef::Node(node) => docs.nodes.contains_key(node.as_str()),
-            DocsWindowRef::Type(ty) => docs.types.contains_key(ty),
+            DocsWindowRef::Node(node) => docs.get_node(node.as_str()).is_some(),
+            DocsWindowRef::Type(ty) => docs.get_type(ty).is_some(),
         }
     }
 }
@@ -299,23 +323,19 @@ impl DocsRef {
     pub fn get_description<'docs>(&self, docs: &'docs Docs) -> Option<&'docs str> {
         match self {
             DocsRef::NodeInput(node, input) => docs
-                .nodes
-                .get(node.as_str())
+                .get_node(node.as_str())
                 .and_then(|d| d.inputs.iter().find(|i| i.id == input.as_str()))
                 .map(|i| i.description.as_str()),
             DocsRef::NodeOutput(node, output) => docs
-                .nodes
-                .get(node.as_str())
+                .get_node(node.as_str())
                 .and_then(|d| d.outputs.iter().find(|i| i.id == output.as_str()))
                 .map(|o| o.description.as_str()),
             DocsRef::TypeField(ty, field) => docs
-                .types
-                .get(ty)
+                .get_type(ty)
                 .and_then(|d| d.fields.iter().find(|i| i.id == field.as_str()))
                 .map(|f| f.description.as_str()),
             DocsRef::EnumVariant(ty, variant) => docs
-                .types
-                .get(ty)
+                .get_type(ty)
                 .and_then(|d| d.variants.iter().find(|i| i.id == variant.as_str()))
                 .map(|f| f.description.as_str()),
 
