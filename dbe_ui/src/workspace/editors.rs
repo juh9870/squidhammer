@@ -1,5 +1,4 @@
 use crate::m_try;
-use crate::main_toolbar::docs::DocsRef;
 use crate::ui_props::{PROP_FIELD_EDITOR, PROP_OBJECT_EDITOR};
 use crate::workspace::editors::boolean::BooleanEditor;
 use crate::workspace::editors::consts::ConstEditor;
@@ -19,6 +18,7 @@ use dbe_backend::etype::eobject::EObject;
 use dbe_backend::etype::property::FieldPropertyId;
 use dbe_backend::etype::EDataType;
 use dbe_backend::project::docs::Docs;
+use dbe_backend::project::docs::DocsRef;
 use dbe_backend::registry::{EObjectType, ETypesRegistry};
 use dbe_backend::value::EValue;
 use downcast_rs::{impl_downcast, Downcast};

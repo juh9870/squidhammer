@@ -1,4 +1,4 @@
-use crate::main_toolbar::docs::{docs_label, DocsRef};
+use crate::main_toolbar::docs::docs_label;
 use crate::widgets::report::diagnostics_column;
 use crate::workspace::editors::utils::{labeled_field, unsupported, EditorResultExt, EditorSize};
 use crate::workspace::editors::{
@@ -7,6 +7,7 @@ use crate::workspace::editors::{
 use dbe_backend::diagnostic::context::DiagnosticContextRef;
 use dbe_backend::etype::eitem::EItemInfo;
 use dbe_backend::etype::property::default_properties::PROP_FIELD_INLINE;
+use dbe_backend::project::docs::DocsRef;
 use dbe_backend::registry::ETypesRegistry;
 use dbe_backend::value::EValue;
 use egui::Ui;

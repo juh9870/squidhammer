@@ -1,4 +1,4 @@
-use crate::main_toolbar::docs::{docs_label, DocsRef};
+use crate::main_toolbar::docs::docs_label;
 use crate::ui_props::PROP_OBJECT_GRAPH_INLINE;
 use crate::workspace::editors::{editor_for_item, EditorContext};
 use crate::workspace::graph::viewer::NodeView;
@@ -6,6 +6,7 @@ use crate::workspace::graph::{any_pin, pin_info, GraphViewer};
 use dbe_backend::etype::eobject::EObject;
 use dbe_backend::etype::EDataType;
 use dbe_backend::graph::node::SnarlNode;
+use dbe_backend::project::docs::DocsRef;
 use dbe_backend::registry::ETypesRegistry;
 use dbe_backend::value::EValue;
 use egui::Ui;

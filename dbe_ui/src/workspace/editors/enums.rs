@@ -1,4 +1,3 @@
-use crate::main_toolbar::docs::DocsRef;
 use crate::ui_props::PROP_FIELD_KIND;
 use crate::widgets::report::diagnostics_column;
 use crate::workspace::editors::utils::{
@@ -14,6 +13,7 @@ use dbe_backend::etype::eenum::pattern::EnumPattern;
 use dbe_backend::etype::eenum::variant::{EEnumVariant, EEnumVariantId, EEnumVariantWithId};
 use dbe_backend::etype::eenum::EEnumData;
 use dbe_backend::etype::eitem::EItemInfo;
+use dbe_backend::project::docs::DocsRef;
 use dbe_backend::registry::ETypesRegistry;
 use dbe_backend::value::EValue;
 use egui::collapsing_header::CollapsingState;
