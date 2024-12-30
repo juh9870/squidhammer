@@ -291,6 +291,15 @@ impl DocsWindowRef {
         }
     }
 
+    pub fn description<'docs>(&self, docs: &'docs Docs) -> Option<&'docs str> {
+        match self {
+            DocsWindowRef::Node(node) => {
+                docs.get_node(node.as_str()).map(|d| d.description.as_str())
+            }
+            DocsWindowRef::Type(ty) => docs.get_type(ty).map(|d| d.description.as_str()),
+        }
+    }
+
     pub fn has_docs(&self, docs: &Docs) -> bool {
         match self {
             DocsWindowRef::Node(node) => docs.get_node(node.as_str()).is_some(),

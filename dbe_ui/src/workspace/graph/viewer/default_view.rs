@@ -1,4 +1,4 @@
-use crate::main_toolbar::docs::docs_label;
+use crate::main_toolbar::docs::{docs_hover_type, docs_label};
 use crate::ui_props::PROP_OBJECT_GRAPH_INLINE;
 use crate::workspace::editors::{editor_for_item, EditorContext};
 use crate::workspace::graph::viewer::NodeView;
@@ -6,7 +6,7 @@ use crate::workspace::graph::{any_pin, pin_info, GraphViewer};
 use dbe_backend::etype::eobject::EObject;
 use dbe_backend::etype::EDataType;
 use dbe_backend::graph::node::SnarlNode;
-use dbe_backend::project::docs::DocsRef;
+use dbe_backend::project::docs::{DocsRef, DocsWindowRef};
 use dbe_backend::registry::ETypesRegistry;
 use dbe_backend::value::EValue;
 use egui::Ui;
@@ -68,15 +68,27 @@ impl NodeView for DefaultNodeView {
     fn show_header(
         &self,
         viewer: &GraphViewer,
-        node: NodeId,
+        node_id: NodeId,
         _inputs: &[InPin],
         _outputs: &[OutPin],
         ui: &mut Ui,
         _scale: f32,
         snarl: &mut Snarl<SnarlNode>,
     ) -> miette::Result<()> {
-        ui.label(node.0.to_string());
-        ui.label(snarl[node].title(viewer.ctx.as_node_context()));
+        let node = &snarl[node_id];
+
+        let res =
+            ui.label(node_id.0.to_string()) | ui.label(node.title(viewer.ctx.as_node_context()));
+
+        docs_hover_type(
+            ui,
+            res,
+            "header",
+            viewer.ctx.docs.expect("Docs should be set at this point"),
+            viewer.ctx.registry,
+            DocsWindowRef::Node(node.id()),
+        );
+
         Ok(())
     }
 

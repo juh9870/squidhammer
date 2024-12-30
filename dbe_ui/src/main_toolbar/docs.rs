@@ -14,9 +14,12 @@ use egui_commonmark::CommonMarkCache;
 use egui_hooks::UseHookExt;
 use inline_tweak::tweak;
 use std::borrow::Cow;
+use std::hash::Hash;
 use std::ops::{Deref, DerefMut};
 use strum::EnumIs;
 use ustr::Ustr;
+
+const NO_DOCS: &str = "No documentation available";
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Default, EnumIs)]
 pub enum SelectedDocs {
@@ -238,8 +241,27 @@ fn show_window_ref(
         }
     }
     if !shown {
-        ui.label("No documentation available");
+        ui.label(NO_DOCS);
     }
+}
+
+fn docs_window(
+    ui: &mut Ui,
+    title: &str,
+    id_salt: impl Hash,
+    show: &mut bool,
+    cb: impl FnOnce(&mut Ui),
+) {
+    Window::new(title)
+        .id(ui.id().with(id_salt).with("docs_window"))
+        .open(show)
+        .default_height(300.0)
+        .collapsible(false)
+        .show(ui.ctx(), |ui| {
+            ScrollArea::vertical().show(ui, |ui| {
+                cb(ui);
+            })
+        });
 }
 
 pub fn docs_label(
@@ -261,8 +283,6 @@ pub fn docs_hover(
     registry: &ETypesRegistry,
     docs_ref: DocsRef,
 ) {
-    const NO_DOCS: &str = "No documentation available";
-
     if docs_ref.is_none() {
         if cfg!(debug_assertions) {
             res.on_hover_text("DocsRef is None");
@@ -330,16 +350,51 @@ pub fn docs_hover(
 
     if *show_window {
         if let Some(docs_window_ref) = docs_window_ref {
-            Window::new(docs_window_ref.title(docs, registry))
-                .id(ui.id().with(id_salt).with("docs_window"))
-                .open(&mut show_window)
-                .default_height(300.0)
-                .collapsible(false)
-                .show(ui.ctx(), |ui| {
-                    ScrollArea::vertical().show(ui, |ui| {
-                        show_window_ref(ui, docs, registry, &docs_window_ref);
-                    })
-                });
+            docs_window(
+                ui,
+                docs_window_ref.title(docs, registry).as_str(),
+                id_salt,
+                &mut show_window,
+                |ui| {
+                    show_window_ref(ui, docs, registry, &docs_window_ref);
+                },
+            );
         }
+    }
+}
+
+pub fn docs_hover_type(
+    ui: &mut Ui,
+    res: Response,
+    id_salt: &str,
+    docs: &Docs,
+    registry: &ETypesRegistry,
+    docs_ref: DocsWindowRef,
+) {
+    let mut show_window = ui.use_state(|| false, docs_ref).into_var();
+    res.on_hover_ui(|ui| {
+        let title = docs_ref.title(docs, registry);
+        ui.label(title);
+        ui.separator();
+        if let Some(description) = docs_ref.description(docs) {
+            ui.label(description);
+        } else {
+            ui.label(NO_DOCS);
+        }
+        if docs_ref.has_docs(docs) && ui.button("View full docs").clicked() {
+            *show_window = true;
+        }
+    });
+
+    if *show_window {
+        docs_window(
+            ui,
+            docs_ref.title(docs, registry).as_str(),
+            id_salt,
+            &mut show_window,
+            |ui| {
+                show_window_ref(ui, docs, registry, &docs_ref);
+            },
+        );
     }
 }
