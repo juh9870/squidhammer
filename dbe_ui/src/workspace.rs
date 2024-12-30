@@ -222,7 +222,7 @@ impl<Io> TabViewer for WorkspaceTabViewer<'_, Io> {
                             let (ctx, snarl) = PartialGraphEditingContext::from_graph(
                                 graph,
                                 &self.0.registry,
-                                Some(&self.0.docs),
+                                &self.0.docs,
                                 Some(graphs),
                                 cache,
                                 SideEffectsContext::unavailable(),

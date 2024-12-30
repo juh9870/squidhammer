@@ -52,10 +52,7 @@ impl NodeView for EnumNodeViewer {
             ui,
             res.response,
             "variant",
-            viewer
-                .ctx
-                .docs
-                .expect("docs should be present when viewing data"),
+            viewer.ctx.docs,
             viewer.ctx.registry,
             DocsRef::EnumVariant(variant_id.enum_id(), variant_id.variant_name()),
         );

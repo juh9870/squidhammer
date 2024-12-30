@@ -12,14 +12,23 @@ use std::ops::{Deref, DerefMut};
 use strum::EnumIs;
 use ustr::Ustr;
 
+#[derive(Debug, EnumIs)]
+pub enum Docs {
+    Docs(DocsContent),
+    Stub,
+}
+
 #[derive(Debug, Default)]
-pub struct Docs {
+pub struct DocsContent {
     nodes: AHashMap<String, WithLocation<NodeDocs>>,
     types: AHashMap<ETypeId, WithLocation<TypeDocs>>,
 }
 
 impl Docs {
     pub fn add_file(&mut self, mut file: DocsFile, location: Utf8PathBuf) -> miette::Result<()> {
+        let Docs::Docs(docs) = self else {
+            panic!("Cannot add file to a stub docs");
+        };
         match (file.nodes.len(), file.types.len()) {
             (0, 0) => {
                 // nothing to do
@@ -42,7 +51,7 @@ impl Docs {
         file.validate()?;
 
         for (name, node) in file.nodes {
-            match self.nodes.entry(name) {
+            match docs.nodes.entry(name) {
                 Entry::Vacant(e) => {
                     e.insert(WithLocation {
                         value: node,
@@ -60,7 +69,7 @@ impl Docs {
         }
 
         for (name, ty) in file.types {
-            match self.types.entry(name) {
+            match docs.types.entry(name) {
                 Entry::Vacant(e) => {
                     e.insert(WithLocation {
                         value: ty,
@@ -81,23 +90,35 @@ impl Docs {
     }
 
     pub fn all_nodes(&self) -> impl Iterator<Item = (&str, &NodeDocs)> {
-        self.nodes.iter().map(|(k, v)| (k.as_str(), &v.value))
+        let Docs::Docs(docs) = self else {
+            panic!("Cannot get nodes from a stub docs");
+        };
+        docs.nodes.iter().map(|(k, v)| (k.as_str(), &v.value))
     }
 
     pub fn all_types(&self) -> impl Iterator<Item = (ETypeId, &TypeDocs)> {
-        self.types.iter().map(|(k, v)| (*k, &v.value))
+        let Docs::Docs(docs) = self else {
+            panic!("Cannot get types from a stub docs");
+        };
+        docs.types.iter().map(|(k, v)| (*k, &v.value))
     }
 
     pub fn get_node(&self, name: &str) -> Option<&NodeDocs> {
-        self.nodes.get(name).map(|n| &n.value)
+        let Docs::Docs(docs) = self else {
+            panic!("Cannot get node from a stub docs");
+        };
+        docs.nodes.get(name).map(|n| &n.value)
     }
 
     pub fn get_type(&self, ty: &ETypeId) -> Option<&TypeDocs> {
+        let Docs::Docs(docs) = self else {
+            panic!("Cannot get node from a stub docs");
+        };
         // first try getting as-is, then without generics
-        self.types
+        docs.types
             .get(ty)
             .map(|t| &t.value)
-            .or_else(|| self.types.get(&ty.strip_generics()).map(|t| &t.value))
+            .or_else(|| docs.types.get(&ty.strip_generics()).map(|t| &t.value))
     }
 }
 
@@ -371,15 +392,13 @@ impl DocsRef {
     pub fn get_field_title<'docs>(&self, docs: &'docs Docs) -> Cow<'docs, str> {
         match self {
             DocsRef::NodeInput(node, input) => docs
-                .nodes
-                .get(node.as_str())
+                .get_node(node.as_str())
                 .and_then(|d| d.inputs.iter().find(|i| i.id == input.as_str()))
                 .map(|i| i.title.as_str())
                 .unwrap_or_else(|| input.as_str())
                 .into(),
             DocsRef::NodeOutput(node, output) => docs
-                .nodes
-                .get(node.as_str())
+                .get_node(node.as_str())
                 .and_then(|d| d.outputs.iter().find(|i| i.id == output.as_str()))
                 .map(|o| o.title.as_str())
                 .unwrap_or_else(|| output.as_str())
