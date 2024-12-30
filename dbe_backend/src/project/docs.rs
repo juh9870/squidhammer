@@ -9,14 +9,30 @@ use serde::{Deserialize, Serialize};
 use std::borrow::Cow;
 use std::collections::hash_map::Entry;
 use std::ops::{Deref, DerefMut};
+use std::sync::LazyLock;
 use strum::EnumIs;
+use tracing::warn;
 use ustr::Ustr;
 
+/// Main structure for storing documentation
+///
+/// Application should generally use [Docs::Docs] variant. The [Docs::Stub]
+/// variant should only be used for cases where the Docs structure is not yet
+/// available.
+///
+/// Calling methods of a stub docs will panic in debug mode, and log a warning
+/// in release mode.
 #[derive(Debug, EnumIs)]
 pub enum Docs {
     Docs(DocsContent),
     Stub,
 }
+
+static STUB_NODES: LazyLock<AHashMap<String, WithLocation<NodeDocs>>> =
+    LazyLock::new(|| Default::default());
+
+static STUB_TYPES: LazyLock<AHashMap<ETypeId, WithLocation<TypeDocs>>> =
+    LazyLock::new(|| Default::default());
 
 #[derive(Debug, Default)]
 pub struct DocsContent {
@@ -90,29 +106,39 @@ impl Docs {
     }
 
     pub fn all_nodes(&self) -> impl Iterator<Item = (&str, &NodeDocs)> {
-        let Docs::Docs(docs) = self else {
-            panic!("Cannot get nodes from a stub docs");
-        };
-        docs.nodes.iter().map(|(k, v)| (k.as_str(), &v.value))
+        match self {
+            Docs::Docs(docs) => {
+                inform_stub("nodes");
+                docs.nodes.iter()
+            }
+            Docs::Stub => STUB_NODES.iter(),
+        }
+        .map(|(k, v)| (k.as_str(), &v.value))
     }
 
     pub fn all_types(&self) -> impl Iterator<Item = (ETypeId, &TypeDocs)> {
-        let Docs::Docs(docs) = self else {
-            panic!("Cannot get types from a stub docs");
-        };
-        docs.types.iter().map(|(k, v)| (*k, &v.value))
+        match self {
+            Docs::Docs(docs) => {
+                inform_stub("types");
+                docs.types.iter()
+            }
+            Docs::Stub => STUB_TYPES.iter(),
+        }
+        .map(|(k, v)| (*k, &v.value))
     }
 
     pub fn get_node(&self, name: &str) -> Option<&NodeDocs> {
         let Docs::Docs(docs) = self else {
-            panic!("Cannot get node from a stub docs");
+            inform_stub("node");
+            return None;
         };
         docs.nodes.get(name).map(|n| &n.value)
     }
 
     pub fn get_type(&self, ty: &ETypeId) -> Option<&TypeDocs> {
         let Docs::Docs(docs) = self else {
-            panic!("Cannot get node from a stub docs");
+            inform_stub("type");
+            return None;
         };
         // first try getting as-is, then without generics
         docs.types
@@ -422,5 +448,17 @@ impl DocsRef {
             }
             DocsRef::Custom(_) | DocsRef::None => None,
         }
+    }
+}
+
+/// Informs about usage of a stub docs
+///
+/// # Panics
+/// Panics in debug mode, logs a warning in release mode
+fn inform_stub(what: &str) {
+    if cfg!(debug_assertions) {
+        panic!("Cannot get {} from a stub docs", what);
+    } else {
+        warn!("Cannot get {} from a stub docs", what);
     }
 }
