@@ -149,7 +149,7 @@ impl<IO: ProjectIO> Project<IO> {
         let mut import_jsons = BTreeMap::<Utf8PathBuf, (JsonValue, Option<EDataType>)>::new();
         let mut types_jsons = BTreeMap::<Utf8PathBuf, JsonValue>::new();
         let mut graphs = BTreeMap::<Utf8PathBuf, JsonValue>::new();
-        let mut docs = Docs::default();
+        let mut docs = Docs::Docs(Default::default());
 
         fn utf8str(path: &Utf8Path, data: Vec<u8>) -> miette::Result<String> {
             String::from_utf8(data).into_diagnostic().with_context(|| {

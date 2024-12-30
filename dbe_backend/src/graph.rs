@@ -4,6 +4,7 @@ use crate::graph::node::commands::SnarlCommands;
 use crate::graph::node::{get_snarl_node, NodeContext, SnarlNode};
 use crate::json_utils::JsonValue;
 use crate::m_try;
+use crate::project::docs::Docs;
 use crate::project::side_effects::SideEffectsContext;
 use crate::registry::ETypesRegistry;
 use crate::value::EValue;
@@ -71,7 +72,7 @@ impl Graph {
             let mut ctx = GraphEditingContext::from_graph(
                 &mut graph,
                 registry,
-                None,
+                &Docs::Stub,
                 None,
                 &mut cache,
                 SideEffectsContext::unavailable(),

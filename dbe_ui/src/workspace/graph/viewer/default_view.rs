@@ -84,7 +84,7 @@ impl NodeView for DefaultNodeView {
             ui,
             res,
             "header",
-            viewer.ctx.docs.expect("Docs should be set at this point"),
+            viewer.ctx.docs,
             viewer.ctx.registry,
             DocsWindowRef::Node(node.id()),
         );
@@ -101,7 +101,7 @@ impl NodeView for DefaultNodeView {
         snarl: &mut Snarl<SnarlNode>,
     ) -> miette::Result<PinInfo> {
         let registry = viewer.ctx.registry;
-        let docs = viewer.ctx.docs.expect("Docs should be set at this point");
+        let docs = viewer.ctx.docs;
         let node = &snarl[pin.id.node];
         let node_ident = node.id();
         let input_data = node.try_input(viewer.ctx.as_node_context(), pin.id.input)?;
@@ -157,7 +157,7 @@ impl NodeView for DefaultNodeView {
         let registry = viewer.ctx.registry;
         let node = &snarl[pin.id.node];
         let output_data = node.try_output(viewer.ctx.as_node_context(), pin.id.output)?;
-        let docs = viewer.ctx.docs.expect("Docs should be set at this point");
+        let docs = viewer.ctx.docs;
         let docs_ref = output_data
             .custom_docs
             .unwrap_or_else(|| DocsRef::NodeOutput(node.id(), output_data.name));
