@@ -1,44 +1,47 @@
 use crate::etype::eitem::EItemInfo;
 use crate::etype::EDataType;
 use crate::graph::node::{
-    impl_serde_node, ExecutionExtras, InputData, Node, NodeContext, NodeFactory, OutputData,
-    SnarlNode,
+    ExecutionExtras, InputData, Node, NodeContext, NodeFactory, OutputData, SnarlNode,
 };
 use crate::project::side_effects::SideEffect;
-use crate::registry::ETypesRegistry;
+use crate::registry::OPTIONAL_STRING_ID;
 use crate::value::EValue;
-use camino::Utf8PathBuf;
+use miette::bail;
 use serde::{Deserialize, Serialize};
 use ustr::Ustr;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct SavingNode {
-    pub path: Option<Utf8PathBuf>,
-}
+pub struct SavingNode;
 
 impl Node for SavingNode {
-    impl_serde_node!();
+    // impl_serde_node!();
 
     fn id(&self) -> Ustr {
         SavingNodeFactory.id()
     }
 
     fn inputs_count(&self, _context: NodeContext) -> usize {
-        1
+        2
     }
 
     fn input_unchecked(&self, context: NodeContext, input: usize) -> miette::Result<InputData> {
-        if input != 0 {
-            panic!("Saving node has only one input")
+        match input {
+            0 => Ok(InputData::new(
+                EItemInfo::simple_type(EDataType::Object {
+                    ident: *OPTIONAL_STRING_ID,
+                })
+                .into(),
+                "path".into(),
+            )),
+            1 => Ok(InputData::new(
+                EItemInfo::simple_type(EDataType::Object {
+                    ident: context.registry.project_config().types_config.import,
+                })
+                .into(),
+                "item".into(),
+            )),
+            _ => panic!("Saving node has only two inputs"),
         }
-
-        Ok(InputData::new(
-            EItemInfo::simple_type(EDataType::Object {
-                ident: context.registry.project_config().types_config.import,
-            })
-            .into(),
-            "item".into(),
-        ))
     }
 
     fn outputs_count(&self, _context: NodeContext) -> usize {
@@ -64,16 +67,26 @@ impl Node for SavingNode {
         _outputs: &mut Vec<EValue>,
         variables: &mut ExecutionExtras,
     ) -> miette::Result<()> {
-        match &self.path {
-            None => variables.side_effects.push(SideEffect::EmitTransientFile {
-                value: inputs[0].clone(),
-            })?,
-            Some(path) => variables
+        let EValue::Enum { variant, data } = &inputs[0] else {
+            bail!("path input must be an enum, got {:?}", inputs[0]);
+        };
+        if variant.enum_id() != *OPTIONAL_STRING_ID {
+            bail!("path input must be optional string, got {:?}", variant);
+        }
+        let value = inputs[1].clone();
+
+        if data.is_null() {
+            variables
+                .side_effects
+                .push(SideEffect::EmitTransientFile { value })?;
+        } else {
+            let path = data.try_as_string()?;
+            variables
                 .side_effects
                 .push(SideEffect::EmitPersistentFile {
                     value: inputs[0].clone(),
-                    path: path.clone(),
-                })?,
+                    path: path.into(),
+                })?
         }
 
         Ok(())
@@ -93,6 +106,6 @@ impl NodeFactory for SavingNodeFactory {
     }
 
     fn create(&self) -> SnarlNode {
-        Box::new(SavingNode { path: None })
+        Box::new(SavingNode)
     }
 }

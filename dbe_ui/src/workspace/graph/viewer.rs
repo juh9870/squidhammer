@@ -1,6 +1,5 @@
 use crate::workspace::graph::viewer::default_view::DefaultNodeView;
 use crate::workspace::graph::viewer::reroute::RerouteNodeViewer;
-use crate::workspace::graph::viewer::saving::SavingNodeViewer;
 use crate::workspace::graph::viewer::subgraph::SubgraphNodeViewer;
 use crate::workspace::graph::GraphViewer;
 use atomic_refcell::AtomicRefCell;
@@ -15,7 +14,6 @@ use ustr::{Ustr, UstrMap};
 
 pub mod default_view;
 pub mod reroute;
-pub mod saving;
 pub mod subgraph;
 
 static NODE_VIEWERS: LazyLock<AtomicRefCell<UstrMap<Arc<dyn NodeView>>>> =
@@ -23,11 +21,7 @@ static NODE_VIEWERS: LazyLock<AtomicRefCell<UstrMap<Arc<dyn NodeView>>>> =
 static DEFAULT_VIEWER: LazyLock<Arc<dyn NodeView>> = LazyLock::new(|| Arc::new(DefaultNodeView));
 
 fn default_viewers() -> impl Iterator<Item = (Ustr, Arc<dyn NodeView>)> {
-    let v: Vec<Arc<dyn NodeView>> = vec![
-        Arc::new(RerouteNodeViewer),
-        Arc::new(SavingNodeViewer),
-        Arc::new(SubgraphNodeViewer),
-    ];
+    let v: Vec<Arc<dyn NodeView>> = vec![Arc::new(RerouteNodeViewer), Arc::new(SubgraphNodeViewer)];
     v.into_iter().map(|item| (Ustr::from(&item.id()), item))
 }
 
