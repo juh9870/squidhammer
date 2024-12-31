@@ -28,6 +28,7 @@ use std::sync::{Arc, LazyLock};
 use ustr::{Ustr, UstrMap};
 
 pub mod commands;
+pub mod editable_state;
 pub mod enum_node;
 pub mod functional;
 pub mod groups;
@@ -147,6 +148,50 @@ pub trait Node: DynClone + Debug + Send + Sync + Downcast + 'static {
     /// user presentation reasons
     fn update_state(&mut self, context: NodeContext, commands: &mut SnarlCommands, id: NodeId) {
         let _ = (context, commands, id);
+    }
+
+    /// Determines if the node has editable state
+    ///
+    /// Editor should only call [Node::editable_state] and
+    /// [Node::apply_editable_state] if this method returns true
+    fn has_editable_state(&self) -> bool {
+        false
+    }
+
+    /// Returns the editable state of the node to be presented to the user by
+    /// the editor
+    ///
+    /// # Panics
+    /// - If [Node::has_editable_state] returns false
+    fn editable_state(&self) -> EditableState {
+        assert!(
+            self.has_editable_state(),
+            "editable_state should only be called if has_editable_state returns true"
+        );
+        unimplemented!()
+    }
+
+    /// Applies the changed editable state to the node
+    ///
+    /// This method should be used to apply the changes made by the user to the
+    /// results of the [Node::editable_state] method
+    ///
+    /// # Panics
+    /// - If [Node::has_editable_state] returns false
+    /// - If the field structure of the state was changed, or
+    /// an incompatible state was passed
+    fn apply_editable_state(
+        &mut self,
+        state: EditableState,
+        commands: &mut SnarlCommands,
+        node_id: NodeId,
+    ) -> miette::Result<()> {
+        let _ = (state, commands, node_id);
+        assert!(
+            self.has_editable_state(),
+            "apply_editable_state should only be called if has_editable_state returns true"
+        );
+        unimplemented!()
     }
 
     /// Determines if the node has inline editable values
@@ -331,5 +376,6 @@ macro_rules! impl_serde_node {
     };
 }
 
+use crate::graph::node::editable_state::EditableState;
 use crate::graph::node::mappings::MappingsNodeFactory;
 pub(crate) use impl_serde_node;

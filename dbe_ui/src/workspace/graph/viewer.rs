@@ -1,5 +1,4 @@
 use crate::workspace::graph::viewer::default_view::DefaultNodeView;
-use crate::workspace::graph::viewer::enum_node::EnumNodeViewer;
 use crate::workspace::graph::viewer::reroute::RerouteNodeViewer;
 use crate::workspace::graph::viewer::saving::SavingNodeViewer;
 use crate::workspace::graph::viewer::subgraph::SubgraphNodeViewer;
@@ -15,7 +14,6 @@ use std::sync::{Arc, LazyLock};
 use ustr::{Ustr, UstrMap};
 
 pub mod default_view;
-pub mod enum_node;
 pub mod reroute;
 pub mod saving;
 pub mod subgraph;
@@ -27,7 +25,6 @@ static DEFAULT_VIEWER: LazyLock<Arc<dyn NodeView>> = LazyLock::new(|| Arc::new(D
 fn default_viewers() -> impl Iterator<Item = (Ustr, Arc<dyn NodeView>)> {
     let v: Vec<Arc<dyn NodeView>> = vec![
         Arc::new(RerouteNodeViewer),
-        Arc::new(EnumNodeViewer),
         Arc::new(SavingNodeViewer),
         Arc::new(SubgraphNodeViewer),
     ];

@@ -29,10 +29,10 @@ pub enum Docs {
 }
 
 static STUB_NODES: LazyLock<AHashMap<String, WithLocation<NodeDocs>>> =
-    LazyLock::new(|| Default::default());
+    LazyLock::new(Default::default);
 
 static STUB_TYPES: LazyLock<AHashMap<ETypeId, WithLocation<TypeDocs>>> =
-    LazyLock::new(|| Default::default());
+    LazyLock::new(Default::default);
 
 #[derive(Debug, Default)]
 pub struct DocsContent {

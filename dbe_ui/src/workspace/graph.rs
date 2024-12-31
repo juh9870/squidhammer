@@ -151,7 +151,9 @@ impl<'a> SnarlViewer<SnarlNode> for GraphViewer<'a> {
     ) {
         m_try(|| {
             get_viewer(&snarl[node_id].id())
-                .show_body(self, node_id, inputs, outputs, ui, scale, snarl)
+                .show_body(self, node_id, inputs, outputs, ui, scale, snarl)?;
+            self.commands.execute(&mut self.ctx.as_full(snarl))?;
+            Ok(())
         })
         .unwrap_or_else(|err| {
             diagnostic_widget(

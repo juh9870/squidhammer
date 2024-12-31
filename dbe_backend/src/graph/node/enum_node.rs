@@ -4,6 +4,7 @@ use crate::etype::eitem::EItemInfo;
 use crate::etype::eobject::EObject;
 use crate::etype::EDataType;
 use crate::graph::node::commands::{SnarlCommand, SnarlCommands};
+use crate::graph::node::editable_state::{EditableState, EditableStateValue};
 use crate::graph::node::ports::NodePortType;
 use crate::graph::node::variables::ExecutionExtras;
 use crate::graph::node::{
@@ -14,7 +15,8 @@ use crate::registry::ETypesRegistry;
 use crate::value::EValue;
 use egui_snarl::{InPin, InPinId, NodeId, OutPin};
 use serde::{Deserialize, Serialize};
-use ustr::Ustr;
+use smallvec::smallvec;
+use ustr::{ustr, Ustr};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct EnumNode {
@@ -76,6 +78,27 @@ impl Node for EnumNode {
         };
 
         data.title(context.registry)
+    }
+
+    fn has_editable_state(&self) -> bool {
+        true
+    }
+
+    fn editable_state(&self) -> EditableState {
+        smallvec![(
+            ustr("variant"),
+            EditableStateValue::EnumVariant(self.variant())
+        )]
+    }
+
+    fn apply_editable_state(
+        &mut self,
+        state: EditableState,
+        commands: &mut SnarlCommands,
+        node_id: NodeId,
+    ) -> miette::Result<()> {
+        let value = state[0].1.try_as_enum_variant_ref().unwrap();
+        self.set_variant(commands, node_id, *value)
     }
 
     fn inputs_count(&self, context: NodeContext) -> usize {

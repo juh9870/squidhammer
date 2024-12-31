@@ -27,7 +27,7 @@ use egui::Ui;
 use list::ListEditor;
 use miette::{bail, miette};
 use std::fmt::Debug;
-use std::ops::Deref;
+use std::ops::{BitOr, BitOrAssign, Deref};
 use std::sync::LazyLock;
 use ustr::{Ustr, UstrMap};
 
@@ -178,8 +178,28 @@ impl EditorResponse {
         Self { changed }
     }
 
+    pub fn changed() -> Self {
+        Self { changed: true }
+    }
+
     pub fn unchanged() -> Self {
         Self { changed: false }
+    }
+}
+
+impl BitOr for EditorResponse {
+    type Output = Self;
+
+    fn bitor(self, rhs: Self) -> Self::Output {
+        Self {
+            changed: self.changed || rhs.changed,
+        }
+    }
+}
+
+impl BitOrAssign for EditorResponse {
+    fn bitor_assign(&mut self, rhs: Self) {
+        self.changed = self.changed || rhs.changed;
     }
 }
 
