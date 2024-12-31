@@ -108,13 +108,17 @@ impl NodeView for DefaultNodeView {
         let node = &snarl[pin.id.node];
         let node_ident = node.id();
         let input_data = node.try_input(viewer.ctx.as_node_context(), pin.id.input)?;
-        let Some(info) = input_data.ty.item_info() else {
-            return Ok(any_pin());
-        };
+
         let docs_ref = input_data
             .custom_docs
             .unwrap_or(DocsRef::NodeInput(node_ident, input_data.name));
         let ctx = EditorContext::new(registry, docs, docs_ref);
+
+        let Some(info) = input_data.ty.item_info() else {
+            docs_label(ui, &input_data.name, docs, registry, ctx.docs_ref);
+            return Ok(any_pin());
+        };
+
         if pin.remotes.is_empty() {
             let mut full_ctx = viewer.ctx.as_full(snarl);
             if let Some(value) = full_ctx.get_inline_input_mut(pin.id)? {
@@ -141,9 +145,7 @@ impl NodeView for DefaultNodeView {
                 }
             }
         } else {
-            ui.horizontal(|ui| {
-                docs_label(ui, &input_data.name, docs, registry, ctx.docs_ref);
-            });
+            docs_label(ui, &input_data.name, docs, registry, ctx.docs_ref);
         }
 
         Ok(pin_info(&input_data.ty, registry))
