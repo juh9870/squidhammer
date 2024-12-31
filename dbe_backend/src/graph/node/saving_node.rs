@@ -1,5 +1,6 @@
 use crate::etype::eitem::EItemInfo;
 use crate::etype::EDataType;
+use crate::graph::node::ports::NodePortType;
 use crate::graph::node::{
     ExecutionExtras, InputData, Node, NodeContext, NodeFactory, OutputData, SnarlNode,
 };
@@ -11,13 +12,11 @@ use serde::{Deserialize, Serialize};
 use ustr::Ustr;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct SavingNode;
+pub struct SavingNode<const ALLOW_ANY: bool>;
 
-impl Node for SavingNode {
-    // impl_serde_node!();
-
+impl<const ALLOW_ANY: bool> Node for SavingNode<ALLOW_ANY> {
     fn id(&self) -> Ustr {
-        SavingNodeFactory.id()
+        SavingNodeFactory::<ALLOW_ANY>.id()
     }
 
     fn inputs_count(&self, _context: NodeContext) -> usize {
@@ -34,11 +33,15 @@ impl Node for SavingNode {
                 "path".into(),
             )),
             1 => Ok(InputData::new(
-                EItemInfo::simple_type(EDataType::Object {
-                    ident: context.registry.project_config().types_config.import,
-                })
-                .into(),
-                "item".into(),
+                if ALLOW_ANY {
+                    NodePortType::BasedOnSource
+                } else {
+                    EItemInfo::simple_type(EDataType::Object {
+                        ident: context.registry.project_config().types_config.import,
+                    })
+                    .into()
+                },
+                "value".into(),
             )),
             _ => panic!("Saving node has only two inputs"),
         }
@@ -76,16 +79,18 @@ impl Node for SavingNode {
         let value = inputs[1].clone();
 
         if data.is_null() {
-            variables
-                .side_effects
-                .push(SideEffect::EmitTransientFile { value })?;
+            variables.side_effects.push(SideEffect::EmitTransientFile {
+                value,
+                is_dbevalue: ALLOW_ANY,
+            })?;
         } else {
             let path = data.try_as_string()?;
             variables
                 .side_effects
                 .push(SideEffect::EmitPersistentFile {
-                    value: inputs[0].clone(),
+                    value,
                     path: path.into(),
+                    is_dbevalue: ALLOW_ANY,
                 })?
         }
 
@@ -94,11 +99,15 @@ impl Node for SavingNode {
 }
 
 #[derive(Debug, Clone)]
-pub struct SavingNodeFactory;
+pub struct SavingNodeFactory<const ANY_VALUE: bool>;
 
-impl NodeFactory for SavingNodeFactory {
+impl<const ANY_VALUE: bool> NodeFactory for SavingNodeFactory<ANY_VALUE> {
     fn id(&self) -> Ustr {
-        "write_item".into()
+        if ANY_VALUE {
+            "write_dbevalue".into()
+        } else {
+            "write_item".into()
+        }
     }
 
     fn categories(&self) -> &'static [&'static str] {
@@ -106,6 +115,6 @@ impl NodeFactory for SavingNodeFactory {
     }
 
     fn create(&self) -> SnarlNode {
-        Box::new(SavingNode)
+        Box::new(SavingNode::<ANY_VALUE>)
     }
 }

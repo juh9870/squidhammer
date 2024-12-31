@@ -1,0 +1,37 @@
+[nodes.write_dbevalue]
+title = "Write Editor Value"
+description = "Node for emitting editor values to files"
+docs = """
+This node is only useful for multi-stage graph evaluation or for debugging. \
+You generally want to use `Write Item` node instead.
+
+This node is used as the endpoint to emit editor values to files. It creates a \
+temporary file at the specified (or automatic) path, which will get overwritten \
+during the next run.
+
+This node can emit any type of value, and emitted files will use `.dbevaule` \
+extension.
+"""
+outputs = []
+
+[[nodes.write_dbevalue.inputs]]
+title = "Path"
+id = "path"
+description = "Optional path to the file to write"
+docs = """
+If the path is not specified, the file will be written to the automaticly-\
+generated path in `emitted` folder
+
+If the path is specified, the file will be written to the specified path, \
+creating the file if it doesn't exist.
+
+If the specified file already exists, the node will fail.
+"""
+
+[[nodes.write_dbevalue.inputs]]
+title = "Value"
+id = "value"
+description = "Value to write to the file"
+docs = """
+Item will be written to the file with `.dbevaule` extension.
+"""
