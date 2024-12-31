@@ -214,13 +214,33 @@
         0,
         {
           "data": {
-            "path": null
+            "graph_id": "b3ac2cd9-06f0-4f01-9ef1-b84365b6b640",
+            "input_types": [
+              {
+                "Object": {
+                  "ident": "eh:item"
+                }
+              }
+            ],
+            "inputs": [
+              "b0c8424a-e57e-4764-b43d-1f78702df68a"
+            ],
+            "output_types": [
+              {
+                "Object": {
+                  "ident": "eh:item"
+                }
+              }
+            ],
+            "outputs": [
+              "8bac0f8f-0480-4398-a750-66d5bae33ca7"
+            ]
           },
-          "id": "write_item",
+          "id": "subgraph",
           "open": true,
           "pos": {
-            "x": -83,
-            "y": -200
+            "x": -82.79834747314453,
+            "y": -191.18145751953125
           }
         }
       ],
