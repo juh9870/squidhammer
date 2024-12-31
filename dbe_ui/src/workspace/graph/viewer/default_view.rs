@@ -1,6 +1,7 @@
 use crate::main_toolbar::docs::{docs_hover_type, docs_label};
 use crate::ui_props::PROP_OBJECT_GRAPH_INLINE;
 use crate::workspace::editors::{editor_for_item, EditorContext};
+use crate::workspace::graph::viewer::default_view::state_editor::show_state_editor;
 use crate::workspace::graph::viewer::NodeView;
 use crate::workspace::graph::{any_pin, pin_info, GraphViewer};
 use dbe_backend::etype::eobject::EObject;
@@ -14,6 +15,8 @@ use egui_snarl::ui::PinInfo;
 use egui_snarl::{InPin, NodeId, OutPin, Snarl};
 use std::fmt::Debug;
 use ustr::Ustr;
+
+pub mod state_editor;
 
 #[derive(Debug)]
 pub struct DefaultNodeView;
@@ -168,20 +171,29 @@ impl NodeView for DefaultNodeView {
         Ok(pin_info(&output_data.ty, registry))
     }
 
-    fn has_body(&self, _viewer: &mut GraphViewer, _node: &SnarlNode) -> miette::Result<bool> {
-        Ok(false)
+    fn has_body(&self, _viewer: &mut GraphViewer, node: &SnarlNode) -> miette::Result<bool> {
+        Ok(node.has_editable_state())
     }
 
     fn show_body(
         &self,
-        _viewer: &mut GraphViewer,
-        _node: NodeId,
+        viewer: &mut GraphViewer,
+        node_id: NodeId,
         _inputs: &[InPin],
         _outputs: &[OutPin],
-        _ui: &mut Ui,
+        ui: &mut Ui,
         _scale: f32,
-        _snarl: &mut Snarl<SnarlNode>,
+        snarl: &mut Snarl<SnarlNode>,
     ) -> miette::Result<()> {
+        let node = &mut snarl[node_id];
+        let mut state = node.editable_state();
+
+        let res = show_state_editor(ui, viewer, &mut state)?;
+
+        if res.changed {
+            node.apply_editable_state(state, &mut viewer.commands, node_id)?;
+        }
+
         Ok(())
     }
 }
