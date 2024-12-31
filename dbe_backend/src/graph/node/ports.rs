@@ -67,7 +67,8 @@ impl OutputData {
 pub enum NodePortType {
     /// Invalid connection. Will not cause panics, but will always return null data
     Invalid,
-    /// Input port that has custom logic for accepting connections
+    /// Input port that has custom logic for accepting connections (or that
+    /// accept any incoming connections)
     BasedOnSource,
     /// Output port that accepts connections based on the target input port
     BasedOnTarget,

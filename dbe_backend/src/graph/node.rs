@@ -62,7 +62,8 @@ fn default_nodes() -> impl Iterator<Item = (Ustr, Arc<dyn NodeFactory>)> {
     v.push(Arc::new(RerouteFactory));
     v.push(Arc::new(StructNodeFactory));
     v.push(Arc::new(EnumNodeFactory));
-    v.push(Arc::new(SavingNodeFactory));
+    v.push(Arc::new(SavingNodeFactory::<true>));
+    v.push(Arc::new(SavingNodeFactory::<false>));
     v.push(Arc::new(ListNodeFactory));
     v.push(Arc::new(GroupOutputNodeFactory));
     v.push(Arc::new(GroupInputNodeFactory));

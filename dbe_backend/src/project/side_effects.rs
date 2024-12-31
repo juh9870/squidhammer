@@ -16,8 +16,15 @@ pub mod mappings;
 
 #[derive(Debug)]
 pub enum SideEffect {
-    EmitPersistentFile { value: EValue, path: Utf8PathBuf },
-    EmitTransientFile { value: EValue },
+    EmitPersistentFile {
+        value: EValue,
+        path: String,
+        is_dbevalue: bool,
+    },
+    EmitTransientFile {
+        value: EValue,
+        is_dbevalue: bool,
+    },
 }
 
 type SideEffectEmitter = (Utf8PathBuf, Vec<SideEffectPathItem>, usize);
@@ -28,8 +35,20 @@ impl SideEffect {
         emitter: SideEffectEmitter,
         project: &mut Project<Io>,
     ) -> miette::Result<()> {
+        fn extension(is_dbevalue: bool) -> &'static str {
+            if is_dbevalue {
+                ".dbevalue"
+            } else {
+                ".json"
+            }
+        }
         match self {
-            SideEffect::EmitPersistentFile { value, path } => {
+            SideEffect::EmitPersistentFile {
+                value,
+                path,
+                is_dbevalue,
+            } => {
+                let path = Utf8PathBuf::from(path + extension(is_dbevalue));
                 match project.files.get(&path) {
                     None => {}
                     Some(ProjectFile::GeneratedValue(..)) => {
@@ -43,12 +62,13 @@ impl SideEffect {
                     .files
                     .insert(path, ProjectFile::GeneratedValue(value));
             }
-            SideEffect::EmitTransientFile { value } => {
+            SideEffect::EmitTransientFile { value, is_dbevalue } => {
                 let tmp_path = project.registry.project_config().emitted_dir.join(format!(
-                    "{}.n{}.{}.json",
+                    "{}.n{}.{}{}",
                     sanitise_file_name::sanitise(emitter.0.as_str()),
                     emitter.1[0].to_string(project),
-                    emitter.2
+                    emitter.2,
+                    extension(is_dbevalue)
                 ));
                 project
                     .files

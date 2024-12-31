@@ -17,7 +17,7 @@ id = "path"
 description = "Optional path to the file to write"
 docs = """
 If the path is not specified, the file will be written to the automaticly-\
-generated path in `mappings` folder
+generated path in `emitted` folder
 
 If the path is specified, the file will be written to the specified path, \
 creating the file if it doesn't exist.
@@ -26,8 +26,8 @@ If the specified file already exists, the node will fail.
 """
 
 [[nodes.write_item.inputs]]
-title = "Item"
-id = "item"
+title = "Value"
+id = "value"
 description = "Item to write to the file"
 docs = """
 Item will be written to the file in the output format (JSON by default)
