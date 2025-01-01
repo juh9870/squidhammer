@@ -1,4 +1,5 @@
 use crate::etype::EDataType;
+use crate::graph::node::ports::fields::IoDirection;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
@@ -21,7 +22,7 @@ pub trait GraphIoData {
     fn name(&self) -> &str;
     fn ty(&self) -> Option<EDataType>;
 
-    fn is_input() -> bool;
+    fn direction() -> IoDirection;
 }
 
 impl GraphIoData for GraphInput {
@@ -37,8 +38,8 @@ impl GraphIoData for GraphInput {
         self.ty
     }
 
-    fn is_input() -> bool {
-        true
+    fn direction() -> IoDirection {
+        IoDirection::Input
     }
 }
 
@@ -55,7 +56,7 @@ impl GraphIoData for GraphOutput {
         self.ty
     }
 
-    fn is_input() -> bool {
-        false
+    fn direction() -> IoDirection {
+        IoDirection::Output
     }
 }

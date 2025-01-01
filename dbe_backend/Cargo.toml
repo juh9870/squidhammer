@@ -43,6 +43,7 @@ walkdir = { workspace = true }
 
 [dev-dependencies]
 miette = { workspace = true, features = ["fancy-no-syscall"] }
+rand = { workspace = true, features = ["std", "small_rng"] }
 rstest = { workspace = true }
 
 [package.metadata.release]

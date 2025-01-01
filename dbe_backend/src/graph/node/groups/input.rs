@@ -1,7 +1,7 @@
 use crate::graph::inputs::GraphInput;
 use crate::graph::node::commands::{SnarlCommand, SnarlCommands};
 use crate::graph::node::groups::utils::{
-    get_field, get_port_output, map_group_inputs, sync_fields,
+    get_graph_io_field, get_port_output, map_group_inputs, sync_fields,
 };
 use crate::graph::node::ports::{InputData, NodePortType, OutputData};
 use crate::graph::node::{
@@ -29,7 +29,7 @@ impl GroupInputNode {
         context: NodeContext<'ctx>,
         index: usize,
     ) -> Option<&'ctx GraphInput> {
-        get_field(context.inputs, &self.ids, index)
+        get_graph_io_field(context.inputs, &self.ids, index)
     }
 }
 
