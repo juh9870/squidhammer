@@ -1,0 +1,14 @@
+[nodes.subgraph]
+title = "Node Group"
+description = "Node for executing node groups"
+docs = """
+This node executes the specified node group.
+
+Node groups are a way to encapsulate a set of nodes into a single node. They \
+can be used to create reusable components, or to organize complex graphs.
+
+When a node group is executed, nodes inside it are executed and values that are \
+passed to the `Group Output` node are emitted as outputs from this node.
+"""
+inputs = []
+outputs = []
