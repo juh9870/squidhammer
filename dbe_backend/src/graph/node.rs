@@ -135,9 +135,12 @@ pub trait Node: DynClone + Debug + Send + Sync + Downcast + 'static {
         Ok(input.ty.default_value(context.registry))
     }
 
-    fn title(&self, context: NodeContext) -> String {
-        let _ = (context,);
-        self.id().to_string()
+    /// Human-readable title of the node
+    fn title(&self, context: NodeContext, docs: &Docs) -> String {
+        let _ = (context, docs);
+        DocsWindowRef::Node(self.id())
+            .title(docs, context.registry)
+            .to_string()
     }
 
     /// Updates internal state of the node
@@ -379,4 +382,5 @@ macro_rules! impl_serde_node {
 
 use crate::graph::node::editable_state::EditableState;
 use crate::graph::node::mappings::MappingsNodeFactory;
+use crate::project::docs::{Docs, DocsWindowRef};
 pub(crate) use impl_serde_node;

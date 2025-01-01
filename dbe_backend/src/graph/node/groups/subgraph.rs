@@ -11,6 +11,7 @@ use crate::graph::node::{
     impl_serde_node, ExecutionExtras, Node, NodeContext, NodeFactory, SnarlNode,
 };
 use crate::m_try;
+use crate::project::docs::Docs;
 use crate::project::project_graph::ProjectGraph;
 use crate::registry::ETypesRegistry;
 use crate::value::EValue;
@@ -57,7 +58,7 @@ impl Node for SubgraphNode {
         SubgraphNodeFactory.id()
     }
 
-    fn title(&self, context: NodeContext) -> String {
+    fn title(&self, context: NodeContext, _docs: &Docs) -> String {
         let Ok(graph) = self.get_graph(context) else {
             return "!!unknown graph!!".to_string();
         };

@@ -5,7 +5,7 @@ use crate::graph::node::{
     impl_serde_node, ExecutionExtras, InputData, Node, NodeContext, NodeFactory, OutputData,
     SnarlNode,
 };
-use crate::project::docs::DocsRef;
+use crate::project::docs::{Docs, DocsRef};
 use crate::registry::ETypesRegistry;
 use crate::value::id::ETypeId;
 use crate::value::EValue;
@@ -32,7 +32,7 @@ impl Node for StructNode {
         "struct_node".into()
     }
 
-    fn title(&self, context: NodeContext) -> String {
+    fn title(&self, context: NodeContext, _docs: &Docs) -> String {
         let Some(data) = context.registry.get_struct(&self.id) else {
             return format!("Unknown struct `{}`", self.id);
         };
