@@ -50,8 +50,8 @@ impl<'a> GraphViewer<'a> {
 }
 
 impl<'a> SnarlViewer<SnarlNode> for GraphViewer<'a> {
-    fn title(&mut self, node: &SnarlNode) -> String {
-        node.title(self.ctx.as_node_context())
+    fn title(&mut self, _node: &SnarlNode) -> String {
+        unreachable!("Custom header doesn't call SnarlViewer::title")
     }
 
     fn show_header(

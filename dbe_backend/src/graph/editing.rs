@@ -97,12 +97,7 @@ impl<'a, 'snarl> GraphEditingContext<'a, 'snarl> {
     }
 
     pub fn as_node_context(&self) -> NodeContext {
-        NodeContext {
-            registry: self.registry,
-            inputs: self.inputs,
-            outputs: self.outputs,
-            graphs: self.graphs,
-        }
+        node_context!(self)
     }
 
     /// Ensures that the inline input value of the given pin is present
@@ -336,11 +331,6 @@ impl<'a> PartialGraphEditingContext<'a> {
     }
 
     pub fn as_node_context(&self) -> NodeContext {
-        NodeContext {
-            registry: self.registry,
-            inputs: self.inputs,
-            outputs: self.outputs,
-            graphs: self.graphs,
-        }
+        node_context!(self)
     }
 }

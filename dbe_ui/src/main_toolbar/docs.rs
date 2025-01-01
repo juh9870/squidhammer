@@ -271,7 +271,12 @@ pub fn docs_label(
     registry: &ETypesRegistry,
     docs_ref: DocsRef,
 ) {
-    let res = egui::Label::new(label).selectable(false).ui(ui);
+    let label_text = if docs_ref.has_field_structure() {
+        docs_ref.get_field_title(docs)
+    } else {
+        label.into()
+    };
+    let res = egui::Label::new(label_text).selectable(false).ui(ui);
     docs_hover(ui, res, label, docs, registry, docs_ref);
 }
 

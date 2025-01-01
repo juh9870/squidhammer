@@ -40,10 +40,6 @@ impl Node for GroupInputNode {
         GroupInputNodeFactory.id()
     }
 
-    fn title(&self, _context: NodeContext) -> String {
-        "Group Input".to_string()
-    }
-
     fn update_state(&mut self, context: NodeContext, commands: &mut SnarlCommands, id: NodeId) {
         sync_fields(commands, context.inputs, &mut self.ids, None, id);
 
