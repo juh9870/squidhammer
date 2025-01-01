@@ -1,4 +1,3 @@
-use crate::etype::EDataType;
 use crate::graph::node::commands::{SnarlCommand, SnarlCommands};
 use crate::registry::ETypesRegistry;
 use crate::value::EValue;
@@ -14,6 +13,7 @@ pub trait FieldMapper {
     type Field;
     /// The locally-stored representation fo the field
     type Local: PartialEq + Display;
+    type Type;
 
     /// Checks if the field matches the local representation
     fn matches(&self, field: &Self::Field, local: &Self::Local) -> bool;
@@ -22,7 +22,9 @@ pub trait FieldMapper {
     fn to_local(&self, field: &Self::Field) -> Self::Local;
 
     /// Gets field type
-    fn field_type(&self, field: &Self::Field) -> EDataType;
+    fn field_type(&self, field: &Self::Field) -> Self::Type;
+
+    fn default_value(&self, field: &Self::Field, registry: &ETypesRegistry) -> EValue;
 }
 
 /// Gets the field at the given index, using the local cached fields to account
@@ -86,7 +88,7 @@ pub fn sync_fields_and_types<Mapper: FieldMapper>(
     commands: &mut SnarlCommands,
     fields: &[Mapper::Field],
     ids: &mut Vec<Mapper::Local>,
-    types: Option<&mut Vec<EDataType>>,
+    types: Option<&mut Vec<Mapper::Type>>,
     node_id: NodeId,
     io: IoDirection,
 ) {
@@ -190,12 +192,12 @@ pub fn map_inputs<Mapper: FieldMapper>(
             bail!("Input {} was deleted", id);
         };
 
-        out_values.push(in_values.get(input_pos).cloned().unwrap_or_else(|| {
-            mapper
-                .field_type(&inputs[input_pos])
-                .default_value(registry)
-                .into_owned()
-        }));
+        out_values.push(
+            in_values
+                .get(input_pos)
+                .cloned()
+                .unwrap_or_else(|| mapper.default_value(&inputs[input_pos], registry)),
+        );
     }
 
     Ok(())
@@ -221,10 +223,7 @@ pub fn map_outputs<Mapper: FieldMapper>(
         } else {
             ids.iter().position(|f| mapper.matches(field, f))
         }) else {
-            let default = mapper
-                .field_type(field)
-                .default_value(registry)
-                .into_owned();
+            let default = mapper.default_value(field, registry);
             out_values.push(default);
             continue;
         };
@@ -260,6 +259,8 @@ mod tests {
     use crate::graph::node::ports::fields::{
         get_field, sync_fields_and_types, FieldMapper, IoDirection,
     };
+    use crate::registry::ETypesRegistry;
+    use crate::value::EValue;
     use egui_snarl::NodeId;
     use itertools::Itertools;
     use rand::rngs::SmallRng;
@@ -271,6 +272,7 @@ mod tests {
     impl FieldMapper for Mapper {
         type Field = EDataType;
         type Local = String;
+        type Type = EDataType;
 
         fn matches(&self, field: &Self::Field, local: &Self::Local) -> bool {
             field.name() == *local
@@ -282,6 +284,10 @@ mod tests {
 
         fn field_type(&self, field: &Self::Field) -> EDataType {
             *field
+        }
+
+        fn default_value(&self, field: &Self::Field, registry: &ETypesRegistry) -> EValue {
+            self.field_type(field).default_value(registry).into_owned()
         }
     }
 
