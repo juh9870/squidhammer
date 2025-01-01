@@ -1,0 +1,17 @@
+[nodes.enum_node]
+title = "Enum Node"
+description = "Node for constructing enum values"
+docs = """
+This node converts incoming value to the selected enum variant.
+"""
+inputs = []
+
+[[nodes.enum_node.outputs]]
+title = "Output"
+id = "output"
+description = "Output enum value"
+
+[[nodes.enum_node.state]]
+title = "Variant"
+id = "variant"
+description = "Selected enum variant"

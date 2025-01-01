@@ -171,6 +171,11 @@ impl DocsFile {
                 validate_nonempty(&mut output.id, "output id")?;
                 validate_dd(output)?;
             }
+            for state in &mut node.state {
+                validate_nonempty(&mut state.title, "state field title")?;
+                validate_nonempty(&mut state.id, "state field  id")?;
+                validate_dd(state)?;
+            }
         }
 
         for ty in self.types.values_mut() {
@@ -198,6 +203,8 @@ pub struct NodeDocs {
     pub docs: String,
     pub inputs: Vec<NodeIODocs>,
     pub outputs: Vec<NodeIODocs>,
+    #[serde(default)]
+    pub state: Vec<NodeIODocs>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -359,6 +366,7 @@ impl DocsWindowRef {
 pub enum DocsRef {
     NodeInput(Ustr, Ustr),
     NodeOutput(Ustr, Ustr),
+    NodeState(Ustr, Ustr),
     TypeField(ETypeId, Ustr),
     EnumVariant(ETypeId, Ustr),
     Custom(Cow<'static, str>),
@@ -370,6 +378,7 @@ impl DocsRef {
         match self {
             DocsRef::NodeInput(_, _)
             | DocsRef::NodeOutput(_, _)
+            | DocsRef::NodeState(_, _)
             | DocsRef::TypeField(_, _)
             | DocsRef::EnumVariant(_, _) => true,
             DocsRef::Custom(_) | DocsRef::None => false,
@@ -385,6 +394,10 @@ impl DocsRef {
             DocsRef::NodeOutput(node, output) => docs
                 .get_node(node.as_str())
                 .and_then(|d| d.outputs.iter().find(|i| i.id == output.as_str()))
+                .map(|o| o.description.as_str()),
+            DocsRef::NodeState(node, field) => docs
+                .get_node(node.as_str())
+                .and_then(|d| d.state.iter().find(|i| i.id == field.as_str()))
                 .map(|o| o.description.as_str()),
             DocsRef::TypeField(ty, field) => docs
                 .get_type(ty)
@@ -403,9 +416,9 @@ impl DocsRef {
 
     pub fn get_parent_title<'b>(&self, docs: &'b Docs, registry: &ETypesRegistry) -> Cow<'b, str> {
         match self {
-            DocsRef::NodeInput(node, _) | DocsRef::NodeOutput(node, _) => {
-                DocsWindowRef::Node(*node).title(docs, registry)
-            }
+            DocsRef::NodeInput(node, _)
+            | DocsRef::NodeOutput(node, _)
+            | DocsRef::NodeState(node, _) => DocsWindowRef::Node(*node).title(docs, registry),
             DocsRef::TypeField(ty, _) | DocsRef::EnumVariant(ty, _) => {
                 DocsWindowRef::Type(*ty).title(docs, registry)
             }
@@ -429,6 +442,12 @@ impl DocsRef {
                 .map(|o| o.title.as_str())
                 .unwrap_or_else(|| output.as_str())
                 .into(),
+            DocsRef::NodeState(node, field) => docs
+                .get_node(node.as_str())
+                .and_then(|d| d.outputs.iter().find(|i| i.id == field.as_str()))
+                .map(|o| o.title.as_str())
+                .unwrap_or_else(|| field.as_str())
+                .into(),
             DocsRef::TypeField(_, field) => field.as_str().into(),
             DocsRef::EnumVariant(_, variant) => variant.as_str().into(),
 
@@ -440,9 +459,9 @@ impl DocsRef {
 
     pub fn as_window_ref(&self) -> Option<DocsWindowRef> {
         match self {
-            DocsRef::NodeInput(node, _) | DocsRef::NodeOutput(node, _) => {
-                Some(DocsWindowRef::Node(*node))
-            }
+            DocsRef::NodeInput(node, _)
+            | DocsRef::NodeOutput(node, _)
+            | DocsRef::NodeState(node, _) => Some(DocsWindowRef::Node(*node)),
             DocsRef::TypeField(ty, _) | DocsRef::EnumVariant(ty, _) => {
                 Some(DocsWindowRef::Type(*ty))
             }
