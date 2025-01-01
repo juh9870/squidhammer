@@ -1,13 +1,15 @@
+use crate::main_toolbar::docs::docs_label;
 use crate::workspace::graph::viewer::NodeView;
 use crate::workspace::graph::GraphViewer;
 use dbe_backend::graph::node::groups::subgraph::{SubgraphNode, SubgraphNodeFactory};
-use dbe_backend::graph::node::{NodeFactory, SnarlNode};
+use dbe_backend::graph::node::{Node, NodeFactory, SnarlNode};
+use dbe_backend::project::docs::DocsRef;
 use dbe_backend::project::project_graph::ProjectGraphs;
 use egui::Ui;
 use egui_hooks::UseHookExt;
 use egui_snarl::{InPin, NodeId, OutPin, Snarl};
 use std::ops::DerefMut;
-use ustr::Ustr;
+use ustr::{ustr, Ustr};
 use uuid::Uuid;
 
 #[derive(Debug)]
@@ -40,7 +42,16 @@ impl NodeView for SubgraphNodeViewer {
             return Ok(());
         };
 
-        graphs_combobox(ui, &mut node.graph_id, graphs);
+        ui.horizontal(|ui| {
+            docs_label(
+                ui,
+                "graph",
+                viewer.ctx.docs,
+                viewer.ctx.registry,
+                DocsRef::NodeState(node.id(), ustr("graph")),
+            );
+            graphs_combobox(ui, &mut node.graph_id, graphs);
+        });
 
         Ok(())
     }

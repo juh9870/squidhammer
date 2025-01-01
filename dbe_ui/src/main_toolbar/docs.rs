@@ -171,6 +171,14 @@ pub fn node_docs(ui: &mut Ui, node: &dyn NodeFactory, docs: &NodeDocs) {
 
     show_description(ui, docs, &mut md_cache);
 
+    if !docs.state.is_empty() {
+        ui.label(RichText::new("State").heading());
+        ui.separator();
+        for docs in &docs.state {
+            show_collapsing_description(ui, docs, &mut md_cache, &docs.title);
+        }
+    }
+
     ui.style_mut().visuals.indent_has_left_vline = false;
     if !docs.inputs.is_empty() {
         ui.label(RichText::new("Inputs").heading());
@@ -179,6 +187,7 @@ pub fn node_docs(ui: &mut Ui, node: &dyn NodeFactory, docs: &NodeDocs) {
             show_collapsing_description(ui, docs, &mut md_cache, &docs.title);
         }
     }
+
     if !docs.outputs.is_empty() {
         ui.label(RichText::new("Outputs").heading());
         ui.separator();
@@ -325,6 +334,9 @@ pub fn docs_hover(
                     }
                     DocsRef::NodeOutput(_, _) => {
                         format!("{} -> {}", parent_title, field_title)
+                    }
+                    DocsRef::NodeState(_, _) => {
+                        format!("{} - {}", parent_title, field_title)
                     }
                     DocsRef::TypeField(_, _) => {
                         format!("{}.{}", parent_title, field_title)

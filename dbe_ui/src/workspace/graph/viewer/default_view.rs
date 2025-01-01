@@ -190,7 +190,7 @@ impl NodeView for DefaultNodeView {
         let node = &mut snarl[node_id];
         let mut state = node.editable_state();
 
-        let res = show_state_editor(ui, viewer, &mut state)?;
+        let res = show_state_editor(ui, viewer, node.id(), &mut state)?;
 
         if res.changed {
             node.apply_editable_state(state, &mut viewer.commands, node_id)?;

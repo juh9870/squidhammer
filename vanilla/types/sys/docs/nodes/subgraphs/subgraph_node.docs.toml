@@ -12,3 +12,8 @@ passed to the `Group Output` node are emitted as outputs from this node.
 """
 inputs = []
 outputs = []
+
+[[nodes.subgraph.state]]
+title = "Graph"
+id = "graph"
+description = "Graph to execute as node groups"
