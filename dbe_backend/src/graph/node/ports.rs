@@ -15,6 +15,8 @@ use std::borrow::Cow;
 use strum::EnumIs;
 use ustr::Ustr;
 
+pub mod fields;
+
 #[derive(Debug, Clone)]
 pub struct InputData {
     pub ty: NodePortType,

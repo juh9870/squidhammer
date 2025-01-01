@@ -183,7 +183,7 @@ pub trait Node: DynClone + Debug + Send + Sync + Downcast + 'static {
     /// # Panics
     /// - If [Node::has_editable_state] returns false
     /// - If the field structure of the state was changed, or
-    /// an incompatible state was passed
+    ///   an incompatible state was passed
     fn apply_editable_state(
         &mut self,
         state: EditableState,
