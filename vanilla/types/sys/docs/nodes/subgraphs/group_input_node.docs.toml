@@ -1,0 +1,11 @@
+[nodes.group_input]
+title = "Group Input"
+description = "Node for getting inputs in node groups"
+docs = """
+This node only works when graph is set as node group in the settings, and will \
+error if used in a standalone graph.
+
+> There can only be one `Group Input` node in a node group.
+"""
+inputs = []
+outputs = []

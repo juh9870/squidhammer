@@ -1,0 +1,9 @@
+[nodes.group_output]
+title = "Group Output"
+description = "Node for outputting values from node groups"
+docs = """
+This node only works when graph is set as node group in the settings, and will \
+error if used in a standalone graph.
+"""
+inputs = []
+outputs = []
