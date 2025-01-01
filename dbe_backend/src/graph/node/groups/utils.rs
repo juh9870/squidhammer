@@ -21,6 +21,7 @@ impl<IO: GraphIoData> GraphIoMapper<IO> {
 impl<IO: GraphIoData> FieldMapper for GraphIoMapper<IO> {
     type Field = IO;
     type Local = Uuid;
+    type Type = EDataType;
 
     fn matches(&self, field: &Self::Field, local: &Self::Local) -> bool {
         field.id() == local
@@ -32,6 +33,10 @@ impl<IO: GraphIoData> FieldMapper for GraphIoMapper<IO> {
 
     fn field_type(&self, field: &Self::Field) -> EDataType {
         field.ty().unwrap_or_else(EDataType::null)
+    }
+
+    fn default_value(&self, field: &Self::Field, registry: &ETypesRegistry) -> EValue {
+        self.field_type(field).default_value(registry).into_owned()
     }
 }
 

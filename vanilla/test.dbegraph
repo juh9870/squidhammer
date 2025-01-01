@@ -425,6 +425,10 @@
         4,
         {
           "data": {
+            "fields": [
+              "Id",
+              "Data"
+            ],
             "id": "eh:objects/component"
           },
           "id": "struct_node",
@@ -439,6 +443,27 @@
         5,
         {
           "data": {
+            "fields": [
+              "Name",
+              "Description",
+              "DisplayCategory",
+              "Availability",
+              "ComponentStatsId",
+              "Faction",
+              "Level",
+              "Icon",
+              "Color",
+              "Layout",
+              "CellType",
+              "DeviceId",
+              "WeaponId",
+              "AmmunitionId",
+              "WeaponSlotType",
+              "DroneBayId",
+              "DroneId",
+              "Restrictions",
+              "PossibleModifications"
+            ],
             "id": "eh:objects/component_data"
           },
           "id": "struct_node",
@@ -453,6 +478,12 @@
         6,
         {
           "data": {
+            "fields": [
+              "r",
+              "g",
+              "b",
+              "a"
+            ],
             "id": "color:argb"
           },
           "id": "struct_node",
@@ -484,6 +515,9 @@
         8,
         {
           "data": {
+            "fields": [
+              "id"
+            ],
             "id": "sys:ids/numeric_ref<Id='eh:objects/device'>"
           },
           "id": "struct_node",
@@ -534,6 +568,9 @@
         11,
         {
           "data": {
+            "fields": [
+              "id"
+            ],
             "id": "sys:ids/numeric_ref<Id='eh:objects/component_mod'>"
           },
           "id": "struct_node",
@@ -594,6 +631,9 @@
         14,
         {
           "data": {
+            "fields": [
+              "id"
+            ],
             "id": "sys:ids/numeric<Id='eh:objects/component'>"
           },
           "id": "struct_node",

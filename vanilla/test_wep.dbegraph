@@ -265,6 +265,10 @@
         2,
         {
           "data": {
+            "fields": [
+              "Id",
+              "Data"
+            ],
             "id": "eh:objects/weapon/ammunition"
           },
           "id": "struct_node",
@@ -279,6 +283,13 @@
         3,
         {
           "data": {
+            "fields": [
+              "Body",
+              "Controller",
+              "Triggers",
+              "ImpactType",
+              "Effects"
+            ],
             "id": "eh:objects/weapon/ammunition_data"
           },
           "id": "struct_node",
@@ -311,6 +322,12 @@
         5,
         {
           "data": {
+            "fields": [
+              "Type",
+              "DamageType",
+              "Power",
+              "Factor"
+            ],
             "id": "eh:objects/weapon/impact_effect"
           },
           "id": "struct_node",
@@ -360,6 +377,12 @@
         8,
         {
           "data": {
+            "fields": [
+              "Type",
+              "DamageType",
+              "Power",
+              "Factor"
+            ],
             "id": "eh:objects/weapon/impact_effect"
           },
           "id": "struct_node",
