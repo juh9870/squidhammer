@@ -1,0 +1,15 @@
+---
+source: squidfmt/src/tests.rs
+expression: "PreparedFmt::parse(&input)"
+input_file: squidfmt/src/test_cases/parsing/no_keys.txt
+---
+Ok(
+    PreparedFmt {
+        segments: [
+            Literal(
+                "Hello world",
+            ),
+        ],
+        keys: [],
+    },
+)

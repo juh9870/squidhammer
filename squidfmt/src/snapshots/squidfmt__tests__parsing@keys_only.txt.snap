@@ -1,0 +1,21 @@
+---
+source: squidfmt/src/tests.rs
+expression: "PreparedFmt::parse(&input)"
+input_file: squidfmt/src/test_cases/parsing/keys_only.txt
+---
+Ok(
+    PreparedFmt {
+        segments: [
+            Key(
+                "key1",
+            ),
+            Key(
+                "key2",
+            ),
+        ],
+        keys: [
+            "key1",
+            "key2",
+        ],
+    },
+)

@@ -45,6 +45,7 @@
           pkgs.pre-commit
           pkgs.cargo-dist
           pkgs.cargo-release
+          pkgs.cargo-insta
         ];
 
         shellHook = ''

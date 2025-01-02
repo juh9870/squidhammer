@@ -1,0 +1,8 @@
+---
+source: squidfmt/src/tests.rs
+expression: report
+input_file: squidfmt/src/test_cases/formatting/repeated_keys.toml
+---
+Format | '{key1} {key2} {key1}'
+Values | key1: 'home', key2: 'sweet'
+Result | 'home sweet home'

@@ -1,0 +1,8 @@
+---
+source: squidfmt/src/tests.rs
+expression: report
+input_file: squidfmt/src/test_cases/formatting/braces.toml
+---
+Format | 'location is at {{{x}, {y}}}'
+Values | x: '1', y: '2'
+Result | 'location is at {1, 2}'

@@ -1,0 +1,8 @@
+---
+source: squidfmt/src/tests.rs
+expression: report
+input_file: squidfmt/src/test_cases/formatting/simple.toml
+---
+Format | 'hello {name}!'
+Values | name: 'world'
+Result | 'hello world!'
