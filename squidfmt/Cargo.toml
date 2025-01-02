@@ -1,0 +1,13 @@
+[package]
+name = "squidfmt"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+smallvec = { workspace = true }
+thiserror = { workspace = true }
+
+[dev-dependencies]
+insta = { workspace = true, features = ["glob"] }
+serde = { workspace = true, features = ["derive"] }
+toml = { workspace = true }

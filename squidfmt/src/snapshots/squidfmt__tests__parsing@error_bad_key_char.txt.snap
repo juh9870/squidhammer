@@ -1,0 +1,11 @@
+---
+source: squidfmt/src/tests.rs
+expression: "PreparedFmt::parse(&input)"
+input_file: squidfmt/src/test_cases/parsing/error_bad_key_char.txt
+---
+Err(
+    BadKeyChar(
+        4,
+        ' ',
+    ),
+)

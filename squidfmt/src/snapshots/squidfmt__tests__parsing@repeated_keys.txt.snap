@@ -1,0 +1,30 @@
+---
+source: squidfmt/src/tests.rs
+expression: "PreparedFmt::parse(&input)"
+input_file: squidfmt/src/test_cases/parsing/repeated_keys.txt
+---
+Ok(
+    PreparedFmt {
+        segments: [
+            Key(
+                "key1",
+            ),
+            Literal(
+                "_",
+            ),
+            Key(
+                "key2",
+            ),
+            Literal(
+                "_",
+            ),
+            Key(
+                "key1",
+            ),
+        ],
+        keys: [
+            "key1",
+            "key2",
+        ],
+    },
+)

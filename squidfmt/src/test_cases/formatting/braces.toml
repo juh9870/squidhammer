@@ -1,0 +1,2 @@
+format = "location is at {{{x}, {y}}}"
+values = { x = "1", y = "2" }

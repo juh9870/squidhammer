@@ -1,0 +1,2 @@
+format = "{key1} {key2} {key1}"
+values = { key1 = "home", key2 = "sweet" }

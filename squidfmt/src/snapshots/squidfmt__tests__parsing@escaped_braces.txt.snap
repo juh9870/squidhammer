@@ -1,0 +1,15 @@
+---
+source: squidfmt/src/tests.rs
+expression: "PreparedFmt::parse(&input)"
+input_file: squidfmt/src/test_cases/parsing/escaped_braces.txt
+---
+Ok(
+    PreparedFmt {
+        segments: [
+            Literal(
+                "{escaping!} {{double!}}",
+            ),
+        ],
+        keys: [],
+    },
+)
