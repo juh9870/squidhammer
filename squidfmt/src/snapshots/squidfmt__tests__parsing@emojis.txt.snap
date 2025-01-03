@@ -1,0 +1,23 @@
+---
+source: squidfmt/src/tests.rs
+expression: "PreparedFmt::parse(&input)"
+input_file: squidfmt/src/test_cases/parsing/emojis.txt
+---
+Ok(
+    PreparedFmt {
+        segments: [
+            Literal(
+                "e\u{301}❤\u{fe0f}",
+            ),
+            Key(
+                "key1",
+            ),
+            Literal(
+                "❤\u{fe0f}e\u{301}",
+            ),
+        ],
+        keys: [
+            "key1",
+        ],
+    },
+)
