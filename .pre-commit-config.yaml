@@ -13,33 +13,40 @@ repos:
         description: Check the package for errors.
         entry: cargo check --workspace
         language: system
-        types: [rust]
+        types: [ rust ]
         pass_filenames: false
       - id: cargo-fix
         name: cargo fix
         description: Checks for applicable `cargo fix` changes
         entry: cargo fix --allow-dirty --allow-staged -q
         language: system
-        types: [rust]
+        types: [ rust ]
         pass_filenames: false
       - id: clippy
         name: clippy
         description: Lint rust sources
         entry: cargo clippy
         language: system
-        types: [rust]
+        types: [ rust ]
         pass_filenames: false
       - id: sort
         name: cargo sort
         description: Check if all files follow the rustfmt style
         entry: cargo sort -c -w
         language: system
-        types: [toml]
+        types: [ toml ]
         pass_filenames: false
       - id: machete
         name: cargo machete
         description: Check for unused dependencies
         entry: cargo machete
         language: system
-        types_or: [toml, rust]
+        types_or: [ toml, rust ]
+        pass_filenames: false
+      - id: unused-workspace-deps
+        name: cargo xtask unused-deps
+        description: Check for unused dependencies in the workspace
+        entry: cargo xtask unused-deps
+        language: system
+        types_or: [ toml, rust ]
         pass_filenames: false

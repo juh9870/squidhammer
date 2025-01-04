@@ -1,4 +1,5 @@
 use std::collections::HashSet;
+use std::process;
 use xshell::{cmd, Shell};
 
 use crate::flags::XtaskCmd;
@@ -24,52 +25,61 @@ fn main() -> anyhow::Result<()> {
             cmd!(sh, "cargo fmt --all").run()?;
             cmd!(sh, "cargo sort -w").run()?;
             cmd!(sh, "cargo-machete --fix --skip-target-dir").run()?;
+            check_workspace_deps()?;
         }
         XtaskCmd::UnusedDeps(_) => {
-            let workspace_str = fs_err::read_to_string("Cargo.toml")?;
-            let workspace: JsonValue = toml::de::from_str(&workspace_str)?;
+            check_workspace_deps()?;
+        }
+    }
 
-            let members = &workspace["workspace"]["members"];
-            let mut dependencies = workspace["workspace"]["dependencies"]
-                .as_object()
-                .unwrap()
-                .keys()
-                .map(|s| s.as_str())
-                .collect::<HashSet<_>>();
+    Ok(())
+}
 
-            fn clear_deps(obj: &JsonValue, dependencies: &mut HashSet<&str>) {
-                for key in ["dependencies", "dev-dependencies", "build-dependencies"] {
-                    if let Some(keys) = obj[key].as_object().map(|o| o.keys()) {
-                        for k in keys {
-                            dependencies.remove(k.as_str());
-                        }
-                    }
+fn check_workspace_deps() -> anyhow::Result<()> {
+    let workspace_str = fs_err::read_to_string("Cargo.toml")?;
+    let workspace: JsonValue = toml::de::from_str(&workspace_str)?;
+
+    let members = &workspace["workspace"]["members"];
+    let mut dependencies = workspace["workspace"]["dependencies"]
+        .as_object()
+        .unwrap()
+        .keys()
+        .map(|s| s.as_str())
+        .collect::<HashSet<_>>();
+
+    fn clear_deps(obj: &JsonValue, dependencies: &mut HashSet<&str>) {
+        for key in ["dependencies", "dev-dependencies", "build-dependencies"] {
+            if let Some(keys) = obj[key].as_object().map(|o| o.keys()) {
+                for k in keys {
+                    dependencies.remove(k.as_str());
                 }
-            }
-
-            for member in members.as_array().unwrap() {
-                let member_str =
-                    fs_err::read_to_string(format!("{}/Cargo.toml", member.as_str().unwrap()))?;
-
-                let member: JsonValue = toml::de::from_str(&member_str)?;
-                clear_deps(&member, &mut dependencies);
-
-                if let Some(target) = &member["target"].as_object() {
-                    for value in target.values() {
-                        clear_deps(value, &mut dependencies);
-                    }
-                }
-            }
-
-            if !dependencies.is_empty() {
-                println!("Unused dependencies:");
-                for dep in dependencies {
-                    println!("- {}", dep);
-                }
-            } else {
-                println!("No unused dependencies found");
             }
         }
+    }
+
+    for member in members.as_array().unwrap() {
+        let member_str =
+            fs_err::read_to_string(format!("{}/Cargo.toml", member.as_str().unwrap()))?;
+
+        let member: JsonValue = toml::de::from_str(&member_str)?;
+        clear_deps(&member, &mut dependencies);
+
+        if let Some(target) = &member["target"].as_object() {
+            for value in target.values() {
+                clear_deps(value, &mut dependencies);
+            }
+        }
+    }
+
+    if !dependencies.is_empty() {
+        println!("\u{001b}[31mUnused workspace dependencies:");
+        for dep in dependencies {
+            println!("- {}", dep);
+        }
+        println!("\u{001b}[0m");
+        process::exit(1);
+    } else {
+        println!("\u{001b}[32mNo unused workspace dependencies found\u{001b}");
     }
 
     Ok(())
