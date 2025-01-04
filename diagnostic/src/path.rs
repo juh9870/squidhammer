@@ -11,6 +11,7 @@ static PATH_VEC_POOL: LazyLock<LinearObjectPool<Vec<DiagnosticPathSegment>>> =
 #[derive(Debug, Clone, Eq, PartialEq, Hash, Ord, PartialOrd)]
 pub enum DiagnosticPathSegment {
     Index(usize),
+    MapKey(Cow<'static, str>),
     Field(Cow<'static, str>),
     Variant(Cow<'static, str>),
 }
@@ -20,6 +21,9 @@ impl DiagnosticPathSegment {
         match self {
             DiagnosticPathSegment::Index(i) => {
                 format!("[{i}]")
+            }
+            DiagnosticPathSegment::MapKey(key) => {
+                format!("[{key}]")
             }
             DiagnosticPathSegment::Field(f) => {
                 if prefix {

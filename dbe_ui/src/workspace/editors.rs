@@ -4,6 +4,7 @@ use crate::workspace::editors::boolean::BooleanEditor;
 use crate::workspace::editors::consts::ConstEditor;
 use crate::workspace::editors::enums::EnumEditor;
 use crate::workspace::editors::errors::{ErrorEditor, ErrorProps};
+use crate::workspace::editors::map::MapEditor;
 use crate::workspace::editors::number::NumberEditor;
 use crate::workspace::editors::rgb::RgbEditor;
 use crate::workspace::editors::string::StringEditor;
@@ -38,6 +39,7 @@ mod consts;
 mod enums;
 mod errors;
 mod list;
+mod map;
 mod number;
 mod rgb;
 mod string;
@@ -58,6 +60,7 @@ fn default_editors() -> impl Iterator<Item = (Ustr, Box<dyn Editor>)> {
         ("const".into(), Box::new(ConstEditor)),
         ("enum".into(), Box::new(EnumEditor)),
         ("list".into(), Box::new(ListEditor)),
+        ("map".into(), Box::new(MapEditor)),
         (
             "ids/numeric".into(),
             Box::new(WrappedEditor::new(NumberEditor::new(false), "id".into())),
@@ -72,6 +75,7 @@ fn default_editors() -> impl Iterator<Item = (Ustr, Box<dyn Editor>)> {
         ("eh:layout".into(), Box::new(StringEditor)),
         ("eh:audioclip".into(), Box::new(StringEditor)),
         ("eh:prefab".into(), Box::new(StringEditor)),
+        // TODO: proper expression editor
         ("eh:expression".into(), Box::new(StringEditor)),
         // Enums
         // (

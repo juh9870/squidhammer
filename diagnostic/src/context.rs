@@ -125,6 +125,13 @@ where
         self.enter(DiagnosticPathSegment::Index(index))
     }
 
+    pub fn enter_map_key(
+        &mut self,
+        key: impl Into<Cow<'static, str>>,
+    ) -> DiagnosticContextRefHolder<'_, T::Target<'_>> {
+        self.enter(DiagnosticPathSegment::MapKey(key.into()))
+    }
+
     pub fn enter_field(
         &mut self,
         field: impl Into<Cow<'static, str>>,
