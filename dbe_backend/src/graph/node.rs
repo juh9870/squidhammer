@@ -30,6 +30,7 @@ use ustr::{Ustr, UstrMap};
 pub mod commands;
 pub mod editable_state;
 pub mod enum_node;
+pub mod expression_node;
 pub mod format_node;
 pub mod functional;
 pub mod groups;
@@ -71,6 +72,7 @@ fn default_nodes() -> impl Iterator<Item = (Ustr, Arc<dyn NodeFactory>)> {
     v.push(Arc::new(SubgraphNodeFactory));
     v.push(Arc::new(MappingsNodeFactory));
     v.push(Arc::new(FormatNodeFactory));
+    v.push(Arc::new(ExpressionNodeFactory));
     v.into_iter().map(|item| (Ustr::from(&item.id()), item))
 }
 
@@ -389,6 +391,7 @@ macro_rules! impl_serde_node {
 }
 
 use crate::graph::node::editable_state::EditableState;
+use crate::graph::node::expression_node::ExpressionNodeFactory;
 use crate::graph::node::format_node::FormatNodeFactory;
 use crate::graph::node::mappings::MappingsNodeFactory;
 use crate::project::docs::{Docs, DocsWindowRef};

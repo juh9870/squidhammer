@@ -152,6 +152,9 @@ impl SnarlCommand {
                     .map(|(pin, value)| (*pin, value.clone()))
                     .collect::<AHashMap<_, _>>();
 
+                // A list of pins that had their inline values overwritten during rearrangement
+                let mut overwritten_inlines = vec![];
+
                 for (i, target) in indices.into_iter().enumerate() {
                     if target == i {
                         continue;
@@ -163,7 +166,12 @@ impl SnarlCommand {
                         input: target,
                     };
 
-                    ctx.snarl.drop_inputs(old_pin);
+                    // Only delete the inline value if it wasn't overwritten by another move
+                    if !overwritten_inlines.contains(&old_pin) {
+                        ctx.inline_values.remove(&old_pin);
+                    }
+
+                    ctx.snarl.drop_inputs(new_pin);
 
                     for (source, _) in node_pins.iter().filter(|(_, i)| i == &old_pin) {
                         ctx.snarl.connect(*source, new_pin);
@@ -174,6 +182,8 @@ impl SnarlCommand {
                     } else {
                         ctx.inline_values.remove(&new_pin);
                     }
+
+                    overwritten_inlines.push(new_pin);
                 }
             }
             SnarlCommand::OutputsRearrangedRaw { node, indices } => {

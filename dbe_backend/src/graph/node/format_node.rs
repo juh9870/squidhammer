@@ -2,7 +2,8 @@ use crate::etype::eitem::EItemInfo;
 use crate::etype::EDataType;
 use crate::graph::node::commands::SnarlCommands;
 use crate::graph::node::editable_state::EditableState;
-use crate::graph::node::ports::fields::{sync_fields, FieldMapper, IoDirection};
+use crate::graph::node::ports::fields::mappers::USTR_MAPPER;
+use crate::graph::node::ports::fields::{sync_fields, IoDirection};
 use crate::graph::node::ports::{InputData, OutputData};
 use crate::graph::node::variables::ExecutionExtras;
 use crate::graph::node::{Node, NodeContext, NodeFactory, SnarlNode};
@@ -16,24 +17,14 @@ use smallvec::smallvec;
 use squidfmt::formatting::{FormatKeyError, FormatKeys};
 use squidfmt::PreparedFmt;
 use std::fmt::Formatter;
-use ustr::{ustr, Ustr};
+use ustr::Ustr;
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct FormatNode {
     format: String,
     keys: Vec<Ustr>,
     #[serde(skip)]
     fmt: Option<PreparedFmt>,
-}
-
-impl Clone for FormatNode {
-    fn clone(&self) -> Self {
-        Self {
-            format: self.format.clone(),
-            keys: vec![],
-            fmt: None,
-        }
-    }
 }
 
 impl FormatNode {
@@ -63,7 +54,7 @@ impl FormatNode {
             .expect("Format should either be parsed or error should be returned");
         let fields = fmt.keys();
         sync_fields(
-            &FormatFieldMapper,
+            &USTR_MAPPER,
             commands,
             fields.as_slice(),
             &mut self.keys,
@@ -72,30 +63,6 @@ impl FormatNode {
         );
 
         Ok(())
-    }
-}
-
-struct FormatFieldMapper;
-
-impl FieldMapper for FormatFieldMapper {
-    type Field = String;
-    type Local = Ustr;
-    type Type = ();
-
-    fn matches(&self, field: &Self::Field, local: &Self::Local) -> bool {
-        *field == local.as_str()
-    }
-
-    fn to_local(&self, field: &Self::Field) -> Self::Local {
-        ustr(field)
-    }
-
-    fn field_type(&self, _field: &Self::Field) -> Self::Type {
-        unimplemented!()
-    }
-
-    fn default_value(&self, _field: &Self::Field, _registry: &ETypesRegistry) -> EValue {
-        unimplemented!()
     }
 }
 
