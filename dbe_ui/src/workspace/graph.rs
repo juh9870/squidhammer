@@ -65,7 +65,7 @@ impl<'a> SnarlViewer<SnarlNode> for GraphViewer<'a> {
     ) {
         m_try(|| {
             let node = &mut snarl[node_id];
-            node.update_state(self.ctx.as_node_context(), &mut self.commands, node_id);
+            node.update_state(self.ctx.as_node_context(), &mut self.commands, node_id)?;
             self.commands.execute(&mut self.ctx.as_full(snarl))?;
 
             get_viewer(&snarl[node_id].id())

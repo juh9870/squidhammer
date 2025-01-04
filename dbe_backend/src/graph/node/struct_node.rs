@@ -72,9 +72,14 @@ impl Node for StructNode {
         data.title(context.registry)
     }
 
-    fn update_state(&mut self, context: NodeContext, commands: &mut SnarlCommands, id: NodeId) {
+    fn update_state(
+        &mut self,
+        context: NodeContext,
+        commands: &mut SnarlCommands,
+        id: NodeId,
+    ) -> miette::Result<()> {
         let Some(data) = context.registry.get_struct(&self.id) else {
-            return;
+            return Ok(());
         };
 
         sync_fields(
@@ -85,6 +90,8 @@ impl Node for StructNode {
             id,
             IoDirection::Input,
         );
+
+        Ok(())
     }
 
     fn inputs_count(&self, context: NodeContext) -> usize {

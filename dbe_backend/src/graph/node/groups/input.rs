@@ -3,11 +3,11 @@ use crate::graph::node::commands::{SnarlCommand, SnarlCommands};
 use crate::graph::node::groups::utils::{
     get_graph_io_field, get_port_output, map_group_inputs, sync_fields,
 };
+use crate::graph::node::ports::fields::IoDirection;
 use crate::graph::node::ports::{InputData, NodePortType, OutputData};
 use crate::graph::node::{
     impl_serde_node, ExecutionExtras, Node, NodeContext, NodeFactory, SnarlNode,
 };
-use crate::registry::ETypesRegistry;
 use crate::value::EValue;
 use egui_snarl::{InPin, NodeId, OutPin};
 use serde::{Deserialize, Serialize};
@@ -40,13 +40,27 @@ impl Node for GroupInputNode {
         GroupInputNodeFactory.id()
     }
 
-    fn update_state(&mut self, context: NodeContext, commands: &mut SnarlCommands, id: NodeId) {
-        sync_fields(commands, context.inputs, &mut self.ids, None, id);
+    fn update_state(
+        &mut self,
+        context: NodeContext,
+        commands: &mut SnarlCommands,
+        id: NodeId,
+    ) -> miette::Result<()> {
+        sync_fields(
+            commands,
+            context.inputs,
+            &mut self.ids,
+            None,
+            id,
+            IoDirection::Output,
+        );
 
         debug_assert_eq!(
             self.ids,
             context.inputs.iter().map(|o| o.id).collect::<Vec<_>>()
         );
+
+        Ok(())
     }
 
     fn inputs_count(&self, _context: NodeContext) -> usize {

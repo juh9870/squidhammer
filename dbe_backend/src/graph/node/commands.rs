@@ -1,7 +1,10 @@
 use crate::etype::EDataType;
 use crate::graph::editing::GraphEditingContext;
+use ahash::AHashMap;
 use egui_snarl::{InPinId, NodeId, OutPinId};
 use itertools::Itertools;
+use smallvec::SmallVec;
+use tracing::debug;
 use uuid::Uuid;
 
 #[derive(derive_more::Debug)]
@@ -59,6 +62,24 @@ pub enum SnarlCommand {
     ///
     /// This command bypasses node logic, and should only be used with caution
     OutputMovedRaw { from: OutPinId, to: OutPinId },
+    /// Changes all connections to the input pin to point at the new pins according to the new indices
+    ///
+    /// This command bypasses node logic, and should only be used with caution
+    ///
+    /// This command does NOT mark the node as dirty
+    InputsRearrangedRaw {
+        node: NodeId,
+        indices: RearrangeIndices,
+    },
+    /// Changes all connections from the output pin to point according to the new indices
+    ///
+    /// This command bypasses node logic, and should only be used with caution
+    ///
+    /// This command does NOT mark the node as dirty
+    OutputsRearrangedRaw {
+        node: NodeId,
+        indices: RearrangeIndices,
+    },
     /// Sets the group input type. The command will panic if the input already has a type
     SetGroupInputType { id: Uuid, ty: EDataType },
     /// Sets the group output type. The command will panic if the output already has a type
@@ -71,6 +92,8 @@ pub enum SnarlCommand {
         cb: CustomCommand,
     },
 }
+
+pub type RearrangeIndices = SmallVec<[usize; 4]>;
 
 type CustomCommand = Box<dyn FnOnce(&mut GraphEditingContext) -> miette::Result<()>>;
 
@@ -90,8 +113,11 @@ impl SnarlCommand {
                 ctx.mark_dirty(to.node);
             }
             SnarlCommand::InputMovedRaw { from, to } => {
+                // debug!("Moving input from {:?} to {:?}", from, to);
                 if let Some(value) = ctx.inline_values.remove(&from) {
                     ctx.inline_values.insert(to, value);
+                } else {
+                    ctx.inline_values.remove(&to);
                 }
                 let pin = ctx.snarl.in_pin(from);
                 ctx.snarl.drop_inputs(from);
@@ -109,6 +135,70 @@ impl SnarlCommand {
                 for remote in pin.remotes {
                     ctx.snarl.connect(to, remote);
                     ctx.mark_dirty(remote.node);
+                }
+            }
+            SnarlCommand::InputsRearrangedRaw { node, indices } => {
+                // debug!("Rearranging inputs for node {:?}: {:#?}", node, indices);
+                let node_pins = ctx
+                    .snarl
+                    .wires()
+                    .filter(|(_, in_pin)| in_pin.node == node)
+                    .collect_vec();
+
+                let mut inline_values = ctx
+                    .inline_values
+                    .iter()
+                    .filter(|(pin, _)| pin.node == node)
+                    .map(|(pin, value)| (*pin, value.clone()))
+                    .collect::<AHashMap<_, _>>();
+
+                for (i, target) in indices.into_iter().enumerate() {
+                    if target == i {
+                        continue;
+                    }
+
+                    let old_pin = InPinId { node, input: i };
+                    let new_pin = InPinId {
+                        node,
+                        input: target,
+                    };
+
+                    ctx.snarl.drop_inputs(old_pin);
+
+                    for (source, _) in node_pins.iter().filter(|(_, i)| i == &old_pin) {
+                        ctx.snarl.connect(*source, new_pin);
+                    }
+
+                    if let Some(inline) = inline_values.remove(&old_pin) {
+                        ctx.inline_values.insert(new_pin, inline);
+                    } else {
+                        ctx.inline_values.remove(&new_pin);
+                    }
+                }
+            }
+            SnarlCommand::OutputsRearrangedRaw { node, indices } => {
+                let node_pins = ctx
+                    .snarl
+                    .wires()
+                    .filter(|(out_pin, _)| out_pin.node == node)
+                    .collect_vec();
+
+                for (i, target) in indices.into_iter().enumerate() {
+                    if target == i {
+                        continue;
+                    }
+
+                    let old_pin = OutPinId { node, output: i };
+                    let new_pin = OutPinId {
+                        node,
+                        output: target,
+                    };
+
+                    ctx.snarl.drop_outputs(old_pin);
+
+                    for (_, target_pin) in node_pins.iter().filter(|(i, _)| i == &old_pin) {
+                        ctx.snarl.connect(new_pin, *target_pin);
+                    }
                 }
             }
             SnarlCommand::MarkDirty { node } => {
