@@ -15,6 +15,7 @@ members = [
 
 [workspace.dependencies]
 ahash = "0.8.11"
+anyhow = "1.0.95"
 atomic_refcell = "0.1.13"
 backtrace-on-stack-overflow = "0.3.0"
 camino = "1.1.7"
@@ -77,6 +78,8 @@ tracing-subscriber = "0.3.18"
 ustr = "1.0.0"
 uuid = "1.11.0"
 walkdir = "2.5.0"
+xflags = "0.3"
+xshell = "0.2"
 
 # Workspace crates
 dbe_backend = { path = "dbe_backend" }

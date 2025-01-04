@@ -8,5 +8,6 @@ xflags::xflags! {
         cmd watch {}
         /// Runs all configured linters
         cmd fix {}
+        cmd unused-deps {}
     }
 }
