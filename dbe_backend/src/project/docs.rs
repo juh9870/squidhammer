@@ -107,22 +107,22 @@ impl Docs {
 
     pub fn all_nodes(&self) -> impl Iterator<Item = (&str, &NodeDocs)> {
         match self {
-            Docs::Docs(docs) => {
+            Docs::Docs(docs) => docs.nodes.iter(),
+            Docs::Stub => {
                 inform_stub("nodes");
-                docs.nodes.iter()
+                STUB_NODES.iter()
             }
-            Docs::Stub => STUB_NODES.iter(),
         }
         .map(|(k, v)| (k.as_str(), &v.value))
     }
 
     pub fn all_types(&self) -> impl Iterator<Item = (ETypeId, &TypeDocs)> {
         match self {
-            Docs::Docs(docs) => {
+            Docs::Docs(docs) => docs.types.iter(),
+            Docs::Stub => {
                 inform_stub("types");
-                docs.types.iter()
+                STUB_TYPES.iter()
             }
-            Docs::Stub => STUB_TYPES.iter(),
         }
         .map(|(k, v)| (*k, &v.value))
     }
