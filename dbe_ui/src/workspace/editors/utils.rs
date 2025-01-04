@@ -2,6 +2,7 @@ use crate::workspace::editors::{EditorContext, Props};
 use dbe_backend::etype::econst::ETypeConst;
 use dbe_backend::etype::property::FieldProperty;
 use dbe_backend::value::EValue;
+use egui::collapsing_header::CollapsingState;
 use egui::{InnerResponse, RichText, Ui, WidgetText};
 use itertools::Itertools;
 use miette::miette;
@@ -177,6 +178,30 @@ pub fn labeled_error(ui: &mut Ui, label: impl Into<WidgetText>, err: impl Into<m
         ui.label(label);
         inline_error(ui, err);
     });
+}
+
+pub fn labeled_collapsing_header<T>(
+    ui: &mut Ui,
+    label: &str,
+    ctx: EditorContext,
+    default_open: bool,
+    hide_vline: bool,
+    content: impl FnOnce(&mut Ui) -> T,
+) -> Option<InnerResponse<T>> {
+    let has_vline = std::mem::replace(
+        &mut ui.style_mut().visuals.indent_has_left_vline,
+        !hide_vline,
+    );
+    let res = CollapsingState::load_with_default_open(ui.ctx(), ui.id().with(label), default_open)
+        .show_header(ui, |ui| {
+            docs_label(ui, label, ctx.docs, ctx.registry, ctx.docs_ref);
+        })
+        .body(|ui| content(ui))
+        .2;
+
+    ui.style_mut().visuals.indent_has_left_vline = has_vline;
+
+    res
 }
 
 macro_rules! unsupported {

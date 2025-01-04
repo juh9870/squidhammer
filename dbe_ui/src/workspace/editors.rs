@@ -2,6 +2,7 @@ use crate::m_try;
 use crate::ui_props::{PROP_FIELD_EDITOR, PROP_OBJECT_EDITOR};
 use crate::workspace::editors::boolean::BooleanEditor;
 use crate::workspace::editors::consts::ConstEditor;
+use crate::workspace::editors::enum_flags::EnumFlagsEditor;
 use crate::workspace::editors::enums::EnumEditor;
 use crate::workspace::editors::errors::{ErrorEditor, ErrorProps};
 use crate::workspace::editors::map::MapEditor;
@@ -36,6 +37,7 @@ mod utils;
 
 mod boolean;
 mod consts;
+mod enum_flags;
 mod enums;
 mod errors;
 mod list;
@@ -61,6 +63,7 @@ fn default_editors() -> impl Iterator<Item = (Ustr, Box<dyn Editor>)> {
         ("enum".into(), Box::new(EnumEditor)),
         ("list".into(), Box::new(ListEditor)),
         ("map".into(), Box::new(MapEditor)),
+        ("enum_flags".into(), Box::new(EnumFlagsEditor)),
         (
             "ids/numeric".into(),
             Box::new(WrappedEditor::new(NumberEditor::new(false), "id".into())),
