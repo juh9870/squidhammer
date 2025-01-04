@@ -64,12 +64,22 @@ impl<'a> SnarlViewer<SnarlNode> for GraphViewer<'a> {
         snarl: &mut Snarl<SnarlNode>,
     ) {
         m_try(|| {
-            let node = &mut snarl[node_id];
-            node.update_state(self.ctx.as_node_context(), &mut self.commands, node_id)?;
-            self.commands.execute(&mut self.ctx.as_full(snarl))?;
+            let node = &snarl[node_id];
 
-            get_viewer(&snarl[node_id].id())
-                .show_header(self, node_id, inputs, outputs, ui, scale, snarl)
+            let viewer = get_viewer(&node.id());
+
+            let has_body = viewer.has_body(self, node)?;
+
+            let node = &mut snarl[node_id];
+
+            if !has_body {
+                node.update_state(self.ctx.as_node_context(), &mut self.commands, node_id)?;
+                self.commands.execute(&mut self.ctx.as_full(snarl))?;
+            }
+
+            viewer.show_header(self, node_id, inputs, outputs, ui, scale, snarl)?;
+
+            Ok(())
         })
         .unwrap_or_else(|err| {
             ui.set_max_width(128.0);
@@ -149,21 +159,30 @@ impl<'a> SnarlViewer<SnarlNode> for GraphViewer<'a> {
         scale: f32,
         snarl: &mut Snarl<SnarlNode>,
     ) {
-        m_try(|| {
-            get_viewer(&snarl[node_id].id())
-                .show_body(self, node_id, inputs, outputs, ui, scale, snarl)?;
-            self.commands.execute(&mut self.ctx.as_full(snarl))?;
-            Ok(())
-        })
-        .unwrap_or_else(|err| {
-            diagnostic_widget(
-                ui,
-                &Diagnostic {
-                    info: err,
-                    level: DiagnosticLevel::Error,
-                },
-            );
-        })
+        ui.vertical(|ui| {
+            m_try(|| {
+                get_viewer(&snarl[node_id].id())
+                    .show_body(self, node_id, inputs, outputs, ui, scale, snarl)?;
+
+                snarl[node_id].update_state(
+                    self.ctx.as_node_context(),
+                    &mut self.commands,
+                    node_id,
+                )?;
+
+                self.commands.execute(&mut self.ctx.as_full(snarl))?;
+                Ok(())
+            })
+            .unwrap_or_else(|err| {
+                diagnostic_widget(
+                    ui,
+                    &Diagnostic {
+                        info: err,
+                        level: DiagnosticLevel::Error,
+                    },
+                );
+            })
+        });
     }
 
     fn has_graph_menu(&mut self, _pos: Pos2, _snarl: &mut Snarl<SnarlNode>) -> bool {
