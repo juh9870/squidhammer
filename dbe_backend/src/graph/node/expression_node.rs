@@ -106,7 +106,7 @@ impl Node for ExpressionNode {
 
     fn editable_state(&self) -> EditableState {
         smallvec![(
-            "format".into(),
+            "expression".into(),
             EValue::String {
                 value: self.expression.clone()
             }

@@ -1,0 +1,32 @@
+[nodes.string_fmt]
+title = "Format"
+description = "Node for simple string formatting"
+docs = """
+This node allows constructing complex strings by combining multiple incoming \
+strings according to a format string.
+"""
+inputs = []
+
+[[nodes.string_fmt.outputs]]
+title = "Formatted"
+id = "formatted"
+description = "The formatted string"
+
+[[nodes.string_fmt.state]]
+title = "Format"
+id = "format"
+description = "The format pattern."
+docs = """
+Format pattern is a string that can contain placeholders for incoming strings.
+
+Placeholders are specified by curly braces, for example: `hello {name}` will \
+replace `{name}` with the value of the `name` input.
+
+There could be multiple placeholders in the format string (including repeating).
+
+In order to include a literal curly brace in the output, use double curly braces: \
+`{{` will be replaced with `{` in the output, and `}}` will be replaced with \
+`}`.
+
+Example: `{{hello}} world` will be formatted as `{hello} world`.
+"""
