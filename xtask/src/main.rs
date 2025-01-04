@@ -79,7 +79,7 @@ fn check_workspace_deps() -> anyhow::Result<()> {
         println!("\u{001b}[0m");
         process::exit(1);
     } else {
-        println!("\u{001b}[32mNo unused workspace dependencies found\u{001b}");
+        println!("\u{001b}[32mNo unused workspace dependencies found\u{001b}[0m");
     }
 
     Ok(())
