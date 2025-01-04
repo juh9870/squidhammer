@@ -30,6 +30,7 @@ use ustr::{Ustr, UstrMap};
 pub mod commands;
 pub mod editable_state;
 pub mod enum_node;
+pub mod format_node;
 pub mod functional;
 pub mod groups;
 pub mod list;
@@ -69,6 +70,7 @@ fn default_nodes() -> impl Iterator<Item = (Ustr, Arc<dyn NodeFactory>)> {
     v.push(Arc::new(GroupInputNodeFactory));
     v.push(Arc::new(SubgraphNodeFactory));
     v.push(Arc::new(MappingsNodeFactory));
+    v.push(Arc::new(FormatNodeFactory));
     v.into_iter().map(|item| (Ustr::from(&item.id()), item))
 }
 
@@ -150,8 +152,14 @@ pub trait Node: DynClone + Debug + Send + Sync + Downcast + 'static {
     ///
     /// Nodes should generally should only use this method for optimization or
     /// user presentation reasons
-    fn update_state(&mut self, context: NodeContext, commands: &mut SnarlCommands, id: NodeId) {
+    fn update_state(
+        &mut self,
+        context: NodeContext,
+        commands: &mut SnarlCommands,
+        id: NodeId,
+    ) -> miette::Result<()> {
         let _ = (context, commands, id);
+        Ok(())
     }
 
     /// Determines if the node has editable state
@@ -364,14 +372,14 @@ macro_rules! impl_serde_node {
     () => {
         fn write_json(
             &self,
-            _registry: &ETypesRegistry,
+            _registry: &$crate::registry::ETypesRegistry,
         ) -> miette::Result<$crate::json_utils::JsonValue> {
             miette::IntoDiagnostic::into_diagnostic(serde_json::value::to_value(&self))
         }
 
         fn parse_json(
             &mut self,
-            _registry: &ETypesRegistry,
+            _registry: &$crate::registry::ETypesRegistry,
             value: &mut $crate::json_utils::JsonValue,
         ) -> miette::Result<()> {
             miette::IntoDiagnostic::into_diagnostic(Self::deserialize(value.take()))
@@ -381,6 +389,7 @@ macro_rules! impl_serde_node {
 }
 
 use crate::graph::node::editable_state::EditableState;
+use crate::graph::node::format_node::FormatNodeFactory;
 use crate::graph::node::mappings::MappingsNodeFactory;
 use crate::project::docs::{Docs, DocsWindowRef};
 pub(crate) use impl_serde_node;

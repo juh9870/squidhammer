@@ -3,7 +3,7 @@ use crate::etype::EDataType;
 use crate::graph::inputs::{GraphInput, GraphIoData, GraphOutput};
 use crate::graph::node::commands::SnarlCommands;
 use crate::graph::node::ports::fields::{
-    get_field, map_inputs, sync_fields_and_types, FieldMapper,
+    get_field, map_inputs, sync_fields_and_types, FieldMapper, IoDirection,
 };
 use crate::graph::node::ports::{InputData, NodePortType, OutputData};
 use crate::registry::ETypesRegistry;
@@ -70,6 +70,7 @@ pub fn sync_fields<IO: GraphIoData>(
     ids: &mut Vec<Uuid>,
     types: Option<&mut Vec<EDataType>>,
     node_id: NodeId,
+    direction: IoDirection,
 ) {
     sync_fields_and_types(
         &GraphIoMapper::<IO>::INSTANCE,
@@ -78,7 +79,7 @@ pub fn sync_fields<IO: GraphIoData>(
         ids,
         types,
         node_id,
-        IO::direction(),
+        direction,
     )
 }
 

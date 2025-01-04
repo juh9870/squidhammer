@@ -6,6 +6,7 @@ use crate::graph::node::commands::SnarlCommands;
 use crate::graph::node::groups::utils::{
     get_port_input, get_port_output, map_group_inputs, map_group_outputs, sync_fields,
 };
+use crate::graph::node::ports::fields::IoDirection;
 use crate::graph::node::ports::{InputData, OutputData};
 use crate::graph::node::{
     impl_serde_node, ExecutionExtras, Node, NodeContext, NodeFactory, SnarlNode,
@@ -13,7 +14,6 @@ use crate::graph::node::{
 use crate::m_try;
 use crate::project::docs::Docs;
 use crate::project::project_graph::ProjectGraph;
-use crate::registry::ETypesRegistry;
 use crate::value::EValue;
 use egui_snarl::NodeId;
 use miette::{bail, miette, Context};
@@ -65,9 +65,14 @@ impl Node for SubgraphNode {
         graph.name.clone()
     }
 
-    fn update_state(&mut self, context: NodeContext, commands: &mut SnarlCommands, id: NodeId) {
+    fn update_state(
+        &mut self,
+        context: NodeContext,
+        commands: &mut SnarlCommands,
+        id: NodeId,
+    ) -> miette::Result<()> {
         let Ok(graph) = self.get_graph(context) else {
-            return;
+            return Ok(());
         };
 
         sync_fields(
@@ -76,6 +81,7 @@ impl Node for SubgraphNode {
             &mut self.inputs,
             Some(&mut self.input_types),
             id,
+            IoDirection::Input,
         );
         sync_fields(
             commands,
@@ -83,7 +89,10 @@ impl Node for SubgraphNode {
             &mut self.outputs,
             Some(&mut self.output_types),
             id,
+            IoDirection::Output,
         );
+
+        Ok(())
     }
 
     fn inputs_count(&self, _context: NodeContext) -> usize {

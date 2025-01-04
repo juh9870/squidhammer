@@ -1,4 +1,4 @@
-use crate::graph::node::commands::{SnarlCommand, SnarlCommands};
+use crate::graph::node::commands::{RearrangeIndices, SnarlCommand, SnarlCommands};
 use crate::registry::ETypesRegistry;
 use crate::value::EValue;
 use egui_snarl::{InPinId, NodeId, OutPinId};
@@ -103,13 +103,15 @@ pub fn sync_fields_and_types<Mapper: FieldMapper>(
 
     let new_fields = fields.iter().map(|f| mapper.to_local(f)).collect_vec();
 
-    let mut moves = vec![];
+    let mut rearrangements = None::<RearrangeIndices>;
     let mut drops = vec![];
 
     for (i, id) in ids.iter().enumerate() {
         if let Some(pos) = new_fields.iter().position(|i| i == id) {
             if pos != i {
-                moves.push((i, pos));
+                let r = rearrangements
+                    .get_or_insert_with(|| (0..new_fields.len()).collect::<RearrangeIndices>());
+                r[i] = pos;
             }
         } else {
             drops.push(i);
@@ -117,7 +119,7 @@ pub fn sync_fields_and_types<Mapper: FieldMapper>(
     }
 
     for drop_pos in drops {
-        if io.is_input() {
+        if io.is_output() {
             commands.push(SnarlCommand::DropOutputs {
                 from: OutPinId {
                     output: drop_pos,
@@ -125,6 +127,12 @@ pub fn sync_fields_and_types<Mapper: FieldMapper>(
                 },
             })
         } else {
+            commands.push(SnarlCommand::DeletePinValue {
+                pin: InPinId {
+                    input: drop_pos,
+                    node: node_id,
+                },
+            });
             commands.push(SnarlCommand::DropInputs {
                 to: InPinId {
                     input: drop_pos,
@@ -134,28 +142,16 @@ pub fn sync_fields_and_types<Mapper: FieldMapper>(
         }
     }
 
-    for (from, to) in moves {
-        if io.is_input() {
-            commands.push(SnarlCommand::OutputMovedRaw {
-                from: OutPinId {
-                    output: from,
-                    node: node_id,
-                },
-                to: OutPinId {
-                    output: to,
-                    node: node_id,
-                },
+    if let Some(rearrangements) = rearrangements {
+        if io.is_output() {
+            commands.push(SnarlCommand::OutputsRearrangedRaw {
+                node: node_id,
+                indices: rearrangements,
             })
         } else {
-            commands.push(SnarlCommand::InputMovedRaw {
-                from: InPinId {
-                    input: from,
-                    node: node_id,
-                },
-                to: InPinId {
-                    input: to,
-                    node: node_id,
-                },
+            commands.push(SnarlCommand::InputsRearrangedRaw {
+                node: node_id,
+                indices: rearrangements,
             })
         }
     }
@@ -347,7 +343,7 @@ mod tests {
     fn check_unshuffled() {
         let fields = vec![EDataType::Boolean, EDataType::Number, EDataType::String];
 
-        perform_checks(fields.clone(), |indices| {});
+        perform_checks(fields.clone(), |_| {});
     }
 
     #[test]

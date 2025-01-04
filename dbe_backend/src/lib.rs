@@ -1,3 +1,5 @@
+extern crate core;
+
 pub mod etype;
 pub mod graph;
 pub mod json_utils;

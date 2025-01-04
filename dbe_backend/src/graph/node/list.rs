@@ -7,7 +7,6 @@ use crate::graph::node::{
     impl_serde_node, ExecutionExtras, InputData, Node, NodeContext, NodeFactory, OutputData,
     SnarlNode,
 };
-use crate::registry::ETypesRegistry;
 use crate::value::EValue;
 use egui_snarl::{InPin, InPinId, OutPin, OutPinId};
 use serde::{Deserialize, Serialize};

@@ -2,7 +2,7 @@ use crate::etype::eobject::EObject;
 use crate::etype::property::default_properties::PROP_OBJECT_TITLE;
 use crate::registry::ETypesRegistry;
 use itertools::Itertools;
-use runtime_format::{FormatArgs, FormatKey, FormatKeyError};
+use squidfmt::formatting::{FormatKeyError, FormatKeys};
 use std::cell::OnceCell;
 use std::fmt::Formatter;
 use std::sync::atomic::{AtomicBool, Ordering};
@@ -31,7 +31,10 @@ impl ObjectTitle {
 
         if self.currently_initializing.load(Ordering::Acquire) {
             let fmt_arg = FmtStub(obj);
-            return FormatArgs::new(fmt.0, &fmt_arg).to_string();
+            return fmt
+                .0
+                .format_to_string(&fmt_arg)
+                .expect("Formatter should not fail");
         }
 
         if let Some(value) = self.value.get() {
@@ -39,8 +42,10 @@ impl ObjectTitle {
         }
         self.currently_initializing.store(true, Ordering::Release);
 
-        let fmt_arg = FmtTitle(obj, registry);
-        let str = FormatArgs::new(fmt.0, &fmt_arg).to_string();
+        let str = fmt
+            .0
+            .format_to_string(&FmtTitle(obj, registry))
+            .expect("Formatter should not fail");
 
         let result = self.value.get_or_init(|| str).clone();
 
@@ -52,7 +57,7 @@ impl ObjectTitle {
 
 struct FmtStub<'a, T: EObject>(&'a T);
 
-impl<'a, T: EObject> FormatKey for FmtStub<'a, T> {
+impl<'a, T: EObject> FormatKeys for FmtStub<'a, T> {
     fn fmt(&self, key: &str, f: &mut Formatter<'_>) -> Result<(), FormatKeyError> {
         if !self
             .0
@@ -69,7 +74,7 @@ impl<'a, T: EObject> FormatKey for FmtStub<'a, T> {
 
 struct FmtTitle<'a, T: EObject>(&'a T, &'a ETypesRegistry);
 
-impl<'a, T: EObject> FormatKey for FmtTitle<'a, T> {
+impl<'a, T: EObject> FormatKeys for FmtTitle<'a, T> {
     fn fmt(&self, key: &str, f: &mut Formatter<'_>) -> Result<(), FormatKeyError> {
         let Some((pos, name)) = self
             .0
