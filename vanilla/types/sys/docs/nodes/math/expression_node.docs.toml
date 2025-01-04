@@ -1,0 +1,55 @@
+[nodes.expression]
+title = "Expression"
+description = "Node for doing multiple math operations at once"
+docs = """
+This node executes complex math expressions. It it best used for executing multiple operations at once.
+
+If you want to execute only a single operation, consider using more specific math nodes instead.
+"""
+inputs = []
+
+[[nodes.expression.outputs]]
+title = "Result"
+id = "result"
+description = "Result of the computation"
+
+[[nodes.expression.state]]
+title = "Expression"
+id = "expression"
+description = "The expression to evaluate."
+docs = """
+#### Available functions
+- `a ^ b` - a raised to the power of b
+- `a * b` - a multiplied by b
+- `a / b` - a divided by b
+- `a + b` - a added to b
+- `a - b` - a subtracted by b
+- `abs(x)` - absolute value
+- `signum(x)` - signum
+- `sin(x)` - sine
+- `cos(x)` - cosine
+- `tan(x)` - tangent
+- `asin(x)` - inverse sine
+- `acos(x)` - inverse cosine
+- `atan(x)` - inverse tangent
+- `sinh(x)` - hyperbolic sine
+- `cosh(x)` - hyperbolic cosine
+- `tanh(x)` - hyperbolic tangent
+- `floor(x)` - largest integer less than or equal to a number
+- `ceil(x)` - smallest integer greater than or equal to a number
+- `trunc(x)` - integer part of a number
+- `fract(x)` - fractional part of a number
+- `exp(x)` - exponential functionn
+- `sqrt(x)` - square root
+- `cbrt(x)` - cube root
+- `ln(x)` - natural logarithm
+- `log2(x)` - logarithm with basis 2
+- `log10(x)` - logarithm with basis 10
+- `log(x)` - natural logarithm
+- `PI` - constant π
+- `π` - second representation of constant π
+- `TAU` - constant τ=2π
+- `τ` - second representation of constant τ
+- `E` - Euler’s number
+- `e` - second representation of Euler’s number
+"""
