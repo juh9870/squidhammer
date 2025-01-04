@@ -7,6 +7,8 @@ use miette::bail;
 use std::fmt::Display;
 use strum::EnumIs;
 
+pub mod mappers;
+
 /// Trait for mapping fields to local representation and matching them
 pub trait FieldMapper {
     /// The field type
@@ -22,9 +24,15 @@ pub trait FieldMapper {
     fn to_local(&self, field: &Self::Field) -> Self::Local;
 
     /// Gets field type
-    fn field_type(&self, field: &Self::Field) -> Self::Type;
+    fn field_type(&self, field: &Self::Field) -> Self::Type {
+        let _ = (field,);
+        unimplemented!()
+    }
 
-    fn default_value(&self, field: &Self::Field, registry: &ETypesRegistry) -> EValue;
+    fn default_value(&self, field: &Self::Field, registry: &ETypesRegistry) -> EValue {
+        let _ = (field, registry);
+        unimplemented!()
+    }
 }
 
 /// Gets the field at the given index, using the local cached fields to account
@@ -109,9 +117,9 @@ pub fn sync_fields_and_types<Mapper: FieldMapper>(
     for (i, id) in ids.iter().enumerate() {
         if let Some(pos) = new_fields.iter().position(|i| i == id) {
             if pos != i {
-                let r = rearrangements
-                    .get_or_insert_with(|| (0..new_fields.len()).collect::<RearrangeIndices>());
-                r[i] = pos;
+                let indices = rearrangements
+                    .get_or_insert_with(|| (0..ids.len()).collect::<RearrangeIndices>());
+                indices[i] = pos;
             }
         } else {
             drops.push(i);

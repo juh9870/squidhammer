@@ -12,7 +12,6 @@ use crate::graph::node::{
     SnarlNode,
 };
 use crate::project::docs::{Docs, DocsRef};
-use crate::registry::ETypesRegistry;
 use crate::value::id::ETypeId;
 use crate::value::EValue;
 use egui_snarl::NodeId;
@@ -29,6 +28,7 @@ pub struct StructNode {
 }
 
 struct StructNodeFieldMapper;
+
 impl FieldMapper for StructNodeFieldMapper {
     type Field = EStructField;
     type Local = Ustr;
@@ -40,14 +40,6 @@ impl FieldMapper for StructNodeFieldMapper {
 
     fn to_local(&self, field: &Self::Field) -> Self::Local {
         field.name
-    }
-
-    fn field_type(&self, _field: &Self::Field) -> Self::Type {
-        unimplemented!()
-    }
-
-    fn default_value(&self, _field: &Self::Field, _registry: &ETypesRegistry) -> EValue {
-        unimplemented!()
     }
 }
 
