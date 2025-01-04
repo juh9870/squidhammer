@@ -171,6 +171,7 @@ pub fn node_docs(ui: &mut Ui, node: &dyn NodeFactory, docs: &NodeDocs) {
 
     show_description(ui, docs, &mut md_cache);
 
+    ui.style_mut().visuals.indent_has_left_vline = false;
     if !docs.state.is_empty() {
         ui.label(RichText::new("State").heading());
         ui.separator();
@@ -179,7 +180,6 @@ pub fn node_docs(ui: &mut Ui, node: &dyn NodeFactory, docs: &NodeDocs) {
         }
     }
 
-    ui.style_mut().visuals.indent_has_left_vline = false;
     if !docs.inputs.is_empty() {
         ui.label(RichText::new("Inputs").heading());
         ui.separator();
