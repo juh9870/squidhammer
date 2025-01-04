@@ -1,11 +1,11 @@
-use crate::main_toolbar::docs::docs_label;
 use crate::widgets::report::diagnostics_column;
-use crate::workspace::editors::utils::{unsupported, EditorResultExt, EditorSize};
+use crate::workspace::editors::utils::{
+    labeled_collapsing_header, unsupported, EditorResultExt, EditorSize,
+};
 use crate::workspace::editors::{editor_for_type, DynProps, Editor, EditorContext, EditorResponse};
 use dbe_backend::diagnostic::context::DiagnosticContextRef;
 use dbe_backend::project::docs::DocsRef;
 use dbe_backend::value::EValue;
-use egui::collapsing_header::CollapsingState;
 use egui::Ui;
 use miette::miette;
 
@@ -37,43 +37,36 @@ impl Editor for ListEditor {
             .get_list(id)
             .ok_or_else(|| miette!("!!INTERNAL ERROR!! unknown list `{}`", id))
             .then_draw(ui, |ui, list_data| {
-                CollapsingState::load_with_default_open(
-                    ui.ctx(),
-                    ui.id().with(field_name),
+                labeled_collapsing_header(
+                    ui,
+                    field_name,
+                    docs_ctx,
                     values.len() < 20,
-                )
-                .show_header(ui, |ui| {
-                    docs_label(
-                        ui,
-                        field_name,
-                        docs_ctx.docs,
-                        docs_ctx.registry,
-                        docs_ctx.docs_ref,
-                    );
-                })
-                .body_unindented(|ui| {
-                    let ty = list_data.value_type;
-                    let editor = editor_for_type(ctx.registry, &ty);
-                    list_edit::list_editor::<EValue, _>(ui.id().with(field_name).with("list"))
-                        .new_item(|_| ty.default_value(ctx.registry).into_owned())
-                        .show(ui, values, |ui, i, val| {
-                            let mut d = diagnostics.enter_index(i.index);
-                            if editor
-                                .show(
-                                    ui,
-                                    ctx.copy_with_docs(DocsRef::None),
-                                    d.enter_inline(),
-                                    "",
-                                    val,
-                                )
-                                .changed
-                            {
-                                changed = true;
-                            }
+                    true,
+                    |ui| {
+                        let ty = list_data.value_type;
+                        let editor = editor_for_type(ctx.registry, &ty);
+                        list_edit::list_editor::<EValue, _>(ui.id().with(field_name).with("list"))
+                            .new_item(|_| ty.default_value(ctx.registry).into_owned())
+                            .show(ui, values, |ui, i, val| {
+                                let mut d = diagnostics.enter_index(i.index);
+                                if editor
+                                    .show(
+                                        ui,
+                                        ctx.copy_with_docs(DocsRef::None),
+                                        d.enter_inline(),
+                                        "",
+                                        val,
+                                    )
+                                    .changed
+                                {
+                                    changed = true;
+                                }
 
-                            diagnostics_column(ui, d.get_reports_shallow());
-                        });
-                });
+                                diagnostics_column(ui, d.get_reports_shallow());
+                            });
+                    },
+                );
             });
 
         EditorResponse::new(changed)
