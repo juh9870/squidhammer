@@ -16,7 +16,7 @@ pub struct EnumFlagsEditor;
 
 impl Editor for EnumFlagsEditor {
     fn size(&self, _props: &DynProps) -> EditorSize {
-        EditorSize::Inline
+        EditorSize::Block
     }
 
     fn edit(

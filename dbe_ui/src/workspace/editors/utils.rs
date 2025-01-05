@@ -130,29 +130,29 @@ pub fn ensure_field<'a, T: TryFrom<&'a mut EValue, Error = E>, E: Into<miette::E
     }
 }
 
-pub trait EditorResultExt {
+pub trait EditorResultExt: Sized {
     type Data;
     fn then_draw<Res>(
         self,
         ui: &mut Ui,
         draw: impl FnOnce(&mut Ui, Self::Data) -> Res,
-    ) -> Option<Res>;
+    ) -> Option<Res> {
+        self.or_draw_error(ui).map(|data| draw(ui, data))
+    }
+
+    fn or_draw_error(self, ui: &mut Ui) -> Option<Self::Data>;
 }
 
 impl<T, Err: Into<miette::Error>> EditorResultExt for Result<T, Err> {
     type Data = T;
 
-    fn then_draw<Res>(
-        self,
-        ui: &mut Ui,
-        draw: impl FnOnce(&mut Ui, Self::Data) -> Res,
-    ) -> Option<Res> {
+    fn or_draw_error(self, ui: &mut Ui) -> Option<Self::Data> {
         match self {
             Err(err) => {
                 inline_error(ui, err);
                 None
             }
-            Ok(data) => Some(draw(ui, data)),
+            Ok(data) => Some(data),
         }
     }
 }

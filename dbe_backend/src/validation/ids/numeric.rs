@@ -201,16 +201,38 @@ impl<'a> NumericIDRegistry<'a> {
     }
 
     pub fn is_id_assignable(&self, from: Ustr, to: Ustr) -> miette::Result<bool> {
-        if from == to {
-            return Ok(true);
-        }
         let config = config(self.registry)?;
-        Ok(config
-            .types
-            .get(&to)
-            .is_some_and(|c| c.satisfied_by_types.contains(&from)))
+        fn is_assignable(
+            config: &ReservedIdConfig,
+            from: Ustr,
+            to: Ustr,
+            visited: &mut SmallVec<[Ustr; 2]>,
+        ) -> bool {
+            if visited.contains(&to) {
+                return false;
+            }
+            visited.push(to);
+
+            if from == to {
+                return true;
+            }
+
+            if let Some(cfg) = config.types.get(&to) {
+                for ty in &cfg.satisfied_by_types {
+                    if is_assignable(config, from, *ty, visited) {
+                        return true;
+                    }
+                }
+            }
+
+            false
+        }
+
+        Ok(is_assignable(&config, from, to, &mut smallvec![]))
     }
 
+    /// Checks if the given types are assignable, i.e. if an ID of type `from`
+    /// can be assigned to a reference of type `to`
     pub fn is_id_assignable_ty(&self, from: EDataType, to: EDataType) -> miette::Result<bool> {
         let (EDataType::Object { ident: from }, EDataType::Object { ident: to }) = (from, to)
         else {
@@ -221,6 +243,164 @@ impl<'a> NumericIDRegistry<'a> {
         let to_arg = extract_generic_arg(self.registry, &to)?;
 
         self.is_id_assignable(from_arg, to_arg)
+    }
+
+    /// Returns the location of the given ID, if it exists
+    ///
+    /// Exact format of the location is not specified, but it should be
+    /// human-readable
+    pub fn location_for_id(
+        &self,
+        ref_ty: EDataType,
+        id: ENumber,
+    ) -> miette::Result<Option<String>> {
+        let EDataType::Object { ident } = ref_ty else {
+            bail!("expected object type, got {:?}", ref_ty);
+        };
+
+        let category = extract_generic_arg(self.registry, &ident)?;
+
+        let config = config(self.registry)?;
+
+        let reg = self.registry.extra_data::<Data>();
+        let reg = reg.read();
+
+        fn location(
+            config: &ReservedIdConfig,
+            reg: &NumericIDsRegistry,
+            id: ENumber,
+            category: Ustr,
+            visited: &mut SmallVec<[Ustr; 2]>,
+        ) -> Option<String> {
+            if visited.contains(&category) {
+                return None;
+            }
+            visited.push(category);
+
+            if let Some(id) = reg
+                .ids
+                .get(&category)
+                .and_then(|m| m.get(&id))
+                .and_then(|s| s.iter().next())
+            {
+                return Some(id.clone());
+            };
+
+            if let Some(cfg) = config.types.get(&category) {
+                for ty in &cfg.satisfied_by_types {
+                    if let Some(id) = location(config, reg, id, *ty, visited) {
+                        return Some(id);
+                    }
+                }
+            }
+
+            None
+        }
+
+        Ok(location(&config, &reg, id, category, &mut smallvec![]))
+    }
+
+    /// Runs the provided closure with an iterator over available IDs for the
+    /// given type, as well as the reserved IDs, and all IDs for types that
+    /// this type is satisfied by
+    pub fn with_available_ids<T>(
+        &self,
+        ref_ty: EDataType,
+        cb: impl FnOnce(AvailableIdsIter) -> miette::Result<T>,
+    ) -> miette::Result<T> {
+        let EDataType::Object { ident } = ref_ty else {
+            bail!("expected object type, got {:?}", ref_ty);
+        };
+
+        let category = extract_generic_arg(self.registry, &ident)?;
+
+        let config = config(self.registry)?;
+
+        let reg = self.registry.extra_data::<Data>();
+        let reg = reg.read();
+
+        let iter = AvailableIdsIter::new(&reg, &config, smallvec![category]);
+
+        cb(iter)
+    }
+}
+
+/// Iterator over available IDs for a given type
+///
+/// This iterator will yield all available IDs for a given type, as well as the
+/// reserved IDs for that type, and the same for all `satisfied_by` types
+pub struct AvailableIdsIter<'a> {
+    reg: &'a NumericIDsRegistry,
+    cfg: &'a ReservedIdConfig,
+    categories: SmallVec<[Ustr; 1]>,
+    cur_iter: Option<std::collections::hash_map::Iter<'a, ENumber, BTreeSet<String>>>,
+    cur_reserved_iter: Option<std::collections::hash_set::Iter<'a, ENumber>>,
+}
+
+impl<'a> AvailableIdsIter<'a> {
+    fn new(
+        reg: &'a NumericIDsRegistry,
+        cfg: &'a ReservedIdConfig,
+        categories: SmallVec<[Ustr; 1]>,
+    ) -> Self {
+        Self {
+            reg,
+            cfg,
+            categories,
+            cur_iter: None,
+            cur_reserved_iter: None,
+        }
+    }
+}
+
+impl<'a> Iterator for AvailableIdsIter<'a> {
+    type Item = (&'a ENumber, Option<&'a BTreeSet<String>>);
+
+    fn next(&mut self) -> Option<Self::Item> {
+        if let Some(iter) = &mut self.cur_iter {
+            if let Some(next) = iter.next() {
+                return Some((next.0, Some(next.1)));
+            }
+            {
+                self.cur_iter = None;
+            }
+        } else if let Some(iter) = &mut self.cur_reserved_iter {
+            if let Some(next) = iter.next() {
+                return Some((next, None));
+            } else {
+                self.cur_reserved_iter = None;
+            }
+        }
+
+        // cur iter is exhausted, get the next one
+
+        while let Some(category) = self.categories.pop() {
+            let reserved_ids = if let Some(config) = self.cfg.types.get(&category) {
+                self.categories
+                    .extend(config.satisfied_by_types.iter().cloned());
+                (!config.reserved_ids.is_empty()).then(|| config.reserved_ids.iter())
+            } else {
+                None
+            };
+
+            let ids = self
+                .reg
+                .ids
+                .get(&category)
+                .filter(|ids| !ids.is_empty())
+                .map(|ids| ids.iter());
+
+            if reserved_ids.is_none() && ids.is_none() {
+                continue;
+            }
+
+            self.cur_iter = ids;
+            self.cur_reserved_iter = reserved_ids;
+            return self.next();
+        }
+
+        // all categories are exhausted, end of iteration
+        None
     }
 }
 

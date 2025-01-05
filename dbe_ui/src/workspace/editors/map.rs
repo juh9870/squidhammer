@@ -15,7 +15,7 @@ pub struct MapEditor;
 
 impl Editor for MapEditor {
     fn size(&self, _props: &DynProps) -> EditorSize {
-        EditorSize::Inline
+        EditorSize::Block
     }
 
     fn edit(
