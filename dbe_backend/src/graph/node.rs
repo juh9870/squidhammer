@@ -1,18 +1,23 @@
 use crate::etype::default::DefaultEValue;
 use crate::graph::inputs::{GraphInput, GraphOutput};
 use crate::graph::node::commands::{SnarlCommand, SnarlCommands};
+use crate::graph::node::editable_state::EditableState;
 use crate::graph::node::enum_node::EnumNodeFactory;
+use crate::graph::node::expression_node::ExpressionNodeFactory;
+use crate::graph::node::format_node::FormatNodeFactory;
 use crate::graph::node::functional::functional_nodes;
 use crate::graph::node::groups::input::GroupInputNodeFactory;
 use crate::graph::node::groups::output::GroupOutputNodeFactory;
 use crate::graph::node::groups::subgraph::SubgraphNodeFactory;
 use crate::graph::node::list::ListNodeFactory;
+use crate::graph::node::mappings::MappingsNodeFactory;
 use crate::graph::node::ports::{InputData, NodePortType, OutputData};
 use crate::graph::node::reroute::RerouteFactory;
 use crate::graph::node::saving_node::SavingNodeFactory;
 use crate::graph::node::struct_node::StructNodeFactory;
 use crate::graph::node::variables::ExecutionExtras;
 use crate::json_utils::JsonValue;
+use crate::project::docs::{Docs, DocsWindowRef};
 use crate::project::project_graph::ProjectGraphs;
 use crate::registry::ETypesRegistry;
 use crate::value::EValue;
@@ -24,6 +29,7 @@ use miette::bail;
 use smallvec::SmallVec;
 use std::collections::BTreeMap;
 use std::fmt::Debug;
+use std::ops::{Deref, DerefMut};
 use std::sync::{Arc, LazyLock};
 use ustr::{Ustr, UstrMap};
 
@@ -76,7 +82,7 @@ fn default_nodes() -> impl Iterator<Item = (Ustr, Arc<dyn NodeFactory>)> {
     v.into_iter().map(|item| (Ustr::from(&item.id()), item))
 }
 
-pub fn get_snarl_node(id: &Ustr) -> Option<SnarlNode> {
+pub fn get_raw_snarl_node(id: &Ustr) -> Option<Box<dyn Node>> {
     NODE_FACTORIES.borrow().get(id).map(|f| f.create())
 }
 
@@ -95,7 +101,7 @@ pub fn node_factories_by_category() -> AtomicRef<'static, FactoriesByCategory> {
 pub trait NodeFactory: Send + Sync + Debug + 'static {
     fn id(&self) -> Ustr;
     fn categories(&self) -> &'static [&'static str];
-    fn create(&self) -> SnarlNode;
+    fn create(&self) -> Box<dyn Node>;
     fn register_required_types(&self, registry: &mut ETypesRegistry) -> miette::Result<()> {
         let _ = (registry,);
         Ok(())
@@ -110,7 +116,30 @@ pub struct NodeContext<'a> {
     pub graphs: Option<&'a ProjectGraphs>,
 }
 
-pub type SnarlNode = Box<dyn Node>;
+#[derive(Debug)]
+pub struct SnarlNode {
+    pub node: Box<dyn Node>,
+}
+
+impl SnarlNode {
+    pub fn new(node: Box<dyn Node>) -> Self {
+        Self { node }
+    }
+}
+
+impl Deref for SnarlNode {
+    type Target = dyn Node;
+
+    fn deref(&self) -> &Self::Target {
+        &*self.node
+    }
+}
+
+impl DerefMut for SnarlNode {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut *self.node
+    }
+}
 
 pub trait Node: DynClone + Debug + Send + Sync + Downcast + 'static {
     /// Writes node state to json
@@ -390,9 +419,4 @@ macro_rules! impl_serde_node {
     };
 }
 
-use crate::graph::node::editable_state::EditableState;
-use crate::graph::node::expression_node::ExpressionNodeFactory;
-use crate::graph::node::format_node::FormatNodeFactory;
-use crate::graph::node::mappings::MappingsNodeFactory;
-use crate::project::docs::{Docs, DocsWindowRef};
 pub(crate) use impl_serde_node;

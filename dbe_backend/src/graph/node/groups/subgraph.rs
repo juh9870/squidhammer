@@ -8,9 +8,7 @@ use crate::graph::node::groups::utils::{
 };
 use crate::graph::node::ports::fields::IoDirection;
 use crate::graph::node::ports::{InputData, OutputData};
-use crate::graph::node::{
-    impl_serde_node, ExecutionExtras, Node, NodeContext, NodeFactory, SnarlNode,
-};
+use crate::graph::node::{impl_serde_node, ExecutionExtras, Node, NodeContext, NodeFactory};
 use crate::m_try;
 use crate::project::docs::Docs;
 use crate::project::project_graph::ProjectGraph;
@@ -211,7 +209,7 @@ impl NodeFactory for SubgraphNodeFactory {
         &["node groups"]
     }
 
-    fn create(&self) -> SnarlNode {
+    fn create(&self) -> Box<dyn Node> {
         Box::new(SubgraphNode::new())
     }
 }

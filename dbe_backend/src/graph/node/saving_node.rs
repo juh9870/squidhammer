@@ -1,9 +1,7 @@
 use crate::etype::eitem::EItemInfo;
 use crate::etype::EDataType;
 use crate::graph::node::ports::NodePortType;
-use crate::graph::node::{
-    ExecutionExtras, InputData, Node, NodeContext, NodeFactory, OutputData, SnarlNode,
-};
+use crate::graph::node::{ExecutionExtras, InputData, Node, NodeContext, NodeFactory, OutputData};
 use crate::project::side_effects::SideEffect;
 use crate::registry::OPTIONAL_STRING_ID;
 use crate::value::EValue;
@@ -114,7 +112,7 @@ impl<const ANY_VALUE: bool> NodeFactory for SavingNodeFactory<ANY_VALUE> {
         &["output"]
     }
 
-    fn create(&self) -> SnarlNode {
+    fn create(&self) -> Box<dyn Node> {
         Box::new(SavingNode::<ANY_VALUE>)
     }
 }

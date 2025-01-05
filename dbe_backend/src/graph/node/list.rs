@@ -5,7 +5,6 @@ use crate::graph::node::commands::{SnarlCommand, SnarlCommands};
 use crate::graph::node::ports::NodePortType;
 use crate::graph::node::{
     impl_serde_node, ExecutionExtras, InputData, Node, NodeContext, NodeFactory, OutputData,
-    SnarlNode,
 };
 use crate::value::EValue;
 use egui_snarl::{InPin, InPinId, OutPin, OutPinId};
@@ -184,7 +183,7 @@ impl NodeFactory for ListNodeFactory {
         &["list"]
     }
 
-    fn create(&self) -> SnarlNode {
+    fn create(&self) -> Box<dyn Node> {
         Box::new(ListNode::default())
     }
 }

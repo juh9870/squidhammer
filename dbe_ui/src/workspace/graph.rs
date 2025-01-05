@@ -13,7 +13,7 @@ use dbe_backend::graph::editing::PartialGraphEditingContext;
 use dbe_backend::graph::node::commands::SnarlCommands;
 use dbe_backend::graph::node::ports::NodePortType;
 use dbe_backend::graph::node::{
-    all_node_factories, node_factories_by_category, NodeFactory, SnarlNode,
+    all_node_factories, node_factories_by_category, Node, NodeFactory, SnarlNode,
 };
 use dbe_backend::registry::ETypesRegistry;
 use dbe_backend::value::id::ETypeId;
@@ -293,7 +293,7 @@ impl<'a> SnarlViewer<SnarlNode> for GraphViewer<'a> {
                     categories: &mut Peekable<
                         impl Iterator<Item = (&'a &'static str, &'a Vec<Arc<dyn NodeFactory>>)>,
                     >,
-                ) -> Option<SnarlNode> {
+                ) -> Option<Box<dyn Node>> {
                     while let Some((cat, _)) = categories.peek() {
                         if !parent.is_empty() && !is_sub_category(cat, parent) {
                             return None;
@@ -338,7 +338,7 @@ impl<'a> SnarlViewer<SnarlNode> for GraphViewer<'a> {
                 }
 
                 if let Some(to_insert) = show(ui, "", &mut categories) {
-                    snarl.insert_node(pos, to_insert);
+                    snarl.insert_node(pos, SnarlNode::new(to_insert));
                 }
             }
         });
