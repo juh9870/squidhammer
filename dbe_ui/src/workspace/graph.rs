@@ -17,9 +17,11 @@ use dbe_backend::graph::node::{
 };
 use dbe_backend::registry::ETypesRegistry;
 use dbe_backend::value::id::ETypeId;
-use egui::{Color32, Pos2, Stroke, Ui};
+use egui::{Color32, Painter, Pos2, Stroke, Style, Ui};
 use egui_hooks::UseHookExt;
-use egui_snarl::ui::{AnyPins, PinInfo, SnarlViewer};
+use egui_snarl::ui::{
+    AnyPins, BackgroundPattern, NodeLayout, PinInfo, SnarlStyle, SnarlViewer, Viewport,
+};
 use egui_snarl::{InPin, NodeId, OutPin, OutPinId, Snarl};
 use inline_tweak::tweak;
 use random_color::options::Luminosity;
@@ -52,6 +54,20 @@ impl<'a> GraphViewer<'a> {
 impl<'a> SnarlViewer<SnarlNode> for GraphViewer<'a> {
     fn title(&mut self, _node: &SnarlNode) -> String {
         unreachable!("Custom header doesn't call SnarlViewer::title")
+    }
+
+    fn node_layout(
+        &mut self,
+        _default: NodeLayout,
+        node_id: NodeId,
+        _inputs: &[InPin],
+        _outputs: &[OutPin],
+        snarl: &Snarl<SnarlNode>,
+    ) -> NodeLayout {
+        let node = &snarl[node_id];
+
+        let viewer = get_viewer(&node.id());
+        viewer.node_layout(self, node)
     }
 
     fn show_header(
@@ -93,10 +109,6 @@ impl<'a> SnarlViewer<SnarlNode> for GraphViewer<'a> {
         })
     }
 
-    fn outputs(&mut self, node: &SnarlNode) -> usize {
-        node.outputs_count(self.ctx.as_node_context())
-    }
-
     fn inputs(&mut self, node: &SnarlNode) -> usize {
         node.inputs_count(self.ctx.as_node_context())
     }
@@ -120,6 +132,10 @@ impl<'a> SnarlViewer<SnarlNode> for GraphViewer<'a> {
                 );
                 PinInfo::circle().with_fill(Color32::BLACK)
             })
+    }
+
+    fn outputs(&mut self, node: &SnarlNode) -> usize {
+        node.outputs_count(self.ctx.as_node_context())
     }
 
     fn show_output(
@@ -470,6 +486,18 @@ impl<'a> SnarlViewer<SnarlNode> for GraphViewer<'a> {
         }) {
             report_error(err);
         }
+    }
+
+    fn draw_background(
+        &mut self,
+        background: Option<&BackgroundPattern>,
+        viewport: &Viewport,
+        snarl_style: &SnarlStyle,
+        style: &Style,
+        painter: &Painter,
+        snarl: &Snarl<SnarlNode>,
+    ) {
+        BackgroundPattern::Grid(Default::default()).draw(viewport, snarl_style, style, painter)
     }
 }
 
