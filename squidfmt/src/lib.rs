@@ -1,3 +1,6 @@
+//! A simple string formatting library. Some code is borrowed from the
+//! https://crates.io/crates/runtime-format crate (MIT license).
+
 use crate::formatting::{FmtDisplay, FormatError, FormatKeys};
 use smallvec::SmallVec;
 use std::cell::OnceCell;
