@@ -20,7 +20,7 @@ emath = { workspace = true }
 exmex = { workspace = true }
 fs-err = { workspace = true }
 itertools = { workspace = true }
-knuffel = { workspace = true }
+knus = { workspace = true }
 maybe-owned = { workspace = true }
 miette = { workspace = true }
 ordered-float = { workspace = true, features = ["serde"] }

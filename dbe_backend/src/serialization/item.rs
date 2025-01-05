@@ -28,17 +28,17 @@ pub enum ThingItemKind {
     Generic,
 }
 
-#[derive(Debug, knuffel::Decode)]
+#[derive(Debug, knus::Decode)]
 pub struct ThingItem {
-    #[knuffel(node_name)]
+    #[knus(node_name)]
     pub kind: ThingItemKind,
-    #[knuffel(argument, str)]
+    #[knus(argument, str)]
     pub name: Ustr,
-    #[knuffel(arguments)]
+    #[knus(arguments)]
     pub arguments: Vec<ETypeConst>,
-    #[knuffel(properties)]
+    #[knus(properties)]
     pub extra_properties: AHashMap<String, ETypeConst>,
-    #[knuffel(children)]
+    #[knus(children)]
     pub generics: Vec<ThingItem>,
 }
 

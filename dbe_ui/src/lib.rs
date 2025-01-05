@@ -18,7 +18,7 @@ use miette::{IntoDiagnostic, WrapErr};
 use serde::{Deserialize, Serialize};
 use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicBool, Ordering};
-use std::sync::OnceLock;
+use std::sync::{Arc, OnceLock};
 use tracing::info;
 
 mod diagnostics_list;
@@ -66,7 +66,9 @@ impl DbeApp {
         let mut fonts = FontDefinitions::default();
         fonts.font_data.insert(
             "fira-code".to_owned(),
-            FontData::from_static(include_bytes!("../../assets/fonts/FiraCode-Light.ttf")),
+            Arc::new(FontData::from_static(include_bytes!(
+                "../../assets/fonts/FiraCode-Light.ttf"
+            ))),
         );
 
         fonts

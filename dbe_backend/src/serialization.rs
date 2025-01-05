@@ -12,11 +12,11 @@ use crate::validation::{validator_by_name, Validator};
 use crate::value::id::ETypeId;
 use ahash::AHashMap;
 use itertools::Itertools;
-use knuffel::ast::{Literal, TypeName};
-use knuffel::errors::DecodeError;
-use knuffel::span::Spanned;
-use knuffel::traits::ErrorSpan;
-use knuffel::{DecodeScalar, Error};
+use knus::ast::{Literal, TypeName};
+use knus::errors::DecodeError;
+use knus::span::Spanned;
+use knus::traits::ErrorSpan;
+use knus::{DecodeScalar, Error};
 use miette::{bail, miette, Context, IntoDiagnostic};
 use ustr::Ustr;
 
@@ -42,40 +42,40 @@ pub fn deserialize_etype(
 }
 
 fn parse_kdl(file_name: &str, data: &str) -> Result<Vec<ThingVariant>, Error> {
-    knuffel::parse::<Vec<ThingVariant>>(file_name, data)
+    knus::parse::<Vec<ThingVariant>>(file_name, data)
 }
 
-#[derive(Debug, knuffel::Decode)]
+#[derive(Debug, knus::Decode)]
 enum ThingVariant {
     Enum(ThingEnum),
     Struct(ThingStruct),
 }
 
-#[derive(Debug, knuffel::Decode)]
+#[derive(Debug, knus::Decode)]
 struct ThingStruct {
-    #[knuffel(arguments, str)]
+    #[knus(arguments, str)]
     pub generic_arguments: Vec<Ustr>,
-    #[knuffel(property, str)]
+    #[knus(property, str)]
     pub repr: Option<Repr>,
-    #[knuffel(properties)]
+    #[knus(properties)]
     pub extra_properties: AHashMap<String, ETypeConst>,
-    #[knuffel(children)]
+    #[knus(children)]
     pub fields: Vec<ThingItem>,
 }
 
-#[derive(Debug, knuffel::Decode)]
+#[derive(Debug, knus::Decode)]
 struct ThingEnum {
-    #[knuffel(arguments, str)]
+    #[knus(arguments, str)]
     pub generic_arguments: Vec<Ustr>,
-    #[knuffel(property, str)]
+    #[knus(property, str)]
     pub repr: Option<Repr>,
-    #[knuffel(property, str)]
+    #[knus(property, str)]
     pub tag: Option<Ustr>,
-    #[knuffel(property, str)]
+    #[knus(property, str)]
     pub content: Option<Ustr>,
-    #[knuffel(properties)]
+    #[knus(properties)]
     pub extra_properties: AHashMap<String, ETypeConst>,
-    #[knuffel(children)]
+    #[knus(children)]
     variants: Vec<ThingItem>,
 }
 
@@ -166,15 +166,11 @@ fn validators(extra_properties: &AHashMap<String, ETypeConst>) -> miette::Result
 }
 
 impl<S: ErrorSpan> DecodeScalar<S> for ETypeConst {
-    fn type_check(
-        _type_name: &Option<Spanned<TypeName, S>>,
-        _ctx: &mut knuffel::decode::Context<S>,
-    ) {
-    }
+    fn type_check(_type_name: &Option<Spanned<TypeName, S>>, _ctx: &mut knus::decode::Context<S>) {}
 
     fn raw_decode(
         value: &Spanned<Literal, S>,
-        _ctx: &mut knuffel::decode::Context<S>,
+        _ctx: &mut knus::decode::Context<S>,
     ) -> Result<Self, DecodeError<S>> {
         let l: &Literal = value;
         Ok(match l {

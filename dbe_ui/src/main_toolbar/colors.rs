@@ -9,7 +9,7 @@ use std::ops::DerefMut;
 
 pub fn colors_tab(ui: &mut Ui, app: &mut DbeApp) {
     app.colorix.light_dark_toggle_button(ui);
-    app.colorix.ui_combo_12(ui);
+    app.colorix.ui_combo_12(ui, false);
 
     ui.separator();
 
