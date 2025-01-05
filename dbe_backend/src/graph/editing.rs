@@ -5,7 +5,7 @@ use crate::graph::node::commands::{SnarlCommand, SnarlCommands};
 use crate::graph::node::enum_node::EnumNode;
 use crate::graph::node::list::ListNode;
 use crate::graph::node::struct_node::StructNode;
-use crate::graph::node::{get_snarl_node, NodeContext, SnarlNode};
+use crate::graph::node::{get_raw_snarl_node, Node, NodeContext, SnarlNode};
 use crate::graph::Graph;
 use crate::m_try;
 use crate::project::docs::Docs;
@@ -204,7 +204,9 @@ impl<'a, 'snarl> GraphEditingContext<'a, 'snarl> {
         pos: Pos2,
         _commands: &mut SnarlCommands,
     ) -> miette::Result<NodeId> {
-        let id = self.snarl.insert_node(pos, get_snarl_node(&id).unwrap());
+        let id = self
+            .snarl
+            .insert_node(pos, SnarlNode::new(get_raw_snarl_node(&id).unwrap()));
         self.inline_values.retain(|in_pin, _| in_pin.node != id);
 
         Ok(id)
@@ -216,7 +218,7 @@ impl<'a, 'snarl> GraphEditingContext<'a, 'snarl> {
         pos: Pos2,
         _commands: &mut SnarlCommands,
     ) -> miette::Result<NodeId> {
-        let node: SnarlNode = match self
+        let node: Box<dyn Node> = match self
             .registry
             .get_object(&object)
             .expect("object id should be valid")
@@ -225,7 +227,7 @@ impl<'a, 'snarl> GraphEditingContext<'a, 'snarl> {
             EObjectType::Enum(data) => Box::new(EnumNode::new(data.variant_ids()[0])),
         };
 
-        let id = self.snarl.insert_node(pos, node);
+        let id = self.snarl.insert_node(pos, SnarlNode::new(node));
         self.inline_values.retain(|in_pin, _| in_pin.node != id);
 
         Ok(id)
@@ -243,7 +245,7 @@ impl<'a, 'snarl> GraphEditingContext<'a, 'snarl> {
             .expect("list id should be valid")
             .value_type;
         let node = Box::new(ListNode::of_type(item_ty));
-        let id = self.snarl.insert_node(pos, node);
+        let id = self.snarl.insert_node(pos, SnarlNode::new(node));
         self.inline_values.retain(|in_pin, _| in_pin.node != id);
 
         Ok(id)

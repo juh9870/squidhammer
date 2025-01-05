@@ -7,9 +7,7 @@ use crate::graph::node::commands::{SnarlCommand, SnarlCommands};
 use crate::graph::node::editable_state::{EditableState, EditableStateValue};
 use crate::graph::node::ports::NodePortType;
 use crate::graph::node::variables::ExecutionExtras;
-use crate::graph::node::{
-    impl_serde_node, InputData, Node, NodeContext, NodeFactory, OutputData, SnarlNode,
-};
+use crate::graph::node::{impl_serde_node, InputData, Node, NodeContext, NodeFactory, OutputData};
 use crate::project::docs::{Docs, DocsRef};
 use crate::registry::ETypesRegistry;
 use crate::value::EValue;
@@ -202,7 +200,7 @@ impl NodeFactory for EnumNodeFactory {
         &[]
     }
 
-    fn create(&self) -> SnarlNode {
+    fn create(&self) -> Box<dyn Node> {
         Box::new(EnumNode { variant: None })
     }
 }

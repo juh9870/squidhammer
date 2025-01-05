@@ -1,9 +1,7 @@
 use crate::etype::eitem::EItemInfo;
 use crate::graph::node::commands::{SnarlCommand, SnarlCommands};
 use crate::graph::node::ports::NodePortType;
-use crate::graph::node::{
-    ExecutionExtras, InputData, Node, NodeContext, NodeFactory, OutputData, SnarlNode,
-};
+use crate::graph::node::{ExecutionExtras, InputData, Node, NodeContext, NodeFactory, OutputData};
 use crate::value::EValue;
 use egui_snarl::{InPin, InPinId, OutPin, OutPinId};
 use ustr::Ustr;
@@ -155,7 +153,7 @@ impl NodeFactory for RerouteFactory {
         &["utility"]
     }
 
-    fn create(&self) -> SnarlNode {
+    fn create(&self) -> Box<dyn Node> {
         Box::new(RerouteNode::default())
     }
 }

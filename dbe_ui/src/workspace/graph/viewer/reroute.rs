@@ -62,7 +62,7 @@ impl NodeView for RerouteNodeViewer {
         Ok(pin_info(&output_data.ty, registry))
     }
 
-    fn node_layout(&self, viewer: &mut GraphViewer, node: &SnarlNode) -> NodeLayout {
+    fn node_layout(&self, _viewer: &mut GraphViewer, _node: &SnarlNode) -> NodeLayout {
         NodeLayout::Basic
     }
 }

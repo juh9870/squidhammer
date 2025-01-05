@@ -9,7 +9,6 @@ use crate::graph::node::ports::fields::{
 use crate::graph::node::ports::NodePortType;
 use crate::graph::node::{
     impl_serde_node, ExecutionExtras, InputData, Node, NodeContext, NodeFactory, OutputData,
-    SnarlNode,
 };
 use crate::project::docs::{Docs, DocsRef};
 use crate::value::id::ETypeId;
@@ -182,7 +181,7 @@ impl NodeFactory for StructNodeFactory {
         &[]
     }
 
-    fn create(&self) -> SnarlNode {
+    fn create(&self) -> Box<dyn Node> {
         Box::new(StructNode {
             id: ETypeId::temp(0),
             fields: vec![],

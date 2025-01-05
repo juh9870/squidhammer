@@ -5,9 +5,7 @@ use crate::graph::node::groups::utils::{
 };
 use crate::graph::node::ports::fields::IoDirection;
 use crate::graph::node::ports::{InputData, NodePortType, OutputData};
-use crate::graph::node::{
-    impl_serde_node, ExecutionExtras, Node, NodeContext, NodeFactory, SnarlNode,
-};
+use crate::graph::node::{impl_serde_node, ExecutionExtras, Node, NodeContext, NodeFactory};
 use crate::value::EValue;
 use egui_snarl::{InPin, NodeId, OutPin};
 use serde::{Deserialize, Serialize};
@@ -151,7 +149,7 @@ impl NodeFactory for GroupInputNodeFactory {
         &["node groups"]
     }
 
-    fn create(&self) -> SnarlNode {
+    fn create(&self) -> Box<dyn Node> {
         Box::new(GroupInputNode::new())
     }
 }

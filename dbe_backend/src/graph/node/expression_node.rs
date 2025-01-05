@@ -5,7 +5,7 @@ use crate::graph::node::editable_state::EditableState;
 use crate::graph::node::ports::fields::{map_inputs, sync_fields, FieldMapper, IoDirection};
 use crate::graph::node::ports::{InputData, OutputData};
 use crate::graph::node::variables::ExecutionExtras;
-use crate::graph::node::{Node, NodeContext, NodeFactory, SnarlNode};
+use crate::graph::node::{Node, NodeContext, NodeFactory};
 use crate::registry::ETypesRegistry;
 use crate::value::EValue;
 use egui_snarl::NodeId;
@@ -206,7 +206,7 @@ impl NodeFactory for ExpressionNodeFactory {
         &["math"]
     }
 
-    fn create(&self) -> SnarlNode {
+    fn create(&self) -> Box<dyn Node> {
         Box::new(ExpressionNode {
             expression: "".to_string(),
             variables: vec![],
