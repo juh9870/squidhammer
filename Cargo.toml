@@ -7,7 +7,6 @@ members = [
     "diagnostic",
     "eh_codegen",
     "list_edit",
-    "node_macro",
     "squidfmt",
     "utils",
     "xtask"
@@ -29,29 +28,29 @@ derive_more = "1.0.0"
 downcast-rs = "1.2.1"
 duplicate = "2.0.0"
 dyn-clone = "1.0.17"
-eframe = "0.29.1"
-egui = "0.29.1"
-egui-modal = "0.5.0"
-egui-snarl = "0.5.0"
-egui-toast = "0.15.0"
-egui_colors = { git = "https://github.com/juh9870/egui_colors.git", rev = "32df52dd8ba9736edc5a92be6b9d30d77fc08955" }
-egui_commonmark = "0.18.0"
-egui_dnd = "0.10.0"
-egui_dock = "0.14.0"
-egui_file = "0.19.0"
-egui_hooks = "0.6.1"
-egui_tracing = "0.2.6"
-emath = "0.29.1"
+eframe = "0.30"
+egui = "0.30"
+egui-modal = "0.6.0"
+egui-snarl = "0.6.0"
+egui-toast = { git = "https://github.com/fluxxcode/egui-toast.git", rev = "7c5970a39458d5c8d8e5d0570e095a6d6c5140d4" }
+egui_colors = "0.6.0"
+egui_commonmark = "0.19.0"
+egui_dnd = "0.11.0"
+egui_dock = "0.15.0"
+egui_file = "0.21.0"
+egui_hooks = { git = "https://github.com/juh9870/egui_hooks.git", rev = "15dbf26a5c5035e3f8786d75a5c965ad1383d8b3" }
+egui_tracing = { git = "https://github.com/juh9870/egui_tracing.git", rev = "7c9c5e3bf08579915baa0f10a21c473054924e94" }
+emath = "0.30.0"
 embed-resource = "3.0.1"
 exmex = "0.20.3"
 fs-err = "3.0.0"
 inline_tweak = "1.1.1"
 insta = "1.41.1"
-itertools = "0.13.0"
-knuffel = { git = "https://github.com/TheLostLambda/knuffel.git", rev = "744bf56c1fc64b87f7c47d67470ff7898970dc70" } # TODO: upgrade to https://github.com/TheLostLambda/knus
+itertools = "0.14.0"
+knus = { git = "https://github.com/TheLostLambda/knuffel.git", rev = "163f3291b741f10776f64767ff13b8bb60092685" }
 lockfree-object-pool = "0.1.6"
 maybe-owned = "0.3.4"
-miette = "7.2.0"
+miette = "7.4.0"
 num-traits = "0.2.19"
 num_cpus = "1.16.0"
 ordered-float = "4.2.0"
@@ -61,7 +60,7 @@ path-clean = "1.0.1"
 rand = { version = "0.8.5", default-features = false }
 random_color = "1.0.0"
 rayon = "1.10.0"
-rstest = "0.23.0"
+rstest = "0.24.0"
 sanitise-file-name = "1.0.0"
 serde = "1.0.196"
 serde_json = "1.0.120"
@@ -87,12 +86,11 @@ utils = { path = "utils" }
 list_edit = { path = "list_edit" }
 diagnostic = { path = "diagnostic" }
 squidfmt = { path = "squidfmt" }
-
-[patch.'https://github.com/TheLostLambda/miette']
-miette = { git = "https://github.com/zkat/miette", rev = "bf5aa3742fd664be3c93160b9c28c145b1ed8bc9" }
-
-[patch.crates-io]
-miette = { git = "https://github.com/zkat/miette", rev = "bf5aa3742fd664be3c93160b9c28c145b1ed8bc9" }
+#[patch.'https://github.com/TheLostLambda/miette']
+#miette = { git = "https://github.com/zkat/miette", rev = "bf5aa3742fd664be3c93160b9c28c145b1ed8bc9" }
+#
+#[patch.crates-io]
+#miette = { git = "https://github.com/zkat/miette", rev = "bf5aa3742fd664be3c93160b9c28c145b1ed8bc9" }
 
 [profile.release]
 opt-level = 3
