@@ -11,7 +11,7 @@ use dbe_backend::project::docs::{DocsRef, DocsWindowRef};
 use dbe_backend::registry::ETypesRegistry;
 use dbe_backend::value::EValue;
 use egui::Ui;
-use egui_snarl::ui::PinInfo;
+use egui_snarl::ui::{NodeLayout, PinInfo};
 use egui_snarl::{InPin, NodeId, OutPin, Snarl};
 use std::fmt::Debug;
 use ustr::Ustr;
@@ -171,6 +171,10 @@ impl NodeView for DefaultNodeView {
         });
 
         Ok(pin_info(&output_data.ty, registry))
+    }
+
+    fn node_layout(&self, _viewer: &mut GraphViewer, _node: &SnarlNode) -> NodeLayout {
+        NodeLayout::FlippedSandwich
     }
 
     fn has_body(&self, _viewer: &mut GraphViewer, node: &SnarlNode) -> miette::Result<bool> {

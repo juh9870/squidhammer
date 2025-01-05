@@ -5,7 +5,7 @@ use crate::workspace::graph::GraphViewer;
 use atomic_refcell::AtomicRefCell;
 use dbe_backend::graph::node::SnarlNode;
 use egui::Ui;
-use egui_snarl::ui::PinInfo;
+use egui_snarl::ui::{NodeLayout, PinInfo};
 use egui_snarl::{InPin, NodeId, OutPin, Snarl};
 use std::fmt::Debug;
 use std::ops::Deref;
@@ -70,6 +70,10 @@ pub trait NodeView: Send + Sync + Debug + 'static {
         snarl: &mut Snarl<SnarlNode>,
     ) -> miette::Result<PinInfo> {
         DefaultNodeView.show_output(viewer, pin, ui, _scale, snarl)
+    }
+
+    fn node_layout(&self, viewer: &mut GraphViewer, node: &SnarlNode) -> NodeLayout {
+        DefaultNodeView.node_layout(viewer, node)
     }
 
     fn has_body(&self, viewer: &mut GraphViewer, node: &SnarlNode) -> miette::Result<bool> {
