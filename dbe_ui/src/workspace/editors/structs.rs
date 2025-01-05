@@ -66,21 +66,23 @@ impl Editor for StructEditor {
 
                 let draw_fields = |ui: &mut Ui| {
                     for (field, editor) in items {
-                        fields
-                            .get_mut(&field.name)
-                            .ok_or_else(|| miette!("field `{}` is missing", field.name))
-                            .then_draw(ui, |ui, value| {
-                                let mut d = diagnostics.enter_field(field.name.as_str());
-                                let ctx =
-                                    ctx.copy_with_docs(DocsRef::TypeField(*ident, field.name));
-                                if editor
-                                    .show(ui, ctx, d.enter_inline(), field.name.as_ref(), value)
-                                    .changed
-                                {
-                                    changed = true;
-                                };
-                                diagnostics_column(ui, d.get_reports_shallow())
-                            });
+                        ui.push_id(field.name, |ui| {
+                            fields
+                                .get_mut(&field.name)
+                                .ok_or_else(|| miette!("field `{}` is missing", field.name))
+                                .then_draw(ui, |ui, value| {
+                                    let mut d = diagnostics.enter_field(field.name.as_str());
+                                    let ctx =
+                                        ctx.copy_with_docs(DocsRef::TypeField(*ident, field.name));
+                                    if editor
+                                        .show(ui, ctx, d.enter_inline(), field.name.as_ref(), value)
+                                        .changed
+                                    {
+                                        changed = true;
+                                    };
+                                    diagnostics_column(ui, d.get_reports_shallow())
+                                });
+                        });
                     }
                 };
 

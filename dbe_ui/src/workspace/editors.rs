@@ -5,6 +5,7 @@ use crate::workspace::editors::consts::ConstEditor;
 use crate::workspace::editors::enum_flags::EnumFlagsEditor;
 use crate::workspace::editors::enums::EnumEditor;
 use crate::workspace::editors::errors::{ErrorEditor, ErrorProps};
+use crate::workspace::editors::id_ref::IdRefEditor;
 use crate::workspace::editors::map::MapEditor;
 use crate::workspace::editors::number::NumberEditor;
 use crate::workspace::editors::rgb::RgbEditor;
@@ -40,6 +41,7 @@ mod consts;
 mod enum_flags;
 mod enums;
 mod errors;
+mod id_ref;
 mod list;
 mod map;
 mod number;
@@ -68,11 +70,7 @@ fn default_editors() -> impl Iterator<Item = (Ustr, Box<dyn Editor>)> {
             "ids/numeric".into(),
             Box::new(WrappedEditor::new(NumberEditor::new(false), "id".into())),
         ),
-        // TODO: proper editors for id refs
-        (
-            "ids/numeric_ref".into(),
-            Box::new(WrappedEditor::new(NumberEditor::new(false), "id".into())),
-        ),
+        ("ids/numeric_ref".into(), Box::new(IdRefEditor)),
         // TODO: proper combobox editors
         ("eh:image".into(), Box::new(StringEditor)),
         ("eh:layout".into(), Box::new(StringEditor)),
