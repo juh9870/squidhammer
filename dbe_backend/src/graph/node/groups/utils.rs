@@ -12,10 +12,10 @@ use egui_snarl::NodeId;
 use std::marker::PhantomData;
 use uuid::Uuid;
 
-struct GraphIoMapper<IO: GraphIoData>(PhantomData<fn() -> IO>);
+pub struct GraphIoMapper<IO: GraphIoData>(PhantomData<fn() -> IO>);
 
 impl<IO: GraphIoData> GraphIoMapper<IO> {
-    const INSTANCE: Self = Self(PhantomData);
+    pub const INSTANCE: Self = Self(PhantomData);
 }
 
 impl<IO: GraphIoData> FieldMapper for GraphIoMapper<IO> {

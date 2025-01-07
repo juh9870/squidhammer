@@ -21,6 +21,7 @@ use crate::project::docs::{Docs, DocsWindowRef};
 use crate::project::project_graph::ProjectGraphs;
 use crate::registry::ETypesRegistry;
 use crate::value::EValue;
+use ahash::AHashMap;
 use atomic_refcell::{AtomicRef, AtomicRefCell};
 use downcast_rs::{impl_downcast, Downcast};
 use dyn_clone::DynClone;
@@ -31,7 +32,9 @@ use std::collections::BTreeMap;
 use std::fmt::Debug;
 use std::ops::{Deref, DerefMut};
 use std::sync::{Arc, LazyLock};
+use strum::EnumIs;
 use ustr::{Ustr, UstrMap};
+use uuid::Uuid;
 
 pub mod commands;
 pub mod editable_state;
@@ -43,6 +46,7 @@ pub mod groups;
 pub mod list;
 pub mod mappings;
 pub mod ports;
+pub mod regional;
 pub mod reroute;
 pub mod saving_node;
 pub mod struct_node;
@@ -113,12 +117,14 @@ pub struct NodeContext<'a> {
     pub registry: &'a ETypesRegistry,
     pub inputs: &'a SmallVec<[GraphInput; 1]>,
     pub outputs: &'a SmallVec<[GraphOutput; 1]>,
+    pub regions: &'a AHashMap<Uuid, RegionInfo>,
     pub graphs: Option<&'a ProjectGraphs>,
 }
 
 #[derive(Debug)]
 pub struct SnarlNode {
     pub node: Box<dyn Node>,
+    // pub region: Option<Uuid>,
 }
 
 impl SnarlNode {
@@ -139,6 +145,14 @@ impl DerefMut for SnarlNode {
     fn deref_mut(&mut self) -> &mut Self::Target {
         &mut *self.node
     }
+}
+
+#[derive(Debug, EnumIs)]
+pub enum ExecutionResult {
+    /// Node execution is done
+    Done,
+    /// Node should be run again, re-evaluating all nodes in the region
+    RerunRegion { region: Uuid },
 }
 
 pub trait Node: DynClone + Debug + Send + Sync + Downcast + 'static {
@@ -340,6 +354,18 @@ pub trait Node: DynClone + Debug + Send + Sync + Downcast + 'static {
         unimplemented!("Node::can_output_to")
     }
 
+    /// Indicates that this node is a start of a region
+    fn region_source(&self, context: NodeContext) -> Option<Uuid> {
+        let _ = (context,);
+        None
+    }
+
+    /// Indicates that this node is an end of a region
+    fn region_end(&self, context: NodeContext) -> Option<Uuid> {
+        let _ = (context,);
+        None
+    }
+
     /// Whenever the node has side effects and must be executed
     fn has_side_effects(&self) -> bool {
         false
@@ -352,7 +378,7 @@ pub trait Node: DynClone + Debug + Send + Sync + Downcast + 'static {
         inputs: &[EValue],
         outputs: &mut Vec<EValue>,
         variables: &mut ExecutionExtras,
-    ) -> miette::Result<()>;
+    ) -> miette::Result<ExecutionResult>;
 
     fn _default_try_connect(
         &mut self,
@@ -419,4 +445,5 @@ macro_rules! impl_serde_node {
     };
 }
 
+use crate::graph::region::RegionInfo;
 pub(crate) use impl_serde_node;

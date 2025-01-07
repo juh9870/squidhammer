@@ -4,7 +4,8 @@ use crate::etype::EDataType;
 use crate::graph::node::commands::{SnarlCommand, SnarlCommands};
 use crate::graph::node::ports::NodePortType;
 use crate::graph::node::{
-    impl_serde_node, ExecutionExtras, InputData, Node, NodeContext, NodeFactory, OutputData,
+    impl_serde_node, ExecutionExtras, ExecutionResult, InputData, Node, NodeContext, NodeFactory,
+    OutputData,
 };
 use crate::value::EValue;
 use egui_snarl::{InPin, InPinId, OutPin, OutPinId};
@@ -156,7 +157,7 @@ impl Node for ListNode {
         inputs: &[EValue],
         outputs: &mut Vec<EValue>,
         _variables: &mut ExecutionExtras,
-    ) -> miette::Result<()> {
+    ) -> miette::Result<ExecutionResult> {
         let mut values = vec![];
         // TODO: check for inputs count to match items_count
         for input in inputs.iter().take(self.items_count).cloned() {
@@ -167,7 +168,8 @@ impl Node for ListNode {
             id: context.registry.list_id_of(self.item),
             values,
         });
-        Ok(())
+
+        Ok(ExecutionResult::Done)
     }
 }
 

@@ -1,7 +1,9 @@
 use crate::etype::eitem::EItemInfo;
 use crate::etype::EDataType;
 use crate::graph::node::ports::NodePortType;
-use crate::graph::node::{ExecutionExtras, InputData, Node, NodeContext, NodeFactory, OutputData};
+use crate::graph::node::{
+    ExecutionExtras, ExecutionResult, InputData, Node, NodeContext, NodeFactory, OutputData,
+};
 use crate::project::side_effects::SideEffect;
 use crate::registry::OPTIONAL_STRING_ID;
 use crate::value::EValue;
@@ -67,7 +69,7 @@ impl<const ALLOW_ANY: bool> Node for SavingNode<ALLOW_ANY> {
         inputs: &[EValue],
         _outputs: &mut Vec<EValue>,
         variables: &mut ExecutionExtras,
-    ) -> miette::Result<()> {
+    ) -> miette::Result<ExecutionResult> {
         let EValue::Enum { variant, data } = &inputs[0] else {
             bail!("path input must be an enum, got {:?}", inputs[0]);
         };
@@ -92,7 +94,7 @@ impl<const ALLOW_ANY: bool> Node for SavingNode<ALLOW_ANY> {
                 })?
         }
 
-        Ok(())
+        Ok(ExecutionResult::Done)
     }
 }
 

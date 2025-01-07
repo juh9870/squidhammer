@@ -1,12 +1,17 @@
+use crate::graph::region::RegionExecutionData;
 use crate::project::side_effects::SideEffectsContext;
 use crate::value::EValue;
+use ahash::AHashMap;
 use miette::{bail, miette};
+use uuid::Uuid;
 
-#[derive(Debug)]
+#[derive(derive_more::Debug)]
 pub struct ExecutionExtras<'a> {
     is_node_group: bool,
     group_inputs: &'a [EValue],
     group_outputs: &'a mut Option<Vec<EValue>>,
+    #[debug("(...)")]
+    regional_data: &'a mut AHashMap<Uuid, Box<dyn RegionExecutionData>>,
     pub side_effects: SideEffectsContext<'a>,
 }
 
@@ -15,12 +20,14 @@ impl<'a> ExecutionExtras<'a> {
         is_node_group: bool,
         group_inputs: &'a [EValue],
         group_outputs: &'a mut Option<Vec<EValue>>,
+        regional_data: &'a mut AHashMap<Uuid, Box<dyn RegionExecutionData>>,
         side_effects: SideEffectsContext<'a>,
     ) -> Self {
         Self {
             is_node_group,
             group_inputs,
             group_outputs,
+            regional_data,
             side_effects,
         }
     }
@@ -58,5 +65,23 @@ impl<'a> ExecutionExtras<'a> {
         *self.group_outputs = Some(values);
 
         Ok(())
+    }
+
+    pub fn get_or_init_region_data<T: RegionExecutionData>(
+        &mut self,
+        region: Uuid,
+        init: impl FnOnce() -> T,
+    ) -> &mut T {
+        self.regional_data
+            .entry(region)
+            .or_insert_with(|| Box::new(init()))
+            .downcast_mut::<T>()
+            .expect("Region data type mismatch")
+    }
+
+    pub fn get_region_data<T: RegionExecutionData>(&mut self, region: Uuid) -> Option<&mut T> {
+        self.regional_data
+            .get_mut(&region)
+            .map(|data| data.downcast_mut::<T>().expect("Region data type mismatch"))
     }
 }

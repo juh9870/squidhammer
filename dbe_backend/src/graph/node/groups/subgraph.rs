@@ -8,7 +8,9 @@ use crate::graph::node::groups::utils::{
 };
 use crate::graph::node::ports::fields::IoDirection;
 use crate::graph::node::ports::{InputData, OutputData};
-use crate::graph::node::{impl_serde_node, ExecutionExtras, Node, NodeContext, NodeFactory};
+use crate::graph::node::{
+    impl_serde_node, ExecutionExtras, ExecutionResult, Node, NodeContext, NodeFactory,
+};
 use crate::m_try;
 use crate::project::docs::Docs;
 use crate::project::project_graph::ProjectGraph;
@@ -134,7 +136,7 @@ impl Node for SubgraphNode {
         inputs: &[EValue],
         outputs: &mut Vec<EValue>,
         variables: &mut ExecutionExtras,
-    ) -> miette::Result<()> {
+    ) -> miette::Result<ExecutionResult> {
         let graph = self.get_graph(context)?;
 
         if !graph.is_node_group {
@@ -193,7 +195,7 @@ impl Node for SubgraphNode {
             )
         })?;
 
-        Ok(())
+        Ok(ExecutionResult::Done)
     }
 }
 

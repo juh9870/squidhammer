@@ -2,8 +2,9 @@ use crate::graph::cache::GraphCache;
 use crate::graph::inputs::{GraphInput, GraphOutput};
 use crate::graph::node::ports::NodePortType;
 use crate::graph::node::variables::ExecutionExtras;
-use crate::graph::node::NodeContext;
 use crate::graph::node::SnarlNode;
+use crate::graph::node::{ExecutionResult, NodeContext};
+use crate::graph::region::{RegionExecutionData, RegionInfo};
 use crate::graph::Graph;
 use crate::m_try;
 use crate::project::project_graph::ProjectGraphs;
@@ -12,8 +13,10 @@ use crate::registry::ETypesRegistry;
 use crate::value::EValue;
 use ahash::AHashMap;
 use egui_snarl::{InPinId, NodeId, OutPinId, Snarl};
+use maybe_owned::MaybeOwnedMut;
 use miette::{bail, miette, Context};
 use smallvec::SmallVec;
+use uuid::Uuid;
 
 macro_rules! node_context {
     ($source:ident) => {
@@ -21,12 +24,13 @@ macro_rules! node_context {
             registry: $source.registry,
             inputs: $source.inputs,
             outputs: $source.outputs,
+            regions: $source.regions,
             graphs: $source.graphs,
         }
     };
 }
 
-#[derive(Debug)]
+#[derive(derive_more::Debug)]
 pub struct GraphExecutionContext<'a, 'snarl> {
     pub snarl: &'snarl Snarl<SnarlNode>,
     pub inputs: &'a SmallVec<[GraphInput; 1]>,
@@ -38,6 +42,9 @@ pub struct GraphExecutionContext<'a, 'snarl> {
     pub is_node_group: bool,
     pub input_values: &'a [EValue],
     pub output_values: &'a mut Option<Vec<EValue>>,
+    pub regions: &'a AHashMap<Uuid, RegionInfo>,
+    #[debug("(...)")]
+    pub regional_data: MaybeOwnedMut<'a, AHashMap<Uuid, Box<dyn RegionExecutionData>>>,
     cache: &'a mut GraphCache,
 }
 
@@ -65,6 +72,8 @@ impl<'a> GraphExecutionContext<'a, 'a> {
             is_node_group,
             input_values,
             output_values,
+            regions: graph.regions(),
+            regional_data: Default::default(),
         }
     }
 
@@ -81,6 +90,7 @@ impl<'a> GraphExecutionContext<'a, 'a> {
         is_node_group: bool,
         input_values: &'a [EValue],
         output_values: &'a mut Option<Vec<EValue>>,
+        regions: &'a AHashMap<Uuid, RegionInfo>,
     ) -> Self {
         Self {
             snarl,
@@ -94,6 +104,8 @@ impl<'a> GraphExecutionContext<'a, 'a> {
             input_values,
             output_values,
             is_node_group,
+            regions,
+            regional_data: Default::default(),
         }
     }
 }
@@ -266,57 +278,73 @@ impl<'a, 'snarl> GraphExecutionContext<'a, 'snarl> {
                 bail!("Cyclic dependency detected");
             }
             stack.push(id);
+            let stack_idx = stack.len();
 
-            let node = self
-                .snarl
-                .get_node(id)
-                .ok_or_else(|| miette!("Node {:?} not found", id))?;
+            loop {
+                // Stack is higher than the current node, this means we are
+                // rerunning the node, and should truncate stack to avoid
+                // cyclic dependency detection
+                if stack.len() > stack_idx {
+                    stack.truncate(stack_idx);
+                }
 
-            let inputs_count = node.inputs_count(node_context!(self));
-            let mut input_values = Vec::<EValue>::with_capacity(inputs_count);
+                let node = self
+                    .snarl
+                    .get_node(id)
+                    .ok_or_else(|| miette!("Node {:?} not found", id))?;
 
-            for i in 0..inputs_count {
-                input_values.push(self.read_node_input_inner(
-                    stack,
-                    InPinId { node: id, input: i },
-                    node,
-                    side_effects,
-                )?);
+                let inputs_count = node.inputs_count(node_context!(self));
+                let mut input_values = Vec::<EValue>::with_capacity(inputs_count);
+
+                for i in 0..inputs_count {
+                    input_values.push(self.read_node_input_inner(
+                        stack,
+                        InPinId { node: id, input: i },
+                        node,
+                        side_effects,
+                    )?);
+                }
+
+                let outputs_count = node.outputs_count(node_context!(self));
+                let mut outputs = Vec::with_capacity(outputs_count);
+
+                let side_effects = self.side_effects.with_node(id);
+                let result = node.execute(
+                    node_context!(self),
+                    &input_values,
+                    &mut outputs,
+                    &mut ExecutionExtras::new(
+                        self.is_node_group,
+                        self.input_values,
+                        self.output_values,
+                        self.regional_data.as_mut(),
+                        side_effects,
+                    ),
+                )?;
+
+                match result {
+                    ExecutionResult::Done => {
+                        // TODO: check for validity of returned values types
+                        self.cache.insert(id, outputs);
+                        return Ok(());
+                    }
+                    ExecutionResult::RerunRegion { region } => {
+                        todo!("clear cache of all nodes in the region")
+                        // clear cache of all nodes in the region
+                        // for (id, node) in self.snarl.nodes_ids_data() {
+                        //     if node.value.region.is_some_and(|reg| reg == region) {
+                        //         self.cache.remove(&id);
+                        //     }
+                        // }
+                    }
+                }
             }
-
-            let outputs_count = node.outputs_count(node_context!(self));
-            let mut outputs = Vec::with_capacity(outputs_count);
-            // if side_effects && node.has_side_effects() {
-            //     node.execute_side_effects(
-            //         node_context!(self),
-            //         &input_values,
-            //         &mut outputs,
-            //         side_effects,
-            //     )?;
-            // }
-            let side_effects = self.side_effects.with_node(id);
-            node.execute(
-                node_context!(self),
-                &input_values,
-                &mut outputs,
-                &mut ExecutionExtras::new(
-                    self.is_node_group,
-                    self.input_values,
-                    self.output_values,
-                    side_effects,
-                ),
-            )?;
-
-            // TODO: check for validity of returned values types
-            self.cache.insert(id, outputs);
-
-            Ok(())
         })
         .with_context(|| format!("failed to evaluate node {:?}", id))
     }
 }
 
-#[derive(Debug)]
+#[derive(derive_more::Debug)]
 pub struct PartialGraphExecutionContext<'a> {
     pub inputs: &'a SmallVec<[GraphInput; 1]>,
     pub outputs: &'a SmallVec<[GraphOutput; 1]>,
@@ -327,6 +355,9 @@ pub struct PartialGraphExecutionContext<'a> {
     pub is_node_group: bool,
     pub input_values: &'a [EValue],
     pub output_values: &'a mut Option<Vec<EValue>>,
+    pub regions: &'a AHashMap<Uuid, RegionInfo>,
+    #[debug("(...)")]
+    pub regional_data: MaybeOwnedMut<'a, AHashMap<Uuid, Box<dyn RegionExecutionData>>>,
     cache: &'a mut GraphCache,
 }
 
@@ -346,6 +377,8 @@ impl<'a> PartialGraphExecutionContext<'a> {
                 is_node_group: ctx.is_node_group,
                 input_values: ctx.input_values,
                 output_values: ctx.output_values,
+                regions: ctx.regions,
+                regional_data: Default::default(),
             },
             ctx.snarl,
         )
@@ -361,6 +394,7 @@ impl<'a> PartialGraphExecutionContext<'a> {
         is_node_group: bool,
         input_values: &'a [EValue],
         output_values: &'a mut Option<Vec<EValue>>,
+        regions: &'a AHashMap<Uuid, RegionInfo>,
     ) -> (Self, &'a Snarl<SnarlNode>) {
         (
             PartialGraphExecutionContext {
@@ -374,6 +408,8 @@ impl<'a> PartialGraphExecutionContext<'a> {
                 is_node_group,
                 input_values,
                 output_values,
+                regions,
+                regional_data: Default::default(),
             },
             &graph.snarl,
         )
@@ -398,6 +434,8 @@ impl<'a> PartialGraphExecutionContext<'a> {
             is_node_group: self.is_node_group,
             input_values: self.input_values,
             output_values: self.output_values,
+            regions: self.regions,
+            regional_data: MaybeOwnedMut::Borrowed(&mut self.regional_data),
         }
     }
 }
