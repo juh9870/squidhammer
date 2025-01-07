@@ -5,7 +5,7 @@ use crate::graph::node::editable_state::EditableState;
 use crate::graph::node::ports::fields::{map_inputs, sync_fields, FieldMapper, IoDirection};
 use crate::graph::node::ports::{InputData, OutputData};
 use crate::graph::node::variables::ExecutionExtras;
-use crate::graph::node::{Node, NodeContext, NodeFactory};
+use crate::graph::node::{ExecutionResult, Node, NodeContext, NodeFactory};
 use crate::registry::ETypesRegistry;
 use crate::value::EValue;
 use egui_snarl::NodeId;
@@ -163,7 +163,7 @@ impl Node for ExpressionNode {
         inputs: &[EValue],
         outputs: &mut Vec<EValue>,
         _variables: &mut ExecutionExtras,
-    ) -> miette::Result<()> {
+    ) -> miette::Result<ExecutionResult> {
         let Some(expr) = &self.expr else {
             bail!("Expression not parsed");
         };
@@ -190,7 +190,7 @@ impl Node for ExpressionNode {
         outputs.clear();
         outputs.push(result.into());
 
-        Ok(())
+        Ok(ExecutionResult::Done)
     }
 }
 

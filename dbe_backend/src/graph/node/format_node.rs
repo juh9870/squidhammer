@@ -6,7 +6,7 @@ use crate::graph::node::ports::fields::mappers::USTR_MAPPER;
 use crate::graph::node::ports::fields::{sync_fields, IoDirection};
 use crate::graph::node::ports::{InputData, OutputData};
 use crate::graph::node::variables::ExecutionExtras;
-use crate::graph::node::{Node, NodeContext, NodeFactory};
+use crate::graph::node::{ExecutionResult, Node, NodeContext, NodeFactory};
 use crate::json_utils::JsonValue;
 use crate::registry::ETypesRegistry;
 use crate::value::EValue;
@@ -160,7 +160,7 @@ impl Node for FormatNode {
         inputs: &[EValue],
         outputs: &mut Vec<EValue>,
         _variables: &mut ExecutionExtras,
-    ) -> miette::Result<()> {
+    ) -> miette::Result<ExecutionResult> {
         let Some(fmt) = &self.fmt else {
             bail!("Format not parsed");
         };
@@ -173,7 +173,8 @@ impl Node for FormatNode {
 
         outputs.clear();
         outputs.push(EValue::String { value: formatted });
-        Ok(())
+
+        Ok(ExecutionResult::Done)
     }
 }
 

@@ -2,6 +2,7 @@ use crate::graph::editing::GraphEditingContext;
 use crate::graph::inputs::{GraphInput, GraphOutput};
 use crate::graph::node::commands::SnarlCommands;
 use crate::graph::node::{get_raw_snarl_node, NodeContext, SnarlNode};
+use crate::graph::region::RegionInfo;
 use crate::json_utils::JsonValue;
 use crate::m_try;
 use crate::project::docs::Docs;
@@ -16,12 +17,14 @@ use serde::{Deserialize, Serialize};
 use smallvec::SmallVec;
 use std::fmt::Debug;
 use ustr::Ustr;
+use uuid::Uuid;
 
 pub mod cache;
 pub mod editing;
 pub mod execution;
 pub mod inputs;
 pub mod node;
+pub mod region;
 
 /// A container of a graph with inline values. It contains all the data
 /// that is unique to this graph and is required for both node groups and standalone graphs
@@ -31,6 +34,7 @@ pub struct Graph {
     inline_values: AHashMap<InPinId, EValue>,
     inputs: SmallVec<[GraphInput; 1]>,
     outputs: SmallVec<[GraphOutput; 1]>,
+    regions: AHashMap<Uuid, RegionInfo>,
 }
 
 impl Graph {
@@ -66,6 +70,7 @@ impl Graph {
             inline_values: inputs,
             inputs: packed.inputs,
             outputs: packed.outputs,
+            regions: todo!(),
         };
 
         m_try(|| {
@@ -139,6 +144,7 @@ impl Graph {
                             registry,
                             inputs: &graph.inputs,
                             outputs: &graph.outputs,
+                            regions: &graph.regions,
                             graphs: None,
                         },
                         in_pin.input,
@@ -241,6 +247,14 @@ impl Graph {
 
     pub fn outputs_mut(&mut self) -> &mut SmallVec<[GraphOutput; 1]> {
         &mut self.outputs
+    }
+
+    pub fn regions(&self) -> &AHashMap<Uuid, RegionInfo> {
+        &self.regions
+    }
+
+    pub fn regions_mut(&mut self) -> &mut AHashMap<Uuid, RegionInfo> {
+        &mut self.regions
     }
 }
 

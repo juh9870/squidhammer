@@ -7,7 +7,9 @@ use crate::graph::node::commands::{SnarlCommand, SnarlCommands};
 use crate::graph::node::editable_state::{EditableState, EditableStateValue};
 use crate::graph::node::ports::NodePortType;
 use crate::graph::node::variables::ExecutionExtras;
-use crate::graph::node::{impl_serde_node, InputData, Node, NodeContext, NodeFactory, OutputData};
+use crate::graph::node::{
+    impl_serde_node, ExecutionResult, InputData, Node, NodeContext, NodeFactory, OutputData,
+};
 use crate::project::docs::{Docs, DocsRef};
 use crate::registry::ETypesRegistry;
 use crate::value::EValue;
@@ -171,7 +173,7 @@ impl Node for EnumNode {
         inputs: &[EValue],
         outputs: &mut Vec<EValue>,
         _variables: &mut ExecutionExtras,
-    ) -> miette::Result<()> {
+    ) -> miette::Result<ExecutionResult> {
         let Some((_, _)) = self.get_data(context.registry) else {
             panic!("Unknown enum variant");
         };
@@ -184,7 +186,8 @@ impl Node for EnumNode {
             variant: self.variant(),
             data: Box::new(inputs[0].clone()),
         });
-        Ok(())
+
+        Ok(ExecutionResult::Done)
     }
 }
 

@@ -1,7 +1,9 @@
 use crate::etype::eitem::EItemInfo;
 use crate::graph::node::commands::{SnarlCommand, SnarlCommands};
 use crate::graph::node::ports::NodePortType;
-use crate::graph::node::{ExecutionExtras, InputData, Node, NodeContext, NodeFactory, OutputData};
+use crate::graph::node::{
+    ExecutionExtras, ExecutionResult, InputData, Node, NodeContext, NodeFactory, OutputData,
+};
 use crate::value::EValue;
 use egui_snarl::{InPin, InPinId, OutPin, OutPinId};
 use ustr::Ustr;
@@ -133,11 +135,12 @@ impl Node for RerouteNode {
         inputs: &[EValue],
         outputs: &mut Vec<EValue>,
         _variables: &mut ExecutionExtras,
-    ) -> miette::Result<()> {
+    ) -> miette::Result<ExecutionResult> {
         for input in inputs.iter() {
             outputs.push(input.clone());
         }
-        Ok(())
+
+        Ok(ExecutionResult::Done)
     }
 }
 

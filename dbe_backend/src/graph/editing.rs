@@ -6,6 +6,7 @@ use crate::graph::node::enum_node::EnumNode;
 use crate::graph::node::list::ListNode;
 use crate::graph::node::struct_node::StructNode;
 use crate::graph::node::{get_raw_snarl_node, Node, NodeContext, SnarlNode};
+use crate::graph::region::RegionInfo;
 use crate::graph::Graph;
 use crate::m_try;
 use crate::project::docs::Docs;
@@ -21,6 +22,7 @@ use miette::Context;
 use smallvec::SmallVec;
 use std::collections::hash_map::Entry;
 use ustr::Ustr;
+use uuid::Uuid;
 
 macro_rules! node_context {
     ($source:ident) => {
@@ -28,6 +30,7 @@ macro_rules! node_context {
             registry: $source.registry,
             inputs: $source.inputs,
             outputs: $source.outputs,
+            regions: $source.regions,
             graphs: $source.graphs,
         }
     };
@@ -39,6 +42,7 @@ pub struct GraphEditingContext<'a, 'snarl> {
     pub inline_values: &'a mut AHashMap<InPinId, EValue>,
     pub inputs: &'a mut SmallVec<[GraphInput; 1]>,
     pub outputs: &'a mut SmallVec<[GraphOutput; 1]>,
+    pub regions: &'a mut AHashMap<Uuid, RegionInfo>,
     pub registry: &'a ETypesRegistry,
     pub docs: &'a Docs,
     pub graphs: Option<&'a ProjectGraphs>,
@@ -67,6 +71,7 @@ impl<'a> GraphEditingContext<'a, 'a> {
             inline_values: &mut graph.inline_values,
             inputs: &mut graph.inputs,
             outputs: &mut graph.outputs,
+            regions: &mut graph.regions,
             registry,
             docs,
             graphs,
@@ -93,6 +98,7 @@ impl<'a, 'snarl> GraphEditingContext<'a, 'snarl> {
             self.is_node_group,
             self.input_values,
             self.output_values,
+            self.regions,
         )
     }
 
@@ -153,7 +159,10 @@ impl<'a, 'snarl> GraphEditingContext<'a, 'snarl> {
 
             if can_output {
                 let to_node = &mut self.snarl[to.id.node];
-                to_node.try_connect(node_context!(self), commands, from, to, &from_pin.ty)?;
+
+                if !to_node.try_connect(node_context!(self), commands, from, to, &from_pin.ty)? {
+                    return Ok(());
+                }
 
                 if based_on_input {
                     let to_pin = to_node.try_input(node_context!(self), to.id.input)?;
@@ -268,6 +277,7 @@ pub struct PartialGraphEditingContext<'a> {
     pub inline_values: &'a mut AHashMap<InPinId, EValue>,
     pub inputs: &'a mut SmallVec<[GraphInput; 1]>,
     pub outputs: &'a mut SmallVec<[GraphOutput; 1]>,
+    pub regions: &'a mut AHashMap<Uuid, RegionInfo>,
     pub registry: &'a ETypesRegistry,
     pub docs: &'a Docs,
     pub graphs: Option<&'a ProjectGraphs>,
@@ -304,6 +314,7 @@ impl<'a> PartialGraphEditingContext<'a> {
                 input_values,
                 outputs: &mut graph.outputs,
                 output_values,
+                regions: &mut graph.regions,
             },
             &mut graph.snarl,
         )
@@ -329,6 +340,7 @@ impl<'a> PartialGraphEditingContext<'a> {
             input_values: self.input_values,
             output_values: self.output_values,
             is_node_group: self.is_node_group,
+            regions: self.regions,
         }
     }
 

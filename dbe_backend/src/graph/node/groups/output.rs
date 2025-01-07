@@ -5,7 +5,9 @@ use crate::graph::node::groups::utils::{
 };
 use crate::graph::node::ports::fields::IoDirection;
 use crate::graph::node::ports::{InputData, NodePortType, OutputData};
-use crate::graph::node::{impl_serde_node, ExecutionExtras, Node, NodeContext, NodeFactory};
+use crate::graph::node::{
+    impl_serde_node, ExecutionExtras, ExecutionResult, Node, NodeContext, NodeFactory,
+};
 use crate::value::EValue;
 use egui_snarl::{InPin, NodeId, OutPin};
 use miette::miette;
@@ -118,7 +120,7 @@ impl Node for GroupOutputNode {
         inputs: &[EValue],
         _outputs: &mut Vec<EValue>,
         variables: &mut ExecutionExtras,
-    ) -> miette::Result<()> {
+    ) -> miette::Result<ExecutionResult> {
         let mut group_out = Vec::with_capacity(context.outputs.len());
 
         map_group_outputs(
@@ -133,7 +135,7 @@ impl Node for GroupOutputNode {
 
         variables.set_outputs(group_out)?;
 
-        Ok(())
+        Ok(ExecutionResult::Done)
     }
 }
 

@@ -8,7 +8,8 @@ use crate::graph::node::ports::fields::{
 };
 use crate::graph::node::ports::NodePortType;
 use crate::graph::node::{
-    impl_serde_node, ExecutionExtras, InputData, Node, NodeContext, NodeFactory, OutputData,
+    impl_serde_node, ExecutionExtras, ExecutionResult, InputData, Node, NodeContext, NodeFactory,
+    OutputData,
 };
 use crate::project::docs::{Docs, DocsRef};
 use crate::value::id::ETypeId;
@@ -135,7 +136,7 @@ impl Node for StructNode {
         inputs: &[EValue],
         outputs: &mut Vec<EValue>,
         _variables: &mut ExecutionExtras,
-    ) -> miette::Result<()> {
+    ) -> miette::Result<ExecutionResult> {
         let data = context
             .registry
             .get_struct(&self.id)
@@ -165,7 +166,7 @@ impl Node for StructNode {
             ident: self.id,
         });
 
-        Ok(())
+        Ok(ExecutionResult::Done)
     }
 }
 

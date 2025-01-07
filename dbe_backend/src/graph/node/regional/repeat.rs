@@ -1,0 +1,122 @@
+use crate::etype::eitem::EItemInfo;
+use crate::etype::EDataType;
+use crate::graph::node::ports::{InputData, OutputData};
+use crate::graph::node::regional::{RegionIoKind, RegionalNode};
+use crate::graph::node::variables::ExecutionExtras;
+use crate::graph::node::{ExecutionResult, NodeContext};
+use crate::graph::region::RegionExecutionData;
+use crate::value::EValue;
+use miette::bail;
+use ustr::Ustr;
+use uuid::Uuid;
+
+#[derive(Debug, Clone)]
+pub struct RepeatRegionalNode;
+
+impl RegionalNode for RepeatRegionalNode {
+    fn id() -> Ustr {
+        "repeat".into()
+    }
+
+    fn inputs_count(&self, _context: NodeContext, kind: RegionIoKind) -> usize {
+        if kind.is_start() {
+            1
+        } else {
+            0
+        }
+    }
+
+    fn outputs_count(&self, _context: NodeContext, kind: RegionIoKind) -> usize {
+        if kind.is_start() {
+            1
+        } else {
+            0
+        }
+    }
+
+    fn input_unchecked(
+        &self,
+        _context: NodeContext,
+        kind: RegionIoKind,
+        _input: usize,
+    ) -> miette::Result<InputData> {
+        if kind.is_start() {
+            Ok(InputData::new(
+                EItemInfo::simple_type(EDataType::Number).into(),
+                "iterations".into(),
+            ))
+        } else {
+            panic!("Repeat node has no inputs on the end")
+        }
+    }
+
+    fn output_unchecked(
+        &self,
+        _context: NodeContext,
+        kind: RegionIoKind,
+        _output: usize,
+    ) -> miette::Result<OutputData> {
+        if kind.is_start() {
+            Ok(OutputData::new(
+                EItemInfo::simple_type(EDataType::Number).into(),
+                "iteration".into(),
+            ))
+        } else {
+            panic!("Repeat node has no outputs on the end")
+        }
+    }
+
+    fn execute(
+        &self,
+        _context: NodeContext,
+        kind: RegionIoKind,
+        region: Uuid,
+        inputs: &[EValue],
+        outputs: &mut Vec<EValue>,
+        variables: &mut ExecutionExtras,
+    ) -> miette::Result<ExecutionResult> {
+        if kind.is_start() {
+            let n_repeats = inputs[0].try_as_number()?;
+            let state = variables.get_or_init_region_data(region, || RepeatNodeState {
+                repeats: n_repeats.0 as u32,
+                current: 0,
+                values: None,
+            });
+
+            outputs.clear();
+            outputs.push(EValue::from(state.current as f64));
+
+            if let Some(values) = state.values.take() {
+                outputs.extend(values);
+            } else {
+                outputs.extend(inputs.iter().skip(1).cloned());
+            }
+
+            Ok(ExecutionResult::Done)
+        } else {
+            let Some(state) = variables.get_region_data::<RepeatNodeState>(region) else {
+                bail!("End of repeat node without start")
+            };
+
+            state.current += 1;
+
+            if state.current >= state.repeats {
+                outputs.clear();
+                outputs.extend(inputs.iter().cloned());
+                Ok(ExecutionResult::Done)
+            } else {
+                state.values = Some(inputs.to_vec());
+                Ok(ExecutionResult::RerunRegion { region })
+            }
+        }
+    }
+}
+
+#[derive(Debug)]
+struct RepeatNodeState {
+    repeats: u32,
+    current: u32,
+    values: Option<Vec<EValue>>,
+}
+
+impl RegionExecutionData for RepeatNodeState {}

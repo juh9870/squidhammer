@@ -5,7 +5,9 @@ use crate::graph::node::groups::utils::{
 };
 use crate::graph::node::ports::fields::IoDirection;
 use crate::graph::node::ports::{InputData, NodePortType, OutputData};
-use crate::graph::node::{impl_serde_node, ExecutionExtras, Node, NodeContext, NodeFactory};
+use crate::graph::node::{
+    impl_serde_node, ExecutionExtras, ExecutionResult, Node, NodeContext, NodeFactory,
+};
 use crate::value::EValue;
 use egui_snarl::{InPin, NodeId, OutPin};
 use serde::{Deserialize, Serialize};
@@ -126,14 +128,14 @@ impl Node for GroupInputNode {
         _inputs: &[EValue],
         outputs: &mut Vec<EValue>,
         variables: &mut ExecutionExtras,
-    ) -> miette::Result<()> {
+    ) -> miette::Result<ExecutionResult> {
         let inputs = variables.get_inputs()?;
 
         map_group_inputs(context.registry, context.inputs, &self.ids, inputs, outputs)?;
 
         debug_assert_eq!(outputs.len(), self.outputs_count(context));
 
-        Ok(())
+        Ok(ExecutionResult::Done)
     }
 }
 

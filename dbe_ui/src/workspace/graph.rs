@@ -490,12 +490,12 @@ impl<'a> SnarlViewer<SnarlNode> for GraphViewer<'a> {
 
     fn draw_background(
         &mut self,
-        background: Option<&BackgroundPattern>,
+        _background: Option<&BackgroundPattern>,
         viewport: &Viewport,
         snarl_style: &SnarlStyle,
         style: &Style,
         painter: &Painter,
-        snarl: &Snarl<SnarlNode>,
+        _snarl: &Snarl<SnarlNode>,
     ) {
         BackgroundPattern::Grid(Default::default()).draw(viewport, snarl_style, style, painter)
     }

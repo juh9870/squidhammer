@@ -4,7 +4,7 @@ use super::{
 use crate::etype::conversion::EItemInfoAdapter;
 use crate::graph::node::ports::{InputData, NodePortType, OutputData};
 use crate::graph::node::variables::ExecutionExtras;
-use crate::graph::node::{Node, NodeContext, NodeFactory};
+use crate::graph::node::{ExecutionResult, Node, NodeContext, NodeFactory};
 use crate::value::EValue;
 use miette::Context;
 use ustr::Ustr;
@@ -135,8 +135,10 @@ macro_rules! impl_functional_node {
                 Ok(<Self as FunctionalNode>::output_unchecked(self, output))
             }
 
-            fn execute(&self, _context: NodeContext, inputs: &[EValue], outputs: &mut Vec<EValue>, _variables: &mut ExecutionExtras) -> miette::Result<()> {
-                <Self as FunctionalNode>::execute(self, inputs, outputs)
+            fn execute(&self, _context: NodeContext, inputs: &[EValue], outputs: &mut Vec<EValue>, _variables: &mut ExecutionExtras) -> miette::Result<ExecutionResult> {
+                <Self as FunctionalNode>::execute(self, inputs, outputs)?;
+
+                Ok(ExecutionResult::Done)
             }
         }
         impl<$($in: EItemInfoAdapter + 'static,)* Output: FunctionalNodeOutput, F: Fn($($in),*) -> Output + Clone + Send + Sync> NodeFactory for FuncNode<($($in,)*), Output, F> {

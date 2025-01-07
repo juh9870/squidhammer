@@ -3,7 +3,7 @@ use crate::etype::eitem::EItemInfo;
 use crate::etype::EDataType;
 use crate::graph::node::ports::{InputData, OutputData};
 use crate::graph::node::variables::ExecutionExtras;
-use crate::graph::node::{Node, NodeContext, NodeFactory};
+use crate::graph::node::{ExecutionResult, Node, NodeContext, NodeFactory};
 use crate::project::EXTENSION_VALUE;
 use crate::value::id::ETypeId;
 use crate::value::EValue;
@@ -99,7 +99,7 @@ impl Node for MappingsNode {
         inputs: &[EValue],
         outputs: &mut Vec<EValue>,
         variables: &mut ExecutionExtras,
-    ) -> miette::Result<()> {
+    ) -> miette::Result<ExecutionResult> {
         let path = inputs[0].try_as_string()?;
         let ranges = &inputs[1];
         let persistent = &inputs[2].try_as_boolean()?;
@@ -139,7 +139,8 @@ impl Node for MappingsNode {
         outputs.push(EValue::Number {
             value: (id as f64).into(),
         });
-        Ok(())
+
+        Ok(ExecutionResult::Done)
     }
 }
 
