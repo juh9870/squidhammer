@@ -2,6 +2,7 @@ use crate::graph::editing::GraphEditingContext;
 use crate::graph::inputs::{GraphInput, GraphOutput};
 use crate::graph::node::commands::SnarlCommands;
 use crate::graph::node::{get_raw_snarl_node, NodeContext, SnarlNode};
+use crate::graph::region::region_graph::RegionGraph;
 use crate::graph::region::RegionInfo;
 use crate::json_utils::JsonValue;
 use crate::m_try;
@@ -12,6 +13,7 @@ use crate::value::EValue;
 use ahash::AHashMap;
 use egui_snarl::{InPinId, NodeId, OutPinId, Snarl};
 use emath::Pos2;
+use itertools::Itertools;
 use miette::{miette, Context, IntoDiagnostic};
 use serde::{Deserialize, Serialize};
 use smallvec::SmallVec;
@@ -35,6 +37,7 @@ pub struct Graph {
     inputs: SmallVec<[GraphInput; 1]>,
     outputs: SmallVec<[GraphOutput; 1]>,
     regions: AHashMap<Uuid, RegionInfo>,
+    region_graph: RegionGraph,
 }
 
 impl Graph {
@@ -70,7 +73,8 @@ impl Graph {
             inline_values: inputs,
             inputs: packed.inputs,
             outputs: packed.outputs,
-            regions: todo!(),
+            regions: packed.regions.into_iter().map(|r| (r.id(), r)).collect(),
+            region_graph: Default::default(),
         };
 
         m_try(|| {
@@ -170,6 +174,17 @@ impl Graph {
         })
         .context("failed to populate inputs")?;
 
+        graph.region_graph = RegionGraph::build_regions_graph(
+            &graph.snarl,
+            NodeContext {
+                registry,
+                inputs: graph.inputs(),
+                outputs: graph.outputs(),
+                regions: graph.regions(),
+                graphs: None,
+            },
+        );
+
         Ok(graph)
     }
 
@@ -180,6 +195,7 @@ impl Graph {
             inline_values: Default::default(),
             inputs: self.inputs.clone(),
             outputs: self.outputs.clone(),
+            regions: self.regions.values().cloned().collect_vec(),
         };
 
         let mut inline_values = AHashMap::new();
@@ -256,6 +272,27 @@ impl Graph {
     pub fn regions_mut(&mut self) -> &mut AHashMap<Uuid, RegionInfo> {
         &mut self.regions
     }
+
+    pub fn region_graph(&self) -> &RegionGraph {
+        &self.region_graph
+    }
+
+    pub fn region_graph_mut(&mut self) -> &mut RegionGraph {
+        &mut self.region_graph
+    }
+
+    pub fn ensure_region_graph_ready(&mut self, registry: &ETypesRegistry) {
+        self.region_graph.ensure_ready(
+            &self.snarl,
+            NodeContext {
+                registry,
+                inputs: &self.inputs,
+                outputs: &self.outputs,
+                regions: &self.regions,
+                graphs: None,
+            },
+        )
+    }
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -267,6 +304,8 @@ struct PackedGraph {
     inputs: SmallVec<[GraphInput; 1]>,
     #[serde(default)]
     outputs: SmallVec<[GraphOutput; 1]>,
+    #[serde(default)]
+    regions: Vec<RegionInfo>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]

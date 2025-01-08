@@ -135,7 +135,7 @@ impl NodeView for DefaultNodeView {
                     });
 
                     if res.inner.changed {
-                        full_ctx.mark_dirty(pin.id.node);
+                        full_ctx.mark_node_dirty(pin.id.node);
                     }
                 } else {
                     ui.horizontal(|ui| {

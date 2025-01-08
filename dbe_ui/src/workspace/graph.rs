@@ -17,7 +17,7 @@ use dbe_backend::graph::node::{
 };
 use dbe_backend::registry::ETypesRegistry;
 use dbe_backend::value::id::ETypeId;
-use egui::{Color32, Painter, Pos2, Stroke, Style, Ui};
+use egui::{Color32, Frame, Painter, Pos2, Stroke, Style, Ui};
 use egui_hooks::UseHookExt;
 use egui_snarl::ui::{
     AnyPins, BackgroundPattern, NodeLayout, PinInfo, SnarlStyle, SnarlViewer, Viewport,
@@ -54,6 +54,26 @@ impl<'a> GraphViewer<'a> {
 impl<'a> SnarlViewer<SnarlNode> for GraphViewer<'a> {
     fn title(&mut self, _node: &SnarlNode) -> String {
         unreachable!("Custom header doesn't call SnarlViewer::title")
+    }
+
+    fn header_frame(
+        &mut self,
+        default: Frame,
+        node: NodeId,
+        _inputs: &[InPin],
+        _outputs: &[OutPin],
+        _snarl: &Snarl<SnarlNode>,
+    ) -> Frame {
+        if let Ok(data) = self.ctx.regions_graph.try_as_data() {
+            if let Some(node_region) = data.node_region(node) {
+                if let Some(reg) = self.ctx.regions.get(&node_region) {
+                    let color = reg.color();
+                    return default
+                        .stroke(Stroke::new(tweak!(3.0), color.gamma_multiply(tweak!(1.0))));
+                }
+            }
+        }
+        default
     }
 
     fn node_layout(

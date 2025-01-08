@@ -2,6 +2,7 @@ use crate::graph::node::{NodeContext, SnarlNode};
 use ahash::AHashMap;
 use egui_snarl::{InPinId, NodeId, OutPinId, Snarl};
 use itertools::Itertools;
+use miette::Diagnostic;
 use petgraph::acyclic::AcyclicEdgeError;
 use petgraph::data::Build;
 use petgraph::prelude::{EdgeRef, NodeIndex};
@@ -10,19 +11,102 @@ use std::collections::hash_map::Entry;
 use thiserror::Error;
 use uuid::Uuid;
 
-pub fn calculate_region_graph() {}
-
 #[derive(Debug)]
-pub struct RegionGraph {
-    regions: Vec<RegionGraphData>,
-    region_ids: AHashMap<Uuid, usize>,
-    regions_by_node: AHashMap<NodeId, usize>,
+pub struct RegionGraph(Result<RegionGraphData, GraphRegionBuildError>);
+
+impl RegionGraph {
+    /// Specifies whenever this region graph was build (to either success or error)
+    ///
+    /// Graph can be ready while having a build error, use
+    /// [RegionGraph::try_as_data] to check for build errors
+    pub fn is_ready(&self) -> bool {
+        !matches!(
+            self.0,
+            Err(GraphRegionBuildError::NotReady | GraphRegionBuildError::Dirty)
+        )
+    }
+
+    /// Returns an error is graph is not ready
+    ///
+    /// Graph can be ready while having a build error, use
+    /// [RegionGraph::try_as_data] to check for build errors
+    pub fn expect_ready(&self) -> Result<(), GraphRegionBuildError> {
+        match self.0.as_ref() {
+            Err(err @ (GraphRegionBuildError::NotReady | GraphRegionBuildError::Dirty)) => {
+                Err(err.clone())
+            }
+            _ => Ok(()),
+        }
+    }
+
+    /// Marks region hierarchy as dirty, and requiring a rebuild
+    pub fn mark_dirty(&mut self) {
+        self.0 = Err(GraphRegionBuildError::Dirty)
+    }
+
+    /// Attempts to get a reference to the underlying region graph
+    pub fn try_as_data(&self) -> Result<&RegionGraphData, GraphRegionBuildError> {
+        self.0.as_ref().map_err(|err| err.clone())
+    }
+
+    /// Forces a rebuild in the region graph
+    pub fn force_rebuild(&mut self, snarl: &Snarl<SnarlNode>, context: NodeContext) {
+        *self = Self::build_regions_graph(snarl, context);
+    }
+
+    /// Rebuilds the region graph if it's not ready
+    pub fn ensure_ready(&mut self, snarl: &Snarl<SnarlNode>, context: NodeContext) {
+        if !self.is_ready() {
+            self.force_rebuild(snarl, context);
+        }
+    }
 }
 
-#[derive(Debug)]
-struct RegionGraphData {
-    id: Uuid,
-    nodes: Vec<NodeWithSeparation>,
+impl RegionGraph {
+    /// Attempts to build a region graph for the given node graph
+    pub fn build_regions_graph(snarl: &Snarl<SnarlNode>, context: NodeContext) -> Self {
+        let mut outputs = AHashMap::<NodeId, Vec<(OutPinId, InPinId)>>::new();
+
+        let mut node_graph =
+            petgraph::acyclic::Acyclic::<petgraph::graph::DiGraph<NodeId, ()>>::new();
+        let mut node_mapping = AHashMap::new();
+        for (node, _) in snarl.node_ids() {
+            node_mapping.insert(node, node_graph.add_node(node));
+        }
+        for (out_pin, in_pin) in snarl.wires() {
+            outputs
+                .entry(out_pin.node)
+                .or_default()
+                .push((out_pin, in_pin));
+            let out_node = &node_mapping[&out_pin.node];
+            let to_node = &node_mapping[&in_pin.node];
+            match node_graph.try_add_edge(*out_node, *to_node, ()) {
+                Ok(_) => {}
+                Err(err) => match err {
+                    AcyclicEdgeError::Cycle(cycle) => {
+                        return Self(Err(GraphRegionBuildError::NodeCycle(
+                            out_pin.node,
+                            node_graph[cycle.node_id()],
+                        )))
+                    }
+                    AcyclicEdgeError::SelfLoop => {
+                        return Self(Err(GraphRegionBuildError::NodeSelfLoop(out_pin.node)))
+                    }
+                    AcyclicEdgeError::InvalidEdge => {
+                        unreachable!("Edge should be valid")
+                    }
+                },
+            }
+        }
+
+        Self(RegionGraphBuilder::new(snarl, context, outputs).build())
+    }
+}
+
+impl Default for RegionGraph {
+    fn default() -> Self {
+        Self(Err(GraphRegionBuildError::NotReady))
+    }
 }
 
 /// Node that belongs to the region with a specified degree of separation
@@ -35,44 +119,39 @@ pub struct NodeWithSeparation {
     pub separation: usize,
 }
 
-pub fn build_regions_graph(
-    snarl: &Snarl<SnarlNode>,
-    context: NodeContext,
-) -> Result<RegionGraph, GraphRegionBuildError> {
-    let mut outputs = AHashMap::<NodeId, Vec<(OutPinId, InPinId)>>::new();
+#[derive(Debug)]
+pub struct RegionGraphData {
+    topological_order: Vec<Uuid>,
+    regions: AHashMap<Uuid, RegionData>,
+    regions_by_node: AHashMap<NodeId, Uuid>,
+}
 
-    let mut node_graph = petgraph::acyclic::Acyclic::<petgraph::graph::DiGraph<NodeId, ()>>::new();
-    let mut node_mapping = AHashMap::new();
-    for (node, _) in snarl.node_ids() {
-        node_mapping.insert(node, node_graph.add_node(node));
-    }
-    for (out_pin, in_pin) in snarl.wires() {
-        outputs
-            .entry(out_pin.node)
-            .or_default()
-            .push((out_pin, in_pin));
-        let out_node = &node_mapping[&out_pin.node];
-        let to_node = &node_mapping[&in_pin.node];
-        match node_graph.try_add_edge(*out_node, *to_node, ()) {
-            Ok(_) => {}
-            Err(err) => match err {
-                AcyclicEdgeError::Cycle(cycle) => {
-                    return Err(GraphRegionBuildError::NodeCycle(
-                        out_pin.node,
-                        node_graph[cycle.node_id()],
-                    ))
-                }
-                AcyclicEdgeError::SelfLoop => {
-                    return Err(GraphRegionBuildError::NodeSelfLoop(out_pin.node))
-                }
-                AcyclicEdgeError::InvalidEdge => {
-                    unreachable!("Edge should be valid")
-                }
-            },
-        }
+impl RegionGraphData {
+    /// Regions ordered in a way, such that region children come after their parents in the iteration order
+    pub fn ordered_regions(&self) -> &[Uuid] {
+        &self.topological_order
     }
 
-    RegionGraphBuilder::new(snarl, context, outputs).build()
+    /// Returns all nodes that belong to the region or child regions
+    pub fn region_nodes(&self, region: Uuid) -> &[NodeWithSeparation] {
+        &self.regions[&region].nodes
+    }
+
+    /// Returns the topmost region that the node belongs to
+    pub fn node_region(&self, node: NodeId) -> Option<Uuid> {
+        self.regions_by_node.get(&node).copied()
+    }
+
+    /// Returns hierarchy for the region
+    pub fn region_parents(&self, region: Uuid) -> &[Uuid] {
+        &self.regions[&region].parents
+    }
+}
+
+#[derive(Debug)]
+struct RegionData {
+    parents: Vec<Uuid>,
+    nodes: Vec<NodeWithSeparation>,
 }
 
 #[derive(Debug)]
@@ -93,7 +172,6 @@ struct RegionBuilderData {
     id: Uuid,
     source: NodeId,
     endpoint: NodeId,
-    nodes: Vec<NodeId>,
     parents: Vec<usize>,
     toposort_index: Option<usize>,
 }
@@ -121,7 +199,7 @@ impl<'a> RegionGraphBuilder<'a> {
         }
     }
 
-    fn build(mut self) -> Result<RegionGraph, GraphRegionBuildError> {
+    fn build(mut self) -> Result<RegionGraphData, GraphRegionBuildError> {
         self.calculate_initial_regions()?;
         self.calculate_node_inputs()?;
         self.calculate_hierarchy()?;
@@ -153,7 +231,6 @@ impl RegionGraphBuilder<'_> {
                             id: region,
                             source: NodeId(usize::MAX),
                             endpoint: id,
-                            nodes: vec![],
                             parents: vec![],
                             toposort_index: None,
                         })
@@ -180,7 +257,6 @@ impl RegionGraphBuilder<'_> {
                             id: region,
                             source: id,
                             endpoint: NodeId(usize::MAX),
-                            nodes: vec![],
                             parents: vec![],
                             toposort_index: None,
                         })
@@ -361,17 +437,42 @@ impl RegionGraphBuilder<'_> {
     }
 
     /// Assigns nodes to the regions based on computed hierarchy
-    fn assign_nodes(&mut self) -> Result<RegionGraph, GraphRegionBuildError> {
-        let mut graph = RegionGraph {
+    fn assign_nodes(&mut self) -> Result<RegionGraphData, GraphRegionBuildError> {
+        let mut graph = RegionGraphData {
+            topological_order: self
+                .region_data
+                .iter()
+                .sorted_unstable_by_key(|reg| {
+                    #[cfg(debug_assertions)]
+                    {
+                        reg.toposort_index
+                            .expect("Toposort index should have been set in `calculate_hierarchy`")
+                    }
+                    #[cfg(not(debug_assertions))]
+                    {
+                        reg.toposort_index
+                    }
+                })
+                .rev()
+                .map(|reg| reg.id)
+                .collect(),
             regions: self
                 .region_data
                 .iter()
-                .map(|reg| RegionGraphData {
-                    id: reg.id,
-                    nodes: vec![],
+                .map(|reg| {
+                    (
+                        reg.id,
+                        RegionData {
+                            parents: reg
+                                .parents
+                                .iter()
+                                .map(|id| self.region_data[*id].id)
+                                .collect(),
+                            nodes: vec![],
+                        },
+                    )
                 })
                 .collect(),
-            region_ids: self.region_ids.clone(),
             regions_by_node: Default::default(),
         };
 
@@ -441,17 +542,24 @@ impl RegionGraphBuilder<'_> {
             }
 
             let node_region = data.input_regions[0];
-            graph.regions_by_node.insert(*id, node_region);
+            graph
+                .regions_by_node
+                .insert(*id, self.region_data[node_region].id);
 
             for (separation, region) in [node_region]
                 .into_iter()
                 .chain(self.region_data[node_region].parents.iter().copied())
                 .enumerate()
             {
-                graph.regions[region].nodes.push(NodeWithSeparation {
-                    node: *id,
-                    separation,
-                });
+                graph
+                    .regions
+                    .get_mut(&self.region_data[region].id)
+                    .expect("all regions were populated on construction")
+                    .nodes
+                    .push(NodeWithSeparation {
+                        node: *id,
+                        separation,
+                    });
             }
         }
 
@@ -459,14 +567,16 @@ impl RegionGraphBuilder<'_> {
     }
 }
 
-#[derive(Debug, Clone, Error)]
+#[derive(Debug, Clone, Error, Diagnostic)]
 pub enum GraphRegionBuildError {
+    #[error("Region graph was not built yet")]
+    NotReady,
+    #[error("Region graph is dirty")]
+    Dirty,
     #[error("Node {:?} forms a loop with node {:?}", .0, .1)]
     NodeCycle(NodeId, NodeId),
     #[error("Node {:?} forms a loop with itself", .0)]
     NodeSelfLoop(NodeId),
-    #[error("Node {:?} belongs to unknown region: {}", .1, .0)]
-    UnknownRegion(Uuid, NodeId),
     #[error("Region ends in nodes {:?} and {:?}: {}", .1, .2, .0)]
     MultipleEndpoints(Uuid, NodeId, NodeId),
     #[error("Region starts in nodes {:?} and {:?}: {}", .1, .2, .0)]

@@ -6,6 +6,7 @@ use crate::graph::node::enum_node::EnumNode;
 use crate::graph::node::list::ListNode;
 use crate::graph::node::struct_node::StructNode;
 use crate::graph::node::{get_raw_snarl_node, Node, NodeContext, SnarlNode};
+use crate::graph::region::region_graph::RegionGraph;
 use crate::graph::region::RegionInfo;
 use crate::graph::Graph;
 use crate::m_try;
@@ -21,11 +22,12 @@ use emath::Pos2;
 use miette::Context;
 use smallvec::SmallVec;
 use std::collections::hash_map::Entry;
+use std::ops::{Deref, DerefMut};
 use ustr::Ustr;
 use uuid::Uuid;
 
 macro_rules! node_context {
-    ($source:ident) => {
+    ($source:expr) => {
         NodeContext {
             registry: $source.registry,
             inputs: $source.inputs,
@@ -39,18 +41,7 @@ macro_rules! node_context {
 #[derive(Debug)]
 pub struct GraphEditingContext<'a, 'snarl> {
     pub snarl: &'snarl mut Snarl<SnarlNode>,
-    pub inline_values: &'a mut AHashMap<InPinId, EValue>,
-    pub inputs: &'a mut SmallVec<[GraphInput; 1]>,
-    pub outputs: &'a mut SmallVec<[GraphOutput; 1]>,
-    pub regions: &'a mut AHashMap<Uuid, RegionInfo>,
-    pub registry: &'a ETypesRegistry,
-    pub docs: &'a Docs,
-    pub graphs: Option<&'a ProjectGraphs>,
-    side_effects: SideEffectsContext<'a>,
-    is_node_group: bool,
-    cache: &'a mut GraphCache,
-    input_values: &'a [EValue],
-    output_values: &'a mut Option<Vec<EValue>>,
+    ctx: PartialGraphEditingContext<'a>,
 }
 
 impl<'a> GraphEditingContext<'a, 'a> {
@@ -66,21 +57,31 @@ impl<'a> GraphEditingContext<'a, 'a> {
         input_values: &'a [EValue],
         output_values: &'a mut Option<Vec<EValue>>,
     ) -> Self {
-        GraphEditingContext {
-            snarl: &mut graph.snarl,
-            inline_values: &mut graph.inline_values,
-            inputs: &mut graph.inputs,
-            outputs: &mut graph.outputs,
-            regions: &mut graph.regions,
+        let (ctx, snarl) = PartialGraphEditingContext::from_graph(
+            graph,
             registry,
             docs,
             graphs,
+            cache,
             side_effects,
             is_node_group,
-            cache,
             input_values,
             output_values,
-        }
+        );
+        Self { snarl, ctx }
+    }
+}
+
+impl<'a, 'snarl> Deref for GraphEditingContext<'a, 'snarl> {
+    type Target = PartialGraphEditingContext<'a>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.ctx
+    }
+}
+impl<'a, 'snarl> DerefMut for GraphEditingContext<'a, 'snarl> {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.ctx
     }
 }
 
@@ -88,17 +89,18 @@ impl<'a, 'snarl> GraphEditingContext<'a, 'snarl> {
     pub fn as_execution_context(&mut self) -> GraphExecutionContext {
         GraphExecutionContext::new(
             self.snarl,
-            self.inputs,
-            self.outputs,
-            self.inline_values,
-            self.registry,
-            self.graphs,
-            self.cache,
-            self.side_effects.clone(),
-            self.is_node_group,
-            self.input_values,
-            self.output_values,
-            self.regions,
+            self.ctx.inputs,
+            self.ctx.outputs,
+            self.ctx.inline_values,
+            self.ctx.registry,
+            self.ctx.graphs,
+            self.ctx.cache,
+            self.ctx.side_effects.clone(),
+            self.ctx.is_node_group,
+            self.ctx.input_values,
+            self.ctx.output_values,
+            self.ctx.regions,
+            self.ctx.regions_graph,
         )
     }
 
@@ -114,10 +116,10 @@ impl<'a, 'snarl> GraphEditingContext<'a, 'snarl> {
             return Ok(false);
         }
 
-        match self.inline_values.entry(pin) {
+        match self.ctx.inline_values.entry(pin) {
             Entry::Occupied(_) => Ok(true),
             Entry::Vacant(e) => {
-                let value = node.default_input_value(node_context!(self), pin.input)?;
+                let value = node.default_input_value(node_context!(self.ctx), pin.input)?;
                 e.insert(value.into_owned());
                 Ok(true)
             }
@@ -160,15 +162,21 @@ impl<'a, 'snarl> GraphEditingContext<'a, 'snarl> {
             if can_output {
                 let to_node = &mut self.snarl[to.id.node];
 
-                if !to_node.try_connect(node_context!(self), commands, from, to, &from_pin.ty)? {
+                if !to_node.try_connect(
+                    node_context!(self.ctx),
+                    commands,
+                    from,
+                    to,
+                    &from_pin.ty,
+                )? {
                     return Ok(());
                 }
 
                 if based_on_input {
-                    let to_pin = to_node.try_input(node_context!(self), to.id.input)?;
+                    let to_pin = to_node.try_input(node_context!(self.ctx), to.id.input)?;
                     let from_node = &mut self.snarl[from.id.node];
                     from_node.connected_to_output(
-                        node_context!(self),
+                        node_context!(self.ctx),
                         commands,
                         from,
                         to,
@@ -190,7 +198,7 @@ impl<'a, 'snarl> GraphEditingContext<'a, 'snarl> {
         to: &InPin,
         commands: &mut SnarlCommands,
     ) -> miette::Result<()> {
-        self.snarl[to.id.node].try_disconnect(node_context!(self), commands, from, to)?;
+        self.snarl[to.id.node].try_disconnect(node_context!(self.ctx), commands, from, to)?;
 
         commands.execute(self)
     }
@@ -260,15 +268,27 @@ impl<'a, 'snarl> GraphEditingContext<'a, 'snarl> {
         Ok(id)
     }
 
-    pub fn mark_dirty(&mut self, node: NodeId) {
+    pub fn mark_node_dirty(&mut self, node: NodeId) {
         self.as_execution_context().mark_dirty(node)
     }
 
     pub fn read_output(&mut self, id: OutPinId) -> miette::Result<EValue> {
         self.as_execution_context().read_output(id)
     }
+
     pub fn read_input(&mut self, id: InPinId) -> miette::Result<EValue> {
         self.as_execution_context().read_input(id)
+    }
+
+    pub fn mark_dirty(&mut self) {
+        self.regions_graph.mark_dirty();
+    }
+
+    pub fn ensure_regions_graph_ready(&mut self) -> &mut RegionGraph {
+        self.ctx
+            .regions_graph
+            .ensure_ready(self.snarl, node_context!(self.ctx));
+        self.regions_graph
     }
 }
 
@@ -278,6 +298,7 @@ pub struct PartialGraphEditingContext<'a> {
     pub inputs: &'a mut SmallVec<[GraphInput; 1]>,
     pub outputs: &'a mut SmallVec<[GraphOutput; 1]>,
     pub regions: &'a mut AHashMap<Uuid, RegionInfo>,
+    pub regions_graph: &'a mut RegionGraph,
     pub registry: &'a ETypesRegistry,
     pub docs: &'a Docs,
     pub graphs: Option<&'a ProjectGraphs>,
@@ -315,6 +336,7 @@ impl<'a> PartialGraphEditingContext<'a> {
                 outputs: &mut graph.outputs,
                 output_values,
                 regions: &mut graph.regions,
+                regions_graph: &mut graph.region_graph,
             },
             &mut graph.snarl,
         )
@@ -329,18 +351,21 @@ impl<'a> PartialGraphEditingContext<'a> {
     {
         GraphEditingContext {
             snarl,
-            inline_values: self.inline_values,
-            cache: self.cache,
-            registry: self.registry,
-            docs: self.docs,
-            graphs: self.graphs,
-            side_effects: self.side_effects.clone(),
-            inputs: self.inputs,
-            outputs: self.outputs,
-            input_values: self.input_values,
-            output_values: self.output_values,
-            is_node_group: self.is_node_group,
-            regions: self.regions,
+            ctx: PartialGraphEditingContext {
+                inline_values: self.inline_values,
+                cache: self.cache,
+                registry: self.registry,
+                docs: self.docs,
+                graphs: self.graphs,
+                side_effects: self.side_effects.clone(),
+                inputs: self.inputs,
+                outputs: self.outputs,
+                input_values: self.input_values,
+                output_values: self.output_values,
+                is_node_group: self.is_node_group,
+                regions: self.regions,
+                regions_graph: self.regions_graph,
+            },
         }
     }
 

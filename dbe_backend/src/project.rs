@@ -316,6 +316,11 @@ impl<IO: ProjectIO> Project<IO> {
     pub fn evaluate_graphs(&mut self) -> miette::Result<()> {
         let mut side_effects = side_effects::SideEffects::new();
         let mut generated = vec![];
+
+        for graph in self.graphs.graphs.values_mut() {
+            graph.graph_mut().ensure_region_graph_ready(&self.registry)
+        }
+
         for (path, file) in &self.files {
             m_try(|| {
                 if file.is_generated() {

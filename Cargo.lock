@@ -1088,6 +1088,7 @@ dependencies = [
  "path-clean",
  "petgraph",
  "rand",
+ "random_color",
  "rstest",
  "sanitise-file-name",
  "serde",
