@@ -141,17 +141,14 @@ impl<'a, 'snarl> GraphExecutionContext<'a, 'snarl> {
                 continue;
             }
 
-            let mut stack = Vec::new();
-
-            self.eval_node_inner(&mut stack, id, side_effects)?
+            self.eval_node_inner(id, side_effects)?
         }
 
         Ok(())
     }
 
     pub fn read_output(&mut self, id: OutPinId) -> miette::Result<EValue> {
-        let mut stack = Vec::new();
-        self.read_node_output_inner(&mut stack, id, false)
+        self.read_node_output_inner(id, false)
     }
 
     pub fn read_input(&mut self, id: InPinId) -> miette::Result<EValue> {
@@ -159,8 +156,7 @@ impl<'a, 'snarl> GraphExecutionContext<'a, 'snarl> {
             .snarl
             .get_node(id.node)
             .ok_or_else(|| miette!("Node {:?} not found", id.node))?;
-        let mut stack = Vec::new();
-        self.read_node_input_inner(&mut stack, id, node, false)
+        self.read_node_input_inner(id, node, false)
     }
 }
 
@@ -185,7 +181,6 @@ impl<'a, 'snarl> GraphExecutionContext<'a, 'snarl> {
 
     fn read_node_output_inner(
         &mut self,
-        stack: &mut Vec<NodeId>,
         pin: OutPinId,
         side_effects: bool,
     ) -> miette::Result<EValue> {
@@ -198,7 +193,7 @@ impl<'a, 'snarl> GraphExecutionContext<'a, 'snarl> {
                     .clone());
             }
 
-            self.eval_node_inner(stack, pin.node, side_effects)?;
+            self.eval_node_inner(pin.node, side_effects)?;
 
             let node = self.cache.get(&pin.node).ok_or_else(|| {
                 miette!("!!INTERNAL ERROR!! Node was not cached after evaluation")
@@ -230,7 +225,6 @@ impl<'a, 'snarl> GraphExecutionContext<'a, 'snarl> {
 
     fn read_node_input_inner(
         &mut self,
-        stack: &mut Vec<NodeId>,
         id: InPinId,
         node: &SnarlNode,
         side_effects: bool,
@@ -249,7 +243,7 @@ impl<'a, 'snarl> GraphExecutionContext<'a, 'snarl> {
                 }
             } else if slot.remotes.len() == 1 {
                 let remote = slot.remotes[0];
-                let output = self.read_node_output_inner(stack, remote, side_effects)?;
+                let output = self.read_node_output_inner(remote, side_effects)?;
                 if output.ty() != in_info.ty.ty() {
                     let remote_info =
                         self.snarl[remote.node].try_output(node_context!(self), remote.output)?;
@@ -277,28 +271,10 @@ impl<'a, 'snarl> GraphExecutionContext<'a, 'snarl> {
         .with_context(|| format!("failed to read input #{} of node {:?}", id.input, id.node))
     }
 
-    fn eval_node_inner(
-        &mut self,
-        stack: &mut Vec<NodeId>,
-        id: NodeId,
-        side_effects: bool,
-    ) -> miette::Result<()> {
+    fn eval_node_inner(&mut self, id: NodeId, side_effects: bool) -> miette::Result<()> {
         // trace!("Evaluating node {:?}", id);
         m_try(|| {
-            if stack.contains(&id) {
-                bail!("Cyclic dependency detected");
-            }
-            stack.push(id);
-            let stack_idx = stack.len();
-
             loop {
-                // Stack is higher than the current node, this means we are
-                // rerunning the node, and should truncate stack to avoid
-                // cyclic dependency detection
-                if stack.len() > stack_idx {
-                    stack.truncate(stack_idx);
-                }
-
                 let node = self
                     .snarl
                     .get_node(id)
@@ -309,7 +285,6 @@ impl<'a, 'snarl> GraphExecutionContext<'a, 'snarl> {
 
                 for i in 0..inputs_count {
                     input_values.push(self.read_node_input_inner(
-                        stack,
                         InPinId { node: id, input: i },
                         node,
                         side_effects,

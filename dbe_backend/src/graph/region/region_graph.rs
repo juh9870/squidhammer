@@ -374,7 +374,7 @@ impl RegionGraphBuilder<'_> {
 
         // constructed graph has form where child regions point at parent regions
 
-        // topologically reduce next
+        // transitively reduce next
 
         let topo = petgraph::algo::toposort(&region_dag, None)
             .expect("toposort for acyclic graph should not fail");
