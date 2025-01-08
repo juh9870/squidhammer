@@ -1,10 +1,12 @@
 use crate::error::report_error;
 use crate::widgets::collapsible_toolbar::CollapsibleToolbar;
 use crate::widgets::dpanel::DPanelSide;
+use crate::widgets::report::diagnostic_widget;
 use crate::workspace::editors::{editor_for_value, EditorContext};
 use crate::workspace::graph::toolbar::{GraphTab, GraphToolbarViewer};
 use crate::DbeApp;
 use camino::Utf8PathBuf;
+use dbe_backend::diagnostic::diagnostic::{Diagnostic, DiagnosticLevel};
 use dbe_backend::graph::editing::PartialGraphEditingContext;
 use dbe_backend::project::docs::DocsRef;
 use dbe_backend::project::side_effects::SideEffectsContext;
@@ -201,6 +203,10 @@ impl<Io> TabViewer for WorkspaceTabViewer<'_, Io> {
                     return;
                 };
 
+                graph
+                    .graph_mut()
+                    .ensure_region_graph_ready(&self.0.registry);
+
                 let is_node_group = graph.is_node_group;
 
                 CollapsibleToolbar::new(DPanelSide::Right, &[GraphTab::General], &[])
@@ -219,7 +225,7 @@ impl<Io> TabViewer for WorkspaceTabViewer<'_, Io> {
                     .show_inside(ui, |ui| {
                         self.0.graphs.edit_graph(*id, |graph, cache, graphs| {
                             let outputs = &mut None;
-                            let (ctx, snarl) = PartialGraphEditingContext::from_graph(
+                            let (mut ctx, snarl) = PartialGraphEditingContext::from_graph(
                                 graph,
                                 &self.0.registry,
                                 &self.0.docs,
@@ -230,6 +236,20 @@ impl<Io> TabViewer for WorkspaceTabViewer<'_, Io> {
                                 &[],
                                 outputs,
                             );
+
+                            if let Err(err) = ctx
+                                .as_full(snarl)
+                                .ensure_regions_graph_ready()
+                                .try_as_data()
+                            {
+                                diagnostic_widget(
+                                    ui,
+                                    &Diagnostic {
+                                        info: err.into(),
+                                        level: DiagnosticLevel::Error,
+                                    },
+                                );
+                            };
 
                             let mut viewer =
                                 graph::GraphViewer::new(ctx, diagnostics.as_readonly());

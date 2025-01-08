@@ -4,6 +4,7 @@ use crate::graph::node::ports::NodePortType;
 use crate::graph::node::variables::ExecutionExtras;
 use crate::graph::node::SnarlNode;
 use crate::graph::node::{ExecutionResult, NodeContext};
+use crate::graph::region::region_graph::RegionGraph;
 use crate::graph::region::{RegionExecutionData, RegionInfo};
 use crate::graph::Graph;
 use crate::m_try;
@@ -16,10 +17,11 @@ use egui_snarl::{InPinId, NodeId, OutPinId, Snarl};
 use maybe_owned::MaybeOwnedMut;
 use miette::{bail, miette, Context};
 use smallvec::SmallVec;
+use std::ops::{Deref, DerefMut};
 use uuid::Uuid;
 
 macro_rules! node_context {
-    ($source:ident) => {
+    ($source:expr) => {
         NodeContext {
             registry: $source.registry,
             inputs: $source.inputs,
@@ -33,19 +35,7 @@ macro_rules! node_context {
 #[derive(derive_more::Debug)]
 pub struct GraphExecutionContext<'a, 'snarl> {
     pub snarl: &'snarl Snarl<SnarlNode>,
-    pub inputs: &'a SmallVec<[GraphInput; 1]>,
-    pub outputs: &'a SmallVec<[GraphOutput; 1]>,
-    pub inline_values: &'a AHashMap<InPinId, EValue>,
-    pub registry: &'a ETypesRegistry,
-    pub side_effects: SideEffectsContext<'a>,
-    pub graphs: Option<&'a ProjectGraphs>,
-    pub is_node_group: bool,
-    pub input_values: &'a [EValue],
-    pub output_values: &'a mut Option<Vec<EValue>>,
-    pub regions: &'a AHashMap<Uuid, RegionInfo>,
-    #[debug("(...)")]
-    pub regional_data: MaybeOwnedMut<'a, AHashMap<Uuid, Box<dyn RegionExecutionData>>>,
-    cache: &'a mut GraphCache,
+    pub ctx: PartialGraphExecutionContext<'a>,
 }
 
 impl<'a> GraphExecutionContext<'a, 'a> {
@@ -60,28 +50,28 @@ impl<'a> GraphExecutionContext<'a, 'a> {
         input_values: &'a [EValue],
         output_values: &'a mut Option<Vec<EValue>>,
     ) -> Self {
-        GraphExecutionContext {
-            snarl: &graph.snarl,
-            inputs: &graph.inputs,
-            outputs: &graph.outputs,
-            inline_values: &graph.inline_values,
-            cache,
+        Self::new(
+            &graph.snarl,
+            &graph.inputs,
+            &graph.outputs,
+            &graph.inline_values,
             registry,
-            side_effects,
             graphs,
+            cache,
+            side_effects,
             is_node_group,
             input_values,
             output_values,
-            regions: graph.regions(),
-            regional_data: Default::default(),
-        }
+            graph.regions(),
+            graph.region_graph(),
+        )
     }
 
     #[allow(clippy::too_many_arguments)]
     pub(super) fn new(
         snarl: &'a Snarl<SnarlNode>,
-        inputs: &'a mut SmallVec<[GraphInput; 1]>,
-        outputs: &'a mut SmallVec<[GraphOutput; 1]>,
+        inputs: &'a SmallVec<[GraphInput; 1]>,
+        outputs: &'a SmallVec<[GraphOutput; 1]>,
         inline_values: &'a AHashMap<InPinId, EValue>,
         registry: &'a ETypesRegistry,
         graphs: Option<&'a ProjectGraphs>,
@@ -91,22 +81,39 @@ impl<'a> GraphExecutionContext<'a, 'a> {
         input_values: &'a [EValue],
         output_values: &'a mut Option<Vec<EValue>>,
         regions: &'a AHashMap<Uuid, RegionInfo>,
+        region_graph: &'a RegionGraph,
     ) -> Self {
         Self {
             snarl,
-            inputs,
-            outputs,
-            inline_values,
-            registry,
-            side_effects,
-            graphs,
-            cache,
-            input_values,
-            output_values,
-            is_node_group,
-            regions,
-            regional_data: Default::default(),
+            ctx: PartialGraphExecutionContext {
+                inputs,
+                outputs,
+                inline_values,
+                registry,
+                side_effects,
+                graphs,
+                cache,
+                input_values,
+                output_values,
+                is_node_group,
+                regions,
+                region_graph,
+                regional_data: Default::default(),
+            },
         }
+    }
+}
+
+impl<'a, 'snarl> Deref for GraphExecutionContext<'a, 'snarl> {
+    type Target = PartialGraphExecutionContext<'a>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.ctx
+    }
+}
+impl<'a, 'snarl> DerefMut for GraphExecutionContext<'a, 'snarl> {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.ctx
     }
 }
 
@@ -117,6 +124,10 @@ impl<'a, 'snarl> GraphExecutionContext<'a, 'snarl> {
     }
 
     pub fn full_eval(&mut self, side_effects: bool) -> miette::Result<()> {
+        self.region_graph
+            .try_as_data()
+            .context("Graph structure is invalid")?;
+
         self.cache.clear();
         for (id, has_side_effects) in self
             .snarl
@@ -308,16 +319,16 @@ impl<'a, 'snarl> GraphExecutionContext<'a, 'snarl> {
                 let outputs_count = node.outputs_count(node_context!(self));
                 let mut outputs = Vec::with_capacity(outputs_count);
 
-                let side_effects = self.side_effects.with_node(id);
+                let side_effects = self.ctx.side_effects.with_node(id);
                 let result = node.execute(
-                    node_context!(self),
+                    node_context!(self.ctx),
                     &input_values,
                     &mut outputs,
                     &mut ExecutionExtras::new(
-                        self.is_node_group,
-                        self.input_values,
-                        self.output_values,
-                        self.regional_data.as_mut(),
+                        self.ctx.is_node_group,
+                        self.ctx.input_values,
+                        self.ctx.output_values,
+                        self.ctx.regional_data.as_mut(),
                         side_effects,
                     ),
                 )?;
@@ -329,13 +340,15 @@ impl<'a, 'snarl> GraphExecutionContext<'a, 'snarl> {
                         return Ok(());
                     }
                     ExecutionResult::RerunRegion { region } => {
-                        todo!("clear cache of all nodes in the region")
+                        let data = self
+                            .region_graph
+                            .try_as_data()
+                            .expect("Region graph was checked for before execution started");
+
                         // clear cache of all nodes in the region
-                        // for (id, node) in self.snarl.nodes_ids_data() {
-                        //     if node.value.region.is_some_and(|reg| reg == region) {
-                        //         self.cache.remove(&id);
-                        //     }
-                        // }
+                        for node in data.region_nodes(region) {
+                            self.cache.remove(&node.node);
+                        }
                     }
                 }
             }
@@ -356,34 +369,13 @@ pub struct PartialGraphExecutionContext<'a> {
     pub input_values: &'a [EValue],
     pub output_values: &'a mut Option<Vec<EValue>>,
     pub regions: &'a AHashMap<Uuid, RegionInfo>,
+    pub region_graph: &'a RegionGraph,
     #[debug("(...)")]
     pub regional_data: MaybeOwnedMut<'a, AHashMap<Uuid, Box<dyn RegionExecutionData>>>,
     cache: &'a mut GraphCache,
 }
 
 impl<'a> PartialGraphExecutionContext<'a> {
-    pub fn from_context<'b, 'snarl>(
-        ctx: &'a mut GraphExecutionContext<'b, 'snarl>,
-    ) -> (Self, &'snarl Snarl<SnarlNode>) {
-        (
-            PartialGraphExecutionContext {
-                inputs: ctx.inputs,
-                outputs: ctx.outputs,
-                inline_values: ctx.inline_values,
-                cache: ctx.cache,
-                registry: ctx.registry,
-                graphs: ctx.graphs,
-                side_effects: ctx.side_effects.clone(),
-                is_node_group: ctx.is_node_group,
-                input_values: ctx.input_values,
-                output_values: ctx.output_values,
-                regions: ctx.regions,
-                regional_data: Default::default(),
-            },
-            ctx.snarl,
-        )
-    }
-
     #[allow(clippy::too_many_arguments)]
     pub fn from_graph(
         graph: &'a Graph,
@@ -394,10 +386,9 @@ impl<'a> PartialGraphExecutionContext<'a> {
         is_node_group: bool,
         input_values: &'a [EValue],
         output_values: &'a mut Option<Vec<EValue>>,
-        regions: &'a AHashMap<Uuid, RegionInfo>,
     ) -> (Self, &'a Snarl<SnarlNode>) {
         (
-            PartialGraphExecutionContext {
+            Self {
                 inputs: &graph.inputs,
                 outputs: &graph.outputs,
                 inline_values: &graph.inline_values,
@@ -408,7 +399,8 @@ impl<'a> PartialGraphExecutionContext<'a> {
                 is_node_group,
                 input_values,
                 output_values,
-                regions,
+                regions: graph.regions(),
+                region_graph: graph.region_graph(),
                 regional_data: Default::default(),
             },
             &graph.snarl,
@@ -424,18 +416,21 @@ impl<'a> PartialGraphExecutionContext<'a> {
     {
         GraphExecutionContext {
             snarl,
-            inputs: self.inputs,
-            outputs: self.outputs,
-            inline_values: self.inline_values,
-            cache: self.cache,
-            registry: self.registry,
-            side_effects: self.side_effects.clone(),
-            graphs: self.graphs,
-            is_node_group: self.is_node_group,
-            input_values: self.input_values,
-            output_values: self.output_values,
-            regions: self.regions,
-            regional_data: MaybeOwnedMut::Borrowed(&mut self.regional_data),
+            ctx: PartialGraphExecutionContext {
+                inputs: self.inputs,
+                outputs: self.outputs,
+                inline_values: self.inline_values,
+                cache: self.cache,
+                registry: self.registry,
+                side_effects: self.side_effects.clone(),
+                graphs: self.graphs,
+                is_node_group: self.is_node_group,
+                input_values: self.input_values,
+                output_values: self.output_values,
+                regions: self.regions,
+                region_graph: self.region_graph,
+                regional_data: MaybeOwnedMut::Borrowed(&mut self.regional_data),
+            },
         }
     }
 }

@@ -28,6 +28,7 @@ parking_lot = { workspace = true }
 paste = { workspace = true }
 path-clean = { workspace = true }
 petgraph = { workspace = true }
+random_color = { workspace = true }
 sanitise-file-name = { workspace = true }
 serde = { workspace = true, features = ["derive"] }
 serde_json = { workspace = true }

@@ -31,6 +31,8 @@ pub enum SnarlCommand {
     ReconnectInput { id: InPinId },
     /// Marks a node as dirty
     MarkDirty { node: NodeId },
+    /// Marks regions graph as dirty, requiring a rebuild
+    RequireRegionRebuild,
     /// Removes the inline input value of the pin
     DeletePinValue { pin: InPinId },
     /// Connects an output pin to an input pin, marking the input pin's node as dirty
@@ -106,11 +108,13 @@ impl SnarlCommand {
         match self {
             SnarlCommand::DisconnectRaw { from, to } => {
                 ctx.snarl.disconnect(from, to);
-                ctx.mark_dirty(to.node);
+                ctx.mark_node_dirty(to.node);
+                ctx.mark_dirty();
             }
             SnarlCommand::ConnectRaw { from, to } => {
                 ctx.snarl.connect(from, to);
-                ctx.mark_dirty(to.node);
+                ctx.mark_node_dirty(to.node);
+                ctx.mark_dirty();
             }
             SnarlCommand::InputMovedRaw { from, to } => {
                 // debug!("Moving input from {:?} to {:?}", from, to);
@@ -125,16 +129,20 @@ impl SnarlCommand {
                     ctx.snarl.connect(remote, to);
                 }
                 if from.node != to.node {
-                    ctx.mark_dirty(from.node);
+                    ctx.mark_dirty();
+                    ctx.mark_node_dirty(from.node);
                 }
-                ctx.mark_dirty(to.node);
+                ctx.mark_node_dirty(to.node);
             }
             SnarlCommand::OutputMovedRaw { from, to } => {
                 let pin = ctx.snarl.out_pin(from);
                 ctx.snarl.drop_outputs(from);
                 for remote in pin.remotes {
                     ctx.snarl.connect(to, remote);
-                    ctx.mark_dirty(remote.node);
+                    ctx.mark_node_dirty(remote.node);
+                }
+                if from.node != to.node {
+                    ctx.mark_dirty();
                 }
             }
             SnarlCommand::InputsRearrangedRaw { node, indices } => {
@@ -212,7 +220,7 @@ impl SnarlCommand {
                 }
             }
             SnarlCommand::MarkDirty { node } => {
-                ctx.mark_dirty(node);
+                ctx.mark_node_dirty(node);
             }
             SnarlCommand::Custom { cb } => {
                 cb(ctx)?;
@@ -241,7 +249,8 @@ impl SnarlCommand {
             }
             SnarlCommand::DropInputsRaw { to } => {
                 ctx.snarl.drop_inputs(to);
-                ctx.mark_dirty(to.node);
+                ctx.mark_node_dirty(to.node);
+                ctx.mark_dirty();
             }
             // SnarlCommand::DropOutputsRaw { from } => {
             //     for pin in ctx.snarl.out_pin(from).remotes {
@@ -285,6 +294,7 @@ impl SnarlCommand {
                     .execute(ctx, commands)?;
                 }
                 ctx.snarl.remove_node(node);
+                ctx.mark_dirty();
             }
             SnarlCommand::SetGroupInputType { ty, id } => {
                 let Some(input) = ctx.inputs.iter_mut().find(|i| i.id == id) else {
@@ -307,6 +317,9 @@ impl SnarlCommand {
                 }
 
                 output.ty = Some(ty);
+            }
+            SnarlCommand::RequireRegionRebuild => {
+                ctx.mark_dirty();
             }
         }
         Ok(())

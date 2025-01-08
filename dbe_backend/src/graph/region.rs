@@ -1,11 +1,14 @@
 use crate::etype::EDataType;
 use crate::graph::inputs::GraphIoData;
 use downcast_rs::{impl_downcast, Downcast};
+use serde::{Deserialize, Serialize};
 use smallvec::SmallVec;
+use utils::color_format::ecolor::Color32;
 use uuid::Uuid;
+
 pub mod region_graph;
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct RegionVariable {
     pub ty: Option<EDataType>,
     pub id: Uuid,
@@ -26,9 +29,10 @@ impl GraphIoData for RegionVariable {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct RegionInfo {
     id: Uuid,
+    pub color: Option<Color32>,
     pub variables: SmallVec<[RegionVariable; 1]>,
 }
 
@@ -36,12 +40,24 @@ impl RegionInfo {
     pub fn new(id: Uuid) -> Self {
         Self {
             id,
+            color: None,
             variables: Default::default(),
         }
     }
 
     pub fn id(&self) -> Uuid {
         self.id
+    }
+
+    pub fn color(&self) -> Color32 {
+        self.color.unwrap_or_else(|| {
+            let c = random_color::RandomColor::new()
+                .seed(self.id.to_string())
+                .luminosity(random_color::options::Luminosity::Light)
+                .to_rgb_array();
+
+            Color32::from_rgb(c[0], c[1], c[2])
+        })
     }
 }
 
