@@ -110,6 +110,14 @@ impl RegionalNode for RepeatRegionalNode {
             }
         }
     }
+
+    fn categories() -> &'static [&'static str] {
+        &["utility"]
+    }
+
+    fn create() -> Self {
+        Self
+    }
 }
 
 #[derive(Debug)]

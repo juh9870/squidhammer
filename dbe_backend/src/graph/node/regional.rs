@@ -1,9 +1,14 @@
 use crate::graph::node::groups::utils::{get_port_input, get_port_output};
 use crate::graph::node::ports::{InputData, NodePortType, OutputData};
 use crate::graph::node::variables::ExecutionExtras;
-use crate::graph::node::{ExecutionResult, Node, NodeContext};
+use crate::graph::node::{ExecutionResult, Node, NodeContext, NodeFactory, SnarlNode};
 use crate::value::EValue;
+use egui_snarl::{NodeId, Snarl};
+use emath::{vec2, Pos2};
+use inline_tweak::tweak;
+use smallvec::SmallVec;
 use std::fmt::Debug;
+use std::marker::PhantomData;
 use strum::EnumIs;
 use ustr::Ustr;
 use uuid::Uuid;
@@ -67,6 +72,14 @@ impl<T: RegionalNode> Node for RegionIONode<T> {
         get_port_output(&region.variables, &self.ids, output - native_out_count)
     }
 
+    fn region_source(&self, _context: NodeContext) -> Option<Uuid> {
+        self.kind.is_start().then_some(self.region)
+    }
+
+    fn region_end(&self, _context: NodeContext) -> Option<Uuid> {
+        self.kind.is_end().then_some(self.region)
+    }
+
     fn execute(
         &self,
         context: NodeContext,
@@ -76,6 +89,51 @@ impl<T: RegionalNode> Node for RegionIONode<T> {
     ) -> miette::Result<ExecutionResult> {
         self.node
             .execute(context, self.kind, self.region, inputs, outputs, variables)
+    }
+}
+
+#[derive(Debug)]
+pub struct RegionalNodeFactory<T: RegionalNode>(PhantomData<T>);
+
+impl<T: RegionalNode> RegionalNodeFactory<T> {
+    pub const INSTANCE: Self = Self(PhantomData);
+}
+
+impl<T: RegionalNode> NodeFactory for RegionalNodeFactory<T> {
+    fn id(&self) -> Ustr {
+        T::id()
+    }
+
+    fn categories(&self) -> &'static [&'static str] {
+        T::categories()
+    }
+
+    fn create(&self) -> Box<dyn Node> {
+        Box::new(RegionIONode {
+            region: Uuid::default(),
+            kind: RegionIoKind::Start,
+            node: T::create(),
+            ids: vec![],
+        })
+    }
+
+    fn create_nodes(&self, graph: &mut Snarl<SnarlNode>, pos: Pos2) -> SmallVec<[NodeId; 2]> {
+        let region = Uuid::new_v4();
+        [RegionIoKind::Start, RegionIoKind::End]
+            .into_iter()
+            .enumerate()
+            .map(|(i, kind)| {
+                graph.insert_node(
+                    pos + vec2(i as f32 * tweak!(300.0), 0.0),
+                    SnarlNode::new(Box::new(RegionIONode {
+                        region,
+                        kind,
+                        node: T::create(),
+                        ids: vec![],
+                    })),
+                )
+            })
+            .collect()
     }
 }
 
@@ -108,4 +166,7 @@ pub trait RegionalNode: 'static + Debug + Clone + Send + Sync {
         outputs: &mut Vec<EValue>,
         variables: &mut ExecutionExtras,
     ) -> miette::Result<ExecutionResult>;
+
+    fn categories() -> &'static [&'static str];
+    fn create() -> Self;
 }

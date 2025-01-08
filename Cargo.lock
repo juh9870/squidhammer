@@ -1078,6 +1078,7 @@ dependencies = [
  "emath",
  "exmex",
  "fs-err 3.0.0",
+ "inline_tweak",
  "itertools",
  "knus",
  "maybe-owned",

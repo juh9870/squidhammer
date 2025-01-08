@@ -5,7 +5,7 @@ use crate::graph::node::commands::{SnarlCommand, SnarlCommands};
 use crate::graph::node::enum_node::EnumNode;
 use crate::graph::node::list::ListNode;
 use crate::graph::node::struct_node::StructNode;
-use crate::graph::node::{get_raw_snarl_node, Node, NodeContext, SnarlNode};
+use crate::graph::node::{get_node_factory, Node, NodeContext, SnarlNode};
 use crate::graph::region::region_graph::RegionGraph;
 use crate::graph::region::RegionInfo;
 use crate::graph::Graph;
@@ -20,7 +20,7 @@ use ahash::AHashMap;
 use egui_snarl::{InPin, InPinId, NodeId, OutPin, OutPinId, Snarl};
 use emath::Pos2;
 use miette::Context;
-use smallvec::SmallVec;
+use smallvec::{smallvec, SmallVec};
 use std::collections::hash_map::Entry;
 use std::ops::{Deref, DerefMut};
 use ustr::Ustr;
@@ -220,13 +220,27 @@ impl<'a, 'snarl> GraphEditingContext<'a, 'snarl> {
         id: Ustr,
         pos: Pos2,
         _commands: &mut SnarlCommands,
-    ) -> miette::Result<NodeId> {
-        let id = self
-            .snarl
-            .insert_node(pos, SnarlNode::new(get_raw_snarl_node(&id).unwrap()));
-        self.inline_values.retain(|in_pin, _| in_pin.node != id);
+    ) -> miette::Result<SmallVec<[NodeId; 2]>> {
+        let ids = get_node_factory(&id).unwrap().create_nodes(self.snarl, pos);
+        self.mark_dirty();
+        for id in &ids {
+            let node = &self.snarl[*id].node;
+            for reg in [
+                node.region_source(node_context!(self.ctx)),
+                node.region_end(node_context!(self.ctx)),
+            ]
+            .iter()
+            .flatten()
+            {
+                self.ctx
+                    .regions
+                    .entry(*reg)
+                    .or_insert_with(|| RegionInfo::new(*reg));
+            }
+            self.inline_values.retain(|in_pin, _| &in_pin.node != id);
+        }
 
-        Ok(id)
+        Ok(ids)
     }
 
     pub fn create_object_node(
@@ -234,7 +248,7 @@ impl<'a, 'snarl> GraphEditingContext<'a, 'snarl> {
         object: ETypeId,
         pos: Pos2,
         _commands: &mut SnarlCommands,
-    ) -> miette::Result<NodeId> {
+    ) -> miette::Result<SmallVec<[NodeId; 2]>> {
         let node: Box<dyn Node> = match self
             .registry
             .get_object(&object)
@@ -246,8 +260,9 @@ impl<'a, 'snarl> GraphEditingContext<'a, 'snarl> {
 
         let id = self.snarl.insert_node(pos, SnarlNode::new(node));
         self.inline_values.retain(|in_pin, _| in_pin.node != id);
+        self.mark_dirty();
 
-        Ok(id)
+        Ok(smallvec![id])
     }
 
     pub fn create_list_node(
@@ -255,7 +270,7 @@ impl<'a, 'snarl> GraphEditingContext<'a, 'snarl> {
         item_ty: EListId,
         pos: Pos2,
         _commands: &mut SnarlCommands,
-    ) -> miette::Result<NodeId> {
+    ) -> miette::Result<SmallVec<[NodeId; 2]>> {
         let item_ty = self
             .registry
             .get_list(&item_ty)
@@ -264,8 +279,9 @@ impl<'a, 'snarl> GraphEditingContext<'a, 'snarl> {
         let node = Box::new(ListNode::of_type(item_ty));
         let id = self.snarl.insert_node(pos, SnarlNode::new(node));
         self.inline_values.retain(|in_pin, _| in_pin.node != id);
+        self.mark_dirty();
 
-        Ok(id)
+        Ok(smallvec![id])
     }
 
     pub fn mark_node_dirty(&mut self, node: NodeId) {

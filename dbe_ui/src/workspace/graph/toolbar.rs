@@ -15,6 +15,7 @@ pub struct GraphToolbarViewer<'a> {
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Hash, Serialize, Deserialize)]
 pub enum GraphTab {
     General,
+    Debug,
 }
 
 impl ToolbarViewer for GraphToolbarViewer<'_> {
@@ -23,6 +24,7 @@ impl ToolbarViewer for GraphToolbarViewer<'_> {
     fn title(&self, tab: &Self::Tab) -> Cow<'_, str> {
         match tab {
             GraphTab::General => "General".into(),
+            GraphTab::Debug => "Debug".into(),
         }
     }
 
@@ -45,6 +47,11 @@ impl ToolbarViewer for GraphToolbarViewer<'_> {
 
                     edit_inputs_outputs(ui, self.graph.graph_mut());
                 });
+            }
+            GraphTab::Debug => {
+                let repr = format!("{:#?}", self.graph.graph().region_graph());
+
+                ui.label(repr);
             }
         };
     }

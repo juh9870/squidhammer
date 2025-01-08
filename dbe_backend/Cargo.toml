@@ -19,6 +19,7 @@ egui-snarl = { workspace = true, features = ["serde"] }
 emath = { workspace = true }
 exmex = { workspace = true }
 fs-err = { workspace = true }
+inline_tweak = { workspace = true }
 itertools = { workspace = true }
 knus = { workspace = true }
 maybe-owned = { workspace = true }
