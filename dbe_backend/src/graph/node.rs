@@ -25,9 +25,10 @@ use ahash::AHashMap;
 use atomic_refcell::{AtomicRef, AtomicRefCell};
 use downcast_rs::{impl_downcast, Downcast};
 use dyn_clone::DynClone;
-use egui_snarl::{InPin, NodeId, OutPin};
+use egui_snarl::{InPin, NodeId, OutPin, Snarl};
+use emath::Pos2;
 use miette::bail;
-use smallvec::SmallVec;
+use smallvec::{smallvec, SmallVec};
 use std::collections::BTreeMap;
 use std::fmt::Debug;
 use std::ops::{Deref, DerefMut};
@@ -83,12 +84,15 @@ fn default_nodes() -> impl Iterator<Item = (Ustr, Arc<dyn NodeFactory>)> {
     v.push(Arc::new(MappingsNodeFactory));
     v.push(Arc::new(FormatNodeFactory));
     v.push(Arc::new(ExpressionNodeFactory));
+    v.push(Arc::new(
+        RegionalNodeFactory::<RepeatRegionalNode>::INSTANCE,
+    ));
     v.into_iter().map(|item| (Ustr::from(&item.id()), item))
 }
 
-pub fn get_raw_snarl_node(id: &Ustr) -> Option<Box<dyn Node>> {
-    NODE_FACTORIES.borrow().get(id).map(|f| f.create())
-}
+// pub fn get_raw_snarl_node(id: &Ustr) -> Option<Box<dyn Node>> {
+//     NODE_FACTORIES.borrow().get(id).map(|f| f.create())
+// }
 
 pub fn get_node_factory(id: &Ustr) -> Option<Arc<dyn NodeFactory>> {
     NODE_FACTORIES.borrow().get(id).cloned()
@@ -109,6 +113,11 @@ pub trait NodeFactory: Send + Sync + Debug + 'static {
     fn register_required_types(&self, registry: &mut ETypesRegistry) -> miette::Result<()> {
         let _ = (registry,);
         Ok(())
+    }
+
+    fn create_nodes(&self, graph: &mut Snarl<SnarlNode>, pos: Pos2) -> SmallVec<[NodeId; 2]> {
+        let id = graph.insert_node(pos, SnarlNode::new(self.create()));
+        smallvec![id]
     }
 }
 
@@ -445,5 +454,7 @@ macro_rules! impl_serde_node {
     };
 }
 
+use crate::graph::node::regional::repeat::RepeatRegionalNode;
+use crate::graph::node::regional::RegionalNodeFactory;
 use crate::graph::region::RegionInfo;
 pub(crate) use impl_serde_node;

@@ -209,8 +209,16 @@ impl<Io> TabViewer for WorkspaceTabViewer<'_, Io> {
 
                 let is_node_group = graph.is_node_group;
 
-                CollapsibleToolbar::new(DPanelSide::Right, &[GraphTab::General], &[])
-                    .show_inside(ui, &mut GraphToolbarViewer { graph });
+                CollapsibleToolbar::new(
+                    DPanelSide::Right,
+                    &[
+                        GraphTab::General,
+                        #[cfg(debug_assertions)]
+                        GraphTab::Debug,
+                    ],
+                    &[],
+                )
+                .show_inside(ui, &mut GraphToolbarViewer { graph });
 
                 egui::CentralPanel::default()
                     .frame(Frame {

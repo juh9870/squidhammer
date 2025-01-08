@@ -13,7 +13,7 @@ use dbe_backend::graph::editing::PartialGraphEditingContext;
 use dbe_backend::graph::node::commands::SnarlCommands;
 use dbe_backend::graph::node::ports::NodePortType;
 use dbe_backend::graph::node::{
-    all_node_factories, node_factories_by_category, Node, NodeFactory, SnarlNode,
+    all_node_factories, node_factories_by_category, NodeFactory, SnarlNode,
 };
 use dbe_backend::registry::ETypesRegistry;
 use dbe_backend::value::id::ETypeId;
@@ -69,7 +69,7 @@ impl<'a> SnarlViewer<SnarlNode> for GraphViewer<'a> {
                 if let Some(reg) = self.ctx.regions.get(&node_region) {
                     let color = reg.color();
                     return default
-                        .stroke(Stroke::new(tweak!(3.0), color.gamma_multiply(tweak!(1.0))));
+                        .stroke(Stroke::new(tweak!(1.0), color.gamma_multiply(tweak!(1.0))));
                 }
             }
         }
@@ -313,7 +313,7 @@ impl<'a> SnarlViewer<SnarlNode> for GraphViewer<'a> {
                     categories: &mut Peekable<
                         impl Iterator<Item = (&'a &'static str, &'a Vec<Arc<dyn NodeFactory>>)>,
                     >,
-                ) -> Option<Box<dyn Node>> {
+                ) -> Option<Ustr> {
                     while let Some((cat, _)) = categories.peek() {
                         if !parent.is_empty() && !is_sub_category(cat, parent) {
                             return None;
@@ -332,9 +332,9 @@ impl<'a> SnarlViewer<SnarlNode> for GraphViewer<'a> {
                             .menu_button(cat_name, |ui| {
                                 for factory in factories.iter() {
                                     if ui.button(factory.id().as_str()).clicked() {
-                                        let node = factory.create();
+                                        // let node = factory.create();
                                         ui.close_menu();
-                                        return Some(node);
+                                        return Some(factory.id());
                                     }
                                 }
 
@@ -358,7 +358,13 @@ impl<'a> SnarlViewer<SnarlNode> for GraphViewer<'a> {
                 }
 
                 if let Some(to_insert) = show(ui, "", &mut categories) {
-                    snarl.insert_node(pos, SnarlNode::new(to_insert));
+                    if let Err(err) =
+                        self.ctx
+                            .as_full(snarl)
+                            .create_node(to_insert, pos, &mut self.commands)
+                    {
+                        report_error(err)
+                    }
                 }
             }
         });
@@ -386,35 +392,45 @@ impl<'a> SnarlViewer<SnarlNode> for GraphViewer<'a> {
                         match data.ty.ty() {
                             EDataType::Object { ident } => {
                                 if ui.button(ident.as_raw().unwrap()).clicked() {
-                                    let node = self.ctx.as_full(snarl).create_object_node(
+                                    let nodes = self.ctx.as_full(snarl).create_object_node(
                                         ident,
                                         pos,
                                         &mut self.commands,
                                     )?;
-                                    let out_pin = &snarl.out_pin(OutPinId { node, output: 0 });
-                                    let in_pin = snarl.in_pin(*pin);
-                                    self.ctx.as_full(snarl).connect(
-                                        out_pin,
-                                        &in_pin,
-                                        &mut self.commands,
-                                    )?;
+                                    if let Some(node) = nodes.last() {
+                                        let out_pin = &snarl.out_pin(OutPinId {
+                                            node: *node,
+                                            output: 0,
+                                        });
+                                        let in_pin = snarl.in_pin(*pin);
+                                        self.ctx.as_full(snarl).connect(
+                                            out_pin,
+                                            &in_pin,
+                                            &mut self.commands,
+                                        )?;
+                                    }
                                     ui.close_menu();
                                 }
                             }
                             EDataType::List { id } => {
                                 if ui.button("List").clicked() {
-                                    let node = self.ctx.as_full(snarl).create_list_node(
+                                    let nodes = self.ctx.as_full(snarl).create_list_node(
                                         id,
                                         pos,
                                         &mut self.commands,
                                     )?;
-                                    let out_pin = &snarl.out_pin(OutPinId { node, output: 0 });
-                                    let in_pin = snarl.in_pin(*pin);
-                                    self.ctx.as_full(snarl).connect(
-                                        out_pin,
-                                        &in_pin,
-                                        &mut self.commands,
-                                    )?;
+                                    if let Some(node) = nodes.last() {
+                                        let out_pin = &snarl.out_pin(OutPinId {
+                                            node: *node,
+                                            output: 0,
+                                        });
+                                        let in_pin = snarl.in_pin(*pin);
+                                        self.ctx.as_full(snarl).connect(
+                                            out_pin,
+                                            &in_pin,
+                                            &mut self.commands,
+                                        )?;
+                                    }
                                     ui.close_menu();
                                 }
                             }

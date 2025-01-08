@@ -1,7 +1,7 @@
 use crate::graph::editing::GraphEditingContext;
 use crate::graph::inputs::{GraphInput, GraphOutput};
 use crate::graph::node::commands::SnarlCommands;
-use crate::graph::node::{get_raw_snarl_node, NodeContext, SnarlNode};
+use crate::graph::node::{get_node_factory, NodeContext, SnarlNode};
 use crate::graph::region::region_graph::RegionGraph;
 use crate::graph::region::RegionInfo;
 use crate::json_utils::JsonValue;
@@ -48,8 +48,9 @@ impl Graph {
 
         m_try(|| {
             for (serialized_id, mut node) in packed.nodes {
-                let mut created_node = get_raw_snarl_node(&node.id)
-                    .ok_or_else(|| miette!("node type {} not found", node.id))?;
+                let mut created_node = get_node_factory(&node.id)
+                    .ok_or_else(|| miette!("node type {} not found", node.id))?
+                    .create();
 
                 created_node.parse_json(registry, &mut node.data)?;
 
