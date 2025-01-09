@@ -1,6 +1,6 @@
 use super::{
-    FuncNode, FunctionalArgNames, FunctionalInputPortAdapter, FunctionalNode, FunctionalNodeOutput,
-    FunctionalOutputPortAdapter, IntoFunctionalNode,
+    AsStaticSlice, FuncNode, FunctionalArgNames, FunctionalContext, FunctionalInputPortAdapter,
+    FunctionalNode, FunctionalNodeOutput, FunctionalOutputPortAdapter, IntoFunctionalNode,
 };
 use crate::graph::node::ports::{InputData, OutputData};
 use crate::graph::node::variables::ExecutionExtras;
@@ -28,7 +28,7 @@ macro_rules! enumerate {
 
 macro_rules! impl_into_node {
     ($($in:ident),*) => {
-        impl<$($in: FunctionalInputPortAdapter + 'static,)* O: FunctionalOutputPortAdapter + 'static, F: Fn($($in),*) -> O + Clone + Send + Sync + 'static> IntoFunctionalNode<($($in,)*), O> for F {
+        impl<$($in: FunctionalInputPortAdapter + 'static,)* O: FunctionalNodeOutput + 'static, F: Fn(FunctionalContext, $($in),*) -> O + Clone + Send + Sync + 'static> IntoFunctionalNode<($($in,)*), O> for F {
             type Fn = FuncNode<($($in,)*), O, F>;
 
             fn into_node(
@@ -37,15 +37,17 @@ macro_rules! impl_into_node {
                 input_names: <Self::Fn as FunctionalNode>::InputNames,
                 output_names: <<Self::Fn as FunctionalNode>::Output as FunctionalNodeOutput>::OutputNames,
                 categories: &'static[&'static str],
+                has_side_effects: bool,
             ) -> Self::Fn {
                 FuncNode {
                     f: self,
                     id,
-                    input_names: input_names.as_ref(),
-                    output_names: output_names.as_ref(),
+                    input_names: input_names.as_static_slice(),
+                    output_names: output_names.as_static_slice(),
                     marker1: Default::default(),
                     marker2: Default::default(),
                     categories,
+                    has_side_effects,
                 }
             }
         }
@@ -67,8 +69,9 @@ macro_rules! get_edata_type {
 }
 
 macro_rules! invoke_f {
-    ($self:ident, $inputs:ident, $($i:expr, $in:ident);*) => {
+    ($self:ident, $ctx:ident, $inputs:ident, $($i:expr, $in:ident);*) => {
         ($self.f)(
+            $ctx,
             $(
                 $in::try_from(&$inputs[$i]).with_context(||format!("failed to convert input argument #{} {}", $i, $self.input_names[$i]))?,
             )*
@@ -86,7 +89,9 @@ macro_rules! invoke_f {
 
 macro_rules! impl_functional_node {
     ($($in:ident),*) => {
-        impl<$($in: FunctionalInputPortAdapter + 'static,)* Output: FunctionalNodeOutput, F: Fn($($in),*) -> Output + Clone + Send + Sync> FunctionalNode for FuncNode<($($in,)*), Output, F> {
+        impl_into_node!($($in),*);
+
+        impl<$($in: FunctionalInputPortAdapter + 'static,)* Output: FunctionalNodeOutput, F: Fn(FunctionalContext, $($in),*) -> Output + Clone + Send + Sync> FunctionalNode for FuncNode<($($in,)*), Output, F> {
             type Output = Output;
             type InputNames = &'static [&'static str; count!($($in)*)];
 
@@ -107,14 +112,15 @@ macro_rules! impl_functional_node {
             }
 
             #[allow(unused_variables)]
-            fn execute(&self, inputs: &[EValue], outputs: &mut Vec<EValue>) -> miette::Result<()> {
-                let result = enumerate!(invoke_f(self, inputs), $($in)*);
+            fn execute(&self, context: NodeContext, variables: &mut ExecutionExtras, inputs: &[EValue], outputs: &mut Vec<EValue>) -> miette::Result<()> {
+                let ctx = (context, variables);
+                let result = enumerate!(invoke_f(self, ctx, inputs), $($in)*);
 
                 FunctionalNodeOutput::write_results(result, outputs)
             }
         }
 
-        impl<$($in: FunctionalInputPortAdapter + 'static,)* Output: FunctionalNodeOutput, F: Fn($($in),*) -> Output + Clone + Send + Sync> Node for FuncNode<($($in,)*), Output, F> {
+        impl<$($in: FunctionalInputPortAdapter + 'static,)* Output: FunctionalNodeOutput, F: Fn(FunctionalContext, $($in),*) -> Output + Clone + Send + Sync> Node for FuncNode<($($in,)*), Output, F> {
             fn id(&self) -> Ustr {
                 self.id.into()
             }
@@ -135,13 +141,17 @@ macro_rules! impl_functional_node {
                 Ok(<Self as FunctionalNode>::output_unchecked(self, output))
             }
 
-            fn execute(&self, _context: NodeContext, inputs: &[EValue], outputs: &mut Vec<EValue>, _variables: &mut ExecutionExtras) -> miette::Result<ExecutionResult> {
-                <Self as FunctionalNode>::execute(self, inputs, outputs)?;
+            fn has_side_effects(&self) -> bool {
+                self.has_side_effects
+            }
+
+            fn execute(&self, context: NodeContext, inputs: &[EValue], outputs: &mut Vec<EValue>, variables: &mut ExecutionExtras) -> miette::Result<ExecutionResult> {
+                <Self as FunctionalNode>::execute(self, context, variables, inputs, outputs)?;
 
                 Ok(ExecutionResult::Done)
             }
         }
-        impl<$($in: FunctionalInputPortAdapter + 'static,)* Output: FunctionalNodeOutput, F: Fn($($in),*) -> Output + Clone + Send + Sync> NodeFactory for FuncNode<($($in,)*), Output, F> {
+        impl<$($in: FunctionalInputPortAdapter + 'static,)* Output: FunctionalNodeOutput, F: Fn(FunctionalContext, $($in),*) -> Output + Clone + Send + Sync> NodeFactory for FuncNode<($($in,)*), Output, F> {
             fn id(&self) -> Ustr {
                 self.id.into()
             }
@@ -194,7 +204,6 @@ macro_rules! impl_functional_output {
 macro_rules! impl_all {
     ($($i:tt),*) => {
         paste::paste!{
-            impl_into_node!($([<I $i>]),*);
             impl_functional_node!($([<I $i>]),*);
             impl_functional_output!($([<O $i>]),*);
         }
