@@ -2,7 +2,7 @@ use crate::widgets::collapsible_toolbar::ToolbarViewer;
 use crate::widgets::rotated_label::RotLabelDirection;
 use crate::workspace::graph::toolbar::edit_inputs::edit_inputs_outputs;
 use dbe_backend::project::project_graph::ProjectGraph;
-use egui::Ui;
+use egui::{CollapsingHeader, Ui};
 use serde::{Deserialize, Serialize};
 use std::borrow::Cow;
 
@@ -49,9 +49,20 @@ impl ToolbarViewer for GraphToolbarViewer<'_> {
                 });
             }
             GraphTab::Debug => {
-                let repr = format!("{:#?}", self.graph.graph().region_graph());
+                CollapsingHeader::new("Region Graph")
+                    .default_open(false)
+                    .show(ui, |ui| {
+                        let repr = format!("{:#?}", self.graph.graph().region_graph());
 
-                ui.label(repr);
+                        ui.label(repr);
+                    });
+                CollapsingHeader::new("Regions data")
+                    .default_open(false)
+                    .show(ui, |ui| {
+                        let repr = format!("{:#?}", self.graph.graph().regions());
+
+                        ui.label(repr);
+                    });
             }
         };
     }

@@ -4523,6 +4523,7 @@ dependencies = [
  "itertools",
  "miette",
  "rstest",
+ "smallvec",
  "thiserror 2.0.9",
 ]
 

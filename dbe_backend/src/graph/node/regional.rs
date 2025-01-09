@@ -1,16 +1,21 @@
-use crate::graph::node::groups::utils::{get_port_input, get_port_output};
+use crate::graph::node::commands::{SnarlCommand, SnarlCommands};
+use crate::graph::node::groups::utils::{get_port_input, get_port_output, sync_fields};
+use crate::graph::node::ports::fields::IoDirection;
 use crate::graph::node::ports::{InputData, NodePortType, OutputData};
 use crate::graph::node::variables::ExecutionExtras;
 use crate::graph::node::{ExecutionResult, Node, NodeContext, NodeFactory, SnarlNode};
+use crate::graph::region::RegionVariable;
 use crate::value::EValue;
-use egui_snarl::{NodeId, Snarl};
+use egui_snarl::{InPin, NodeId, OutPin, Snarl};
 use emath::{vec2, Pos2};
 use inline_tweak::tweak;
+use miette::bail;
 use smallvec::SmallVec;
 use std::fmt::Debug;
 use std::marker::PhantomData;
 use strum::EnumIs;
 use ustr::Ustr;
+use utils::vec_utils::VecOperation;
 use uuid::Uuid;
 
 pub mod repeat;
@@ -34,8 +39,30 @@ impl<T: RegionalNode> Node for RegionIONode<T> {
         T::id()
     }
 
+    fn update_state(
+        &mut self,
+        context: NodeContext,
+        commands: &mut SnarlCommands,
+        id: NodeId,
+    ) -> miette::Result<()> {
+        let Some(region) = context.regions.get(&self.region) else {
+            bail!("Region not found");
+        };
+
+        sync_fields(
+            commands,
+            &region.variables,
+            &mut self.ids,
+            None,
+            id,
+            IoDirection::Both,
+        );
+
+        Ok(())
+    }
+
     fn inputs_count(&self, context: NodeContext) -> usize {
-        self.ids.len() + self.node.inputs_count(context, self.kind)
+        self.ids.len() + self.node.inputs_count(context, self.kind) + 1
     }
 
     fn input_unchecked(&self, context: NodeContext, input: usize) -> miette::Result<InputData> {
@@ -50,7 +77,12 @@ impl<T: RegionalNode> Node for RegionIONode<T> {
                 "!!unknown region!!".into(),
             ));
         };
-        get_port_input(&region.variables, &self.ids, input - native_in_count)
+        if input == self.ids.len() + native_in_count {
+            // special "new" input
+            Ok(InputData::new(NodePortType::BasedOnSource, "".into()))
+        } else {
+            get_port_input(&region.variables, &self.ids, input - native_in_count)
+        }
     }
 
     fn outputs_count(&self, context: NodeContext) -> usize {
@@ -70,6 +102,30 @@ impl<T: RegionalNode> Node for RegionIONode<T> {
             ));
         };
         get_port_output(&region.variables, &self.ids, output - native_out_count)
+    }
+
+    fn try_connect(
+        &mut self,
+        context: NodeContext,
+        commands: &mut SnarlCommands,
+        from: &OutPin,
+        to: &InPin,
+        incoming_type: &NodePortType,
+    ) -> miette::Result<bool> {
+        if to.id.input == self.inputs_count(context) - 1 {
+            let new_pin_id = Uuid::new_v4();
+            self.ids.push(new_pin_id);
+            commands.push(SnarlCommand::EditRegionVariables {
+                region: self.region,
+                operation: VecOperation::Push(RegionVariable {
+                    ty: Some(incoming_type.ty()),
+                    id: new_pin_id,
+                    name: "value".to_string(),
+                }),
+            })
+        }
+
+        self._default_try_connect(context, commands, from, to, incoming_type)
     }
 
     fn region_source(&self, _context: NodeContext) -> Option<Uuid> {

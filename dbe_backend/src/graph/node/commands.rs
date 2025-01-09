@@ -1,10 +1,12 @@
 use crate::etype::EDataType;
 use crate::graph::editing::GraphEditingContext;
+use crate::graph::region::{RegionInfo, RegionVariable};
 use ahash::AHashMap;
 use egui_snarl::{InPinId, NodeId, OutPinId};
 use itertools::Itertools;
 use smallvec::SmallVec;
 use tracing::debug;
+use utils::vec_utils::VecOperation;
 use uuid::Uuid;
 
 #[derive(derive_more::Debug)]
@@ -86,6 +88,11 @@ pub enum SnarlCommand {
     SetGroupInputType { id: Uuid, ty: EDataType },
     /// Sets the group output type. The command will panic if the output already has a type
     SetGroupOutputType { id: Uuid, ty: EDataType },
+    /// Edits region variables using the provided operation
+    EditRegionVariables {
+        region: Uuid,
+        operation: VecOperation<RegionVariable>,
+    },
     /// Runs a custom callback on the graph and execution context
     ///
     /// Don't forget to mark nodes as dirty if needed, either in the callback or as a separate command
@@ -320,6 +327,15 @@ impl SnarlCommand {
             }
             SnarlCommand::RequireRegionRebuild => {
                 ctx.mark_dirty();
+            }
+            SnarlCommand::EditRegionVariables { region, operation } => {
+                let vars = &mut ctx
+                    .regions
+                    .entry(region)
+                    .or_insert_with(|| RegionInfo::new(region))
+                    .variables;
+
+                operation.apply_smallvec(vars);
             }
         }
         Ok(())
