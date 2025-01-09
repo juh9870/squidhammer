@@ -1,8 +1,8 @@
 use super::{
-    FuncNode, FunctionalArgNames, FunctionalNode, FunctionalNodeOutput, IntoFunctionalNode,
+    FuncNode, FunctionalArgNames, FunctionalInputPortAdapter, FunctionalNode, FunctionalNodeOutput,
+    FunctionalOutputPortAdapter, IntoFunctionalNode,
 };
-use crate::etype::conversion::EItemInfoAdapter;
-use crate::graph::node::ports::{InputData, NodePortType, OutputData};
+use crate::graph::node::ports::{InputData, OutputData};
 use crate::graph::node::variables::ExecutionExtras;
 use crate::graph::node::{ExecutionResult, Node, NodeContext, NodeFactory};
 use crate::value::EValue;
@@ -28,7 +28,7 @@ macro_rules! enumerate {
 
 macro_rules! impl_into_node {
     ($($in:ident),*) => {
-        impl<$($in: EItemInfoAdapter + 'static,)* O: EItemInfoAdapter + 'static, F: Fn($($in),*) -> O + Clone + Send + Sync + 'static> IntoFunctionalNode<($($in,)*), O> for F {
+        impl<$($in: FunctionalInputPortAdapter + 'static,)* O: FunctionalOutputPortAdapter + 'static, F: Fn($($in),*) -> O + Clone + Send + Sync + 'static> IntoFunctionalNode<($($in,)*), O> for F {
             type Fn = FuncNode<($($in,)*), O, F>;
 
             fn into_node(
@@ -53,12 +53,12 @@ macro_rules! impl_into_node {
 }
 
 macro_rules! get_edata_type {
-    ($varname:ident, $($i:expr, $in:ident);*) => {
+    ($adapter:ty, $varname:ident, $($i:expr, $in:ident);*) => {
         paste::paste!{
             {
                 $(const [< $in _IDX >]: usize = $i;)*
                 match $varname {
-                    $([< $in _IDX >] => <$in as EItemInfoAdapter>::edata_type(),)*
+                    $([< $in _IDX >] => <$in as $adapter>::port(),)*
                     _ => panic!("input index out of bounds"),
                 }
             }
@@ -86,7 +86,7 @@ macro_rules! invoke_f {
 
 macro_rules! impl_functional_node {
     ($($in:ident),*) => {
-        impl<$($in: EItemInfoAdapter + 'static,)* Output: FunctionalNodeOutput, F: Fn($($in),*) -> Output + Clone + Send + Sync> FunctionalNode for FuncNode<($($in,)*), Output, F> {
+        impl<$($in: FunctionalInputPortAdapter + 'static,)* Output: FunctionalNodeOutput, F: Fn($($in),*) -> Output + Clone + Send + Sync> FunctionalNode for FuncNode<($($in,)*), Output, F> {
             type Output = Output;
             type InputNames = &'static [&'static str; count!($($in)*)];
 
@@ -96,10 +96,10 @@ macro_rules! impl_functional_node {
 
             #[allow(unused_variables)]
             fn input_unchecked(&self, input: usize) -> InputData {
-                let ty = enumerate!(get_edata_type(input), $($in)*);
+                let port = enumerate!(get_edata_type(FunctionalInputPortAdapter, input), $($in)*);
 
                 #[allow(unreachable_code)]
-                InputData::new(NodePortType::Specific(ty), self.input_names[input].into(),)
+                InputData::new(port, self.input_names[input].into(),)
             }
 
             fn output_unchecked(&self, output: usize) -> OutputData {
@@ -114,7 +114,7 @@ macro_rules! impl_functional_node {
             }
         }
 
-        impl<$($in: EItemInfoAdapter + 'static,)* Output: FunctionalNodeOutput, F: Fn($($in),*) -> Output + Clone + Send + Sync> Node for FuncNode<($($in,)*), Output, F> {
+        impl<$($in: FunctionalInputPortAdapter + 'static,)* Output: FunctionalNodeOutput, F: Fn($($in),*) -> Output + Clone + Send + Sync> Node for FuncNode<($($in,)*), Output, F> {
             fn id(&self) -> Ustr {
                 self.id.into()
             }
@@ -141,7 +141,7 @@ macro_rules! impl_functional_node {
                 Ok(ExecutionResult::Done)
             }
         }
-        impl<$($in: EItemInfoAdapter + 'static,)* Output: FunctionalNodeOutput, F: Fn($($in),*) -> Output + Clone + Send + Sync> NodeFactory for FuncNode<($($in,)*), Output, F> {
+        impl<$($in: FunctionalInputPortAdapter + 'static,)* Output: FunctionalNodeOutput, F: Fn($($in),*) -> Output + Clone + Send + Sync> NodeFactory for FuncNode<($($in,)*), Output, F> {
             fn id(&self) -> Ustr {
                 self.id.into()
             }
@@ -159,7 +159,7 @@ macro_rules! impl_functional_node {
 
 macro_rules! impl_functional_output {
     ($($out:ident),*) => {
-        impl<$($out: EItemInfoAdapter + 'static,)*> FunctionalNodeOutput for ($($out,)*) {
+        impl<$($out: FunctionalOutputPortAdapter + 'static,)*> FunctionalNodeOutput for ($($out,)*) {
             type OutputNames = &'static [&'static str; count!($($out)*)];
 
             fn outputs_count() -> usize {
@@ -168,10 +168,10 @@ macro_rules! impl_functional_output {
 
             #[allow(unused_variables)]
             fn output_unchecked(output: usize, names: FunctionalArgNames) -> OutputData {
-                let ty = enumerate!(get_edata_type(output), $($out)*);
+                let port = enumerate!(get_edata_type(FunctionalOutputPortAdapter, output), $($out)*);
 
                 #[allow(unreachable_code)]
-                OutputData::new(NodePortType::Specific(ty),names[output].into())
+                OutputData::new(port,names[output].into())
             }
 
             fn write_results(self, outputs: &mut Vec<EValue>) -> miette::Result<()> {
