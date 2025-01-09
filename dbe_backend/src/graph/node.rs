@@ -380,6 +380,19 @@ pub trait Node: DynClone + Debug + Send + Sync + Downcast + 'static {
         false
     }
 
+    /// Indicated whether the inputs for this node need to be executes
+    ///
+    /// This is called before node inputs are evaluated, and is used to skip
+    /// execution of nodes that are not needed
+    fn should_execute_dependencies(
+        &self,
+        context: NodeContext,
+        variables: &mut ExecutionExtras,
+    ) -> miette::Result<bool> {
+        let _ = (context, variables);
+        Ok(true)
+    }
+
     /// Execute the node
     fn execute(
         &self,
