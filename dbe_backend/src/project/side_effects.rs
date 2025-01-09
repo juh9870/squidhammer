@@ -6,10 +6,12 @@ use crate::value::EValue;
 use ahash::AHashMap;
 use camino::{Utf8Path, Utf8PathBuf};
 use egui_snarl::NodeId;
+use itertools::Itertools;
 use maybe_owned::MaybeOwnedMut;
 use miette::{bail, WrapErr};
 use std::collections::{btree_map, hash_map, BTreeMap};
 use std::hash::{Hash, Hasher};
+use tracing::info;
 use uuid::Uuid;
 
 pub mod mappings;
@@ -24,6 +26,9 @@ pub enum SideEffect {
     EmitTransientFile {
         value: EValue,
         is_dbevalue: bool,
+    },
+    ShowDebug {
+        value: EValue,
     },
 }
 
@@ -73,6 +78,15 @@ impl SideEffect {
                 project
                     .files
                     .insert(tmp_path, ProjectFile::GeneratedValue(value));
+            }
+            SideEffect::ShowDebug { value } => {
+                info!(
+                    graph=%emitter.0,
+                    path=emitter.1.iter().map(|s|s.to_string(project)).join("->"),
+                    index=emitter.2,
+                    %value,
+                    "Debug",
+                );
             }
         }
 
@@ -202,7 +216,7 @@ pub enum SideEffectPathItem {
 impl SideEffectPathItem {
     pub fn to_string<IO>(&self, project: &Project<IO>) -> String {
         match self {
-            SideEffectPathItem::Node(id) => id.0.to_string(),
+            SideEffectPathItem::Node(id) => format!("n{}", id.0),
             SideEffectPathItem::Subgraph(id) => project
                 .graphs
                 .graphs
