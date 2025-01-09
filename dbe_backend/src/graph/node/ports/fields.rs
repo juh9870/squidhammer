@@ -5,7 +5,6 @@ use egui_snarl::{InPinId, NodeId, OutPinId};
 use itertools::Itertools;
 use miette::bail;
 use std::fmt::Display;
-use strum::EnumIs;
 
 pub mod mappers;
 
@@ -134,7 +133,8 @@ pub fn sync_fields_and_types<Mapper: FieldMapper>(
                     node: node_id,
                 },
             })
-        } else {
+        }
+        if io.is_input() {
             commands.push(SnarlCommand::DeletePinValue {
                 pin: InPinId {
                     input: drop_pos,
@@ -151,12 +151,21 @@ pub fn sync_fields_and_types<Mapper: FieldMapper>(
     }
 
     if let Some(rearrangements) = rearrangements {
-        if io.is_output() {
+        if io.is_both() {
+            commands.push(SnarlCommand::OutputsRearrangedRaw {
+                node: node_id,
+                indices: rearrangements.clone(),
+            });
+            commands.push(SnarlCommand::InputsRearrangedRaw {
+                node: node_id,
+                indices: rearrangements,
+            });
+        } else if io.is_output() {
             commands.push(SnarlCommand::OutputsRearrangedRaw {
                 node: node_id,
                 indices: rearrangements,
             })
-        } else {
+        } else if io.is_input() {
             commands.push(SnarlCommand::InputsRearrangedRaw {
                 node: node_id,
                 indices: rearrangements,
@@ -250,10 +259,25 @@ pub fn map_outputs<Mapper: FieldMapper>(
     Ok(())
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, EnumIs)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum IoDirection {
     Input,
     Output,
+    Both,
+}
+
+impl IoDirection {
+    pub fn is_input(&self) -> bool {
+        matches!(self, IoDirection::Input | IoDirection::Both)
+    }
+
+    pub fn is_output(&self) -> bool {
+        matches!(self, IoDirection::Output | IoDirection::Both)
+    }
+
+    pub fn is_both(&self) -> bool {
+        matches!(self, IoDirection::Both)
+    }
 }
 
 #[cfg(test)]
