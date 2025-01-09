@@ -4,7 +4,7 @@ use crate::graph::node::ports::NodePortType;
 use crate::graph::node::variables::ExecutionExtras;
 use crate::graph::node::SnarlNode;
 use crate::graph::node::{ExecutionResult, NodeContext};
-use crate::graph::region::region_graph::RegionGraph;
+use crate::graph::region::region_graph::{RegionGraph, RegionGraphData};
 use crate::graph::region::{RegionExecutionData, RegionInfo};
 use crate::graph::Graph;
 use crate::m_try;
@@ -129,19 +129,18 @@ impl<'a, 'snarl> GraphExecutionContext<'a, 'snarl> {
             .context("Graph structure is invalid")?;
 
         self.cache.clear();
-        for (id, has_side_effects) in self
-            .snarl
-            .node_ids()
-            .map(|(id, node)| (id, node.has_side_effects()))
-        {
-            if !has_side_effects {
-                continue;
-            }
-            if self.cache.contains_key(&id) {
+        for (id, node) in self.snarl.node_ids() {
+            if !node.has_side_effects() {
                 continue;
             }
 
-            self.eval_node_inner(id, side_effects)?
+            // Skip executing nodes in regions, except for the top-level region endpoints
+            let regions_graph = expect_region_graph(self.region_graph);
+            if !should_run_node(regions_graph, node_context!(self), id, node, None) {
+                continue;
+            }
+
+            self.eval_node_if_uncached(id, side_effects)?
         }
 
         Ok(())
@@ -271,7 +270,15 @@ impl<'a, 'snarl> GraphExecutionContext<'a, 'snarl> {
         .with_context(|| format!("failed to read input #{} of node {:?}", id.input, id.node))
     }
 
-    fn eval_node_inner(&mut self, id: NodeId, side_effects: bool) -> miette::Result<()> {
+    fn eval_node_if_uncached(&mut self, id: NodeId, side_effects: bool) -> miette::Result<()> {
+        if self.cache.contains_key(&id) {
+            return Ok(());
+        }
+
+        self.eval_node_inner(id, side_effects)
+    }
+
+    fn eval_node_inner(&mut self, id: NodeId, run_side_effects: bool) -> miette::Result<()> {
         // trace!("Evaluating node {:?}", id);
         m_try(|| {
             loop {
@@ -283,18 +290,69 @@ impl<'a, 'snarl> GraphExecutionContext<'a, 'snarl> {
                 let inputs_count = node.inputs_count(node_context!(self));
                 let mut input_values = Vec::<EValue>::with_capacity(inputs_count);
 
-                for i in 0..inputs_count {
-                    input_values.push(self.read_node_input_inner(
-                        InPinId { node: id, input: i },
-                        node,
-                        side_effects,
-                    )?);
+                let region_graph = expect_region_graph(self.region_graph);
+                if let Some(region) = node.region_end(node_context!(self)) {
+                    let start = region_graph.region_data(region).start_node;
+                    // always execute the start node of the region
+                    self.eval_node_if_uncached(start, run_side_effects)?;
+                }
+
+                if node.should_execute_dependencies(
+                    node_context!(self.ctx),
+                    &mut ExecutionExtras::new(
+                        self.ctx.is_node_group,
+                        self.ctx.input_values,
+                        self.ctx.output_values,
+                        self.ctx.regional_data.as_mut(),
+                        self.ctx.side_effects.with_node(id),
+                    ),
+                )? {
+                    for i in 0..inputs_count {
+                        input_values.push(self.read_node_input_inner(
+                            InPinId { node: id, input: i },
+                            node,
+                            run_side_effects,
+                        )?);
+                    }
+
+                    if run_side_effects {
+                        if let Some(region) = node.region_end(node_context!(self)) {
+                            let data = region_graph.region_data(region);
+
+                            if data.has_side_effects {
+                                for node in region_graph.region_nodes(region) {
+                                    let node_data = &self.snarl[node.node];
+                                    // only evaluate separation 0 nodes (direct nodes of the region, excluding children)
+                                    // or if the node is a separation 1 node and is the end node of the region
+                                    if node.node != id
+                                        && node_data.has_side_effects()
+                                        && (node.separation == 0
+                                            || (node.separation == 1
+                                                && node_data
+                                                    .region_end(node_context!(self))
+                                                    .is_some()))
+                                    {
+                                        self.eval_node_if_uncached(node.node, run_side_effects)?;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                } else {
+                    // When dependencies are not executed, provide default values
+                    for i in 0..inputs_count {
+                        input_values.push(
+                            node.try_input(node_context!(self), i)?
+                                .ty
+                                .default_value(self.registry)
+                                .into_owned(),
+                        );
+                    }
                 }
 
                 let outputs_count = node.outputs_count(node_context!(self));
                 let mut outputs = Vec::with_capacity(outputs_count);
 
-                let side_effects = self.ctx.side_effects.with_node(id);
                 let result = node.execute(
                     node_context!(self.ctx),
                     &input_values,
@@ -304,7 +362,7 @@ impl<'a, 'snarl> GraphExecutionContext<'a, 'snarl> {
                         self.ctx.input_values,
                         self.ctx.output_values,
                         self.ctx.regional_data.as_mut(),
-                        side_effects,
+                        self.ctx.side_effects.with_node(id),
                     ),
                 )?;
 
@@ -315,10 +373,7 @@ impl<'a, 'snarl> GraphExecutionContext<'a, 'snarl> {
                         return Ok(());
                     }
                     ExecutionResult::RerunRegion { region } => {
-                        let data = self
-                            .region_graph
-                            .try_as_data()
-                            .expect("Region graph was checked for before execution started");
+                        let data = expect_region_graph(self.region_graph);
 
                         // clear cache of all nodes in the region
                         for node in data.region_nodes(region) {
@@ -330,6 +385,49 @@ impl<'a, 'snarl> GraphExecutionContext<'a, 'snarl> {
         })
         .with_context(|| format!("failed to evaluate node {:?}", id))
     }
+}
+
+fn expect_region_graph(region_graph: &RegionGraph) -> &RegionGraphData {
+    region_graph
+        .try_as_data()
+        .expect("Region graph was checked for before execution started")
+}
+
+fn should_run_node(
+    regions_graph: &RegionGraphData,
+    context: NodeContext,
+    id: NodeId,
+    node: &SnarlNode,
+    cur_region: Option<Uuid>,
+) -> bool {
+    // Can run nodes without region
+    let Some(region) = regions_graph.node_region(id) else {
+        return true;
+    };
+
+    if let Some(cur_region) = cur_region {
+        // Can run the node in the same region
+        if cur_region == region {
+            return true;
+        }
+
+        // Can't run nodes in region that isn't the direct child
+        if !regions_graph
+            .region_parents(region)
+            .first()
+            .is_some_and(|reg| *reg == cur_region)
+        {
+            return false;
+        }
+    } else {
+        // Can't run nodes in region that has parents
+        if !regions_graph.region_parents(region).is_empty() {
+            return false;
+        }
+    }
+
+    // Can only run node in the direct child region if it's the end node
+    node.region_end(context) == Some(region)
 }
 
 #[derive(derive_more::Debug)]

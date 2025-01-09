@@ -66,6 +66,19 @@ impl RegionalNode for RepeatRegionalNode {
         }
     }
 
+    fn should_execute(
+        &self,
+        _context: NodeContext,
+        region: Uuid,
+        variables: &mut ExecutionExtras,
+    ) -> miette::Result<bool> {
+        let Some(state) = variables.get_region_data::<RepeatNodeState>(region) else {
+            bail!("End of repeat node without start")
+        };
+
+        Ok(state.current < state.repeats)
+    }
+
     fn execute(
         &self,
         _context: NodeContext,
@@ -103,6 +116,7 @@ impl RegionalNode for RepeatRegionalNode {
             if state.current >= state.repeats {
                 outputs.clear();
                 outputs.extend(inputs.iter().cloned());
+                variables.remove_region_data(region);
                 Ok(ExecutionResult::Done)
             } else {
                 state.values = Some(inputs.to_vec());

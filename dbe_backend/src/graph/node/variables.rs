@@ -84,4 +84,8 @@ impl<'a> ExecutionExtras<'a> {
             .get_mut(&region)
             .map(|data| data.downcast_mut::<T>().expect("Region data type mismatch"))
     }
+
+    pub fn remove_region_data(&mut self, region: Uuid) {
+        self.regional_data.remove(&region);
+    }
 }

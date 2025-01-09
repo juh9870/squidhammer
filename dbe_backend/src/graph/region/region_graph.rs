@@ -8,6 +8,7 @@ use petgraph::data::Build;
 use petgraph::prelude::{EdgeRef, NodeIndex};
 use petgraph::visit::IntoEdges;
 use std::collections::hash_map::Entry;
+use std::marker::PhantomData;
 use thiserror::Error;
 use uuid::Uuid;
 
@@ -122,7 +123,7 @@ pub struct NodeWithSeparation {
 #[derive(Debug)]
 pub struct RegionGraphData {
     topological_order: Vec<Uuid>,
-    regions: AHashMap<Uuid, RegionData>,
+    regions: AHashMap<Uuid, RegionGraphRegionData>,
     regions_by_node: AHashMap<NodeId, Uuid>,
 }
 
@@ -137,6 +138,10 @@ impl RegionGraphData {
         &self.regions[&region].nodes
     }
 
+    pub fn region_data(&self, region: Uuid) -> &RegionGraphRegionData {
+        &self.regions[&region]
+    }
+
     /// Returns the topmost region that the node belongs to
     pub fn node_region(&self, node: NodeId) -> Option<Uuid> {
         self.regions_by_node.get(&node).copied()
@@ -149,9 +154,13 @@ impl RegionGraphData {
 }
 
 #[derive(Debug)]
-struct RegionData {
-    parents: Vec<Uuid>,
-    nodes: Vec<NodeWithSeparation>,
+pub struct RegionGraphRegionData {
+    pub parents: Vec<Uuid>,
+    pub nodes: Vec<NodeWithSeparation>,
+    pub has_side_effects: bool,
+    pub start_node: NodeId,
+    pub end_node: NodeId,
+    _marker: PhantomData<()>, // make struct non-constructable
 }
 
 #[derive(Debug)]
@@ -462,13 +471,17 @@ impl RegionGraphBuilder<'_> {
                 .map(|reg| {
                     (
                         reg.id,
-                        RegionData {
+                        RegionGraphRegionData {
                             parents: reg
                                 .parents
                                 .iter()
                                 .map(|id| self.region_data[*id].id)
                                 .collect(),
                             nodes: vec![],
+                            has_side_effects: false,
+                            start_node: reg.source,
+                            end_node: reg.endpoint,
+                            _marker: Default::default(),
                         },
                     )
                 })
@@ -546,20 +559,26 @@ impl RegionGraphBuilder<'_> {
                 .regions_by_node
                 .insert(*id, self.region_data[node_region].id);
 
+            let has_side_effects = self.snarl[*id].has_side_effects();
+
             for (separation, region) in [node_region]
                 .into_iter()
                 .chain(self.region_data[node_region].parents.iter().copied())
                 .enumerate()
             {
-                graph
+                let reg = graph
                     .regions
                     .get_mut(&self.region_data[region].id)
-                    .expect("all regions were populated on construction")
-                    .nodes
-                    .push(NodeWithSeparation {
-                        node: *id,
-                        separation,
-                    });
+                    .expect("all regions were populated on construction");
+
+                reg.nodes.push(NodeWithSeparation {
+                    node: *id,
+                    separation,
+                });
+
+                if has_side_effects {
+                    reg.has_side_effects = true;
+                }
             }
         }
 

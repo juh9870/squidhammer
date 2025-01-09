@@ -136,6 +136,18 @@ impl<T: RegionalNode> Node for RegionIONode<T> {
         self.kind.is_end().then_some(self.region)
     }
 
+    fn has_side_effects(&self) -> bool {
+        self.kind.is_end()
+    }
+
+    fn should_execute_dependencies(
+        &self,
+        context: NodeContext,
+        variables: &mut ExecutionExtras,
+    ) -> miette::Result<bool> {
+        Ok(self.kind.is_start() || self.node.should_execute(context, self.region, variables)?)
+    }
+
     fn execute(
         &self,
         context: NodeContext,
@@ -213,6 +225,21 @@ pub trait RegionalNode: 'static + Debug + Clone + Send + Sync {
         output: usize,
     ) -> miette::Result<OutputData>;
 
+    /// Checks if the region should be executed at least once
+    ///
+    /// This is called for the endpoint node only. Start node is always executed
+    fn should_execute(
+        &self,
+        context: NodeContext,
+        region: Uuid,
+        variables: &mut ExecutionExtras,
+    ) -> miette::Result<bool>;
+
+    /// Executes the region io node
+    ///
+    /// If the region uses regional data, make sure to remove it once the
+    /// region execution is finished, to avoid issues with nested looping
+    /// regions
     fn execute(
         &self,
         context: NodeContext,
