@@ -178,6 +178,16 @@ impl Node for FormatNode {
     }
 }
 
+pub fn format_evalue_for_graph(value: &EValue) -> String {
+    match value {
+        EValue::Null => "null".to_string(),
+        EValue::Boolean { value } => value.to_string(),
+        EValue::Number { value } => value.to_string(),
+        EValue::String { value } => value.to_string(),
+        value => value.to_string(), // fallback to default display impl
+    }
+}
+
 struct FmtFields<'a> {
     values: &'a [EValue],
     variables: &'a [Ustr],
@@ -189,13 +199,7 @@ impl<'a> FormatKeys for FmtFields<'a> {
             return Err(FormatKeyError::UnknownKey);
         };
 
-        let value = match &self.values[idx] {
-            EValue::Null => "null".to_string(),
-            EValue::Boolean { value } => value.to_string(),
-            EValue::Number { value } => value.to_string(),
-            EValue::String { value } => value.to_string(),
-            value => value.to_string(), // fallback to default display impl
-        };
+        let value = format_evalue_for_graph(&self.values[idx]);
 
         write!(f, "{}", value).map_err(FormatKeyError::Fmt)
     }

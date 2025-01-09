@@ -1,4 +1,6 @@
 use crate::etype::conversion::EItemInfoAdapter;
+use crate::graph::node::format_node::format_evalue_for_graph;
+use crate::graph::node::ports::NodePortType;
 use crate::graph::node::{InputData, Node, NodeFactory, OutputData};
 use crate::value::{ENumber, EValue};
 use std::fmt::{Debug, Formatter};
@@ -73,7 +75,7 @@ pub trait IntoFunctionalNode<Input, Output> {
     ) -> Self::Fn;
 }
 
-impl<T: EItemInfoAdapter + 'static> FunctionalNodeOutput for T {
+impl<T: FunctionalOutputPortAdapter + 'static> FunctionalNodeOutput for T {
     type OutputNames = <(T,) as FunctionalNodeOutput>::OutputNames;
 
     fn outputs_count() -> usize {
@@ -103,6 +105,52 @@ impl<T: FunctionalNodeOutput> FunctionalNodeOutput for miette::Result<T> {
     fn write_results(self, outputs: &mut Vec<EValue>) -> miette::Result<()> {
         let result = self?;
         FunctionalNodeOutput::write_results(result, outputs)
+    }
+}
+
+pub trait FunctionalInputPortAdapter:
+    Into<EValue> + for<'a> TryFrom<&'a EValue, Error = miette::Report>
+{
+    fn port() -> NodePortType;
+}
+
+pub trait FunctionalOutputPortAdapter:
+    Into<EValue> + for<'a> TryFrom<&'a EValue, Error = miette::Report>
+{
+    fn port() -> NodePortType;
+}
+
+impl<T: EItemInfoAdapter> FunctionalInputPortAdapter for T {
+    fn port() -> NodePortType {
+        T::edata_type().into()
+    }
+}
+
+impl<T: EItemInfoAdapter> FunctionalOutputPortAdapter for T {
+    fn port() -> NodePortType {
+        T::edata_type().into()
+    }
+}
+
+struct AnyEValue(EValue);
+
+impl TryFrom<&EValue> for AnyEValue {
+    type Error = miette::Report;
+
+    fn try_from(value: &EValue) -> Result<Self, Self::Error> {
+        Ok(Self(value.clone()))
+    }
+}
+
+impl From<AnyEValue> for EValue {
+    fn from(value: AnyEValue) -> Self {
+        value.0
+    }
+}
+
+impl FunctionalInputPortAdapter for AnyEValue {
+    fn port() -> NodePortType {
+        NodePortType::BasedOnSource
     }
 }
 
@@ -429,6 +477,13 @@ pub fn functional_nodes() -> Vec<Arc<dyn NodeFactory>> {
             &["a"],
             &["a"],
             &["value", "string"],
+        ),
+        functional_node(
+            |value: AnyEValue| format_evalue_for_graph(&value.0),
+            "to_string",
+            &["value"],
+            &["result"],
+            &["string"],
         ),
     ]
 }
