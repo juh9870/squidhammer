@@ -1,4 +1,4 @@
-use crate::graph::node::{NodeContext, SnarlNode};
+use crate::graph::node::SnarlNode;
 use ahash::AHashMap;
 use egui_snarl::{InPinId, NodeId, OutPinId, Snarl};
 use itertools::Itertools;
@@ -51,21 +51,21 @@ impl RegionGraph {
     }
 
     /// Forces a rebuild in the region graph
-    pub fn force_rebuild(&mut self, snarl: &Snarl<SnarlNode>, context: NodeContext) {
-        *self = Self::build_regions_graph(snarl, context);
+    pub fn force_rebuild(&mut self, snarl: &Snarl<SnarlNode>) {
+        *self = Self::build_regions_graph(snarl);
     }
 
     /// Rebuilds the region graph if it's not ready
-    pub fn ensure_ready(&mut self, snarl: &Snarl<SnarlNode>, context: NodeContext) {
+    pub fn ensure_ready(&mut self, snarl: &Snarl<SnarlNode>) {
         if !self.is_ready() {
-            self.force_rebuild(snarl, context);
+            self.force_rebuild(snarl);
         }
     }
 }
 
 impl RegionGraph {
     /// Attempts to build a region graph for the given node graph
-    pub fn build_regions_graph(snarl: &Snarl<SnarlNode>, context: NodeContext) -> Self {
+    pub fn build_regions_graph(snarl: &Snarl<SnarlNode>) -> Self {
         let mut outputs = AHashMap::<NodeId, Vec<(OutPinId, InPinId)>>::new();
 
         let mut node_graph =
@@ -100,7 +100,7 @@ impl RegionGraph {
             }
         }
 
-        Self(RegionGraphBuilder::new(snarl, context, outputs).build())
+        Self(RegionGraphBuilder::new(snarl, outputs).build())
     }
 }
 
@@ -134,22 +134,22 @@ impl RegionGraphData {
     }
 
     /// Returns all nodes that belong to the region or child regions
-    pub fn region_nodes(&self, region: Uuid) -> &[NodeWithSeparation] {
-        &self.regions[&region].nodes
+    pub fn region_nodes(&self, region: &Uuid) -> &[NodeWithSeparation] {
+        &self.regions[region].nodes
     }
 
-    pub fn region_data(&self, region: Uuid) -> &RegionGraphRegionData {
-        &self.regions[&region]
+    pub fn region_data(&self, region: &Uuid) -> &RegionGraphRegionData {
+        &self.regions[region]
     }
 
     /// Returns the topmost region that the node belongs to
-    pub fn node_region(&self, node: NodeId) -> Option<Uuid> {
-        self.regions_by_node.get(&node).copied()
+    pub fn node_region(&self, node: &NodeId) -> Option<Uuid> {
+        self.regions_by_node.get(node).copied()
     }
 
     /// Returns hierarchy for the region
-    pub fn region_parents(&self, region: Uuid) -> &[Uuid] {
-        &self.regions[&region].parents
+    pub fn region_parents(&self, region: &Uuid) -> &[Uuid] {
+        &self.regions[region].parents
     }
 }
 
@@ -167,7 +167,6 @@ pub struct RegionGraphRegionData {
 struct RegionGraphBuilder<'a> {
     /// Reference to the graph
     snarl: &'a Snarl<SnarlNode>,
-    context: NodeContext<'a>,
     /// usize mappings for faster region access
     region_ids: AHashMap<Uuid, usize>,
     region_data: Vec<RegionBuilderData>,
@@ -195,12 +194,10 @@ struct RegionBuilderNode {
 impl<'a> RegionGraphBuilder<'a> {
     fn new(
         snarl: &'a Snarl<SnarlNode>,
-        context: NodeContext<'a>,
         outputs: AHashMap<NodeId, Vec<(OutPinId, InPinId)>>,
     ) -> Self {
         Self {
             snarl,
-            context,
             region_ids: Default::default(),
             region_data: Default::default(),
             node_data: Default::default(),
@@ -220,7 +217,7 @@ impl RegionGraphBuilder<'_> {
     /// Calculates start and end points for regions
     fn calculate_initial_regions(&mut self) -> Result<(), GraphRegionBuildError> {
         for (id, node) in self.snarl.nodes_ids_data() {
-            if let Some(region) = node.value.region_end(self.context) {
+            if let Some(region) = node.value.region_end() {
                 match self.region_ids.entry(region) {
                     Entry::Occupied(e) => {
                         let reg_id = *e.get();
@@ -246,7 +243,7 @@ impl RegionGraphBuilder<'_> {
                     }
                 }
             };
-            if let Some(region) = node.value.region_source(self.context) {
+            if let Some(region) = node.value.region_source() {
                 match self.region_ids.entry(region) {
                     Entry::Occupied(e) => {
                         let reg_id = *e.get();
