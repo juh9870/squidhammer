@@ -7,6 +7,8 @@ use egui_snarl::NodeId;
 use inline_tweak::tweak;
 use std::hash::{Hash, Hasher};
 use utils::math::convex_hull_2d::{Convex, ConvexHull2D};
+use utils::math::minkowski::minkowski;
+use utils::math::winding_direction;
 use uuid::Uuid;
 
 /// Stores node rects in screen space
@@ -46,9 +48,9 @@ impl NodeRects {
                         + if node.node == region_data.start_node
                             || node.node == region_data.end_node
                         {
-                            tweak!(10.0)
+                            tweak!(5.0)
                         } else {
-                            tweak!(7.5)
+                            tweak!(2.5)
                         },
                 );
 
@@ -98,14 +100,26 @@ impl NodeRects {
             points.push(hull.data[idx]);
         }
 
+        let circle = poly_circle(tweak!(5.0) * viewport.scale);
+
+        if !winding_direction(&points).is_some_and(|w| w.is_counter_clockwise()) {
+            points.reverse();
+        }
+
+        debug_assert_eq!(winding_direction(&points), winding_direction(&circle));
+
+        let mut shape = minkowski(points, circle);
+
+        shape.reverse();
+
         self.region_hull_cache.insert(
             *region,
             CachedHull {
-                points: points.clone(),
+                points: shape.clone(),
                 hash,
             },
         );
-        Some(points)
+        Some(shape)
     }
 }
 
@@ -114,4 +128,19 @@ fn graph_to_screen(rect: &Rect, viewport: &Viewport) -> Rect {
         viewport.graph_pos_to_screen(rect.min),
         viewport.graph_pos_to_screen(rect.max),
     )
+}
+
+fn poly_circle(radius: f32) -> Vec<Pos2> {
+    const PI: f32 = std::f32::consts::PI;
+
+    let perimeter = 2.0 * PI * radius;
+    let vertices = ((perimeter * tweak!(0.15)).round() as usize).max(tweak!(12));
+
+    let mut points = Vec::with_capacity(vertices);
+    for i in 0..vertices {
+        let angle = 2.0 * PI * i as f32 / vertices as f32;
+        points.push(Pos2::new(angle.cos(), angle.sin()) * radius);
+    }
+
+    points
 }

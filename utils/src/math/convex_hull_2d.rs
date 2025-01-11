@@ -1,9 +1,8 @@
 // adapted from https://github.com/Donvlouss/f3l/blob/main/crates/f3l_surface/src/convex_hull/convex_hull_2d.rs
 
+use crate::math::EPS;
 use num_traits::Float;
 use std::{borrow::Cow, ops::Index};
-
-const EPS: f32 = 1e-5;
 
 /// Convex Hull Trait.
 pub trait Convex<'a, P> {

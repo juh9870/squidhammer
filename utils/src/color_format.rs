@@ -1,9 +1,9 @@
-use egui::{Color32, Rgba};
+use ecolor::{Color32, Rgba};
 use miette::{bail, miette};
 use std::fmt::{Display, Formatter};
 use std::str::FromStr;
 
-pub use egui::ecolor;
+pub use ecolor;
 
 #[derive(Debug, Copy, Clone, Default, Eq, PartialEq, Hash)]
 pub enum ColorChannel {
@@ -208,7 +208,7 @@ pub fn parse_rgb32(color: &str) -> miette::Result<Color32> {
 mod tests {
     use super::{ColorChannel, ColorFormat};
     use crate::color_format::parse_rgb32;
-    use egui::{Color32, Rgba};
+    use ecolor::{Color32, Rgba};
     use rstest::rstest;
     use std::str::FromStr;
 
