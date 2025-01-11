@@ -638,7 +638,7 @@ fn format_region(id: Uuid) -> String {
     id.to_string()[..8].to_string()
 }
 
-fn format_region_ids(regions: &Vec<(Uuid, NodeId)>) -> String {
+fn format_region_ids(regions: &[(Uuid, NodeId)]) -> String {
     regions
         .iter()
         .map(|(id, node)| format!("{} ({:?})", format_region(*id), *node))

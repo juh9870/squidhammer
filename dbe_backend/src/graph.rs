@@ -273,7 +273,7 @@ impl Graph {
         &mut self.region_graph
     }
 
-    pub fn ensure_region_graph_ready(&mut self, registry: &ETypesRegistry) {
+    pub fn ensure_region_graph_ready(&mut self) {
         self.region_graph.ensure_ready(&self.snarl)
     }
 }

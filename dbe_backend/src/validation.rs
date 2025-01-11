@@ -186,13 +186,3 @@ fn validate_inner(
     })
     .with_context(|| format!("in path `{}`", ctx.path()))
 }
-
-/// Ensures that the item info is present, throwing an error otherwise
-fn need_item<'a>(
-    validator: &impl DataValidator,
-    item: Option<&'a EItemInfo>,
-) -> miette::Result<&'a EItemInfo> {
-    let item =
-        item.ok_or_else(|| miette!("item info is required for `{}` validator", validator.name()))?;
-    Ok(item)
-}

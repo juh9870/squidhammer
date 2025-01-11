@@ -9,8 +9,8 @@ const EPS: f32 = 1e-5;
 pub trait Convex<'a, P> {
     // fn new(data: &'a Vec<P>) -> Self;
     fn new() -> Self;
-    fn with_data(data: &'a Vec<P>) -> Self;
-    fn set_data(&mut self, data: &'a Vec<P>);
+    fn with_data(data: &'a [P]) -> Self;
+    fn set_data(&mut self, data: &'a [P]);
     fn compute(&mut self);
     // fn compute(&mut self, data: &Vec<P>);
 }
@@ -22,7 +22,7 @@ pub struct ConvexHull2D<'a, T: Float, P>
 where
     P: Into<[T; 2]> + Clone + Copy + Send + Sync + Index<usize, Output = T>,
 {
-    pub data: Cow<'a, Vec<P>>,
+    pub data: Cow<'a, [P]>,
     pub hulls: Vec<usize>,
 }
 
@@ -137,14 +137,14 @@ where
         }
     }
 
-    fn with_data(data: &'a Vec<P>) -> Self {
+    fn with_data(data: &'a [P]) -> Self {
         Self {
             data: Cow::Borrowed(data),
             hulls: vec![],
         }
     }
 
-    fn set_data(&mut self, data: &'a Vec<P>) {
+    fn set_data(&mut self, data: &'a [P]) {
         self.data = Cow::Borrowed(data);
     }
 

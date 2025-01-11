@@ -136,7 +136,7 @@ impl<'a, 'snarl> GraphExecutionContext<'a, 'snarl> {
 
             // Skip executing nodes in regions, except for the top-level region endpoints
             let regions_graph = expect_region_graph(self.region_graph);
-            if !should_run_node(regions_graph, node_context!(self), id, node, None) {
+            if !should_run_node(regions_graph, id, node, None) {
                 continue;
             }
 
@@ -393,7 +393,6 @@ fn expect_region_graph(region_graph: &RegionGraph) -> &RegionGraphData {
 
 fn should_run_node(
     regions_graph: &RegionGraphData,
-    context: NodeContext,
     id: NodeId,
     node: &SnarlNode,
     cur_region: Option<Uuid>,

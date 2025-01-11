@@ -204,9 +204,7 @@ impl<Io> TabViewer for WorkspaceTabViewer<'_, Io> {
                     return;
                 };
 
-                graph
-                    .graph_mut()
-                    .ensure_region_graph_ready(&self.0.registry);
+                graph.graph_mut().ensure_region_graph_ready();
 
                 let is_node_group = graph.is_node_group;
 
