@@ -585,11 +585,11 @@ impl<'a> SnarlViewer<SnarlNode> for GraphViewer<'a> {
             for node in &region_data.nodes {
                 if let Some(rect) = self.node_rects.get(&node.node) {
                     let rect = rect.expand(
-                        (node.separation as f32 * tweak!(15.0)
+                        (node.separation as f32 * tweak!(7.5)
                             + if node.node == region_data.start_node
                                 || node.node == region_data.end_node
                             {
-                                tweak!(15.0)
+                                tweak!(10.0)
                             } else {
                                 tweak!(7.5)
                             })
