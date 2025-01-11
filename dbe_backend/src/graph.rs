@@ -175,16 +175,7 @@ impl Graph {
         })
         .context("failed to populate inputs")?;
 
-        graph.region_graph = RegionGraph::build_regions_graph(
-            &graph.snarl,
-            NodeContext {
-                registry,
-                inputs: graph.inputs(),
-                outputs: graph.outputs(),
-                regions: graph.regions(),
-                graphs: None,
-            },
-        );
+        graph.region_graph = RegionGraph::build_regions_graph(&graph.snarl);
 
         Ok(graph)
     }
@@ -283,16 +274,7 @@ impl Graph {
     }
 
     pub fn ensure_region_graph_ready(&mut self, registry: &ETypesRegistry) {
-        self.region_graph.ensure_ready(
-            &self.snarl,
-            NodeContext {
-                registry,
-                inputs: &self.inputs,
-                outputs: &self.outputs,
-                regions: &self.regions,
-                graphs: None,
-            },
-        )
+        self.region_graph.ensure_ready(&self.snarl)
     }
 }
 

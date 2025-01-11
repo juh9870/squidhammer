@@ -225,13 +225,7 @@ impl<'a, 'snarl> GraphEditingContext<'a, 'snarl> {
         self.mark_dirty();
         for id in &ids {
             let node = &self.snarl[*id].node;
-            for reg in [
-                node.region_source(node_context!(self.ctx)),
-                node.region_end(node_context!(self.ctx)),
-            ]
-            .iter()
-            .flatten()
-            {
+            for reg in [node.region_source(), node.region_end()].iter().flatten() {
                 self.ctx
                     .regions
                     .entry(*reg)
@@ -301,9 +295,7 @@ impl<'a, 'snarl> GraphEditingContext<'a, 'snarl> {
     }
 
     pub fn ensure_regions_graph_ready(&mut self) -> &mut RegionGraph {
-        self.ctx
-            .regions_graph
-            .ensure_ready(self.snarl, node_context!(self.ctx));
+        self.ctx.regions_graph.ensure_ready(self.snarl);
         self.regions_graph
     }
 }

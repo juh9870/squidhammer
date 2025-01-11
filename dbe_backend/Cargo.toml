@@ -41,7 +41,7 @@ thiserror = { workspace = true }
 toml = { workspace = true }
 tracing = { workspace = true }
 ustr = { workspace = true, features = ["serde"] }
-utils = { path = "../utils" }
+utils = { workspace = true }
 uuid = { workspace = true, features = ["v4", "serde"] }
 walkdir = { workspace = true }
 

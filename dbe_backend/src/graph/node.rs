@@ -364,14 +364,12 @@ pub trait Node: DynClone + Debug + Send + Sync + Downcast + 'static {
     }
 
     /// Indicates that this node is a start of a region
-    fn region_source(&self, context: NodeContext) -> Option<Uuid> {
-        let _ = (context,);
+    fn region_source(&self) -> Option<Uuid> {
         None
     }
 
     /// Indicates that this node is an end of a region
-    fn region_end(&self, context: NodeContext) -> Option<Uuid> {
-        let _ = (context,);
+    fn region_end(&self) -> Option<Uuid> {
         None
     }
 

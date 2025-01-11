@@ -17,7 +17,8 @@ use dbe_backend::graph::node::{
 };
 use dbe_backend::registry::ETypesRegistry;
 use dbe_backend::value::id::ETypeId;
-use egui::{Color32, Frame, Painter, Pos2, Stroke, Style, Ui};
+use egui::epaint::PathShape;
+use egui::{Color32, Frame, Painter, Pos2, Rect, Stroke, Style, Ui};
 use egui_hooks::UseHookExt;
 use egui_snarl::ui::{
     AnyPins, BackgroundPattern, NodeLayout, PinInfo, SnarlStyle, SnarlViewer, Viewport,
@@ -30,6 +31,7 @@ use std::iter::Peekable;
 use std::ops::DerefMut;
 use std::sync::Arc;
 use ustr::Ustr;
+use utils::math::convex_hull_2d::{Convex, ConvexHull2D};
 
 pub mod toolbar;
 pub mod viewer;
@@ -38,15 +40,21 @@ pub mod viewer;
 pub struct GraphViewer<'a> {
     pub ctx: PartialGraphEditingContext<'a>,
     pub diagnostics: DiagnosticContextRef<'a>,
+    pub node_rects: &'a mut AHashMap<NodeId, Rect>,
     commands: SnarlCommands,
 }
 
 impl<'a> GraphViewer<'a> {
-    pub fn new(ctx: PartialGraphEditingContext<'a>, diagnostics: DiagnosticContextRef<'a>) -> Self {
+    pub fn new(
+        ctx: PartialGraphEditingContext<'a>,
+        diagnostics: DiagnosticContextRef<'a>,
+        node_rects: &'a mut AHashMap<NodeId, Rect>,
+    ) -> Self {
         Self {
             ctx,
             diagnostics,
             commands: Default::default(),
+            node_rects,
         }
     }
 }
@@ -54,6 +62,17 @@ impl<'a> GraphViewer<'a> {
 impl<'a> SnarlViewer<SnarlNode> for GraphViewer<'a> {
     fn title(&mut self, _node: &SnarlNode) -> String {
         unreachable!("Custom header doesn't call SnarlViewer::title")
+    }
+
+    fn node_frame(
+        &mut self,
+        default: Frame,
+        node: NodeId,
+        inputs: &[InPin],
+        outputs: &[OutPin],
+        snarl: &Snarl<SnarlNode>,
+    ) -> Frame {
+        self.header_frame(default, node, inputs, outputs, snarl)
     }
 
     fn header_frame(
@@ -65,7 +84,7 @@ impl<'a> SnarlViewer<SnarlNode> for GraphViewer<'a> {
         _snarl: &Snarl<SnarlNode>,
     ) -> Frame {
         if let Ok(data) = self.ctx.regions_graph.try_as_data() {
-            if let Some(node_region) = data.node_region(node) {
+            if let Some(node_region) = data.node_region(&node) {
                 if let Some(reg) = self.ctx.regions.get(&node_region) {
                     let color = reg.color();
                     return default
@@ -219,6 +238,19 @@ impl<'a> SnarlViewer<SnarlNode> for GraphViewer<'a> {
                 );
             })
         });
+    }
+
+    fn final_node_rect(
+        &mut self,
+        node: NodeId,
+        ui_rect: Rect,
+        _graph_rect: Rect,
+        _ui: &mut Ui,
+        _scale: f32,
+        _snarl: &mut Snarl<SnarlNode>,
+    ) {
+        // TODO: store rects in graph-space instead of screen-space
+        self.node_rects.insert(node, ui_rect);
     }
 
     fn has_graph_menu(&mut self, _pos: Pos2, _snarl: &mut Snarl<SnarlNode>) -> bool {
@@ -531,9 +563,77 @@ impl<'a> SnarlViewer<SnarlNode> for GraphViewer<'a> {
         snarl_style: &SnarlStyle,
         style: &Style,
         painter: &Painter,
-        _snarl: &Snarl<SnarlNode>,
+        snarl: &Snarl<SnarlNode>,
     ) {
-        BackgroundPattern::Grid(Default::default()).draw(viewport, snarl_style, style, painter)
+        BackgroundPattern::Grid(Default::default()).draw(viewport, snarl_style, style, painter);
+
+        self.ctx.regions_graph.ensure_ready(snarl);
+        let Ok(data) = self.ctx.regions_graph.try_as_data() else {
+            return;
+        };
+
+        let scale = viewport.scale;
+
+        // TODO: cache region hull calculations
+
+        for region in data.ordered_regions() {
+            let Some(region_info) = self.ctx.regions.get(region) else {
+                continue;
+            };
+            let region_data = data.region_data(region);
+            let mut points = Vec::with_capacity(region_data.nodes.len() * 4);
+            for node in &region_data.nodes {
+                if let Some(rect) = self.node_rects.get(&node.node) {
+                    let rect = rect.expand(
+                        (node.separation as f32 * tweak!(15.0)
+                            + if node.node == region_data.start_node
+                                || node.node == region_data.end_node
+                            {
+                                tweak!(15.0)
+                            } else {
+                                tweak!(7.5)
+                            })
+                            * scale,
+                    );
+                    if node.node == region_data.start_node {
+                        points.push(rect.center_top());
+                        points.push(rect.center_bottom());
+                    } else {
+                        points.push(rect.left_top());
+                        points.push(rect.left_bottom());
+                    }
+
+                    if node.node == region_data.end_node {
+                        points.push(rect.center_top());
+                        points.push(rect.center_bottom());
+                    } else {
+                        points.push(rect.right_top());
+                        points.push(rect.right_bottom());
+                    }
+                }
+            }
+            if points.len() < 3 {
+                continue;
+            }
+
+            let mut hull = ConvexHull2D::with_data(&points);
+            hull.compute();
+
+            let mut points = Vec::with_capacity(hull.hulls.len());
+            for idx in hull.hulls {
+                points.push(hull.data[idx]);
+            }
+            let shape = PathShape::convex_polygon(
+                points,
+                region_info.color().gamma_multiply(tweak!(0.2)),
+                Stroke::new(
+                    tweak!(2.0) * scale,
+                    region_info.color().gamma_multiply(tweak!(0.5)),
+                ),
+            );
+
+            painter.add(shape);
+        }
     }
 }
 

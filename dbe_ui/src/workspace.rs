@@ -5,6 +5,7 @@ use crate::widgets::report::diagnostic_widget;
 use crate::workspace::editors::{editor_for_value, EditorContext};
 use crate::workspace::graph::toolbar::{GraphTab, GraphToolbarViewer};
 use crate::DbeApp;
+use ahash::AHashMap;
 use camino::Utf8PathBuf;
 use dbe_backend::diagnostic::diagnostic::{Diagnostic, DiagnosticLevel};
 use dbe_backend::graph::editing::PartialGraphEditingContext;
@@ -12,11 +13,12 @@ use dbe_backend::project::docs::DocsRef;
 use dbe_backend::project::side_effects::SideEffectsContext;
 use dbe_backend::project::{Project, ProjectFile};
 use dbe_backend::validation::validate;
-use egui::{Color32, Context, Frame, Margin, RichText, Ui, WidgetText};
+use egui::{Color32, Context, Frame, Margin, Rect, RichText, Ui, WidgetText};
 use egui_dock::{DockArea, TabViewer};
 use egui_hooks::UseHookExt;
 use egui_modal::Modal;
 use egui_snarl::ui::SnarlStyle;
+use egui_snarl::NodeId;
 use inline_tweak::tweak;
 use miette::miette;
 use std::ops::DerefMut;
@@ -259,8 +261,14 @@ impl<Io> TabViewer for WorkspaceTabViewer<'_, Io> {
                                 );
                             };
 
-                            let mut viewer =
-                                graph::GraphViewer::new(ctx, diagnostics.as_readonly());
+                            let mut rects =
+                                ui.use_state(AHashMap::<NodeId, Rect>::new, ()).into_var();
+
+                            let mut viewer = graph::GraphViewer::new(
+                                ctx,
+                                diagnostics.as_readonly(),
+                                rects.deref_mut(),
+                            );
 
                             snarl.show(&mut viewer, &SnarlStyle::default(), tab.to_string(), ui);
                         })

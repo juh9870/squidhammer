@@ -1142,6 +1142,7 @@ dependencies = [
  "strum",
  "tracing",
  "ustr",
+ "utils",
  "uuid",
 ]
 
@@ -4522,6 +4523,7 @@ dependencies = [
  "egui",
  "itertools",
  "miette",
+ "num-traits",
  "rstest",
  "smallvec",
  "thiserror 2.0.9",

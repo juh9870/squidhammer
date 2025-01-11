@@ -128,11 +128,11 @@ impl<T: RegionalNode> Node for RegionIONode<T> {
         self._default_try_connect(context, commands, from, to, incoming_type)
     }
 
-    fn region_source(&self, _context: NodeContext) -> Option<Uuid> {
+    fn region_source(&self) -> Option<Uuid> {
         self.kind.is_start().then_some(self.region)
     }
 
-    fn region_end(&self, _context: NodeContext) -> Option<Uuid> {
+    fn region_end(&self) -> Option<Uuid> {
         self.kind.is_end().then_some(self.region)
     }
 
