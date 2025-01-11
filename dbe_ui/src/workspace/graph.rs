@@ -32,7 +32,6 @@ use std::iter::Peekable;
 use std::ops::DerefMut;
 use std::sync::Arc;
 use ustr::Ustr;
-use utils::math::convex_hull_2d::Convex;
 
 pub mod rects;
 pub mod toolbar;

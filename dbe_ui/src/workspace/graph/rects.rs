@@ -29,24 +29,6 @@ impl NodeRects {
         self.graph_nodes.insert(node_id, rect);
     }
 
-    /// Returns an iterator over the screen-space node rects using the provided viewport.
-    pub fn screen_space_rects(&self, viewport: &Viewport) -> impl Iterator<Item = (&NodeId, Rect)> {
-        let viewport = Viewport {
-            rect: viewport.rect,
-            scale: viewport.scale,
-            offset: viewport.offset,
-        };
-        self.graph_nodes
-            .iter()
-            .map(move |(k, v)| (k, graph_to_screen(v, &viewport)))
-    }
-
-    pub fn get_screen_space_rect(&self, node_id: &NodeId, viewport: &Viewport) -> Option<Rect> {
-        self.graph_nodes
-            .get(node_id)
-            .map(|rect| graph_to_screen(rect, viewport))
-    }
-
     /// Calculates hull of the region in screen space using the provided viewport
     pub fn screen_space_hull(
         &mut self,

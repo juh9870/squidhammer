@@ -318,7 +318,7 @@ impl<IO: ProjectIO> Project<IO> {
         let mut generated = vec![];
 
         for graph in self.graphs.graphs.values_mut() {
-            graph.graph_mut().ensure_region_graph_ready(&self.registry)
+            graph.graph_mut().ensure_region_graph_ready();
         }
 
         for (path, file) in &self.files {
