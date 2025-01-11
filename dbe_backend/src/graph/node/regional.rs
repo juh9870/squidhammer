@@ -5,11 +5,15 @@ use crate::graph::node::ports::{InputData, NodePortType, OutputData};
 use crate::graph::node::variables::ExecutionExtras;
 use crate::graph::node::{ExecutionResult, Node, NodeContext, NodeFactory, SnarlNode};
 use crate::graph::region::RegionVariable;
+use crate::json_utils::JsonValue;
+use crate::registry::ETypesRegistry;
 use crate::value::EValue;
 use egui_snarl::{InPin, NodeId, OutPin, Snarl};
 use emath::{vec2, Pos2};
 use inline_tweak::tweak;
-use miette::bail;
+use miette::{bail, IntoDiagnostic};
+use serde::{Deserialize, Serialize};
+use serde_json::json;
 use smallvec::SmallVec;
 use std::fmt::Debug;
 use std::marker::PhantomData;
@@ -20,7 +24,7 @@ use uuid::Uuid;
 
 pub mod repeat;
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, EnumIs)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, EnumIs, Serialize, Deserialize)]
 pub enum RegionIoKind {
     Start,
     End,
@@ -34,7 +38,41 @@ pub struct RegionIONode<T: RegionalNode> {
     ids: Vec<Uuid>,
 }
 
+#[derive(Debug, Serialize, Deserialize)]
+struct PackedRegionIoNode {
+    region: Uuid,
+    kind: RegionIoKind,
+    node: JsonValue,
+    ids: Vec<Uuid>,
+}
+
 impl<T: RegionalNode> Node for RegionIONode<T> {
+    fn write_json(&self, registry: &ETypesRegistry) -> miette::Result<JsonValue> {
+        let node = self.node.write_json(registry)?;
+
+        Ok(json! ({
+            "region": self.region,
+            "kind": self.kind,
+            "node": node,
+            "ids": self.ids.clone(),
+        }))
+    }
+
+    fn parse_json(
+        &mut self,
+        registry: &ETypesRegistry,
+        value: &mut JsonValue,
+    ) -> miette::Result<()> {
+        let mut packed: PackedRegionIoNode =
+            serde_json::from_value(value.take()).into_diagnostic()?;
+        self.region = packed.region;
+        self.kind = packed.kind;
+        self.ids = packed.ids;
+        self.node.parse_json(registry, &mut packed.node)?;
+
+        Ok(())
+    }
+
     fn id(&self) -> Ustr {
         T::id()
     }
@@ -114,7 +152,6 @@ impl<T: RegionalNode> Node for RegionIONode<T> {
     ) -> miette::Result<bool> {
         if to.id.input == self.inputs_count(context) - 1 {
             let new_pin_id = Uuid::new_v4();
-            self.ids.push(new_pin_id);
             commands.push(SnarlCommand::EditRegionVariables {
                 region: self.region,
                 operation: VecOperation::Push(RegionVariable {
@@ -207,6 +244,21 @@ impl<T: RegionalNode> NodeFactory for RegionalNodeFactory<T> {
 
 pub trait RegionalNode: 'static + Debug + Clone + Send + Sync {
     fn id() -> Ustr;
+
+    /// Writes node state to json
+    fn write_json(&self, registry: &ETypesRegistry) -> miette::Result<JsonValue> {
+        let _ = (registry,);
+        Ok(JsonValue::Null)
+    }
+    /// Loads node state from json
+    fn parse_json(
+        &mut self,
+        registry: &ETypesRegistry,
+        value: &mut JsonValue,
+    ) -> miette::Result<()> {
+        let _ = (registry, value);
+        Ok(())
+    }
 
     fn inputs_count(&self, context: NodeContext, kind: RegionIoKind) -> usize;
     fn outputs_count(&self, context: NodeContext, kind: RegionIoKind) -> usize;

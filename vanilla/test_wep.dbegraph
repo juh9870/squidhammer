@@ -394,7 +394,8 @@
         }
       ]
     ],
-    "outputs": []
+    "outputs": [],
+    "regions": []
   },
   "id": "1c782a32-f8c5-4d08-a16a-bd1cf59b8230",
   "is_node_group": false,

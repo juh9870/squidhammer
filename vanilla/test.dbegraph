@@ -130,6 +130,46 @@
           "input": 0,
           "node": 4
         }
+      ],
+      [
+        {
+          "node": 15,
+          "output": 0
+        },
+        {
+          "input": 0,
+          "node": 18
+        }
+      ],
+      [
+        {
+          "node": 16,
+          "output": 0
+        },
+        {
+          "input": 0,
+          "node": 17
+        }
+      ],
+      [
+        {
+          "node": 16,
+          "output": 1
+        },
+        {
+          "input": 1,
+          "node": 17
+        }
+      ],
+      [
+        {
+          "node": 17,
+          "output": 0
+        },
+        {
+          "input": 0,
+          "node": 15
+        }
       ]
     ],
     "inline_values": [
@@ -353,6 +393,20 @@
           "node": 13
         },
         "test3"
+      ],
+      [
+        {
+          "input": 0,
+          "node": 16
+        },
+        7
+      ],
+      [
+        {
+          "input": 1,
+          "node": 16
+        },
+        0
       ]
     ],
     "inputs": [
@@ -643,9 +697,130 @@
             "y": -597.3819580078125
           }
         }
+      ],
+      [
+        15,
+        {
+          "data": {
+            "ids": [
+              "36a2455f-a238-4c4a-8921-abe6629072e4"
+            ],
+            "kind": "End",
+            "node": null,
+            "region": "cc826dad-9492-408f-b47b-bc01cf88fcf7"
+          },
+          "id": "repeat",
+          "open": true,
+          "pos": {
+            "x": 282.99285888671875,
+            "y": 169.12242126464844
+          }
+        }
+      ],
+      [
+        16,
+        {
+          "data": {
+            "ids": [
+              "36a2455f-a238-4c4a-8921-abe6629072e4"
+            ],
+            "kind": "Start",
+            "node": null,
+            "region": "cc826dad-9492-408f-b47b-bc01cf88fcf7"
+          },
+          "id": "repeat",
+          "open": true,
+          "pos": {
+            "x": -135.96322631835938,
+            "y": 150.6438446044922
+          }
+        }
+      ],
+      [
+        17,
+        {
+          "data": null,
+          "id": "add",
+          "open": true,
+          "pos": {
+            "x": 78.8506851196289,
+            "y": 185.2912139892578
+          }
+        }
+      ],
+      [
+        18,
+        {
+          "data": null,
+          "id": "debug_print",
+          "open": true,
+          "pos": {
+            "x": 457.6624755859375,
+            "y": 203.76988220214844
+          }
+        }
       ]
     ],
-    "outputs": []
+    "outputs": [],
+    "regions": [
+      {
+        "color": null,
+        "id": "9b0ac69f-bc4c-479e-89d6-9535a6b23ed4",
+        "variables": [
+          {
+            "id": "420d13b4-1975-4a14-b06a-f9b9eeb19e59",
+            "name": "value",
+            "ty": "Number"
+          },
+          {
+            "id": "1f48b4cc-7f2b-4d3f-9edf-7da865f89109",
+            "name": "value",
+            "ty": "Number"
+          },
+          {
+            "id": "08147ba9-7728-4a4b-bc31-753a237d82ae",
+            "name": "value",
+            "ty": "Number"
+          },
+          {
+            "id": "64533421-0c95-4375-b4ef-d5f658430b22",
+            "name": "value",
+            "ty": "Number"
+          },
+          {
+            "id": "e24ee91d-5c6a-4065-8b62-4a6246079b05",
+            "name": "value",
+            "ty": "Number"
+          },
+          {
+            "id": "84f8f5b9-d5a7-4333-8c61-bf551dd36941",
+            "name": "value",
+            "ty": "Number"
+          },
+          {
+            "id": "f572efa6-241c-4ffe-8965-00adea1debc4",
+            "name": "value",
+            "ty": "Number"
+          },
+          {
+            "id": "d85169e0-cb06-4647-9427-2ee673edc051",
+            "name": "value",
+            "ty": "Number"
+          }
+        ]
+      },
+      {
+        "color": null,
+        "id": "cc826dad-9492-408f-b47b-bc01cf88fcf7",
+        "variables": [
+          {
+            "id": "36a2455f-a238-4c4a-8921-abe6629072e4",
+            "name": "value",
+            "ty": "Number"
+          }
+        ]
+      }
+    ]
   },
   "id": "0ec96a2e-fcab-4d13-95d7-d89ea490f3cd",
   "is_node_group": false,

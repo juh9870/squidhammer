@@ -69,7 +69,7 @@ impl SideEffect {
             }
             SideEffect::EmitTransientFile { value, is_dbevalue } => {
                 let tmp_path = project.registry.project_config().emitted_dir.join(format!(
-                    "{}.n{}.{}{}",
+                    "{}.{}.{}{}",
                     sanitise_file_name::sanitise(emitter.0.as_str()),
                     emitter.1[0].to_string(project),
                     emitter.2,
