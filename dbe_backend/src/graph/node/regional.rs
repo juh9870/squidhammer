@@ -1,5 +1,7 @@
 use crate::graph::node::commands::{SnarlCommand, SnarlCommands};
-use crate::graph::node::groups::utils::{get_port_input, get_port_output, sync_fields};
+use crate::graph::node::groups::utils::{
+    get_graph_io_field, get_port_input, get_port_output, sync_fields,
+};
 use crate::graph::node::ports::fields::IoDirection;
 use crate::graph::node::ports::{InputData, NodePortType, OutputData};
 use crate::graph::node::variables::ExecutionExtras;
@@ -11,7 +13,7 @@ use crate::value::EValue;
 use egui_snarl::{InPin, NodeId, OutPin, Snarl};
 use emath::{vec2, Pos2};
 use inline_tweak::tweak;
-use miette::{bail, IntoDiagnostic};
+use miette::{bail, miette, IntoDiagnostic};
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 use smallvec::SmallVec;
@@ -36,6 +38,19 @@ pub struct RegionIONode<T: RegionalNode> {
     kind: RegionIoKind,
     node: T,
     ids: Vec<Uuid>,
+}
+
+impl<T: RegionalNode> RegionIONode<T> {
+    fn get_variable<'ctx>(
+        &self,
+        context: NodeContext<'ctx>,
+        index: usize,
+    ) -> Option<&'ctx RegionVariable> {
+        let Some(region) = context.regions.get(&self.region) else {
+            return None;
+        };
+        get_graph_io_field(&region.variables, &self.ids, index)
+    }
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -162,7 +177,83 @@ impl<T: RegionalNode> Node for RegionIONode<T> {
             })
         }
 
+        let input = to.id.input - self.node.inputs_count(context, self.kind);
+
+        let field = self
+            .get_variable(context, input)
+            .ok_or_else(|| miette!("Variable {} is missing", input))?;
+
+        if field.ty.is_none() {
+            if !incoming_type.is_specific() {
+                return Ok(false);
+            }
+            commands.push(SnarlCommand::EditRegionVariables {
+                region: self.region,
+                operation: VecOperation::Replace(
+                    input,
+                    RegionVariable {
+                        ty: Some(incoming_type.ty()),
+                        id: field.id,
+                        name: field.name.clone(),
+                    },
+                ),
+            });
+        }
+
         self._default_try_connect(context, commands, from, to, incoming_type)
+    }
+
+    fn can_output_to(
+        &self,
+        context: NodeContext,
+        from: &OutPin,
+        _to: &InPin,
+        _target_type: &NodePortType,
+    ) -> miette::Result<bool> {
+        let Some(field) = self.get_variable(
+            context,
+            from.id.output - self.node.outputs_count(context, self.kind),
+        ) else {
+            return Ok(false);
+        };
+        // This method getting called means that connection is attempted to the
+        // `BasedOnInput` port, in which case we only allow it if the field has no type
+        Ok(field.ty.is_none())
+    }
+
+    fn connected_to_output(
+        &mut self,
+        context: NodeContext,
+        commands: &mut SnarlCommands,
+        from: &OutPin,
+        _to: &InPin,
+        incoming_type: &NodePortType,
+    ) -> miette::Result<()> {
+        // do NOT sync fields in this method, rearrangement of the fields might cause issues with pending connection commands
+
+        let output = from.id.output - self.node.outputs_count(context, self.kind);
+
+        let field = self
+            .get_variable(context, output)
+            .expect("variable should exist, because `can_output_to` succeeded");
+
+        if field.ty.is_some() {
+            panic!("variable should not have a type, because `can_output_to` succeeded");
+        };
+
+        commands.push(SnarlCommand::EditRegionVariables {
+            region: self.region,
+            operation: VecOperation::Replace(
+                output,
+                RegionVariable {
+                    ty: Some(incoming_type.ty()),
+                    id: field.id,
+                    name: field.name.clone(),
+                },
+            ),
+        });
+
+        Ok(())
     }
 
     fn region_source(&self) -> Option<Uuid> {

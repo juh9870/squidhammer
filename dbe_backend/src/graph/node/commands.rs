@@ -336,6 +336,13 @@ impl SnarlCommand {
                     .variables;
 
                 operation.apply_smallvec(vars);
+                if let Ok(data) = ctx.regions_graph.try_as_data() {
+                    let data = data.region_data(&region);
+                    let start = data.start_node;
+                    let end = data.end_node;
+                    ctx.mark_node_dirty(start);
+                    ctx.mark_node_dirty(end);
+                }
             }
         }
         Ok(())

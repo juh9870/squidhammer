@@ -55,10 +55,10 @@ pub trait NodeView: Send + Sync + Debug + 'static {
         viewer: &mut GraphViewer,
         pin: &InPin,
         ui: &mut Ui,
-        _scale: f32,
+        scale: f32,
         snarl: &mut Snarl<SnarlNode>,
     ) -> miette::Result<PinInfo> {
-        DefaultNodeView.show_input(viewer, pin, ui, _scale, snarl)
+        DefaultNodeView.show_input(viewer, pin, ui, scale, snarl)
     }
 
     fn show_output(
@@ -66,10 +66,10 @@ pub trait NodeView: Send + Sync + Debug + 'static {
         viewer: &mut GraphViewer,
         pin: &OutPin,
         ui: &mut Ui,
-        _scale: f32,
+        scale: f32,
         snarl: &mut Snarl<SnarlNode>,
     ) -> miette::Result<PinInfo> {
-        DefaultNodeView.show_output(viewer, pin, ui, _scale, snarl)
+        DefaultNodeView.show_output(viewer, pin, ui, scale, snarl)
     }
 
     fn node_layout(&self, viewer: &mut GraphViewer, node: &SnarlNode) -> NodeLayout {

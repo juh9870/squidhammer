@@ -241,6 +241,10 @@ impl Graph {
             .with_context(|| "failed to serialize graph")
     }
 
+    pub fn snarl(&self) -> &Snarl<SnarlNode> {
+        &self.snarl
+    }
+
     pub fn inputs(&self) -> &SmallVec<[GraphInput; 1]> {
         &self.inputs
     }
