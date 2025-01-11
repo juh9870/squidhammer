@@ -675,9 +675,9 @@ fn pin_info(ty: &NodePortType, registry: &ETypesRegistry) -> PinInfo {
 
 fn any_pin() -> PinInfo {
     PinInfo::circle()
-        .with_fill(Color32::BLACK)
+        .with_fill(Color32::from_rgb(tweak!(128), tweak!(128), tweak!(128)))
         .with_stroke(Stroke::new(
             tweak!(2.0),
-            Color32::from_rgb(tweak!(128), tweak!(128), tweak!(128)),
+            Color32::from_rgb(tweak!(44), tweak!(44), tweak!(44)),
         ))
 }
