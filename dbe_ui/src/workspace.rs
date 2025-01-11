@@ -9,6 +9,7 @@ use crate::DbeApp;
 use camino::Utf8PathBuf;
 use dbe_backend::diagnostic::diagnostic::{Diagnostic, DiagnosticLevel};
 use dbe_backend::graph::editing::PartialGraphEditingContext;
+use dbe_backend::graph::node::SnarlNode;
 use dbe_backend::project::docs::DocsRef;
 use dbe_backend::project::side_effects::SideEffectsContext;
 use dbe_backend::project::{Project, ProjectFile};
@@ -18,6 +19,7 @@ use egui_dock::{DockArea, TabViewer};
 use egui_hooks::UseHookExt;
 use egui_modal::Modal;
 use egui_snarl::ui::SnarlStyle;
+use egui_snarl::{NodeId, Snarl};
 use inline_tweak::tweak;
 use miette::miette;
 use std::ops::DerefMut;
@@ -208,16 +210,27 @@ impl<Io> TabViewer for WorkspaceTabViewer<'_, Io> {
 
                 let is_node_group = graph.is_node_group;
 
+                let mut selected_nodes = ui.use_state(Vec::<NodeId>::new, ()).into_var();
+
                 CollapsibleToolbar::new(
                     DPanelSide::Right,
                     &[
                         GraphTab::General,
+                        GraphTab::Node,
                         #[cfg(debug_assertions)]
                         GraphTab::Debug,
                     ],
                     &[],
                 )
-                .show_inside(ui, &mut GraphToolbarViewer { graph });
+                .show_inside(
+                    ui,
+                    &mut GraphToolbarViewer {
+                        graph,
+                        selected_nodes: &selected_nodes,
+                        registry: &self.0.registry,
+                        docs: &self.0.docs,
+                    },
+                );
 
                 egui::CentralPanel::default()
                     .frame(Frame {
@@ -267,6 +280,9 @@ impl<Io> TabViewer for WorkspaceTabViewer<'_, Io> {
                             );
 
                             snarl.show(&mut viewer, &SnarlStyle::default(), tab.to_string(), ui);
+
+                            *selected_nodes =
+                                Snarl::<SnarlNode>::get_selected_nodes(tab.to_string(), ui);
                         })
                     });
             }

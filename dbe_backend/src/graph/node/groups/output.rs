@@ -96,11 +96,10 @@ impl Node for GroupOutputNode {
             .get_field(context, to.id.input)
             .ok_or_else(|| miette!("Output {} was deleted", to.id.input))?;
 
-        if !incoming_type.is_specific() {
-            return Ok(false);
-        }
-
         if field.ty.is_none() {
+            if !incoming_type.is_specific() {
+                return Ok(false);
+            }
             commands.push(SnarlCommand::SetGroupOutputType {
                 id: field.id,
                 ty: incoming_type.ty(),

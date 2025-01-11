@@ -1,21 +1,30 @@
 use crate::widgets::collapsible_toolbar::ToolbarViewer;
 use crate::widgets::rotated_label::RotLabelDirection;
 use crate::workspace::graph::toolbar::edit_inputs::edit_inputs_outputs;
+use crate::workspace::graph::toolbar::node_editor::edit_node_properties;
+use dbe_backend::project::docs::Docs;
 use dbe_backend::project::project_graph::ProjectGraph;
+use dbe_backend::registry::ETypesRegistry;
 use egui::{CollapsingHeader, Ui};
+use egui_snarl::NodeId;
 use serde::{Deserialize, Serialize};
 use std::borrow::Cow;
 
 pub mod edit_inputs;
+pub mod node_editor;
 
 pub struct GraphToolbarViewer<'a> {
     pub graph: &'a mut ProjectGraph,
+    pub selected_nodes: &'a [NodeId],
+    pub registry: &'a ETypesRegistry,
+    pub docs: &'a Docs,
 }
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Hash, Serialize, Deserialize)]
 pub enum GraphTab {
     General,
     Debug,
+    Node,
 }
 
 impl ToolbarViewer for GraphToolbarViewer<'_> {
@@ -25,6 +34,7 @@ impl ToolbarViewer for GraphToolbarViewer<'_> {
         match tab {
             GraphTab::General => "General".into(),
             GraphTab::Debug => "Debug".into(),
+            GraphTab::Node => "Node".into(),
         }
     }
 
@@ -63,6 +73,15 @@ impl ToolbarViewer for GraphToolbarViewer<'_> {
 
                         ui.label(repr);
                     });
+            }
+            GraphTab::Node => {
+                edit_node_properties(
+                    ui,
+                    self.registry,
+                    self.docs,
+                    self.graph.graph_mut(),
+                    self.selected_nodes,
+                );
             }
         };
     }

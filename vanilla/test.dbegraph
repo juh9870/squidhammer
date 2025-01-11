@@ -810,7 +810,12 @@
         ]
       },
       {
-        "color": null,
+        "color": [
+          164,
+          93,
+          108,
+          0
+        ],
         "id": "cc826dad-9492-408f-b47b-bc01cf88fcf7",
         "variables": [
           {

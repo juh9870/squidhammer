@@ -24,6 +24,10 @@ impl GraphIoData for RegionVariable {
         &self.name
     }
 
+    fn name_mut(&mut self) -> &mut String {
+        &mut self.name
+    }
+
     fn ty(&self) -> Option<EDataType> {
         self.ty
     }

@@ -19,6 +19,7 @@ pub struct GraphOutput {
 pub trait GraphIoData {
     fn id(&self) -> &Uuid;
     fn name(&self) -> &str;
+    fn name_mut(&mut self) -> &mut String;
     fn ty(&self) -> Option<EDataType>;
 }
 
@@ -29,6 +30,10 @@ impl GraphIoData for GraphInput {
 
     fn name(&self) -> &str {
         &self.name
+    }
+
+    fn name_mut(&mut self) -> &mut String {
+        &mut self.name
     }
 
     fn ty(&self) -> Option<EDataType> {
@@ -43,6 +48,10 @@ impl GraphIoData for GraphOutput {
 
     fn name(&self) -> &str {
         &self.name
+    }
+
+    fn name_mut(&mut self) -> &mut String {
+        &mut self.name
     }
 
     fn ty(&self) -> Option<EDataType> {

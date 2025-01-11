@@ -1138,6 +1138,7 @@ dependencies = [
  "sanitise-file-name",
  "serde",
  "serde_json5",
+ "smallvec",
  "strip-ansi-escapes",
  "strum",
  "tracing",
