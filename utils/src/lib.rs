@@ -8,4 +8,4 @@ pub mod iter_utils;
 
 pub mod vec_utils;
 
-pub mod math;
+pub mod convex_math;

@@ -1,6 +1,6 @@
 // adapted from https://github.com/Donvlouss/f3l/blob/main/crates/f3l_surface/src/convex_hull/convex_hull_2d.rs
 
-use crate::math::EPS;
+use crate::convex_math::EPS;
 use num_traits::Float;
 use std::{borrow::Cow, ops::Index};
 

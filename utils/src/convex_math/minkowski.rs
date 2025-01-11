@@ -1,6 +1,6 @@
 //! ported from https://cp-algorithms.com/geometry/minkowski.html#implementation
 
-use crate::math::{cross, winding_direction, WindingDirection};
+use crate::convex_math::{convex_winding_direction, cross, WindingDirection};
 use emath::Pos2;
 
 /// Calculate the Minkowski sum of two convex polygons
@@ -9,11 +9,11 @@ use emath::Pos2;
 pub fn minkowski(mut p: Vec<Pos2>, mut q: Vec<Pos2>) -> Vec<Pos2> {
     // check winding direction but only when debug_assertions are enabled
     debug_assert_eq!(
-        winding_direction(&p),
+        convex_winding_direction(&p),
         Some(WindingDirection::CounterClockwise)
     );
     debug_assert_eq!(
-        winding_direction(&q),
+        convex_winding_direction(&q),
         Some(WindingDirection::CounterClockwise)
     );
 
