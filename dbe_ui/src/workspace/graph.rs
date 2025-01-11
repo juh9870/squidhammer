@@ -2,6 +2,7 @@ use crate::error::report_error;
 use crate::m_try;
 use crate::ui_props::{PROP_OBJECT_GRAPH_SEARCH_HIDE, PROP_OBJECT_PIN_COLOR};
 use crate::widgets::report::diagnostic_widget;
+use crate::workspace::graph::rects::NodeRects;
 use crate::workspace::graph::viewer::get_viewer;
 use ahash::AHashMap;
 use dbe_backend::diagnostic::context::DiagnosticContextRef;
@@ -31,8 +32,9 @@ use std::iter::Peekable;
 use std::ops::DerefMut;
 use std::sync::Arc;
 use ustr::Ustr;
-use utils::math::convex_hull_2d::{Convex, ConvexHull2D};
+use utils::math::convex_hull_2d::Convex;
 
+pub mod rects;
 pub mod toolbar;
 pub mod viewer;
 
@@ -40,7 +42,7 @@ pub mod viewer;
 pub struct GraphViewer<'a> {
     pub ctx: PartialGraphEditingContext<'a>,
     pub diagnostics: DiagnosticContextRef<'a>,
-    pub node_rects: &'a mut AHashMap<NodeId, Rect>,
+    pub node_rects: &'a mut NodeRects,
     commands: SnarlCommands,
 }
 
@@ -48,7 +50,7 @@ impl<'a> GraphViewer<'a> {
     pub fn new(
         ctx: PartialGraphEditingContext<'a>,
         diagnostics: DiagnosticContextRef<'a>,
-        node_rects: &'a mut AHashMap<NodeId, Rect>,
+        node_rects: &'a mut NodeRects,
     ) -> Self {
         Self {
             ctx,
@@ -243,14 +245,13 @@ impl<'a> SnarlViewer<SnarlNode> for GraphViewer<'a> {
     fn final_node_rect(
         &mut self,
         node: NodeId,
-        ui_rect: Rect,
-        _graph_rect: Rect,
+        _ui_rect: Rect,
+        graph_rect: Rect,
         _ui: &mut Ui,
         _scale: f32,
         _snarl: &mut Snarl<SnarlNode>,
     ) {
-        // TODO: store rects in graph-space instead of screen-space
-        self.node_rects.insert(node, ui_rect);
+        self.node_rects.add_graph_space_rect(node, graph_rect);
     }
 
     fn has_graph_menu(&mut self, _pos: Pos2, _snarl: &mut Snarl<SnarlNode>) -> bool {
@@ -580,49 +581,11 @@ impl<'a> SnarlViewer<SnarlNode> for GraphViewer<'a> {
             let Some(region_info) = self.ctx.regions.get(region) else {
                 continue;
             };
-            let region_data = data.region_data(region);
-            let mut points = Vec::with_capacity(region_data.nodes.len() * 4);
-            for node in &region_data.nodes {
-                if let Some(rect) = self.node_rects.get(&node.node) {
-                    let rect = rect.expand(
-                        (node.separation as f32 * tweak!(7.5)
-                            + if node.node == region_data.start_node
-                                || node.node == region_data.end_node
-                            {
-                                tweak!(10.0)
-                            } else {
-                                tweak!(7.5)
-                            })
-                            * scale,
-                    );
-                    if node.node == region_data.start_node {
-                        points.push(rect.center_top());
-                        points.push(rect.center_bottom());
-                    } else {
-                        points.push(rect.left_top());
-                        points.push(rect.left_bottom());
-                    }
 
-                    if node.node == region_data.end_node {
-                        points.push(rect.center_top());
-                        points.push(rect.center_bottom());
-                    } else {
-                        points.push(rect.right_top());
-                        points.push(rect.right_bottom());
-                    }
-                }
-            }
-            if points.len() < 3 {
+            let Some(points) = self.node_rects.screen_space_hull(region, data, viewport) else {
                 continue;
-            }
+            };
 
-            let mut hull = ConvexHull2D::with_data(&points);
-            hull.compute();
-
-            let mut points = Vec::with_capacity(hull.hulls.len());
-            for idx in hull.hulls {
-                points.push(hull.data[idx]);
-            }
             let shape = PathShape::convex_polygon(
                 points,
                 region_info.color().gamma_multiply(tweak!(0.2)),
