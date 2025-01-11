@@ -7,7 +7,9 @@ use petgraph::acyclic::AcyclicEdgeError;
 use petgraph::data::Build;
 use petgraph::prelude::{EdgeRef, NodeIndex};
 use petgraph::visit::IntoEdges;
+use smallvec::SmallVec;
 use std::collections::hash_map::Entry;
+use std::iter::once;
 use std::marker::PhantomData;
 use thiserror::Error;
 use uuid::Uuid;
@@ -188,7 +190,7 @@ struct RegionBuilderData {
 struct RegionBuilderNode {
     source_of: Option<usize>,
     endpoint_of: Option<usize>,
-    input_regions: Vec<usize>,
+    input_regions: SmallVec<[usize; 2]>,
 }
 
 impl<'a> RegionGraphBuilder<'a> {
@@ -318,11 +320,22 @@ impl RegionGraphBuilder<'_> {
             let start = region.source;
 
             fill_inputs_recursive(&self.outputs, &mut self.node_data, idx, start);
+        }
+
+        for (idx, region) in self.region_data.iter().enumerate() {
+            let source_regions = self
+                .node_data
+                .get(&region.source)
+                .expect("All region sources were populated")
+                .input_regions
+                .clone();
 
             // specifically paint group output, in case if it isn't connected
-            let data = self.node_data.entry(region.endpoint).or_default();
-            if !data.input_regions.contains(&idx) {
-                data.input_regions.push(idx);
+            let endpoint_data = self.node_data.entry(region.endpoint).or_default();
+            for reg in once(idx).chain(source_regions) {
+                if !endpoint_data.input_regions.contains(&reg) {
+                    endpoint_data.input_regions.push(reg);
+                }
             }
         }
 
