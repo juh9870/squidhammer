@@ -1,5 +1,4 @@
 use emath::{Pos2, Vec2};
-use num_traits::Float;
 use strum::EnumIs;
 
 pub mod convex_hull_2d;
@@ -19,11 +18,11 @@ pub enum WindingDirection {
     CounterClockwise,
 }
 
-/// Calculate the winding direction of a polygon
+/// Calculate the winding direction of a convex polygon
 ///
 /// Returns None if the winding direction cannot be determined (e.g. all points
 /// are collinear)
-pub fn winding_direction(points: &[Pos2]) -> Option<WindingDirection> {
+pub fn convex_winding_direction(points: &[Pos2]) -> Option<WindingDirection> {
     let mut dx = (points[1] - points[0]).normalized();
     for i in 1..points.len() {
         let next_dx = (points[(i + 1) % points.len()] - points[i]).normalized();

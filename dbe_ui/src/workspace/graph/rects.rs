@@ -6,9 +6,9 @@ use egui_snarl::ui::Viewport;
 use egui_snarl::NodeId;
 use inline_tweak::tweak;
 use std::hash::{Hash, Hasher};
-use utils::math::convex_hull_2d::{Convex, ConvexHull2D};
-use utils::math::minkowski::minkowski;
-use utils::math::winding_direction;
+use utils::convex_math::convex_hull_2d::{Convex, ConvexHull2D};
+use utils::convex_math::convex_winding_direction;
+use utils::convex_math::minkowski::minkowski;
 use uuid::Uuid;
 
 /// Stores node rects in screen space
@@ -48,9 +48,9 @@ impl NodeRects {
                         + if node.node == region_data.start_node
                             || node.node == region_data.end_node
                         {
-                            tweak!(5.0)
-                        } else {
                             tweak!(2.5)
+                        } else {
+                            tweak!(0.0)
                         },
                 );
 
@@ -100,13 +100,16 @@ impl NodeRects {
             points.push(hull.data[idx]);
         }
 
-        let circle = poly_circle(tweak!(5.0) * viewport.scale);
+        let circle = poly_circle(tweak!(7.5) * viewport.scale);
 
-        if !winding_direction(&points).is_some_and(|w| w.is_counter_clockwise()) {
+        if !convex_winding_direction(&points).is_some_and(|w| w.is_counter_clockwise()) {
             points.reverse();
         }
 
-        debug_assert_eq!(winding_direction(&points), winding_direction(&circle));
+        debug_assert_eq!(
+            convex_winding_direction(&points),
+            convex_winding_direction(&circle)
+        );
 
         let mut shape = minkowski(points, circle);
 
