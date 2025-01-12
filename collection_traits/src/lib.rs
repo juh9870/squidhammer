@@ -1,18 +1,10 @@
 #![forbid(clippy::unconditional_recursion)]
 
-pub mod array;
 pub mod slice;
 pub mod vec;
 
 #[cfg(feature = "smallvec")]
 pub mod smallvec;
-
-pub trait AsSlice {
-    type Item;
-
-    fn as_slice(&self) -> &[Self::Item];
-    fn as_mut_slice(&mut self) -> &mut [Self::Item];
-}
 
 pub trait HasLength {
     fn len(&self) -> usize;

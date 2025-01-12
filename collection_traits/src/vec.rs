@@ -1,16 +1,4 @@
-use crate::{AsSlice, Resizable};
-
-impl<T> AsSlice for Vec<T> {
-    type Item = T;
-
-    fn as_slice(&self) -> &[T] {
-        self.as_slice()
-    }
-
-    fn as_mut_slice(&mut self) -> &mut [T] {
-        self.as_mut_slice()
-    }
-}
+use crate::Resizable;
 
 impl<T> Resizable for Vec<T> {
     type Item = T;

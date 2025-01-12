@@ -8,7 +8,7 @@ use crate::graph::node::{ExecutionResult, NodeContext};
 use crate::json_utils::JsonValue;
 use crate::registry::ETypesRegistry;
 use crate::value::EValue;
-use collection_traits::{AsSlice, HasLength};
+use collection_traits::HasLength;
 use egui_snarl::{InPin, OutPin};
 use itertools::Itertools;
 use miette::{bail, miette, IntoDiagnostic};
@@ -161,10 +161,10 @@ pub trait ArrayOpRepeatNode: 'static + Debug + Clone + Send + Sync {
     fn input_names(&self, kind: RegionIoKind) -> &[&str];
     fn output_names(&self, kind: RegionIoKind) -> &[&str];
 
-    fn inputs(&self, kind: RegionIoKind) -> impl AsSlice<Item = ArrayOpField>;
-    fn outputs(&self, kind: RegionIoKind) -> impl AsSlice<Item = ArrayOpField>;
-    fn inputs_mut(&mut self, kind: RegionIoKind) -> impl AsSlice<Item = ArrayOpFieldMut>;
-    fn outputs_mut(&mut self, kind: RegionIoKind) -> impl AsSlice<Item = ArrayOpFieldMut>;
+    fn inputs(&self, kind: RegionIoKind) -> impl AsRef<[ArrayOpField]>;
+    fn outputs(&self, kind: RegionIoKind) -> impl AsRef<[ArrayOpField]>;
+    fn inputs_mut(&mut self, kind: RegionIoKind) -> impl AsMut<[ArrayOpFieldMut]>;
+    fn outputs_mut(&mut self, kind: RegionIoKind) -> impl AsMut<[ArrayOpFieldMut]>;
 
     /// Writes node state to json
     fn write_json(
@@ -175,7 +175,7 @@ pub trait ArrayOpRepeatNode: 'static + Debug + Clone + Send + Sync {
         let _ = (registry, kind);
         serde_json::to_value(
             self.inputs(kind)
-                .as_slice()
+                .as_ref()
                 .iter()
                 .map(|ty| ty.ty_opt())
                 .collect_vec(),
@@ -196,7 +196,7 @@ pub trait ArrayOpRepeatNode: 'static + Debug + Clone + Send + Sync {
 
         for (ty, field) in types
             .into_iter()
-            .zip(self.inputs_mut(kind).as_mut_slice().iter_mut())
+            .zip(self.inputs_mut(kind).as_mut().iter_mut())
         {
             field.load_from(ty)?
         }
@@ -248,11 +248,11 @@ impl<T: ArrayOpRepeatNode> RegionalNode for T {
     }
 
     fn inputs_count(&self, _context: NodeContext, kind: RegionIoKind) -> usize {
-        self.inputs(kind).len()
+        self.inputs(kind).as_ref().len()
     }
 
     fn outputs_count(&self, _context: NodeContext, kind: RegionIoKind) -> usize {
-        self.outputs(kind).len()
+        self.outputs(kind).as_ref().len()
     }
 
     fn input_unchecked(
@@ -262,7 +262,7 @@ impl<T: ArrayOpRepeatNode> RegionalNode for T {
         input: usize,
     ) -> miette::Result<InputData> {
         let inputs = self.inputs(kind);
-        let Some(ty) = inputs.as_slice().get(input) else {
+        let Some(ty) = inputs.as_ref().get(input) else {
             bail!("Invalid input index: {}", input);
         };
 
@@ -283,7 +283,7 @@ impl<T: ArrayOpRepeatNode> RegionalNode for T {
         output: usize,
     ) -> miette::Result<OutputData> {
         let outputs = self.outputs(kind);
-        let Some(ty) = outputs.as_slice().get(output) else {
+        let Some(ty) = outputs.as_ref().get(output) else {
             bail!("Invalid output index: {}", output);
         };
 
@@ -307,7 +307,7 @@ impl<T: ArrayOpRepeatNode> RegionalNode for T {
         incoming_type: &NodePortType,
     ) -> miette::Result<ControlFlow<bool>> {
         let mut inputs = self.inputs_mut(kind);
-        let Some(ty) = inputs.as_mut_slice().get_mut(to.id.input) else {
+        let Some(ty) = inputs.as_mut().get_mut(to.id.input) else {
             bail!("Invalid input index: {}", to.id.input);
         };
 
@@ -331,7 +331,7 @@ impl<T: ArrayOpRepeatNode> RegionalNode for T {
         target_type: &NodePortType,
     ) -> miette::Result<bool> {
         let outputs = self.outputs(kind);
-        let Some(ty) = outputs.as_slice().get(from.id.output) else {
+        let Some(ty) = outputs.as_ref().get(from.id.output) else {
             bail!("Invalid output index: {}", from.id.output);
         };
 
@@ -348,7 +348,7 @@ impl<T: ArrayOpRepeatNode> RegionalNode for T {
         incoming_type: &NodePortType,
     ) -> miette::Result<()> {
         let mut outputs = self.outputs_mut(kind);
-        let Some(ty) = outputs.as_mut_slice().get_mut(from.id.output) else {
+        let Some(ty) = outputs.as_mut().get_mut(from.id.output) else {
             bail!("Invalid output index: {}", from.id.output);
         };
 
@@ -419,7 +419,7 @@ macro_rules! array_op_io {
     };
 
     ($io:ident { Start => [$($start_n:literal;)? $($start_kind:ident($($start_value:tt)*)),* $(,)?], End => [$($end_n:literal;)? $($end_kind:ident($($end_value:tt)*)),* $(,)?] }) => {
-        fn $io(&self, kind: $crate::graph::node::regional::RegionIoKind) -> impl collection_traits::AsSlice<Item = $crate::graph::node::regional::array_ops::ArrayOpField> {
+        fn $io(&self, kind: $crate::graph::node::regional::RegionIoKind) -> impl AsRef<[$crate::graph::node::regional::array_ops::ArrayOpField]> {
             match kind {
                 $crate::graph::node::regional::RegionIoKind::Start => {
                     $crate::graph::node::regional::array_ops::array_op_io!(
@@ -434,7 +434,7 @@ macro_rules! array_op_io {
             }
         }
         paste::paste! {
-            fn [< $io _mut >](&mut self, kind: $crate::graph::node::regional::RegionIoKind) -> impl collection_traits::AsSlice<Item = $crate::graph::node::regional::array_ops::ArrayOpFieldMut> {
+            fn [< $io _mut >](&mut self, kind: $crate::graph::node::regional::RegionIoKind) -> impl AsMut<[$crate::graph::node::regional::array_ops::ArrayOpFieldMut]> {
                 match kind {
                     $crate::graph::node::regional::RegionIoKind::Start => {
                         $crate::graph::node::regional::array_ops::array_op_io!(

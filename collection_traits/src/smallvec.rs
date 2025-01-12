@@ -1,17 +1,5 @@
-use crate::{AsSlice, Resizable};
+use crate::Resizable;
 use smallvec::SmallVec;
-
-impl<const N: usize, T> AsSlice for SmallVec<[T; N]> {
-    type Item = T;
-
-    fn as_slice(&self) -> &[T] {
-        self.as_slice()
-    }
-
-    fn as_mut_slice(&mut self) -> &mut [T] {
-        self.as_mut_slice()
-    }
-}
 
 impl<const N: usize, T> Resizable for SmallVec<[T; N]> {
     type Item = T;
