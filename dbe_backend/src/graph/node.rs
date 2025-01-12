@@ -88,6 +88,9 @@ fn default_nodes() -> impl Iterator<Item = (Ustr, Arc<dyn NodeFactory>)> {
     v.push(Arc::new(
         RegionalNodeFactory::<RepeatRegionalNode>::INSTANCE,
     ));
+    v.push(Arc::new(
+        RegionalNodeFactory::<ForEachRegionalNode>::INSTANCE,
+    ));
     v.into_iter().map(|item| (Ustr::from(&item.id()), item))
 }
 
@@ -480,6 +483,7 @@ macro_rules! impl_serde_node {
 }
 
 use crate::graph::node::colors::NodeColorScheme;
+use crate::graph::node::regional::for_each::ForEachRegionalNode;
 use crate::graph::node::regional::repeat::RepeatRegionalNode;
 use crate::graph::node::regional::RegionalNodeFactory;
 use crate::graph::region::RegionInfo;
