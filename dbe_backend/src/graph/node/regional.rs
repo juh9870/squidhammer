@@ -46,9 +46,8 @@ impl<T: RegionalNode> RegionIONode<T> {
         context: NodeContext<'ctx>,
         index: usize,
     ) -> Option<&'ctx RegionVariable> {
-        let Some(region) = context.regions.get(&self.region) else {
-            return None;
-        };
+        let region = context.regions.get(&self.region)?;
+
         get_graph_io_field(&region.variables, &self.ids, index)
     }
 }
@@ -108,7 +107,10 @@ impl<T: RegionalNode> Node for RegionIONode<T> {
             &mut self.ids,
             None,
             id,
-            IoDirection::Both,
+            IoDirection::Both {
+                input_offset: self.node.inputs_count(context, self.kind),
+                output_offset: self.node.outputs_count(context, self.kind),
+            },
         );
 
         Ok(())

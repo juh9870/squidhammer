@@ -80,7 +80,7 @@ impl Node for StructNode {
             &data.fields,
             &mut self.fields,
             id,
-            IoDirection::Input,
+            IoDirection::Input(0),
         );
 
         Ok(())

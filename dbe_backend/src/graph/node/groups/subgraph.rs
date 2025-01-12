@@ -81,7 +81,7 @@ impl Node for SubgraphNode {
             &mut self.inputs,
             Some(&mut self.input_types),
             id,
-            IoDirection::Input,
+            IoDirection::Input(0),
         );
         sync_fields(
             commands,
@@ -89,7 +89,7 @@ impl Node for SubgraphNode {
             &mut self.outputs,
             Some(&mut self.output_types),
             id,
-            IoDirection::Output,
+            IoDirection::Output(0),
         );
 
         Ok(())

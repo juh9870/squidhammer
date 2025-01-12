@@ -74,6 +74,7 @@ pub enum SnarlCommand {
     InputsRearrangedRaw {
         node: NodeId,
         indices: RearrangeIndices,
+        offset: usize,
     },
     /// Changes all connections from the output pin to point according to the new indices
     ///
@@ -83,6 +84,7 @@ pub enum SnarlCommand {
     OutputsRearrangedRaw {
         node: NodeId,
         indices: RearrangeIndices,
+        offset: usize,
     },
     /// Sets the group input type. The command will panic if the input already has a type
     SetGroupInputType { id: Uuid, ty: EDataType },
@@ -152,7 +154,11 @@ impl SnarlCommand {
                     ctx.mark_dirty();
                 }
             }
-            SnarlCommand::InputsRearrangedRaw { node, indices } => {
+            SnarlCommand::InputsRearrangedRaw {
+                node,
+                indices,
+                offset,
+            } => {
                 // debug!("Rearranging inputs for node {:?}: {:#?}", node, indices);
                 let node_pins = ctx
                     .snarl
@@ -167,26 +173,34 @@ impl SnarlCommand {
                     .map(|(pin, value)| (*pin, value.clone()))
                     .collect::<AHashMap<_, _>>();
 
-                // A list of pins that had their inline values overwritten during rearrangement
-                let mut overwritten_inlines = vec![];
+                for (i, target) in indices.iter().copied().enumerate() {
+                    if target == i {
+                        continue;
+                    }
+
+                    let old_pin = InPinId {
+                        node,
+                        input: i + offset,
+                    };
+
+                    ctx.inline_values.remove(&old_pin);
+
+                    ctx.snarl.drop_inputs(old_pin);
+                }
 
                 for (i, target) in indices.into_iter().enumerate() {
                     if target == i {
                         continue;
                     }
 
-                    let old_pin = InPinId { node, input: i };
+                    let old_pin = InPinId {
+                        node,
+                        input: i + offset,
+                    };
                     let new_pin = InPinId {
                         node,
-                        input: target,
+                        input: target + offset,
                     };
-
-                    // Only delete the inline value if it wasn't overwritten by another move
-                    if !overwritten_inlines.contains(&old_pin) {
-                        ctx.inline_values.remove(&old_pin);
-                    }
-
-                    ctx.snarl.drop_inputs(new_pin);
 
                     for (source, _) in node_pins.iter().filter(|(_, i)| i == &old_pin) {
                         ctx.snarl.connect(*source, new_pin);
@@ -197,29 +211,43 @@ impl SnarlCommand {
                     } else {
                         ctx.inline_values.remove(&new_pin);
                     }
-
-                    overwritten_inlines.push(new_pin);
                 }
             }
-            SnarlCommand::OutputsRearrangedRaw { node, indices } => {
+            SnarlCommand::OutputsRearrangedRaw {
+                node,
+                indices,
+                offset,
+            } => {
                 let node_pins = ctx
                     .snarl
                     .wires()
                     .filter(|(out_pin, _)| out_pin.node == node)
                     .collect_vec();
 
+                for (i, target) in indices.iter().copied().enumerate() {
+                    if target == i {
+                        continue;
+                    }
+
+                    ctx.snarl.drop_outputs(OutPinId {
+                        node,
+                        output: i + offset,
+                    });
+                }
+
                 for (i, target) in indices.into_iter().enumerate() {
                     if target == i {
                         continue;
                     }
 
-                    let old_pin = OutPinId { node, output: i };
+                    let old_pin = OutPinId {
+                        node,
+                        output: i + offset,
+                    };
                     let new_pin = OutPinId {
                         node,
-                        output: target,
+                        output: target + offset,
                     };
-
-                    ctx.snarl.drop_outputs(old_pin);
 
                     for (_, target_pin) in node_pins.iter().filter(|(i, _)| i == &old_pin) {
                         ctx.snarl.connect(new_pin, *target_pin);
