@@ -1,5 +1,6 @@
 use crate::etype::default::DefaultEValue;
 use crate::graph::inputs::{GraphInput, GraphOutput};
+use crate::graph::node::colors::NodeColorScheme;
 use crate::graph::node::commands::{SnarlCommand, SnarlCommands};
 use crate::graph::node::editable_state::EditableState;
 use crate::graph::node::enum_node::EnumNodeFactory;
@@ -12,10 +13,14 @@ use crate::graph::node::groups::subgraph::SubgraphNodeFactory;
 use crate::graph::node::list::ListNodeFactory;
 use crate::graph::node::mappings::MappingsNodeFactory;
 use crate::graph::node::ports::{InputData, NodePortType, OutputData};
+use crate::graph::node::regional::array_ops::for_each::ForEachRegionalNode;
+use crate::graph::node::regional::repeat::RepeatRegionalNode;
+use crate::graph::node::regional::RegionalNodeFactory;
 use crate::graph::node::reroute::RerouteFactory;
 use crate::graph::node::saving_node::SavingNodeFactory;
 use crate::graph::node::struct_node::StructNodeFactory;
 use crate::graph::node::variables::ExecutionExtras;
+use crate::graph::region::RegionInfo;
 use crate::json_utils::JsonValue;
 use crate::project::docs::{Docs, DocsWindowRef};
 use crate::project::project_graph::ProjectGraphs;
@@ -51,6 +56,7 @@ pub mod ports;
 pub mod regional;
 pub mod reroute;
 pub mod saving_node;
+pub mod serde_node;
 pub mod struct_node;
 pub mod variables;
 
@@ -460,31 +466,3 @@ pub trait Node: DynClone + Debug + Send + Sync + Downcast + 'static {
 }
 
 impl_downcast!(Node);
-
-/// Implements write_json and parse_json for the node by serializing whole node struct via serde
-macro_rules! impl_serde_node {
-    () => {
-        fn write_json(
-            &self,
-            _registry: &$crate::registry::ETypesRegistry,
-        ) -> miette::Result<$crate::json_utils::JsonValue> {
-            miette::IntoDiagnostic::into_diagnostic(serde_json::value::to_value(&self))
-        }
-
-        fn parse_json(
-            &mut self,
-            _registry: &$crate::registry::ETypesRegistry,
-            value: &mut $crate::json_utils::JsonValue,
-        ) -> miette::Result<()> {
-            miette::IntoDiagnostic::into_diagnostic(Self::deserialize(value.take()))
-                .map(|node| *self = node)
-        }
-    };
-}
-
-use crate::graph::node::colors::NodeColorScheme;
-use crate::graph::node::regional::for_each::ForEachRegionalNode;
-use crate::graph::node::regional::repeat::RepeatRegionalNode;
-use crate::graph::node::regional::RegionalNodeFactory;
-use crate::graph::region::RegionInfo;
-pub(crate) use impl_serde_node;

@@ -1,0 +1,455 @@
+use crate::etype::eitem::EItemInfo;
+use crate::etype::EDataType;
+use crate::graph::node::commands::SnarlCommands;
+use crate::graph::node::ports::{InputData, NodePortType, OutputData};
+use crate::graph::node::regional::{RegionIoKind, RegionalNode};
+use crate::graph::node::variables::ExecutionExtras;
+use crate::graph::node::{ExecutionResult, NodeContext};
+use crate::json_utils::JsonValue;
+use crate::registry::ETypesRegistry;
+use crate::value::EValue;
+use collection_traits::{AsSlice, HasLength};
+use egui_snarl::{InPin, OutPin};
+use itertools::Itertools;
+use miette::{bail, miette, IntoDiagnostic};
+use std::fmt::Debug;
+use std::ops::ControlFlow;
+use ustr::Ustr;
+use uuid::Uuid;
+
+pub mod for_each;
+
+#[derive(Debug)]
+pub enum ArrayOpField<'a> {
+    List(&'a Option<EDataType>),
+    Value(&'a Option<EDataType>),
+    Fixed(EDataType),
+}
+
+#[derive(Debug)]
+pub enum ArrayOpFieldMut<'a> {
+    List(&'a mut Option<EDataType>),
+    Value(&'a mut Option<EDataType>),
+    Fixed(EDataType),
+}
+
+impl<'a> ArrayOpFieldMut<'a> {
+    pub fn as_ref(&self) -> ArrayOpField {
+        match self {
+            ArrayOpFieldMut::List(ty) => ArrayOpField::List(ty),
+            ArrayOpFieldMut::Value(ty) => ArrayOpField::Value(ty),
+            ArrayOpFieldMut::Fixed(ty) => ArrayOpField::Fixed(*ty),
+        }
+    }
+
+    pub fn specify_from(
+        &mut self,
+        registry: &ETypesRegistry,
+        incoming: &NodePortType,
+    ) -> miette::Result<bool> {
+        if !self.as_ref().can_specify_from(incoming)? {
+            return Ok(false);
+        }
+
+        match self {
+            Self::List(ty) => {
+                if ty.is_some() {
+                    bail!("List type already set");
+                }
+                let EDataType::List { id } = incoming.ty() else {
+                    return Ok(false);
+                };
+
+                let list = registry
+                    .get_list(&id)
+                    .ok_or_else(|| miette!("Unknown list type: {}", id))?;
+
+                **ty = Some(list.value_type);
+            }
+            Self::Value(ty) => {
+                if ty.is_some() {
+                    bail!("Value type already set");
+                }
+                **ty = Some(incoming.ty());
+            }
+            ArrayOpFieldMut::Fixed(_) => {
+                bail!("Fixed type cannot be changed");
+            }
+        }
+        Ok(true)
+    }
+
+    /// Attempts to set the type of the field from the incoming type
+    ///
+    /// Fails if the field already has a type set and the incoming type is not [None]
+    pub fn load_from(&mut self, incoming: Option<EDataType>) -> miette::Result<()> {
+        let Some(incoming) = incoming else {
+            return Ok(());
+        };
+        match self {
+            ArrayOpFieldMut::List(ty) => {
+                if ty.is_some() {
+                    bail!("List type already set");
+                }
+                **ty = Some(incoming);
+            }
+            ArrayOpFieldMut::Value(ty) => {
+                if ty.is_some() {
+                    bail!("Value type already set");
+                }
+                **ty = Some(incoming);
+            }
+            ArrayOpFieldMut::Fixed(_) => {
+                bail!("Fixed type cannot be changed");
+            }
+        }
+        Ok(())
+    }
+}
+
+impl<'a> ArrayOpField<'a> {
+    pub fn is_specific(&self) -> bool {
+        match self {
+            ArrayOpField::List(ty) => ty.is_some(),
+            ArrayOpField::Value(ty) => ty.is_some(),
+            ArrayOpField::Fixed(_) => true,
+        }
+    }
+
+    pub fn ty(&self, registry: &ETypesRegistry, kind: RegionIoKind) -> EDataType {
+        match self {
+            ArrayOpField::List(ty) => match kind {
+                RegionIoKind::Start => registry.list_of(ty.unwrap_or_else(EDataType::null)),
+                RegionIoKind::End => ty.unwrap_or_else(EDataType::null),
+            },
+            ArrayOpField::Value(ty) => ty.unwrap_or_else(EDataType::null),
+            ArrayOpField::Fixed(ty) => *ty,
+        }
+    }
+
+    pub fn ty_opt(&self) -> Option<EDataType> {
+        match self {
+            ArrayOpField::List(ty) => **ty,
+            ArrayOpField::Value(ty) => **ty,
+            ArrayOpField::Fixed(ty) => Some(*ty),
+        }
+    }
+
+    pub fn can_specify_from(&self, incoming: &NodePortType) -> miette::Result<bool> {
+        match self {
+            ArrayOpField::List(ty) => {
+                if ty.is_some() {
+                    bail!("List type already set");
+                }
+                Ok(incoming.ty().is_list())
+            }
+            ArrayOpField::Value(ty) => {
+                if ty.is_some() {
+                    bail!("Value type already set");
+                }
+                Ok(true)
+            }
+            ArrayOpField::Fixed(_) => {
+                bail!("Fixed type cannot be changed");
+            }
+        }
+    }
+}
+
+pub trait ArrayOpRepeatNode: 'static + Debug + Clone + Send + Sync {
+    fn id() -> Ustr;
+    fn input_names(&self, kind: RegionIoKind) -> &[&str];
+    fn output_names(&self, kind: RegionIoKind) -> &[&str];
+
+    fn inputs(&self, kind: RegionIoKind) -> impl AsSlice<Item = ArrayOpField>;
+    fn outputs(&self, kind: RegionIoKind) -> impl AsSlice<Item = ArrayOpField>;
+    fn inputs_mut(&mut self, kind: RegionIoKind) -> impl AsSlice<Item = ArrayOpFieldMut>;
+    fn outputs_mut(&mut self, kind: RegionIoKind) -> impl AsSlice<Item = ArrayOpFieldMut>;
+
+    /// Writes node state to json
+    fn write_json(
+        &self,
+        registry: &ETypesRegistry,
+        kind: RegionIoKind,
+    ) -> miette::Result<JsonValue> {
+        let _ = (registry, kind);
+        serde_json::to_value(
+            self.inputs(kind)
+                .as_slice()
+                .iter()
+                .map(|ty| ty.ty_opt())
+                .collect_vec(),
+        )
+        .into_diagnostic()
+    }
+
+    /// Loads node state from json
+    fn parse_json(
+        &mut self,
+        registry: &ETypesRegistry,
+        kind: RegionIoKind,
+        value: &mut JsonValue,
+    ) -> miette::Result<()> {
+        let _ = (registry, kind);
+        let types: Vec<Option<EDataType>> =
+            serde_json::from_value(value.take()).into_diagnostic()?;
+
+        for (ty, field) in types
+            .into_iter()
+            .zip(self.inputs_mut(kind).as_mut_slice().iter_mut())
+        {
+            field.load_from(ty)?
+        }
+
+        Ok(())
+    }
+
+    fn should_execute(
+        &self,
+        context: NodeContext,
+        region: Uuid,
+        variables: &mut ExecutionExtras,
+    ) -> miette::Result<bool>;
+
+    fn execute(
+        &self,
+        context: NodeContext,
+        kind: RegionIoKind,
+        region: Uuid,
+        inputs: &[EValue],
+        outputs: &mut Vec<EValue>,
+        variables: &mut ExecutionExtras,
+    ) -> miette::Result<ExecutionResult>;
+
+    fn categories() -> &'static [&'static str];
+    fn create() -> Self;
+}
+
+impl<T: ArrayOpRepeatNode> RegionalNode for T {
+    fn id() -> Ustr {
+        "for_each".into()
+    }
+
+    fn write_json(
+        &self,
+        _registry: &ETypesRegistry,
+        kind: RegionIoKind,
+    ) -> miette::Result<JsonValue> {
+        <T as ArrayOpRepeatNode>::write_json(self, _registry, kind)
+    }
+
+    fn parse_json(
+        &mut self,
+        _registry: &ETypesRegistry,
+        kind: RegionIoKind,
+        value: &mut JsonValue,
+    ) -> miette::Result<()> {
+        <T as ArrayOpRepeatNode>::parse_json(self, _registry, kind, value)
+    }
+
+    fn inputs_count(&self, _context: NodeContext, kind: RegionIoKind) -> usize {
+        self.inputs(kind).len()
+    }
+
+    fn outputs_count(&self, _context: NodeContext, kind: RegionIoKind) -> usize {
+        self.outputs(kind).len()
+    }
+
+    fn input_unchecked(
+        &self,
+        context: NodeContext,
+        kind: RegionIoKind,
+        input: usize,
+    ) -> miette::Result<InputData> {
+        let inputs = self.inputs(kind);
+        let Some(ty) = inputs.as_slice().get(input) else {
+            bail!("Invalid input index: {}", input);
+        };
+
+        Ok(InputData::new(
+            if ty.is_specific() {
+                EItemInfo::simple_type(ty.ty(context.registry, kind)).into()
+            } else {
+                NodePortType::BasedOnSource
+            },
+            self.input_names(kind)[input].into(),
+        ))
+    }
+
+    fn output_unchecked(
+        &self,
+        context: NodeContext,
+        kind: RegionIoKind,
+        output: usize,
+    ) -> miette::Result<OutputData> {
+        let outputs = self.outputs(kind);
+        let Some(ty) = outputs.as_slice().get(output) else {
+            bail!("Invalid output index: {}", output);
+        };
+
+        Ok(OutputData::new(
+            if ty.is_specific() {
+                EItemInfo::simple_type(ty.ty(context.registry, kind)).into()
+            } else {
+                NodePortType::BasedOnTarget
+            },
+            self.output_names(kind)[output].into(),
+        ))
+    }
+
+    fn try_connect(
+        &mut self,
+        context: NodeContext,
+        kind: RegionIoKind,
+        _commands: &mut SnarlCommands,
+        _from: &OutPin,
+        to: &InPin,
+        incoming_type: &NodePortType,
+    ) -> miette::Result<ControlFlow<bool>> {
+        let mut inputs = self.inputs_mut(kind);
+        let Some(ty) = inputs.as_mut_slice().get_mut(to.id.input) else {
+            bail!("Invalid input index: {}", to.id.input);
+        };
+
+        if ty.as_ref().is_specific() {
+            return Ok(ControlFlow::Continue(()));
+        }
+
+        if !ty.specify_from(context.registry, incoming_type)? {
+            return Ok(ControlFlow::Break(false));
+        }
+
+        Ok(ControlFlow::Continue(()))
+    }
+
+    fn can_output_to(
+        &self,
+        _context: NodeContext,
+        kind: RegionIoKind,
+        from: &OutPin,
+        _to: &InPin,
+        target_type: &NodePortType,
+    ) -> miette::Result<bool> {
+        let outputs = self.outputs(kind);
+        let Some(ty) = outputs.as_slice().get(from.id.output) else {
+            bail!("Invalid output index: {}", from.id.output);
+        };
+
+        ty.can_specify_from(target_type)
+    }
+
+    fn connected_to_output(
+        &mut self,
+        context: NodeContext,
+        kind: RegionIoKind,
+        _commands: &mut SnarlCommands,
+        from: &OutPin,
+        _to: &InPin,
+        incoming_type: &NodePortType,
+    ) -> miette::Result<()> {
+        let mut outputs = self.outputs_mut(kind);
+        let Some(ty) = outputs.as_mut_slice().get_mut(from.id.output) else {
+            bail!("Invalid output index: {}", from.id.output);
+        };
+
+        if !ty.specify_from(context.registry, incoming_type)? {
+            bail!("Failed to specify type");
+        }
+        Ok(())
+    }
+
+    fn should_execute(
+        &self,
+        context: NodeContext,
+        region: Uuid,
+        variables: &mut ExecutionExtras,
+    ) -> miette::Result<bool> {
+        <T as ArrayOpRepeatNode>::should_execute(self, context, region, variables)
+    }
+
+    fn execute(
+        &self,
+        context: NodeContext,
+        kind: RegionIoKind,
+        region: Uuid,
+        inputs: &[EValue],
+        outputs: &mut Vec<EValue>,
+        variables: &mut ExecutionExtras,
+    ) -> miette::Result<ExecutionResult> {
+        <T as ArrayOpRepeatNode>::execute(self, context, kind, region, inputs, outputs, variables)
+    }
+
+    fn categories() -> &'static [&'static str] {
+        <T as ArrayOpRepeatNode>::categories()
+    }
+
+    fn create() -> Self {
+        <T as ArrayOpRepeatNode>::create()
+    }
+}
+
+macro_rules! array_op_io {
+    (@expand_item $self:ident @ref $kind:ident self . $($value:tt)*) => {
+        $crate::graph::node::regional::array_ops::ArrayOpField::$kind(& ($self . $($value)*))
+    };
+    (@expand_item $self:ident @mut $kind:ident self . $($value:tt)*) => {
+        $crate::graph::node::regional::array_ops::ArrayOpFieldMut::$kind(&mut ($self . $($value)*))
+    };
+    (@expand_item $self:ident @ref $kind:ident $value:expr) => {
+        $crate::graph::node::regional::array_ops::ArrayOpField::$kind($value)
+    };
+    (@expand_item $self:ident @mut $kind:ident $value:expr) => {
+        $crate::graph::node::regional::array_ops::ArrayOpFieldMut::$kind($value)
+    };
+
+    (@collection $self:ident @$mutability:tt $n:literal [$($kind:ident($($value:tt)*)),*]) => {
+        return utils::smallvec_n![$n;
+            $(
+                $crate::graph::node::regional::array_ops::array_op_io!(@expand_item $self @$mutability $kind $($value)*),
+            )*
+        ]
+    };
+
+    (@collection $self:ident @$mutability:tt [$($kind:ident($($value:tt)*)),*]) => {
+        return [
+            $(
+                $crate::graph::node::regional::array_ops::array_op_io!(@expand_item $self @$mutability $kind $($value)*),
+            )*
+        ]
+    };
+
+    ($io:ident { Start => [$($start_n:literal;)? $($start_kind:ident($($start_value:tt)*)),* $(,)?], End => [$($end_n:literal;)? $($end_kind:ident($($end_value:tt)*)),* $(,)?] }) => {
+        fn $io(&self, kind: $crate::graph::node::regional::RegionIoKind) -> impl collection_traits::AsSlice<Item = $crate::graph::node::regional::array_ops::ArrayOpField> {
+            match kind {
+                $crate::graph::node::regional::RegionIoKind::Start => {
+                    $crate::graph::node::regional::array_ops::array_op_io!(
+                        @collection self @ref $($start_n)? [$($start_kind($($start_value)*)),*]
+                    );
+                },
+                $crate::graph::node::regional::RegionIoKind::End => {
+                    $crate::graph::node::regional::array_ops::array_op_io!(
+                        @collection self @ref $($end_n)? [$($end_kind($($end_value)*)),*]
+                    );
+                }
+            }
+        }
+        paste::paste! {
+            fn [< $io _mut >](&mut self, kind: $crate::graph::node::regional::RegionIoKind) -> impl collection_traits::AsSlice<Item = $crate::graph::node::regional::array_ops::ArrayOpFieldMut> {
+                match kind {
+                    $crate::graph::node::regional::RegionIoKind::Start => {
+                        $crate::graph::node::regional::array_ops::array_op_io!(
+                            @collection self @mut $($start_n)? [$($start_kind($($start_value)*)),*]
+                        );
+                    },
+                    $crate::graph::node::regional::RegionIoKind::End => {
+                        $crate::graph::node::regional::array_ops::array_op_io!(
+                            @collection self @mut $($end_n)? [$($end_kind($($end_value)*)),*]
+                        );
+                    }
+                }
+            }
+        }
+    };
+}
+
+use array_op_io;

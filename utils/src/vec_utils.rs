@@ -46,3 +46,14 @@ impl<T> VecOperation<T> {
         apply_fn!(self, vec);
     }
 }
+
+/// Create a `SmallVec` with a specified size and elements.
+#[macro_export]
+macro_rules! smallvec_n {
+    ($size:literal; $($x:expr),*$(,)*) => {
+        {
+            let sv: smallvec::SmallVec<[_; $size]> = smallvec::smallvec![$($x),*];
+            sv
+        }
+    }
+}

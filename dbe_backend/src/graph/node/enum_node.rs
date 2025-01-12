@@ -6,10 +6,9 @@ use crate::etype::EDataType;
 use crate::graph::node::commands::{SnarlCommand, SnarlCommands};
 use crate::graph::node::editable_state::{EditableState, EditableStateValue};
 use crate::graph::node::ports::NodePortType;
+use crate::graph::node::serde_node::impl_serde_node;
 use crate::graph::node::variables::ExecutionExtras;
-use crate::graph::node::{
-    impl_serde_node, ExecutionResult, InputData, Node, NodeContext, NodeFactory, OutputData,
-};
+use crate::graph::node::{ExecutionResult, InputData, Node, NodeContext, NodeFactory, OutputData};
 use crate::project::docs::{Docs, DocsRef};
 use crate::registry::ETypesRegistry;
 use crate::value::EValue;

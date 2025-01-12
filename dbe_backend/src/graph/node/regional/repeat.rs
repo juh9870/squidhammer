@@ -1,7 +1,7 @@
 use crate::etype::eitem::EItemInfo;
 use crate::etype::EDataType;
 use crate::graph::node::ports::{InputData, OutputData};
-use crate::graph::node::regional::{RegionIoKind, RegionalNode};
+use crate::graph::node::regional::{remember_variables, RegionIoKind, RegionalNode};
 use crate::graph::node::variables::ExecutionExtras;
 use crate::graph::node::{ExecutionResult, NodeContext};
 use crate::graph::region::RegionExecutionData;
@@ -99,11 +99,7 @@ impl RegionalNode for RepeatRegionalNode {
             outputs.clear();
             outputs.push(EValue::from(state.current as f64));
 
-            if let Some(values) = state.values.take() {
-                outputs.extend(values);
-            } else {
-                outputs.extend(inputs.iter().skip(1).cloned());
-            }
+            remember_variables(&mut state.values, &inputs[1..], outputs);
 
             Ok(ExecutionResult::Done)
         } else {

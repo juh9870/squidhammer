@@ -1,0 +1,11 @@
+[package]
+name = "collection_traits"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+duplicate = { workspace = true }
+smallvec = { workspace = true, optional = true, features = ["const_generics"] }
+
+[features]
+smallvec = ["dep:smallvec"]

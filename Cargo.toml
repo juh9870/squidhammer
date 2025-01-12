@@ -1,6 +1,7 @@
 [workspace]
 resolver = "2"
 members = [
+    "collection_traits",
     "dbe_backend",
     "dbe_eframe",
     "dbe_ui",
@@ -88,6 +89,7 @@ utils = { path = "utils" }
 list_edit = { path = "list_edit" }
 diagnostic = { path = "diagnostic" }
 squidfmt = { path = "squidfmt" }
+collection_traits = { path = "collection_traits" }
 #[patch.'https://github.com/TheLostLambda/miette']
 #miette = { git = "https://github.com/zkat/miette", rev = "bf5aa3742fd664be3c93160b9c28c145b1ed8bc9" }
 #
