@@ -10,6 +10,7 @@ publish = false
 ahash = { workspace = true, features = ["serde"] }
 atomic_refcell = { workspace = true }
 camino = { workspace = true, features = ["serde", "serde1"] }
+collection_traits = { workspace = true, features = ["smallvec"] }
 derive_more = { workspace = true, features = ["debug"] }
 diagnostic = { workspace = true }
 downcast-rs = { workspace = true }

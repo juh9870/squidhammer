@@ -1,6 +1,8 @@
 use crate::etype::EDataType;
 use crate::graph::inputs::GraphIoData;
+use crate::graph::node::variables::ExecutionExtras;
 use downcast_rs::{impl_downcast, Downcast};
+use miette::bail;
 use serde::{Deserialize, Serialize};
 use smallvec::SmallVec;
 use utils::color_format::ecolor::Color32;
@@ -103,3 +105,13 @@ impl RegionInfo {
 pub trait RegionExecutionData: Downcast {}
 
 impl_downcast!(RegionExecutionData);
+
+pub fn get_region_execution_data<'a, T: RegionExecutionData>(
+    region: Uuid,
+    variables: &'a mut ExecutionExtras,
+) -> miette::Result<&'a mut T> {
+    let Some(state) = variables.get_region_data::<T>(region) else {
+        bail!("End of repeat node without start")
+    };
+    Ok(state)
+}

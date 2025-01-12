@@ -188,7 +188,7 @@
         },
         {
           "input": 0,
-          "node": 22
+          "node": 18
         }
       ],
       [
@@ -448,7 +448,10 @@
           2,
           3,
           4,
-          5
+          5,
+          6,
+          7,
+          8
         ]
       ]
     ],
@@ -844,6 +847,20 @@
         }
       ],
       [
+        18,
+        {
+          "color_scheme": null,
+          "custom_title": null,
+          "data": null,
+          "id": "debug_print",
+          "open": true,
+          "pos": {
+            "x": 457.6624755859375,
+            "y": 203.76988220214844
+          }
+        }
+      ],
+      [
         19,
         {
           "color_scheme": null,
@@ -851,14 +868,16 @@
           "data": {
             "ids": [],
             "kind": "Start",
-            "node": "Number",
-            "region": "d0079b96-76e6-4cad-bd47-6637258e8e63"
+            "node": [
+              "Number"
+            ],
+            "region": "da0f0c55-8d61-436c-b4b6-db71f4106006"
           },
           "id": "for_each",
           "open": true,
           "pos": {
-            "x": -31.305788040161133,
-            "y": 416.003662109375
+            "x": -81.7075424194336,
+            "y": 412.8106384277344
           }
         }
       ],
@@ -870,14 +889,16 @@
           "data": {
             "ids": [],
             "kind": "End",
-            "node": "Number",
-            "region": "d0079b96-76e6-4cad-bd47-6637258e8e63"
+            "node": [
+              "Number"
+            ],
+            "region": "da0f0c55-8d61-436c-b4b6-db71f4106006"
           },
           "id": "for_each",
           "open": true,
           "pos": {
-            "x": 340.5357360839844,
-            "y": 423.9860534667969
+            "x": 425.52142333984375,
+            "y": 411.9250183105469
           }
         }
       ],
@@ -890,49 +911,14 @@
           "id": "add",
           "open": true,
           "pos": {
-            "x": 167.8137969970703,
-            "y": 408.8988037109375
-          }
-        }
-      ],
-      [
-        22,
-        {
-          "color_scheme": null,
-          "custom_title": null,
-          "data": null,
-          "id": "debug_print",
-          "open": true,
-          "pos": {
-            "x": 610.672119140625,
-            "y": 432.730712890625
+            "x": 165.4471893310547,
+            "y": 406.9107971191406
           }
         }
       ]
     ],
     "outputs": [],
     "regions": [
-      {
-        "color": null,
-        "id": "d0079b96-76e6-4cad-bd47-6637258e8e63",
-        "variables": []
-      },
-      {
-        "color": [
-          164,
-          93,
-          108,
-          0
-        ],
-        "id": "cc826dad-9492-408f-b47b-bc01cf88fcf7",
-        "variables": [
-          {
-            "id": "36a2455f-a238-4c4a-8921-abe6629072e4",
-            "name": "value",
-            "ty": "Number"
-          }
-        ]
-      },
       {
         "color": null,
         "id": "9b0ac69f-bc4c-479e-89d6-9535a6b23ed4",
@@ -978,6 +964,27 @@
             "ty": "Number"
           }
         ]
+      },
+      {
+        "color": [
+          164,
+          93,
+          108,
+          0
+        ],
+        "id": "cc826dad-9492-408f-b47b-bc01cf88fcf7",
+        "variables": [
+          {
+            "id": "36a2455f-a238-4c4a-8921-abe6629072e4",
+            "name": "value",
+            "ty": "Number"
+          }
+        ]
+      },
+      {
+        "color": null,
+        "id": "da0f0c55-8d61-436c-b4b6-db71f4106006",
+        "variables": []
       }
     ]
   },

@@ -25,7 +25,7 @@ use ustr::Ustr;
 use utils::vec_utils::VecOperation;
 use uuid::Uuid;
 
-pub mod for_each;
+pub mod array_ops;
 pub mod repeat;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, EnumIs, Serialize, Deserialize)]
@@ -509,4 +509,16 @@ pub trait RegionalNode: 'static + Debug + Clone + Send + Sync {
 
     fn categories() -> &'static [&'static str];
     fn create() -> Self;
+}
+
+fn remember_variables(
+    state_values: &mut Option<Vec<EValue>>,
+    inputs: &[EValue],
+    outputs: &mut Vec<EValue>,
+) {
+    if let Some(values) = state_values.take() {
+        outputs.extend(values);
+    } else {
+        outputs.extend(inputs.iter().cloned());
+    }
 }

@@ -879,6 +879,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "collection_traits"
+version = "0.1.0"
+dependencies = [
+ "duplicate",
+ "smallvec",
+]
+
+[[package]]
 name = "color-backtrace"
 version = "0.6.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1069,6 +1077,7 @@ dependencies = [
  "ahash",
  "atomic_refcell",
  "camino",
+ "collection_traits",
  "derive_more",
  "diagnostic",
  "downcast-rs 2.0.1",

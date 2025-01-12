@@ -5,9 +5,8 @@ use crate::graph::node::groups::utils::{
 };
 use crate::graph::node::ports::fields::IoDirection;
 use crate::graph::node::ports::{InputData, NodePortType, OutputData};
-use crate::graph::node::{
-    impl_serde_node, ExecutionExtras, ExecutionResult, Node, NodeContext, NodeFactory,
-};
+use crate::graph::node::serde_node::impl_serde_node;
+use crate::graph::node::{ExecutionExtras, ExecutionResult, Node, NodeContext, NodeFactory};
 use crate::value::EValue;
 use egui_snarl::{InPin, NodeId, OutPin};
 use miette::miette;

@@ -7,9 +7,9 @@ use crate::graph::node::ports::fields::{
     get_field, map_inputs, sync_fields, FieldMapper, IoDirection,
 };
 use crate::graph::node::ports::NodePortType;
+use crate::graph::node::serde_node::impl_serde_node;
 use crate::graph::node::{
-    impl_serde_node, ExecutionExtras, ExecutionResult, InputData, Node, NodeContext, NodeFactory,
-    OutputData,
+    ExecutionExtras, ExecutionResult, InputData, Node, NodeContext, NodeFactory, OutputData,
 };
 use crate::project::docs::{Docs, DocsRef};
 use crate::value::id::ETypeId;

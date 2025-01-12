@@ -3,9 +3,9 @@ use crate::etype::eitem::EItemInfo;
 use crate::etype::EDataType;
 use crate::graph::node::commands::{SnarlCommand, SnarlCommands};
 use crate::graph::node::ports::NodePortType;
+use crate::graph::node::serde_node::impl_serde_node;
 use crate::graph::node::{
-    impl_serde_node, ExecutionExtras, ExecutionResult, InputData, Node, NodeContext, NodeFactory,
-    OutputData,
+    ExecutionExtras, ExecutionResult, InputData, Node, NodeContext, NodeFactory, OutputData,
 };
 use crate::value::EValue;
 use egui_snarl::{InPin, InPinId, OutPin, OutPinId};
