@@ -46,6 +46,8 @@
       [
         0,
         {
+          "color_scheme": null,
+          "custom_title": null,
           "data": {
             "ids": [
               "b0c8424a-e57e-4764-b43d-1f78702df68a"
@@ -62,6 +64,8 @@
       [
         1,
         {
+          "color_scheme": null,
+          "custom_title": null,
           "data": {
             "ids": [
               "8bac0f8f-0480-4398-a750-66d5bae33ca7"
@@ -78,6 +82,8 @@
       [
         2,
         {
+          "color_scheme": null,
+          "custom_title": null,
           "data": null,
           "id": "write_item",
           "open": true,

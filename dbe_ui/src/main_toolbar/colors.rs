@@ -2,25 +2,31 @@ use crate::error::report_error;
 use crate::DbeApp;
 use egui::Ui;
 use egui_colors::tokens::ThemeColor;
-use egui_colors::{Colorix, Theme};
+use egui_colors::{ApplyTo, Colorix, Theme};
 use egui_hooks::UseHookExt;
 use miette::miette;
 use std::ops::DerefMut;
 
 pub fn colors_tab(ui: &mut Ui, app: &mut DbeApp) {
-    app.colorix.light_dark_toggle_button(ui);
-    app.colorix.ui_combo_12(ui, false);
-
-    ui.separator();
-
-    change_all_combo(ui, app);
-
-    ui.separator();
-
-    import_export(ui, app);
+    colorix_editor(ui, &mut app.colorix, ApplyTo::Global);
 }
 
-fn change_all_combo(ui: &mut Ui, app: &mut DbeApp) {
+pub fn colorix_editor(ui: &mut Ui, colorix: &mut Colorix, apply_to: ApplyTo) {
+    if matches!(apply_to, ApplyTo::Global) {
+        colorix.light_dark_toggle_button(ui);
+    }
+    colorix.ui_combo_12(ui, false, apply_to);
+
+    ui.separator();
+
+    change_all_combo(ui, colorix, apply_to);
+
+    ui.separator();
+
+    import_export(ui, colorix, apply_to);
+}
+
+fn change_all_combo(ui: &mut Ui, colorix: &mut Colorix, apply_to: ApplyTo) {
     let dropdown_colors: [ThemeColor; 23] = [
         ThemeColor::Gray,
         ThemeColor::EguiBlue,
@@ -80,16 +86,25 @@ fn change_all_combo(ui: &mut Ui, app: &mut DbeApp) {
             });
 
         if change_all {
-            app.colorix = Colorix::init(ui.ctx(), [*color; 12]);
+            *colorix = Colorix::init(ui.ctx(), [*color; 12]);
+            match apply_to {
+                ApplyTo::Global => {
+                    colorix.apply_global(ui.ctx());
+                }
+                ApplyTo::Local => {
+                    colorix.apply_local(ui);
+                }
+                ApplyTo::Nothing => {}
+            }
         }
     });
 }
 
-fn import_export(ui: &mut Ui, app: &mut DbeApp) {
+fn import_export(ui: &mut Ui, colorix: &mut Colorix, apply_to: ApplyTo) {
     let mut text = ui.use_state(|| "".to_string(), ()).into_var();
     ui.horizontal(|ui| {
         if ui.button("Export").clicked() {
-            *text = serde_json5::to_string(app.colorix.theme()).unwrap();
+            *text = serde_json5::to_string(colorix.theme()).unwrap();
         }
         if ui
             .add_enabled(!text.trim().is_empty(), egui::Button::new("Import"))
@@ -97,7 +112,16 @@ fn import_export(ui: &mut Ui, app: &mut DbeApp) {
         {
             match serde_json5::from_str::<Theme>(&text) {
                 Ok(theme) => {
-                    app.colorix = Colorix::init(ui.ctx(), theme);
+                    *colorix = Colorix::init(ui.ctx(), theme);
+                    match apply_to {
+                        ApplyTo::Global => {
+                            colorix.apply_global(ui.ctx());
+                        }
+                        ApplyTo::Local => {
+                            colorix.apply_local(ui);
+                        }
+                        ApplyTo::Nothing => {}
+                    }
                 }
                 Err(e) => {
                     report_error(miette!("Failed to import theme: {}", e));

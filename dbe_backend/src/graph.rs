@@ -1,5 +1,6 @@
 use crate::graph::editing::GraphEditingContext;
 use crate::graph::inputs::{GraphInput, GraphOutput};
+use crate::graph::node::colors::PackedNodeColorScheme;
 use crate::graph::node::commands::SnarlCommands;
 use crate::graph::node::{get_node_factory, NodeContext, SnarlNode};
 use crate::graph::region::region_graph::RegionGraph;
@@ -54,7 +55,10 @@ impl Graph {
 
                 created_node.parse_json(registry, &mut node.data)?;
 
-                let created_node = SnarlNode::new(created_node);
+                let mut created_node = SnarlNode::new(created_node);
+
+                created_node.color_scheme = node.color_scheme.map(|c| c.unpack());
+                created_node.custom_title = node.custom_title;
 
                 let node_id = if node.open {
                     snarl.insert_node(node.pos, created_node)
@@ -219,6 +223,8 @@ impl Graph {
                     .with_context(|| format!("failed to serialize node {:?}", id))?,
                 pos: info.pos,
                 open: info.open,
+                color_scheme: info.value.color_scheme.as_ref().map(|c| c.pack()),
+                custom_title: info.value.custom_title.clone(),
             };
             packed.nodes.push((id, packed_node));
         }
@@ -243,6 +249,26 @@ impl Graph {
 
     pub fn snarl(&self) -> &Snarl<SnarlNode> {
         &self.snarl
+    }
+
+    pub fn snarl_mut(&mut self) -> &mut Snarl<SnarlNode> {
+        &mut self.snarl
+    }
+
+    pub fn snarl_and_context<'a>(
+        &'a mut self,
+        registry: &'a ETypesRegistry,
+    ) -> (&mut Snarl<SnarlNode>, NodeContext<'a>) {
+        (
+            &mut self.snarl,
+            NodeContext {
+                registry,
+                inputs: &self.inputs,
+                outputs: &self.outputs,
+                regions: &self.regions,
+                graphs: None,
+            },
+        )
     }
 
     pub fn inputs(&self) -> &SmallVec<[GraphInput; 1]> {
@@ -301,4 +327,8 @@ struct PackedNode {
     data: JsonValue,
     pos: Pos2,
     open: bool,
+    #[serde(default)]
+    color_scheme: Option<PackedNodeColorScheme>,
+    #[serde(default)]
+    custom_title: Option<String>,
 }

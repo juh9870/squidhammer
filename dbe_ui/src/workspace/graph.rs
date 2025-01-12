@@ -78,22 +78,42 @@ impl<'a> SnarlViewer<SnarlNode> for GraphViewer<'a> {
 
     fn header_frame(
         &mut self,
-        default: Frame,
+        mut default: Frame,
         node: NodeId,
         _inputs: &[InPin],
         _outputs: &[OutPin],
-        _snarl: &Snarl<SnarlNode>,
+        snarl: &Snarl<SnarlNode>,
     ) -> Frame {
         if let Ok(data) = self.ctx.regions_graph.try_as_data() {
             if let Some(node_region) = data.node_region(&node) {
                 if let Some(reg) = self.ctx.regions.get(&node_region) {
                     let color = reg.color();
-                    return default
-                        .stroke(Stroke::new(tweak!(1.0), color.gamma_multiply(tweak!(1.0))));
+                    default =
+                        default.stroke(Stroke::new(tweak!(1.0), color.gamma_multiply(tweak!(1.0))));
                 }
             }
         }
+
+        if let Some(scheme) = &snarl[node].color_scheme {
+            default = default.fill(scheme.theme.tokens.app_background)
+        }
+
         default
+    }
+
+    fn node_style(
+        &mut self,
+        ui: &mut Ui,
+        node: NodeId,
+        _inputs: &[InPin],
+        _outputs: &[OutPin],
+        snarl: &Snarl<SnarlNode>,
+    ) {
+        let Some(scheme) = &snarl[node].color_scheme else {
+            return;
+        };
+
+        scheme.theme.apply_local(ui);
     }
 
     fn node_layout(
