@@ -14,22 +14,12 @@ pub fn edit_io<IO: GraphIoData, const N: usize>(
 ) {
     list_editor::<IO, _>(ui.id().with(id_salt))
         .new_item(new_item)
-        .show_custom(
-            ui,
-            values,
-            |items, i| {
-                items.remove(i);
-            },
-            |items, item| {
-                items.push(item);
-            },
-            |ui, _, item| {
-                ui.horizontal(|ui| {
-                    ui.label("Name");
-                    ui.text_edit_singleline(item.name_mut());
-                });
-            },
-        );
+        .show(ui, values, |ui, _, item| {
+            ui.horizontal(|ui| {
+                ui.label("Name");
+                ui.text_edit_singleline(item.name_mut());
+            });
+        });
 }
 pub fn edit_inputs_outputs(ui: &mut Ui, graph: &mut Graph) {
     ScrollArea::vertical().show(ui, |ui| {

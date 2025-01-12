@@ -363,7 +363,7 @@ impl SnarlCommand {
                     .or_insert_with(|| RegionInfo::new(region))
                     .variables;
 
-                operation.apply_smallvec(vars);
+                operation.apply(vars);
                 if let Ok(data) = ctx.regions_graph.try_as_data() {
                     let data = data.region_data(&region);
                     let start = data.start_node;

@@ -1,3 +1,4 @@
+use collection_traits::Resizable;
 use egui::{Id, Rect, Sense, Separator, Ui, Vec2, Widget};
 pub use egui_dnd::ItemState;
 use egui_dnd::{dnd, DragDropItem};
@@ -23,10 +24,10 @@ impl<T> DragDropItem for DragWrapper<T> {
 impl<T, NewItem: Fn(usize) -> T, CanDelete: Fn(usize, T) -> bool, IdSource: Hash>
     ListEditor<T, NewItem, CanDelete, IdSource>
 {
-    pub fn show(
+    pub fn show<Collection: AsMut<[T]> + Resizable<Item = T>>(
         self,
         ui: &mut Ui,
-        items: &mut Vec<T>,
+        items: &mut Collection,
         display: impl FnMut(&mut Ui, ItemState, &mut T),
     ) {
         self.show_custom(

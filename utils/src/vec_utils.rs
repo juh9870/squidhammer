@@ -1,4 +1,4 @@
-use smallvec::SmallVec;
+use collection_traits::Resizable;
 
 #[derive(Debug, Copy, Clone)]
 pub enum VecOperation<T> {
@@ -11,39 +11,29 @@ pub enum VecOperation<T> {
     Swap(usize, usize),
 }
 
-macro_rules! apply_fn {
-    ($self:ident, $vec:ident) => {
-        match $self {
+impl<T> VecOperation<T> {
+    pub fn apply<Col: AsMut<[T]> + Resizable<Item = T>>(self, vec: &mut Col) {
+        match self {
             VecOperation::ShiftRemove(idx) => {
-                $vec.remove(idx);
+                vec.remove(idx);
             }
             VecOperation::SwapRemove(idx) => {
-                $vec.swap_remove(idx);
+                vec.swap_remove(idx);
             }
-            VecOperation::Push(data) => $vec.push(data),
-            VecOperation::Insert(idx, data) => $vec.insert(idx, data),
-            VecOperation::Replace(idx, data) => $vec[idx] = data,
+            VecOperation::Push(data) => vec.push(data),
+            VecOperation::Insert(idx, data) => vec.insert(idx, data),
+            VecOperation::Replace(idx, data) => vec.as_mut()[idx] = data,
             VecOperation::Move(from, to) => {
                 if to == from {
                     return;
                 }
-                let data = $vec.remove(from);
-                $vec.insert(to, data);
+                let data = vec.remove(from);
+                vec.insert(to, data);
             }
             VecOperation::Swap(from, to) => {
-                $vec.swap(from, to);
+                vec.as_mut().swap(from, to);
             }
         }
-    };
-}
-
-impl<T> VecOperation<T> {
-    pub fn apply_vec(self, vec: &mut Vec<T>) {
-        apply_fn!(self, vec);
-    }
-
-    pub fn apply_smallvec<const N: usize>(self, vec: &mut SmallVec<[T; N]>) {
-        apply_fn!(self, vec);
     }
 }
 
