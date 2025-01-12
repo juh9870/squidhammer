@@ -37,6 +37,7 @@ use strum::EnumIs;
 use ustr::{Ustr, UstrMap};
 use uuid::Uuid;
 
+pub mod colors;
 pub mod commands;
 pub mod editable_state;
 pub mod enum_node;
@@ -133,12 +134,25 @@ pub struct NodeContext<'a> {
 #[derive(Debug)]
 pub struct SnarlNode {
     pub node: Box<dyn Node>,
-    // pub region: Option<Uuid>,
+    pub color_scheme: Option<NodeColorScheme>,
+    pub custom_title: Option<String>,
 }
 
 impl SnarlNode {
     pub fn new(node: Box<dyn Node>) -> Self {
-        Self { node }
+        Self {
+            node,
+            color_scheme: None,
+            custom_title: None,
+        }
+    }
+
+    pub fn title(&self, context: NodeContext, docs: &Docs) -> String {
+        if let Some(title) = &self.custom_title {
+            title.clone()
+        } else {
+            self.node.title(context, docs)
+        }
     }
 }
 
@@ -465,6 +479,7 @@ macro_rules! impl_serde_node {
     };
 }
 
+use crate::graph::node::colors::NodeColorScheme;
 use crate::graph::node::regional::repeat::RepeatRegionalNode;
 use crate::graph::node::regional::RegionalNodeFactory;
 use crate::graph::region::RegionInfo;

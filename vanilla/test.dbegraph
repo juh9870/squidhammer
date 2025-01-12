@@ -425,6 +425,8 @@
       [
         0,
         {
+          "color_scheme": null,
+          "custom_title": null,
           "data": null,
           "id": "add",
           "open": true,
@@ -437,6 +439,8 @@
       [
         1,
         {
+          "color_scheme": null,
+          "custom_title": null,
           "data": null,
           "id": "subtract",
           "open": true,
@@ -449,6 +453,8 @@
       [
         2,
         {
+          "color_scheme": null,
+          "custom_title": null,
           "data": null,
           "id": "multiply",
           "open": true,
@@ -461,6 +467,8 @@
       [
         3,
         {
+          "color_scheme": null,
+          "custom_title": null,
           "data": {
             "variant": {
               "ident": "eh:item",
@@ -478,6 +486,8 @@
       [
         4,
         {
+          "color_scheme": null,
+          "custom_title": null,
           "data": {
             "fields": [
               "Id",
@@ -496,6 +506,24 @@
       [
         5,
         {
+          "color_scheme": {
+            "dark_mode": true,
+            "theme": [
+              "EguiBlue",
+              "EguiBlue",
+              "EguiBlue",
+              "EguiBlue",
+              "EguiBlue",
+              "EguiBlue",
+              "EguiBlue",
+              "EguiBlue",
+              "EguiBlue",
+              "EguiBlue",
+              "EguiBlue",
+              "EguiBlue"
+            ]
+          },
+          "custom_title": "Main Component",
           "data": {
             "fields": [
               "Name",
@@ -531,6 +559,8 @@
       [
         6,
         {
+          "color_scheme": null,
+          "custom_title": null,
           "data": {
             "fields": [
               "r",
@@ -551,6 +581,8 @@
       [
         7,
         {
+          "color_scheme": null,
+          "custom_title": null,
           "data": {
             "variant": {
               "ident": "sys:optional<Item=sys:ids/numeric_ref<Id='eh:objects/device'>>",
@@ -568,6 +600,8 @@
       [
         8,
         {
+          "color_scheme": null,
+          "custom_title": null,
           "data": {
             "fields": [
               "id"
@@ -585,6 +619,8 @@
       [
         9,
         {
+          "color_scheme": null,
+          "custom_title": null,
           "data": {
             "item": {
               "Object": {
@@ -603,6 +639,8 @@
       [
         10,
         {
+          "color_scheme": null,
+          "custom_title": null,
           "data": {
             "item": {
               "Const": {
@@ -621,6 +659,8 @@
       [
         11,
         {
+          "color_scheme": null,
+          "custom_title": null,
           "data": {
             "fields": [
               "id"
@@ -638,6 +678,8 @@
       [
         12,
         {
+          "color_scheme": null,
+          "custom_title": null,
           "data": {
             "graph_id": "b3ac2cd9-06f0-4f01-9ef1-b84365b6b640",
             "input_types": [
@@ -672,6 +714,8 @@
       [
         13,
         {
+          "color_scheme": null,
+          "custom_title": null,
           "data": null,
           "id": "mappings",
           "open": true,
@@ -684,6 +728,8 @@
       [
         14,
         {
+          "color_scheme": null,
+          "custom_title": null,
           "data": {
             "fields": [
               "id"
@@ -701,6 +747,8 @@
       [
         15,
         {
+          "color_scheme": null,
+          "custom_title": null,
           "data": {
             "ids": [
               "36a2455f-a238-4c4a-8921-abe6629072e4"
@@ -720,6 +768,8 @@
       [
         16,
         {
+          "color_scheme": null,
+          "custom_title": null,
           "data": {
             "ids": [
               "36a2455f-a238-4c4a-8921-abe6629072e4"
@@ -739,6 +789,8 @@
       [
         17,
         {
+          "color_scheme": null,
+          "custom_title": null,
           "data": null,
           "id": "add",
           "open": true,
@@ -751,6 +803,8 @@
       [
         18,
         {
+          "color_scheme": null,
+          "custom_title": null,
           "data": null,
           "id": "debug_print",
           "open": true,
@@ -763,6 +817,22 @@
     ],
     "outputs": [],
     "regions": [
+      {
+        "color": [
+          164,
+          93,
+          108,
+          0
+        ],
+        "id": "cc826dad-9492-408f-b47b-bc01cf88fcf7",
+        "variables": [
+          {
+            "id": "36a2455f-a238-4c4a-8921-abe6629072e4",
+            "name": "value",
+            "ty": "Number"
+          }
+        ]
+      },
       {
         "color": null,
         "id": "9b0ac69f-bc4c-479e-89d6-9535a6b23ed4",
@@ -804,22 +874,6 @@
           },
           {
             "id": "d85169e0-cb06-4647-9427-2ee673edc051",
-            "name": "value",
-            "ty": "Number"
-          }
-        ]
-      },
-      {
-        "color": [
-          164,
-          93,
-          108,
-          0
-        ],
-        "id": "cc826dad-9492-408f-b47b-bc01cf88fcf7",
-        "variables": [
-          {
-            "id": "36a2455f-a238-4c4a-8921-abe6629072e4",
             "name": "value",
             "ty": "Number"
           }

@@ -213,6 +213,8 @@
       [
         0,
         {
+          "color_scheme": null,
+          "custom_title": null,
           "data": {
             "graph_id": "b3ac2cd9-06f0-4f01-9ef1-b84365b6b640",
             "input_types": [
@@ -247,6 +249,8 @@
       [
         1,
         {
+          "color_scheme": null,
+          "custom_title": null,
           "data": {
             "variant": {
               "ident": "eh:item",
@@ -264,6 +268,8 @@
       [
         2,
         {
+          "color_scheme": null,
+          "custom_title": null,
           "data": {
             "fields": [
               "Id",
@@ -282,6 +288,8 @@
       [
         3,
         {
+          "color_scheme": null,
+          "custom_title": null,
           "data": {
             "fields": [
               "Body",
@@ -303,6 +311,8 @@
       [
         4,
         {
+          "color_scheme": null,
+          "custom_title": null,
           "data": {
             "item": {
               "Object": {
@@ -321,6 +331,8 @@
       [
         5,
         {
+          "color_scheme": null,
+          "custom_title": null,
           "data": {
             "fields": [
               "Type",
@@ -341,6 +353,8 @@
       [
         6,
         {
+          "color_scheme": null,
+          "custom_title": null,
           "data": {
             "item": {
               "Object": {
@@ -359,6 +373,8 @@
       [
         7,
         {
+          "color_scheme": null,
+          "custom_title": null,
           "data": {
             "variant": {
               "ident": "eh:objects/weapon/bullet_trigger",
@@ -376,6 +392,8 @@
       [
         8,
         {
+          "color_scheme": null,
+          "custom_title": null,
           "data": {
             "fields": [
               "Type",

@@ -120,6 +120,7 @@ impl DbeApp {
                 }
 
                 self.colorix = Colorix::init(ctx, storage.theme);
+                self.colorix.apply_global(ctx);
 
                 ctx.set_visuals(egui::Visuals {
                     dark_mode: storage.dark_mode,
