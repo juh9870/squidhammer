@@ -54,7 +54,7 @@ impl ExpressionNode {
             fields,
             &mut self.variables,
             id,
-            IoDirection::Input,
+            IoDirection::Input(0),
         );
 
         Ok(())

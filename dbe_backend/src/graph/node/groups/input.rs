@@ -52,7 +52,7 @@ impl Node for GroupInputNode {
             &mut self.ids,
             None,
             id,
-            IoDirection::Output,
+            IoDirection::Output(0),
         );
 
         debug_assert_eq!(

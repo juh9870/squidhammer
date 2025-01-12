@@ -59,7 +59,7 @@ impl FormatNode {
             fields.as_slice(),
             &mut self.keys,
             id,
-            IoDirection::Input,
+            IoDirection::Input(0),
         );
 
         Ok(())

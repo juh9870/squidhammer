@@ -90,6 +90,7 @@ pub fn sync_fields<Mapper: FieldMapper>(
 /// * `matcher` - Equality function to compare the field with the local representation
 /// * `to_local` - Function to convert the field to the local representation
 /// * `to_type` - Function to convert the field to the type
+/// * `offset` - The offset of the fields in the node
 pub fn sync_fields_and_types<Mapper: FieldMapper>(
     mapper: &Mapper,
     commands: &mut SnarlCommands,
@@ -129,7 +130,7 @@ pub fn sync_fields_and_types<Mapper: FieldMapper>(
         if io.is_output() {
             commands.push(SnarlCommand::DropOutputs {
                 from: OutPinId {
-                    output: drop_pos,
+                    output: drop_pos + io.output_offset(),
                     node: node_id,
                 },
             })
@@ -137,13 +138,13 @@ pub fn sync_fields_and_types<Mapper: FieldMapper>(
         if io.is_input() {
             commands.push(SnarlCommand::DeletePinValue {
                 pin: InPinId {
-                    input: drop_pos,
+                    input: drop_pos + io.input_offset(),
                     node: node_id,
                 },
             });
             commands.push(SnarlCommand::DropInputs {
                 to: InPinId {
-                    input: drop_pos,
+                    input: drop_pos + io.input_offset(),
                     node: node_id,
                 },
             })
@@ -155,20 +156,24 @@ pub fn sync_fields_and_types<Mapper: FieldMapper>(
             commands.push(SnarlCommand::OutputsRearrangedRaw {
                 node: node_id,
                 indices: rearrangements.clone(),
+                offset: io.output_offset(),
             });
             commands.push(SnarlCommand::InputsRearrangedRaw {
                 node: node_id,
                 indices: rearrangements,
+                offset: io.input_offset(),
             });
         } else if io.is_output() {
             commands.push(SnarlCommand::OutputsRearrangedRaw {
                 node: node_id,
                 indices: rearrangements,
+                offset: io.output_offset(),
             })
         } else if io.is_input() {
             commands.push(SnarlCommand::InputsRearrangedRaw {
                 node: node_id,
                 indices: rearrangements,
+                offset: io.input_offset(),
             })
         }
     }
@@ -261,22 +266,41 @@ pub fn map_outputs<Mapper: FieldMapper>(
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum IoDirection {
-    Input,
-    Output,
-    Both,
+    Input(usize),
+    Output(usize),
+    Both {
+        input_offset: usize,
+        output_offset: usize,
+    },
 }
 
 impl IoDirection {
     pub fn is_input(&self) -> bool {
-        matches!(self, IoDirection::Input | IoDirection::Both)
+        matches!(self, IoDirection::Input(..) | IoDirection::Both { .. })
     }
 
     pub fn is_output(&self) -> bool {
-        matches!(self, IoDirection::Output | IoDirection::Both)
+        matches!(self, IoDirection::Output(..) | IoDirection::Both { .. })
     }
 
     pub fn is_both(&self) -> bool {
-        matches!(self, IoDirection::Both)
+        matches!(self, IoDirection::Both { .. })
+    }
+
+    fn input_offset(&self) -> usize {
+        match self {
+            IoDirection::Input(offset) => *offset,
+            IoDirection::Output(_) => 0,
+            IoDirection::Both { input_offset, .. } => *input_offset,
+        }
+    }
+
+    fn output_offset(&self) -> usize {
+        match self {
+            IoDirection::Input(_) => 0,
+            IoDirection::Output(offset) => *offset,
+            IoDirection::Both { output_offset, .. } => *output_offset,
+        }
     }
 }
 
@@ -364,7 +388,7 @@ mod tests {
             &mut locals,
             Some(&mut types),
             NodeId(0),
-            IoDirection::Input,
+            IoDirection::Input(0),
         );
 
         assert_eq!(locals, locals_og);
