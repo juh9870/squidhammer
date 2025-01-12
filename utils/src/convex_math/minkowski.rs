@@ -51,7 +51,7 @@ pub fn minkowski(mut p: Vec<Pos2>, mut q: Vec<Pos2>) -> Vec<Pos2> {
     result
 }
 
-fn reorder_polygon(points: &mut Vec<Pos2>) {
+fn reorder_polygon(points: &mut [Pos2]) {
     let mut pos = 0;
     for i in 1..points.len() {
         if points[i].y < points[pos].y
