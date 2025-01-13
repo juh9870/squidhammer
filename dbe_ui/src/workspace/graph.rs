@@ -88,8 +88,10 @@ impl<'a> SnarlViewer<SnarlNode> for GraphViewer<'a> {
             if let Some(node_region) = data.node_region(&node) {
                 if let Some(reg) = self.ctx.regions.get(&node_region) {
                     let color = reg.color();
-                    default =
-                        default.stroke(Stroke::new(tweak!(1.0), color.gamma_multiply(tweak!(1.0))));
+                    default = default.stroke(Stroke::new(
+                        default.stroke.width,
+                        color.gamma_multiply(tweak!(1.0)),
+                    ));
                 }
             }
         }
