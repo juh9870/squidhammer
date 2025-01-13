@@ -18,6 +18,7 @@ pub type ListForEachNode = ForEachLikeRegionalNode<{ ForEachKind::ForEach as u8 
 pub type ListMapNode = ForEachLikeRegionalNode<{ ForEachKind::Map as u8 }>;
 pub type ListFilterNode = ForEachLikeRegionalNode<{ ForEachKind::Filter as u8 }>;
 pub type ListFilterMapNode = ForEachLikeRegionalNode<{ ForEachKind::FilterMap as u8 }>;
+pub type ListFlatMapNode = ForEachLikeRegionalNode<{ ForEachKind::FlatMap as u8 }>;
 
 #[derive(Debug, Clone)]
 pub struct ForEachLikeRegionalNode<const KIND: u8> {
@@ -39,6 +40,7 @@ enum ForEachKind {
     Map,
     Filter,
     FilterMap,
+    FlatMap,
 }
 
 impl ForEachKind {
@@ -48,13 +50,17 @@ impl ForEachKind {
             1 => Self::Map,
             2 => Self::Filter,
             3 => Self::FilterMap,
+            4 => Self::FlatMap,
             _ => unreachable!(),
         }
     }
 }
 
 fn is_map(kind: u8) -> bool {
-    kind == ForEachKind::Map as u8 || kind == ForEachKind::FilterMap as u8
+    match ForEachKind::of(kind) {
+        ForEachKind::Map | ForEachKind::FilterMap | ForEachKind::FlatMap => true,
+        ForEachKind::ForEach | ForEachKind::Filter => false,
+    }
 }
 
 fn is_filter(kind: u8) -> bool {
@@ -80,6 +86,7 @@ impl<const KIND: u8> ArrayOpRepeatNode for ForEachLikeRegionalNode<KIND> {
             ForEachKind::Map => "list_map".into(),
             ForEachKind::Filter => "list_filter".into(),
             ForEachKind::FilterMap => "list_filter_map".into(),
+            ForEachKind::FlatMap => "flat_map".into(),
         }
     }
 
@@ -91,6 +98,7 @@ impl<const KIND: u8> ArrayOpRepeatNode for ForEachLikeRegionalNode<KIND> {
                 ForEachKind::Map => &["value"],
                 ForEachKind::Filter => &["condition"],
                 ForEachKind::FilterMap => &["value", "condition"],
+                ForEachKind::FlatMap => &["values"],
             },
         }
     }
@@ -133,6 +141,7 @@ impl<const KIND: u8> ArrayOpRepeatNode for ForEachLikeRegionalNode<KIND> {
                     ArrayOpField::Value(&self.output_ty),
                     ArrayOpField::Fixed(EDataType::Boolean)
                 ],
+                ForEachKind::FlatMap => smallvec![ArrayOpField::List(&self.output_ty)],
             },
         }
     }
@@ -165,6 +174,7 @@ impl<const KIND: u8> ArrayOpRepeatNode for ForEachLikeRegionalNode<KIND> {
                     ArrayOpFieldMut::Value(&mut self.output_ty),
                     ArrayOpFieldMut::Fixed(EDataType::Boolean)
                 ],
+                ForEachKind::FlatMap => smallvec![ArrayOpFieldMut::List(&mut self.output_ty)],
             },
         }
     }
@@ -296,14 +306,19 @@ impl<const KIND: u8> ArrayOpRepeatNode for ForEachLikeRegionalNode<KIND> {
                             state.output.push(inputs[0].clone());
                         }
                     }
+                    ForEachKind::FlatMap => {
+                        let EValue::List { values, .. } = &inputs[0] else {
+                            bail!("Expected list input, got: {}", inputs[0].ty().name());
+                        };
+                        state.output.extend(values.iter().cloned());
+                    }
                 }
             }
             state.index += 1;
 
             let skip_n = match self.kind() {
                 ForEachKind::ForEach => 0,
-                ForEachKind::Map => 1,
-                ForEachKind::Filter => 1,
+                ForEachKind::Map | ForEachKind::Filter | ForEachKind::FlatMap => 1,
                 ForEachKind::FilterMap => 2,
             };
             if state.index >= state.length {
