@@ -1,5 +1,6 @@
 use crate::etype::EDataType;
-use crate::graph::node::regional::array_ops::{array_op_io, ArrayOpRepeatNode};
+use crate::graph::node::regional::array_ops::macros::array_op_io;
+use crate::graph::node::regional::array_ops::ArrayOpRepeatNode;
 use crate::graph::node::regional::{remember_variables, RegionIoKind};
 use crate::graph::node::variables::ExecutionExtras;
 use crate::graph::node::{ExecutionResult, NodeContext};
@@ -20,7 +21,7 @@ impl ArrayOpRepeatNode for ConstructListNode {
 
     fn input_names(&self, kind: RegionIoKind) -> &[&str] {
         match kind {
-            RegionIoKind::Start => &["indices"],
+            RegionIoKind::Start => &["length"],
             RegionIoKind::End => &["value"],
         }
     }
@@ -41,8 +42,8 @@ impl ArrayOpRepeatNode for ConstructListNode {
 
     array_op_io! {
         outputs {
-            Start => [2; Fixed(EDataType::Number)],
-            End => [2; List(self.output_ty)]
+            Start => [Fixed(EDataType::Number)],
+            End => [List(self.output_ty)]
         }
     }
 
@@ -84,8 +85,10 @@ impl ArrayOpRepeatNode for ConstructListNode {
         } else {
             let state = get_region_execution_data::<ConstructNodeState>(region, variables)?;
 
+            if state.repeats > 0 {
+                state.output.push(inputs[0].clone());
+            }
             state.current += 1;
-            state.output.push(inputs[0].clone());
 
             if state.current >= state.repeats {
                 outputs.clear();

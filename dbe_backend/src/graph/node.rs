@@ -15,7 +15,7 @@ use crate::graph::node::mappings::MappingsNodeFactory;
 use crate::graph::node::ports::{InputData, NodePortType, OutputData};
 use crate::graph::node::regional::array_ops::construct::ConstructListNode;
 use crate::graph::node::regional::array_ops::for_each::{
-    ListFilterMapNode, ListFilterNode, ListForEachNode, ListMapNode,
+    ListFilterMapNode, ListFilterNode, ListFlatMapNode, ListForEachNode, ListMapNode,
 };
 use crate::graph::node::regional::repeat::RepeatNode;
 use crate::graph::node::regional::RegionalNodeFactory;
@@ -101,6 +101,7 @@ fn default_nodes() -> impl Iterator<Item = (Ustr, Arc<dyn NodeFactory>)> {
     v.push(Arc::new(RegionalNodeFactory::<ListMapNode>::INSTANCE));
     v.push(Arc::new(RegionalNodeFactory::<ListFilterMapNode>::INSTANCE));
     v.push(Arc::new(RegionalNodeFactory::<ConstructListNode>::INSTANCE));
+    v.push(Arc::new(RegionalNodeFactory::<ListFlatMapNode>::INSTANCE));
     v.into_iter().map(|item| (Ustr::from(&item.id()), item))
 }
 
