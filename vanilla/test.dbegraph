@@ -228,7 +228,7 @@
         },
         {
           "input": 0,
-          "node": 25
+          "node": 24
         }
       ],
       [
@@ -238,17 +238,57 @@
         },
         {
           "input": 0,
-          "node": 26
+          "node": 25
         }
       ],
       [
         {
-          "node": 25,
+          "node": 24,
           "output": 0
         },
         {
           "input": 1,
           "node": 23
+        }
+      ],
+      [
+        {
+          "node": 26,
+          "output": 0
+        },
+        {
+          "input": 0,
+          "node": 29
+        }
+      ],
+      [
+        {
+          "node": 26,
+          "output": 2
+        },
+        {
+          "input": 1,
+          "node": 29
+        }
+      ],
+      [
+        {
+          "node": 27,
+          "output": 0
+        },
+        {
+          "input": 0,
+          "node": 28
+        }
+      ],
+      [
+        {
+          "node": 29,
+          "output": 0
+        },
+        {
+          "input": 0,
+          "node": 27
         }
       ]
     ],
@@ -503,9 +543,25 @@
       [
         {
           "input": 1,
-          "node": 25
+          "node": 24
         },
         1
+      ],
+      [
+        {
+          "input": 0,
+          "node": 26
+        },
+        [
+          1
+        ]
+      ],
+      [
+        {
+          "input": 1,
+          "node": 26
+        },
+        0
       ]
     ],
     "inputs": [
@@ -1035,7 +1091,7 @@
         }
       ],
       [
-        25,
+        24,
         {
           "color_scheme": null,
           "custom_title": null,
@@ -1049,7 +1105,7 @@
         }
       ],
       [
-        26,
+        25,
         {
           "color_scheme": null,
           "custom_title": null,
@@ -1059,6 +1115,87 @@
           "pos": {
             "x": 744.601318359375,
             "y": 354.027587890625
+          }
+        }
+      ],
+      [
+        26,
+        {
+          "color_scheme": null,
+          "custom_title": null,
+          "data": {
+            "ids": [
+              "a59280b3-0c19-470e-91c9-abdbd54975da"
+            ],
+            "kind": "Start",
+            "node": [
+              [
+                "Number"
+              ],
+              [
+                "Number",
+                "Number"
+              ]
+            ],
+            "region": "bae409fb-dfd7-41d2-91ec-68191c16f4a0"
+          },
+          "id": "for_each",
+          "open": true,
+          "pos": {
+            "x": -98.55531311035156,
+            "y": 936.724609375
+          }
+        }
+      ],
+      [
+        27,
+        {
+          "color_scheme": null,
+          "custom_title": null,
+          "data": {
+            "ids": [
+              "a59280b3-0c19-470e-91c9-abdbd54975da"
+            ],
+            "kind": "End",
+            "node": [
+              [],
+              []
+            ],
+            "region": "bae409fb-dfd7-41d2-91ec-68191c16f4a0"
+          },
+          "id": "for_each",
+          "open": true,
+          "pos": {
+            "x": 201.44468688964844,
+            "y": 936.724609375
+          }
+        }
+      ],
+      [
+        28,
+        {
+          "color_scheme": null,
+          "custom_title": null,
+          "data": null,
+          "id": "debug_print",
+          "open": true,
+          "pos": {
+            "x": 546.622314453125,
+            "y": 985.51171875
+          }
+        }
+      ],
+      [
+        29,
+        {
+          "color_scheme": null,
+          "custom_title": null,
+          "data": null,
+          "id": "add",
+          "open": true,
+          "pos": {
+            "x": 76.35995483398438,
+            "y": 984.7509155273438
           }
         }
       ]
@@ -1083,18 +1220,29 @@
       },
       {
         "color": null,
-        "id": "b17a2025-3591-4e30-a36a-81a608c24673",
+        "id": "ce74a1f9-1b5b-4612-8423-cf8ff8ffc2c2",
         "variables": []
       },
       {
         "color": null,
-        "id": "ce74a1f9-1b5b-4612-8423-cf8ff8ffc2c2",
+        "id": "b17a2025-3591-4e30-a36a-81a608c24673",
         "variables": []
       },
       {
         "color": null,
         "id": "9c20bb76-fc1a-458d-bb93-ff6629185c5f",
         "variables": []
+      },
+      {
+        "color": null,
+        "id": "bae409fb-dfd7-41d2-91ec-68191c16f4a0",
+        "variables": [
+          {
+            "id": "a59280b3-0c19-470e-91c9-abdbd54975da",
+            "name": "value",
+            "ty": "Number"
+          }
+        ]
       },
       {
         "color": null,

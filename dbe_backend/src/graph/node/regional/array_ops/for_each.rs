@@ -247,6 +247,10 @@ impl<const MAP: bool, const FILTER: bool> ArrayOpRepeatNode
 
             remember_variables(&mut state.values, &inputs[1..], outputs);
 
+            // if !MAP && !FILTER {
+            //     debug!(?outputs, state.index, state.length, "ForEachNode start");
+            // }
+
             Ok(ExecutionResult::Done)
         } else {
             let state = get_region_execution_data::<ForEachNodeState>(region, variables)?;
@@ -276,6 +280,12 @@ impl<const MAP: bool, const FILTER: bool> ArrayOpRepeatNode
             }
             state.index += 1;
 
+            let skip_n = match self.kind() {
+                ForEachKind::ForEach => 0,
+                ForEachKind::Map => 1,
+                ForEachKind::Filter => 1,
+                ForEachKind::FilterMap => 2,
+            };
             if state.index >= state.length {
                 outputs.clear();
                 if MAP {
@@ -293,11 +303,11 @@ impl<const MAP: bool, const FILTER: bool> ArrayOpRepeatNode
                             .list_id_of(self.input_ty.unwrap_or_else(EDataType::null)),
                     });
                 }
-                outputs.extend(inputs.iter().skip(1).cloned());
+                outputs.extend(inputs.iter().skip(skip_n).cloned());
                 variables.remove_region_data(region);
                 Ok(ExecutionResult::Done)
             } else {
-                state.values = Some(inputs.iter().skip(1).cloned().collect_vec());
+                state.values = Some(inputs.iter().skip(skip_n).cloned().collect_vec());
                 Ok(ExecutionResult::RerunRegion { region })
             }
         }
