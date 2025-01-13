@@ -6,7 +6,7 @@ use dbe_backend::graph::region::RegionVariable;
 use dbe_backend::graph::Graph;
 use dbe_backend::project::docs::{Docs, DocsRef};
 use dbe_backend::registry::ETypesRegistry;
-use egui::{CollapsingHeader, Color32, ScrollArea, Ui};
+use egui::{CollapsingHeader, ScrollArea, Ui};
 use egui_colors::{ApplyTo, Colorix};
 use egui_snarl::NodeId;
 use uuid::Uuid;
@@ -136,7 +136,8 @@ pub fn edit_node_region(
                 docs_label(ui, "Region Color", docs, registry, DocsRef::Custom("Color of the region as visible in graph editor. If not set, a random color will be used".into()));
             },
             |ui, color| {
-                rgb_edit(ui, color);
+                ui.color_edit_button_srgba(color);
+                // rgb_edit(ui, color);
             },
         );
     });
@@ -192,11 +193,4 @@ fn edit_opt<T>(
             edit(ui, &mut default_value);
         });
     }
-}
-
-fn rgb_edit(ui: &mut Ui, color: &mut Color32) {
-    let rgba = color.to_array();
-    let mut rgb = [rgba[0], rgba[1], rgba[2]];
-    ui.color_edit_button_srgb(&mut rgb);
-    *color = Color32::from_rgb(rgb[0], rgb[1], rgb[2]);
 }
