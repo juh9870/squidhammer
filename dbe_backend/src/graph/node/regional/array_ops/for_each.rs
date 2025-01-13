@@ -105,7 +105,7 @@ impl<const KIND: u8> ArrayOpRepeatNode for ForEachLikeRegionalNode<KIND> {
 
     fn output_names(&self, kind: RegionIoKind) -> &[&str] {
         match kind {
-            RegionIoKind::Start => &["value", "index"],
+            RegionIoKind::Start => &["value", "index", "length"],
             RegionIoKind::End => {
                 if is_map(KIND) || is_filter(KIND) {
                     &["values"]
@@ -149,7 +149,7 @@ impl<const KIND: u8> ArrayOpRepeatNode for ForEachLikeRegionalNode<KIND> {
     fn outputs(&self, kind: RegionIoKind) -> impl AsRef<[ArrayOpField]> {
         match kind {
             RegionIoKind::Start => {
-                smallvec_n![2;ArrayOpField::Value(&self.input_ty), ArrayOpField::Fixed(EDataType::Number)]
+                smallvec_n![2;ArrayOpField::Value(&self.input_ty), ArrayOpField::Fixed(EDataType::Number), ArrayOpField::Fixed(EDataType::Number)]
             }
             RegionIoKind::End => {
                 if is_map(KIND) {
@@ -182,7 +182,7 @@ impl<const KIND: u8> ArrayOpRepeatNode for ForEachLikeRegionalNode<KIND> {
     fn outputs_mut(&mut self, kind: RegionIoKind) -> impl AsMut<[ArrayOpFieldMut]> {
         match kind {
             RegionIoKind::Start => {
-                smallvec_n![2;ArrayOpFieldMut::Value(&mut self.input_ty), ArrayOpFieldMut::Fixed(EDataType::Number)]
+                smallvec_n![2;ArrayOpFieldMut::Value(&mut self.input_ty), ArrayOpFieldMut::Fixed(EDataType::Number), ArrayOpFieldMut::Fixed(EDataType::Number)]
             }
             RegionIoKind::End => {
                 if is_map(KIND) {
@@ -274,6 +274,7 @@ impl<const KIND: u8> ArrayOpRepeatNode for ForEachLikeRegionalNode<KIND> {
                 }
             }
             outputs.push(ENumber::from(state.index as f64).into());
+            outputs.push(ENumber::from(state.length as f64).into());
 
             remember_variables(&mut state.values, &inputs[1..], outputs);
 
