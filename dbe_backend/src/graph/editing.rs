@@ -33,6 +33,7 @@ macro_rules! node_context {
             inputs: $source.inputs,
             outputs: $source.outputs,
             regions: $source.regions,
+            region_graph: $source.region_graph,
             graphs: $source.graphs,
         }
     };
@@ -100,7 +101,7 @@ impl<'a, 'snarl> GraphEditingContext<'a, 'snarl> {
             self.ctx.input_values,
             self.ctx.output_values,
             self.ctx.regions,
-            self.ctx.regions_graph,
+            self.ctx.region_graph,
         )
     }
 
@@ -291,12 +292,12 @@ impl<'a, 'snarl> GraphEditingContext<'a, 'snarl> {
     }
 
     pub fn mark_dirty(&mut self) {
-        self.regions_graph.mark_dirty();
+        self.region_graph.mark_dirty();
     }
 
     pub fn ensure_regions_graph_ready(&mut self) -> &mut RegionGraph {
-        self.ctx.regions_graph.ensure_ready(self.snarl);
-        self.regions_graph
+        self.ctx.region_graph.ensure_ready(self.snarl);
+        self.region_graph
     }
 }
 
@@ -306,7 +307,7 @@ pub struct PartialGraphEditingContext<'a> {
     pub inputs: &'a mut SmallVec<[GraphInput; 1]>,
     pub outputs: &'a mut SmallVec<[GraphOutput; 1]>,
     pub regions: &'a mut AHashMap<Uuid, RegionInfo>,
-    pub regions_graph: &'a mut RegionGraph,
+    pub region_graph: &'a mut RegionGraph,
     pub registry: &'a ETypesRegistry,
     pub docs: &'a Docs,
     pub graphs: Option<&'a ProjectGraphs>,
@@ -344,7 +345,7 @@ impl<'a> PartialGraphEditingContext<'a> {
                 outputs: &mut graph.outputs,
                 output_values,
                 regions: &mut graph.regions,
-                regions_graph: &mut graph.region_graph,
+                region_graph: &mut graph.region_graph,
             },
             &mut graph.snarl,
         )
@@ -372,7 +373,7 @@ impl<'a> PartialGraphEditingContext<'a> {
                 output_values: self.output_values,
                 is_node_group: self.is_node_group,
                 regions: self.regions,
-                regions_graph: self.regions_graph,
+                region_graph: self.region_graph,
             },
         }
     }

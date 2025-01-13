@@ -136,6 +136,7 @@ impl Graph {
         })
         .context("failed to connect pins")?;
 
+        let mut region_graph = RegionGraph::default();
         m_try(|| {
             for (mut in_pin, mut value) in packed.inline_values {
                 in_pin.node = *mapping
@@ -154,6 +155,7 @@ impl Graph {
                             inputs: &graph.inputs,
                             outputs: &graph.outputs,
                             regions: &graph.regions,
+                            region_graph: &region_graph,
                             graphs: None,
                         },
                         in_pin.input,
@@ -179,7 +181,8 @@ impl Graph {
         })
         .context("failed to populate inputs")?;
 
-        graph.region_graph = RegionGraph::build_regions_graph(&graph.snarl);
+        region_graph.force_rebuild(&graph.snarl);
+        graph.region_graph = region_graph;
 
         Ok(graph)
     }
@@ -266,6 +269,7 @@ impl Graph {
                 inputs: &self.inputs,
                 outputs: &self.outputs,
                 regions: &self.regions,
+                region_graph: &self.region_graph,
                 graphs: None,
             },
         )

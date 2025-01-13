@@ -196,10 +196,15 @@ impl<T: RegionalNode> Node for RegionIONode<T> {
         incoming_type: &NodePortType,
     ) -> miette::Result<bool> {
         if to.id.input < self.node.inputs_count(context, self.kind) {
-            if let ControlFlow::Break(value) =
-                self.node
-                    .try_connect(context, self.kind, commands, from, to, incoming_type)?
-            {
+            if let ControlFlow::Break(value) = self.node.try_connect(
+                context,
+                self.kind,
+                self.region,
+                commands,
+                from,
+                to,
+                incoming_type,
+            )? {
                 return Ok(value);
             };
         } else if T::allow_variables() {
@@ -256,7 +261,7 @@ impl<T: RegionalNode> Node for RegionIONode<T> {
         if from.id.output < self.node.outputs_count(context, self.kind) {
             return self
                 .node
-                .can_output_to(context, self.kind, from, to, target_type);
+                .can_output_to(context, self.kind, self.region, from, to, target_type);
         }
 
         let Some(field) = self.get_variable(
@@ -284,6 +289,7 @@ impl<T: RegionalNode> Node for RegionIONode<T> {
             return self.node.connected_to_output(
                 context,
                 self.kind,
+                self.region,
                 commands,
                 from,
                 to,
@@ -438,16 +444,18 @@ pub trait RegionalNode: 'static + Debug + Clone + Send + Sync {
         output: usize,
     ) -> miette::Result<OutputData>;
 
+    #[allow(clippy::too_many_arguments)]
     fn try_connect(
         &mut self,
         context: NodeContext,
         kind: RegionIoKind,
+        region: Uuid,
         commands: &mut SnarlCommands,
         from: &OutPin,
         to: &InPin,
         incoming_type: &NodePortType,
     ) -> miette::Result<ControlFlow<bool>> {
-        let _ = (context, kind, commands, from, to, incoming_type);
+        let _ = (context, kind, region, commands, from, to, incoming_type);
         Ok(ControlFlow::Continue(()))
     }
 
@@ -458,27 +466,30 @@ pub trait RegionalNode: 'static + Debug + Clone + Send + Sync {
         &self,
         context: NodeContext,
         kind: RegionIoKind,
+        region: Uuid,
         from: &OutPin,
         to: &InPin,
         target_type: &NodePortType,
     ) -> miette::Result<bool> {
-        let _ = (context, kind, from, to, target_type);
+        let _ = (context, kind, region, from, to, target_type);
         unimplemented!("Node::can_output_to")
     }
 
     /// Custom logic to be run after the output is connected to some input
     ///
     /// Only called if the corresponding output has type [NodePortType::BasedOnTarget]
+    #[allow(clippy::too_many_arguments)]
     fn connected_to_output(
         &mut self,
         context: NodeContext,
         kind: RegionIoKind,
+        region: Uuid,
         commands: &mut SnarlCommands,
         from: &OutPin,
         to: &InPin,
         incoming_type: &NodePortType,
     ) -> miette::Result<()> {
-        let _ = (context, kind, commands, from, to, incoming_type);
+        let _ = (context, kind, region, commands, from, to, incoming_type);
         unimplemented!("Node::can_output_to")
     }
 
