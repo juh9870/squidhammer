@@ -16,6 +16,7 @@ use std::ops::ControlFlow;
 use ustr::Ustr;
 use uuid::Uuid;
 
+pub mod construct;
 pub mod for_each;
 
 #[derive(Debug)]
@@ -471,3 +472,5 @@ macro_rules! array_op_io {
         }
     };
 }
+
+use array_op_io;

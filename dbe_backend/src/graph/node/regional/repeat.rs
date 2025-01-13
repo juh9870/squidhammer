@@ -11,9 +11,9 @@ use ustr::Ustr;
 use uuid::Uuid;
 
 #[derive(Debug, Clone)]
-pub struct RepeatRegionalNode;
+pub struct RepeatNode;
 
-impl RegionalNode for RepeatRegionalNode {
+impl RegionalNode for RepeatNode {
     fn id() -> Ustr {
         "repeat".into()
     }
