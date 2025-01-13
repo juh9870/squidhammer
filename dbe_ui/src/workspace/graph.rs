@@ -84,7 +84,7 @@ impl<'a> SnarlViewer<SnarlNode> for GraphViewer<'a> {
         _outputs: &[OutPin],
         snarl: &Snarl<SnarlNode>,
     ) -> Frame {
-        if let Ok(data) = self.ctx.regions_graph.try_as_data() {
+        if let Ok(data) = self.ctx.region_graph.try_as_data() {
             if let Some(node_region) = data.node_region(&node) {
                 if let Some(reg) = self.ctx.regions.get(&node_region) {
                     let color = reg.color();
@@ -587,8 +587,8 @@ impl<'a> SnarlViewer<SnarlNode> for GraphViewer<'a> {
     ) {
         BackgroundPattern::Grid(Default::default()).draw(viewport, snarl_style, style, painter);
 
-        self.ctx.regions_graph.ensure_ready(snarl);
-        let Ok(data) = self.ctx.regions_graph.try_as_data() else {
+        self.ctx.region_graph.ensure_ready(snarl);
+        let Ok(data) = self.ctx.region_graph.try_as_data() else {
             return;
         };
 

@@ -40,7 +40,7 @@ impl<T> VecOperation<T> {
 /// Create a `SmallVec` with a specified size and elements.
 #[macro_export]
 macro_rules! smallvec_n {
-    ($size:literal; $($x:expr),*$(,)*) => {
+    ($size:expr; $($x:expr),*$(,)*) => {
         {
             let sv: smallvec::SmallVec<[_; $size]> = smallvec::smallvec![$($x),*];
             sv

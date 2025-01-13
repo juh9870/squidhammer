@@ -8,8 +8,7 @@ use crate::graph::node::{ExecutionResult, NodeContext};
 use crate::json_utils::JsonValue;
 use crate::registry::ETypesRegistry;
 use crate::value::EValue;
-use collection_traits::HasLength;
-use egui_snarl::{InPin, OutPin};
+use egui_snarl::{InPin, NodeId, OutPin};
 use itertools::Itertools;
 use miette::{bail, miette, IntoDiagnostic};
 use std::fmt::Debug;
@@ -79,29 +78,16 @@ impl<'a> ArrayOpFieldMut<'a> {
         Ok(true)
     }
 
-    /// Attempts to set the type of the field from the incoming type
-    ///
-    /// Fails if the field already has a type set and the incoming type is not [None]
+    /// Overwrites the fields with the incoming types
     pub fn load_from(&mut self, incoming: Option<EDataType>) -> miette::Result<()> {
-        let Some(incoming) = incoming else {
-            return Ok(());
-        };
         match self {
             ArrayOpFieldMut::List(ty) => {
-                if ty.is_some() {
-                    bail!("List type already set");
-                }
-                **ty = Some(incoming);
+                **ty = incoming;
             }
             ArrayOpFieldMut::Value(ty) => {
-                if ty.is_some() {
-                    bail!("Value type already set");
-                }
-                **ty = Some(incoming);
+                **ty = incoming;
             }
-            ArrayOpFieldMut::Fixed(_) => {
-                bail!("Fixed type cannot be changed");
-            }
+            ArrayOpFieldMut::Fixed(_) => {}
         }
         Ok(())
     }
@@ -116,12 +102,9 @@ impl<'a> ArrayOpField<'a> {
         }
     }
 
-    pub fn ty(&self, registry: &ETypesRegistry, kind: RegionIoKind) -> EDataType {
+    pub fn ty(&self, registry: &ETypesRegistry) -> EDataType {
         match self {
-            ArrayOpField::List(ty) => match kind {
-                RegionIoKind::Start => registry.list_of(ty.unwrap_or_else(EDataType::null)),
-                RegionIoKind::End => ty.unwrap_or_else(EDataType::null),
-            },
+            ArrayOpField::List(ty) => registry.list_of(ty.unwrap_or_else(EDataType::null)),
             ArrayOpField::Value(ty) => ty.unwrap_or_else(EDataType::null),
             ArrayOpField::Fixed(ty) => *ty,
         }
@@ -173,14 +156,20 @@ pub trait ArrayOpRepeatNode: 'static + Debug + Clone + Send + Sync {
         kind: RegionIoKind,
     ) -> miette::Result<JsonValue> {
         let _ = (registry, kind);
-        serde_json::to_value(
-            self.inputs(kind)
-                .as_ref()
-                .iter()
-                .map(|ty| ty.ty_opt())
-                .collect_vec(),
-        )
-        .into_diagnostic()
+        let inputs = self
+            .inputs(kind)
+            .as_ref()
+            .iter()
+            .map(|ty| ty.ty_opt())
+            .collect_vec();
+        let outputs = self
+            .outputs(kind)
+            .as_ref()
+            .iter()
+            .map(|ty| ty.ty_opt())
+            .collect_vec();
+
+        serde_json::to_value((inputs, outputs)).into_diagnostic()
     }
 
     /// Loads node state from json
@@ -191,17 +180,36 @@ pub trait ArrayOpRepeatNode: 'static + Debug + Clone + Send + Sync {
         value: &mut JsonValue,
     ) -> miette::Result<()> {
         let _ = (registry, kind);
-        let types: Vec<Option<EDataType>> =
+        let (inputs, outputs): (Vec<Option<EDataType>>, Vec<Option<EDataType>>) =
             serde_json::from_value(value.take()).into_diagnostic()?;
 
-        for (ty, field) in types
+        for (ty, field) in inputs
             .into_iter()
             .zip(self.inputs_mut(kind).as_mut().iter_mut())
         {
             field.load_from(ty)?
         }
+        for (ty, field) in outputs
+            .into_iter()
+            .zip(self.outputs_mut(kind).as_mut().iter_mut())
+        {
+            field.load_from(ty)?
+        }
 
         Ok(())
+    }
+
+    /// Called after one of the node's inputs types has changed, allowing the
+    /// node to update state of its pair
+    fn state_changed(
+        &mut self,
+        context: NodeContext,
+        kind: RegionIoKind,
+        region: Uuid,
+        node: NodeId,
+        commands: &mut SnarlCommands,
+    ) {
+        let _ = (context, kind, region, node, commands);
     }
 
     fn should_execute(
@@ -227,7 +235,7 @@ pub trait ArrayOpRepeatNode: 'static + Debug + Clone + Send + Sync {
 
 impl<T: ArrayOpRepeatNode> RegionalNode for T {
     fn id() -> Ustr {
-        "for_each".into()
+        T::id()
     }
 
     fn write_json(
@@ -268,7 +276,7 @@ impl<T: ArrayOpRepeatNode> RegionalNode for T {
 
         Ok(InputData::new(
             if ty.is_specific() {
-                EItemInfo::simple_type(ty.ty(context.registry, kind)).into()
+                EItemInfo::simple_type(ty.ty(context.registry)).into()
             } else {
                 NodePortType::BasedOnSource
             },
@@ -289,7 +297,7 @@ impl<T: ArrayOpRepeatNode> RegionalNode for T {
 
         Ok(OutputData::new(
             if ty.is_specific() {
-                EItemInfo::simple_type(ty.ty(context.registry, kind)).into()
+                EItemInfo::simple_type(ty.ty(context.registry)).into()
             } else {
                 NodePortType::BasedOnTarget
             },
@@ -301,7 +309,8 @@ impl<T: ArrayOpRepeatNode> RegionalNode for T {
         &mut self,
         context: NodeContext,
         kind: RegionIoKind,
-        _commands: &mut SnarlCommands,
+        region: Uuid,
+        commands: &mut SnarlCommands,
         _from: &OutPin,
         to: &InPin,
         incoming_type: &NodePortType,
@@ -319,6 +328,10 @@ impl<T: ArrayOpRepeatNode> RegionalNode for T {
             return Ok(ControlFlow::Break(false));
         }
 
+        drop(inputs);
+
+        self.state_changed(context, kind, region, to.id.node, commands);
+
         Ok(ControlFlow::Continue(()))
     }
 
@@ -326,6 +339,7 @@ impl<T: ArrayOpRepeatNode> RegionalNode for T {
         &self,
         _context: NodeContext,
         kind: RegionIoKind,
+        _region: Uuid,
         from: &OutPin,
         _to: &InPin,
         target_type: &NodePortType,
@@ -342,7 +356,8 @@ impl<T: ArrayOpRepeatNode> RegionalNode for T {
         &mut self,
         context: NodeContext,
         kind: RegionIoKind,
-        _commands: &mut SnarlCommands,
+        region: Uuid,
+        commands: &mut SnarlCommands,
         from: &OutPin,
         _to: &InPin,
         incoming_type: &NodePortType,
@@ -355,6 +370,11 @@ impl<T: ArrayOpRepeatNode> RegionalNode for T {
         if !ty.specify_from(context.registry, incoming_type)? {
             bail!("Failed to specify type");
         }
+
+        drop(outputs);
+
+        self.state_changed(context, kind, region, from.id.node, commands);
+
         Ok(())
     }
 
@@ -451,5 +471,3 @@ macro_rules! array_op_io {
         }
     };
 }
-
-use array_op_io;

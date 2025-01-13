@@ -364,7 +364,7 @@ impl SnarlCommand {
                     .variables;
 
                 operation.apply(vars);
-                if let Ok(data) = ctx.regions_graph.try_as_data() {
+                if let Ok(data) = ctx.region_graph.try_as_data() {
                     let data = data.region_data(&region);
                     let start = data.start_node;
                     let end = data.end_node;

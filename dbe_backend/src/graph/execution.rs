@@ -27,6 +27,7 @@ macro_rules! node_context {
             inputs: $source.inputs,
             outputs: $source.outputs,
             regions: $source.regions,
+            region_graph: $source.region_graph,
             graphs: $source.graphs,
         }
     };
