@@ -14,48 +14,68 @@ use ustr::Ustr;
 use utils::smallvec_n;
 use uuid::Uuid;
 
-pub type ListForEachNode = ForEachLikeRegionalNode<false, false>;
-pub type ListMapNode = ForEachLikeRegionalNode<true, false>;
-pub type ListFilterNode = ForEachLikeRegionalNode<false, true>;
-pub type ListFilterMapNode = ForEachLikeRegionalNode<true, true>;
+pub type ListForEachNode = ForEachLikeRegionalNode<{ ForEachKind::ForEach as u8 }>;
+pub type ListMapNode = ForEachLikeRegionalNode<{ ForEachKind::Map as u8 }>;
+pub type ListFilterNode = ForEachLikeRegionalNode<{ ForEachKind::Filter as u8 }>;
+pub type ListFilterMapNode = ForEachLikeRegionalNode<{ ForEachKind::FilterMap as u8 }>;
 
 #[derive(Debug, Clone)]
-pub struct ForEachLikeRegionalNode<const MAP: bool, const FILTER: bool> {
+pub struct ForEachLikeRegionalNode<const KIND: u8> {
     input_ty: Option<EDataType>,
     output_ty: Option<EDataType>,
 }
 
-impl<const MAP: bool, const FILTER: bool> ForEachLikeRegionalNode<MAP, FILTER> {
+impl<const KIND: u8> ForEachLikeRegionalNode<KIND> {
     #[inline(always)]
     const fn kind(&self) -> ForEachKind {
-        ForEachKind::of(MAP, FILTER)
+        ForEachKind::of(KIND)
     }
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, Eq, PartialEq, Hash)]
+#[repr(u8)]
 enum ForEachKind {
-    ForEach,
+    ForEach = 0,
     Map,
     Filter,
     FilterMap,
 }
 
 impl ForEachKind {
-    const fn of(map: bool, filter: bool) -> Self {
-        match (map, filter) {
-            (false, false) => Self::ForEach,
-            (true, false) => Self::Map,
-            (false, true) => Self::Filter,
-            (true, true) => Self::FilterMap,
+    const fn of(kind: u8) -> Self {
+        match kind {
+            0 => Self::ForEach,
+            1 => Self::Map,
+            2 => Self::Filter,
+            3 => Self::FilterMap,
+            _ => unreachable!(),
         }
     }
 }
 
-impl<const MAP: bool, const FILTER: bool> ArrayOpRepeatNode
-    for ForEachLikeRegionalNode<MAP, FILTER>
-{
+fn is_map(kind: u8) -> bool {
+    kind == ForEachKind::Map as u8 || kind == ForEachKind::FilterMap as u8
+}
+
+fn is_filter(kind: u8) -> bool {
+    kind == ForEachKind::Filter as u8 || kind == ForEachKind::FilterMap as u8
+}
+
+impl PartialEq<u8> for ForEachKind {
+    fn eq(&self, other: &u8) -> bool {
+        *self as u8 == *other
+    }
+}
+
+impl PartialEq<ForEachKind> for u8 {
+    fn eq(&self, other: &ForEachKind) -> bool {
+        *self == *other as u8
+    }
+}
+
+impl<const KIND: u8> ArrayOpRepeatNode for ForEachLikeRegionalNode<KIND> {
     fn id() -> Ustr {
-        match ForEachKind::of(MAP, FILTER) {
+        match ForEachKind::of(KIND) {
             ForEachKind::ForEach => "for_each".into(),
             ForEachKind::Map => "list_map".into(),
             ForEachKind::Filter => "list_filter".into(),
@@ -79,7 +99,7 @@ impl<const MAP: bool, const FILTER: bool> ArrayOpRepeatNode
         match kind {
             RegionIoKind::Start => &["value", "index"],
             RegionIoKind::End => {
-                if MAP || FILTER {
+                if is_map(KIND) || is_filter(KIND) {
                     &["values"]
                 } else {
                     &[]
@@ -123,9 +143,9 @@ impl<const MAP: bool, const FILTER: bool> ArrayOpRepeatNode
                 smallvec_n![2;ArrayOpField::Value(&self.input_ty), ArrayOpField::Fixed(EDataType::Number)]
             }
             RegionIoKind::End => {
-                if MAP {
+                if is_map(KIND) {
                     smallvec![ArrayOpField::List(&self.output_ty)]
-                } else if FILTER {
+                } else if KIND == ForEachKind::Filter {
                     smallvec![ArrayOpField::List(&self.input_ty)]
                 } else {
                     smallvec![]
@@ -155,9 +175,9 @@ impl<const MAP: bool, const FILTER: bool> ArrayOpRepeatNode
                 smallvec_n![2;ArrayOpFieldMut::Value(&mut self.input_ty), ArrayOpFieldMut::Fixed(EDataType::Number)]
             }
             RegionIoKind::End => {
-                if MAP {
+                if is_map(KIND) {
                     smallvec![ArrayOpFieldMut::List(&mut self.output_ty)]
-                } else if FILTER {
+                } else if KIND == ForEachKind::Filter {
                     smallvec![ArrayOpFieldMut::List(&mut self.input_ty)]
                 } else {
                     smallvec![]
@@ -174,7 +194,7 @@ impl<const MAP: bool, const FILTER: bool> ArrayOpRepeatNode
         _node: NodeId,
         commands: &mut SnarlCommands,
     ) {
-        if !FILTER {
+        if KIND != ForEachKind::Filter {
             return;
         }
 
@@ -239,7 +259,7 @@ impl<const MAP: bool, const FILTER: bool> ArrayOpRepeatNode
             outputs.clear();
             if !values.is_empty() {
                 outputs.push(values[state.index].clone());
-                if FILTER {
+                if KIND == ForEachKind::Filter {
                     state.input_value = Some(values[state.index].clone());
                 }
             }
@@ -288,14 +308,14 @@ impl<const MAP: bool, const FILTER: bool> ArrayOpRepeatNode
             };
             if state.index >= state.length {
                 outputs.clear();
-                if MAP {
+                if is_map(KIND) {
                     outputs.push(EValue::List {
                         values: std::mem::take(&mut state.output),
                         id: context
                             .registry
                             .list_id_of(self.output_ty.unwrap_or_else(EDataType::null)),
                     });
-                } else if FILTER {
+                } else if is_filter(KIND) {
                     outputs.push(EValue::List {
                         values: std::mem::take(&mut state.output),
                         id: context
