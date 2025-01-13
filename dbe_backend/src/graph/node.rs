@@ -13,10 +13,11 @@ use crate::graph::node::groups::subgraph::SubgraphNodeFactory;
 use crate::graph::node::list::ListNodeFactory;
 use crate::graph::node::mappings::MappingsNodeFactory;
 use crate::graph::node::ports::{InputData, NodePortType, OutputData};
+use crate::graph::node::regional::array_ops::construct::ConstructListNode;
 use crate::graph::node::regional::array_ops::for_each::{
     ListFilterMapNode, ListFilterNode, ListForEachNode, ListMapNode,
 };
-use crate::graph::node::regional::repeat::RepeatRegionalNode;
+use crate::graph::node::regional::repeat::RepeatNode;
 use crate::graph::node::regional::RegionalNodeFactory;
 use crate::graph::node::reroute::RerouteFactory;
 use crate::graph::node::saving_node::SavingNodeFactory;
@@ -94,13 +95,12 @@ fn default_nodes() -> impl Iterator<Item = (Ustr, Arc<dyn NodeFactory>)> {
     v.push(Arc::new(MappingsNodeFactory));
     v.push(Arc::new(FormatNodeFactory));
     v.push(Arc::new(ExpressionNodeFactory));
-    v.push(Arc::new(
-        RegionalNodeFactory::<RepeatRegionalNode>::INSTANCE,
-    ));
+    v.push(Arc::new(RegionalNodeFactory::<RepeatNode>::INSTANCE));
     v.push(Arc::new(RegionalNodeFactory::<ListForEachNode>::INSTANCE));
     v.push(Arc::new(RegionalNodeFactory::<ListFilterNode>::INSTANCE));
     v.push(Arc::new(RegionalNodeFactory::<ListMapNode>::INSTANCE));
     v.push(Arc::new(RegionalNodeFactory::<ListFilterMapNode>::INSTANCE));
+    v.push(Arc::new(RegionalNodeFactory::<ConstructListNode>::INSTANCE));
     v.into_iter().map(|item| (Ustr::from(&item.id()), item))
 }
 

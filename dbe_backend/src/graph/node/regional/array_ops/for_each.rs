@@ -334,7 +334,7 @@ impl<const KIND: u8> ArrayOpRepeatNode for ForEachLikeRegionalNode<KIND> {
     }
 
     fn categories() -> &'static [&'static str] {
-        &["utility"]
+        &["list"]
     }
 
     fn create() -> Self {
