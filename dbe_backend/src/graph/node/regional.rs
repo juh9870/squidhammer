@@ -218,29 +218,29 @@ impl<T: RegionalNode> Node for RegionIONode<T> {
                         name: "value".to_string(),
                     }),
                 })
-            }
+            } else {
+                let input = to.id.input - self.node.inputs_count(context, self.kind);
 
-            let input = to.id.input - self.node.inputs_count(context, self.kind);
+                let field = self
+                    .get_variable(context, input)
+                    .ok_or_else(|| miette!("Variable {} is missing", input))?;
 
-            let field = self
-                .get_variable(context, input)
-                .ok_or_else(|| miette!("Variable {} is missing", input))?;
-
-            if field.ty.is_none() {
-                if !incoming_type.is_specific() {
-                    return Ok(false);
+                if field.ty.is_none() {
+                    if !incoming_type.is_specific() {
+                        return Ok(false);
+                    }
+                    commands.push(SnarlCommand::EditRegionVariables {
+                        region: self.region,
+                        operation: VecOperation::Replace(
+                            input,
+                            RegionVariable {
+                                ty: Some(incoming_type.ty()),
+                                id: field.id,
+                                name: field.name.clone(),
+                            },
+                        ),
+                    });
                 }
-                commands.push(SnarlCommand::EditRegionVariables {
-                    region: self.region,
-                    operation: VecOperation::Replace(
-                        input,
-                        RegionVariable {
-                            ty: Some(incoming_type.ty()),
-                            id: field.id,
-                            name: field.name.clone(),
-                        },
-                    ),
-                });
             }
         }
 
