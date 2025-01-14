@@ -56,8 +56,9 @@ fn change_all_combo(ui: &mut Ui, colorix: &mut Colorix, global: bool) {
     let mut color = ui.use_state(|| ThemeColor::Gray, ()).into_var();
     let mut change_all = false;
 
+    let color_edit_size = egui::vec2(40.0, 18.0);
+
     ui.horizontal(|ui| {
-        let color_edit_size = egui::vec2(40.0, 18.0);
         if let ThemeColor::Custom(rgb) = color.deref_mut() {
             let re = ui.color_edit_button_srgb(rgb);
             if re.changed() {
@@ -92,6 +93,12 @@ fn change_all_combo(ui: &mut Ui, colorix: &mut Colorix, global: bool) {
                 *colorix = Colorix::local_from_style([*color; 12], colorix.dark_mode())
             }
         }
+    });
+
+    ui.horizontal(|ui| {
+        ui.add_space((color_edit_size.x + ui.style().spacing.item_spacing.x) * 2.0);
+        colorix.themes_dropdown(ui, None, false);
+        ui.label("Preset theme")
     });
 }
 

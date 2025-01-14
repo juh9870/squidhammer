@@ -97,7 +97,7 @@ impl<'a> SnarlViewer<SnarlNode> for GraphViewer<'a> {
         }
 
         if let Some(scheme) = &snarl[node].color_scheme {
-            default = default.fill(scheme.theme.tokens.app_background())
+            default = default.fill(scheme.theme.tokens.subtle_background())
         }
 
         default
