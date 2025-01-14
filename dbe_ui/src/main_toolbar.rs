@@ -47,7 +47,7 @@ impl ToolbarViewer for ToolPanelViewer<'_> {
                 ui.add(egui_tracing::Logs::new(self.0.collector.clone()));
             }
             ToolPanel::Theme => {
-                colors_tab(ui, self.0);
+                colors_tab(ui, self.0, true);
             }
             ToolPanel::Docs => {
                 docs::docs_tab(ui, self.0);

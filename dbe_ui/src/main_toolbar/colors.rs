@@ -2,31 +2,31 @@ use crate::error::report_error;
 use crate::DbeApp;
 use egui::Ui;
 use egui_colors::tokens::ThemeColor;
-use egui_colors::{ApplyTo, Colorix, Theme};
+use egui_colors::{Colorix, Theme};
 use egui_hooks::UseHookExt;
 use miette::miette;
 use std::ops::DerefMut;
 
-pub fn colors_tab(ui: &mut Ui, app: &mut DbeApp) {
-    colorix_editor(ui, &mut app.colorix, ApplyTo::Global);
+pub fn colors_tab(ui: &mut Ui, app: &mut DbeApp, global: bool) {
+    colorix_editor(ui, &mut app.colorix, global);
 }
 
-pub fn colorix_editor(ui: &mut Ui, colorix: &mut Colorix, apply_to: ApplyTo) {
-    if matches!(apply_to, ApplyTo::Global) {
-        colorix.light_dark_toggle_button(ui);
+pub fn colorix_editor(ui: &mut Ui, colorix: &mut Colorix, global: bool) {
+    if global {
+        colorix.light_dark_toggle_button(ui, 32.0);
     }
-    colorix.ui_combo_12(ui, false, apply_to);
+    colorix.ui_combo_12(ui, false);
 
     ui.separator();
 
-    change_all_combo(ui, colorix, apply_to);
+    change_all_combo(ui, colorix, global);
 
     ui.separator();
 
-    import_export(ui, colorix, apply_to);
+    import_export(ui, colorix, global);
 }
 
-fn change_all_combo(ui: &mut Ui, colorix: &mut Colorix, apply_to: ApplyTo) {
+fn change_all_combo(ui: &mut Ui, colorix: &mut Colorix, global: bool) {
     let dropdown_colors: [ThemeColor; 23] = [
         ThemeColor::Gray,
         ThemeColor::EguiBlue,
@@ -86,21 +86,16 @@ fn change_all_combo(ui: &mut Ui, colorix: &mut Colorix, apply_to: ApplyTo) {
             });
 
         if change_all {
-            *colorix = Colorix::init(ui.ctx(), [*color; 12]);
-            match apply_to {
-                ApplyTo::Global => {
-                    colorix.apply_global(ui.ctx());
-                }
-                ApplyTo::Local => {
-                    colorix.apply_local(ui);
-                }
-                ApplyTo::Nothing => {}
+            if global {
+                colorix.update_theme(ui.ctx(), [*color; 12])
+            } else {
+                *colorix = Colorix::local_from_style([*color; 12], colorix.dark_mode())
             }
         }
     });
 }
 
-fn import_export(ui: &mut Ui, colorix: &mut Colorix, apply_to: ApplyTo) {
+fn import_export(ui: &mut Ui, colorix: &mut Colorix, global: bool) {
     let mut text = ui.use_state(|| "".to_string(), ()).into_var();
     ui.horizontal(|ui| {
         if ui.button("Export").clicked() {
@@ -112,15 +107,10 @@ fn import_export(ui: &mut Ui, colorix: &mut Colorix, apply_to: ApplyTo) {
         {
             match serde_json5::from_str::<Theme>(&text) {
                 Ok(theme) => {
-                    *colorix = Colorix::init(ui.ctx(), theme);
-                    match apply_to {
-                        ApplyTo::Global => {
-                            colorix.apply_global(ui.ctx());
-                        }
-                        ApplyTo::Local => {
-                            colorix.apply_local(ui);
-                        }
-                        ApplyTo::Nothing => {}
+                    if global {
+                        colorix.update_theme(ui.ctx(), theme)
+                    } else {
+                        *colorix = Colorix::local_from_style(theme, colorix.dark_mode())
                     }
                 }
                 Err(e) => {
