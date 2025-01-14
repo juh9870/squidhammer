@@ -103,21 +103,23 @@ impl<'a> SnarlViewer<SnarlNode> for GraphViewer<'a> {
         default
     }
 
-    fn node_style(
+    fn has_node_style(&mut self, node: &SnarlNode) -> bool {
+        node.color_scheme.is_some()
+    }
+
+    fn apply_node_style(
         &mut self,
-        ui: &mut Ui,
+        style: &mut Style,
         node: NodeId,
         _inputs: &[InPin],
         _outputs: &[OutPin],
         snarl: &Snarl<SnarlNode>,
     ) {
         let Some(scheme) = &snarl[node].color_scheme else {
-            return;
+            unreachable!()
         };
 
-        scheme.theme.tokens.set_egui_style(ui.style_mut())
-        // scheme.theme.tokens.set_egui_style(ui.style_mut())
-        // scheme.theme.(ui);
+        scheme.theme.tokens.set_egui_style(style)
     }
 
     fn node_layout(
