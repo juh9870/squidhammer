@@ -7,7 +7,7 @@ use dbe_backend::graph::Graph;
 use dbe_backend::project::docs::{Docs, DocsRef};
 use dbe_backend::registry::ETypesRegistry;
 use egui::{CollapsingHeader, ScrollArea, Ui};
-use egui_colors::{ApplyTo, Colorix};
+use egui_colors::Colorix;
 use egui_snarl::NodeId;
 use uuid::Uuid;
 
@@ -73,7 +73,7 @@ pub fn edit_node(
     });
 
     let default_scheme = NodeColorScheme {
-        theme: Box::new(Colorix::init(ui.ctx(), Default::default())),
+        theme: Box::new(Colorix::local(ui, Default::default())),
         dark_mode: ui.ctx().style().visuals.dark_mode,
     };
 
@@ -93,12 +93,12 @@ pub fn edit_node(
         |ui, scheme| {
             if ui.checkbox(&mut scheme.dark_mode, "Dark Mode").changed() {
                 if scheme.dark_mode {
-                    scheme.theme.set_dark(ui, ApplyTo::Nothing);
+                    scheme.theme.set_dark(ui);
                 } else {
-                    scheme.theme.set_light(ui, ApplyTo::Nothing);
+                    scheme.theme.set_light(ui);
                 }
             };
-            colorix_editor(ui, &mut scheme.theme, ApplyTo::Nothing);
+            colorix_editor(ui, &mut scheme.theme, false);
         },
     );
 }

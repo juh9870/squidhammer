@@ -97,7 +97,7 @@ impl<'a> SnarlViewer<SnarlNode> for GraphViewer<'a> {
         }
 
         if let Some(scheme) = &snarl[node].color_scheme {
-            default = default.fill(scheme.theme.tokens.app_background)
+            default = default.fill(scheme.theme.tokens.app_background())
         }
 
         default
@@ -115,7 +115,9 @@ impl<'a> SnarlViewer<SnarlNode> for GraphViewer<'a> {
             return;
         };
 
-        scheme.theme.apply_local(ui);
+        scheme.theme.tokens.set_egui_style(ui.style_mut())
+        // scheme.theme.tokens.set_egui_style(ui.style_mut())
+        // scheme.theme.(ui);
     }
 
     fn node_layout(

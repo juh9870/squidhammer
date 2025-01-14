@@ -25,7 +25,7 @@ pub struct PackedNodeColorScheme {
 impl PackedNodeColorScheme {
     pub(crate) fn unpack(self) -> NodeColorScheme {
         NodeColorScheme {
-            theme: Box::new(Colorix::init_with_dark_mode(self.theme, self.dark_mode)),
+            theme: Box::new(Colorix::local_from_style(self.theme, self.dark_mode)),
             dark_mode: self.dark_mode,
         }
     }

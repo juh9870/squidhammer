@@ -119,8 +119,7 @@ impl DbeApp {
                     self.load_project_from_path(head.clone())
                 }
 
-                self.colorix = Colorix::init(ctx, storage.theme);
-                self.colorix.apply_global(ctx);
+                self.colorix = Colorix::global(ctx, storage.theme);
 
                 ctx.set_visuals(egui::Visuals {
                     dark_mode: storage.dark_mode,
@@ -159,7 +158,7 @@ impl DbeApp {
         static INIT: OnceLock<()> = OnceLock::new();
 
         INIT.get_or_init(|| {
-            self.colorix = Colorix::init(ctx, *self.colorix.theme());
+            self.colorix = Colorix::global(ctx, *self.colorix.theme());
         });
 
         self.dark_mode = ctx.style().visuals.dark_mode;
