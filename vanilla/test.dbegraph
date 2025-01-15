@@ -3,36 +3,6 @@
     "edges": [
       [
         {
-          "node": 0,
-          "output": 0
-        },
-        {
-          "input": 0,
-          "node": 1
-        }
-      ],
-      [
-        {
-          "node": 2,
-          "output": 0
-        },
-        {
-          "input": 1,
-          "node": 0
-        }
-      ],
-      [
-        {
-          "node": 2,
-          "output": 0
-        },
-        {
-          "input": 1,
-          "node": 1
-        }
-      ],
-      [
-        {
           "node": 3,
           "output": 0
         },
@@ -59,6 +29,16 @@
         {
           "input": 1,
           "node": 4
+        }
+      ],
+      [
+        {
+          "node": 5,
+          "output": 0
+        },
+        {
+          "input": 0,
+          "node": 35
         }
       ],
       [
@@ -330,30 +310,19 @@
           "input": 0,
           "node": 32
         }
+      ],
+      [
+        {
+          "node": 35,
+          "output": 11
+        },
+        {
+          "input": 0,
+          "node": 36
+        }
       ]
     ],
     "inline_values": [
-      [
-        {
-          "input": 0,
-          "node": 0
-        },
-        20
-      ],
-      [
-        {
-          "input": 0,
-          "node": 2
-        },
-        12
-      ],
-      [
-        {
-          "input": 1,
-          "node": 2
-        },
-        5
-      ],
       [
         {
           "input": 0,
@@ -637,48 +606,6 @@
       }
     ],
     "nodes": [
-      [
-        0,
-        {
-          "color_scheme": null,
-          "custom_title": null,
-          "data": null,
-          "id": "add",
-          "open": true,
-          "pos": {
-            "x": -61,
-            "y": -189
-          }
-        }
-      ],
-      [
-        1,
-        {
-          "color_scheme": null,
-          "custom_title": null,
-          "data": null,
-          "id": "subtract",
-          "open": true,
-          "pos": {
-            "x": 261,
-            "y": -156
-          }
-        }
-      ],
-      [
-        2,
-        {
-          "color_scheme": null,
-          "custom_title": null,
-          "data": null,
-          "id": "multiply",
-          "open": true,
-          "pos": {
-            "x": -325,
-            "y": -91
-          }
-        }
-      ],
       [
         3,
         {
@@ -1381,57 +1308,61 @@
             "y": 982.9197387695312
           }
         }
+      ],
+      [
+        35,
+        {
+          "color_scheme": null,
+          "custom_title": null,
+          "data": {
+            "fields": [
+              "Name",
+              "Description",
+              "DisplayCategory",
+              "Availability",
+              "ComponentStatsId",
+              "Faction",
+              "Level",
+              "Icon",
+              "Color",
+              "Layout",
+              "CellType",
+              "DeviceId",
+              "WeaponId",
+              "AmmunitionId",
+              "WeaponSlotType",
+              "DroneBayId",
+              "DroneId",
+              "Restrictions",
+              "PossibleModifications"
+            ],
+            "id": "eh:objects/component_data"
+          },
+          "id": "destructuring",
+          "open": true,
+          "pos": {
+            "x": -338.3188781738281,
+            "y": -296.468017578125
+          }
+        }
+      ],
+      [
+        36,
+        {
+          "color_scheme": null,
+          "custom_title": null,
+          "data": null,
+          "id": "debug_print",
+          "open": true,
+          "pos": {
+            "x": -85.97294616699219,
+            "y": -113.68771362304688
+          }
+        }
       ]
     ],
     "outputs": [],
     "regions": [
-      {
-        "color": null,
-        "id": "bae409fb-dfd7-41d2-91ec-68191c16f4a0",
-        "variables": [
-          {
-            "id": "a59280b3-0c19-470e-91c9-abdbd54975da",
-            "name": "value",
-            "ty": "Number"
-          }
-        ]
-      },
-      {
-        "color": null,
-        "id": "b17a2025-3591-4e30-a36a-81a608c24673",
-        "variables": []
-      },
-      {
-        "color": [
-          164,
-          93,
-          108,
-          0
-        ],
-        "id": "cc826dad-9492-408f-b47b-bc01cf88fcf7",
-        "variables": [
-          {
-            "id": "36a2455f-a238-4c4a-8921-abe6629072e4",
-            "name": "value",
-            "ty": "Number"
-          }
-        ]
-      },
-      {
-        "color": null,
-        "id": "ec4f48e1-4c18-4851-83ef-d5be608840ea",
-        "variables": []
-      },
-      {
-        "color": null,
-        "id": "87ffc011-bc97-4a65-8906-65f9210a44f6",
-        "variables": []
-      },
-      {
-        "color": null,
-        "id": "5e46e3b3-86b3-46ab-b672-2ee61298c84f",
-        "variables": []
-      },
       {
         "color": null,
         "id": "ce74a1f9-1b5b-4612-8423-cf8ff8ffc2c2",
@@ -1439,7 +1370,7 @@
       },
       {
         "color": null,
-        "id": "a7da8d5e-8e42-4724-bb50-e4f066803481",
+        "id": "9c20bb76-fc1a-458d-bb93-ff6629185c5f",
         "variables": []
       },
       {
@@ -1490,7 +1421,54 @@
       },
       {
         "color": null,
-        "id": "9c20bb76-fc1a-458d-bb93-ff6629185c5f",
+        "id": "87ffc011-bc97-4a65-8906-65f9210a44f6",
+        "variables": []
+      },
+      {
+        "color": null,
+        "id": "b17a2025-3591-4e30-a36a-81a608c24673",
+        "variables": []
+      },
+      {
+        "color": null,
+        "id": "a7da8d5e-8e42-4724-bb50-e4f066803481",
+        "variables": []
+      },
+      {
+        "color": null,
+        "id": "bae409fb-dfd7-41d2-91ec-68191c16f4a0",
+        "variables": [
+          {
+            "id": "a59280b3-0c19-470e-91c9-abdbd54975da",
+            "name": "value",
+            "ty": "Number"
+          }
+        ]
+      },
+      {
+        "color": [
+          164,
+          93,
+          108,
+          0
+        ],
+        "id": "cc826dad-9492-408f-b47b-bc01cf88fcf7",
+        "variables": [
+          {
+            "id": "36a2455f-a238-4c4a-8921-abe6629072e4",
+            "name": "value",
+            "ty": "Number"
+          }
+        ]
+      },
+      {
+        "color": null,
+        "id": "ec4f48e1-4c18-4851-83ef-d5be608840ea",
+        "variables": []
+      },
+      {
+        "color": null,
+        "id": "5e46e3b3-86b3-46ab-b672-2ee61298c84f",
         "variables": []
       }
     ]

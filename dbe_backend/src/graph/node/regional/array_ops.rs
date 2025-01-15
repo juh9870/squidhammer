@@ -1,7 +1,9 @@
 use crate::etype::eitem::EItemInfo;
-use crate::etype::EDataType;
 use crate::graph::node::commands::SnarlCommands;
-use crate::graph::node::generic::{GenericNodeField, GenericNodeFieldMut};
+use crate::graph::node::generic::{
+    generic_can_output_to, generic_connected_to_output, generic_try_connect,
+    parse_generic_json_fields, write_generic_json_fields, GenericNodeField, GenericNodeFieldMut,
+};
 use crate::graph::node::ports::{InputData, NodePortType, OutputData};
 use crate::graph::node::regional::{RegionIoKind, RegionalNode};
 use crate::graph::node::variables::ExecutionExtras;
@@ -10,8 +12,7 @@ use crate::json_utils::JsonValue;
 use crate::registry::ETypesRegistry;
 use crate::value::EValue;
 use egui_snarl::{InPin, NodeId, OutPin};
-use itertools::Itertools;
-use miette::{bail, IntoDiagnostic};
+use miette::bail;
 use std::fmt::Debug;
 use std::ops::ControlFlow;
 use ustr::Ustr;
@@ -37,20 +38,7 @@ pub trait GenericRegionalNode: 'static + Debug + Clone + Send + Sync {
         kind: RegionIoKind,
     ) -> miette::Result<JsonValue> {
         let _ = (registry, kind);
-        let inputs = self
-            .inputs(kind)
-            .as_ref()
-            .iter()
-            .map(|ty| ty.ty_opt())
-            .collect_vec();
-        let outputs = self
-            .outputs(kind)
-            .as_ref()
-            .iter()
-            .map(|ty| ty.ty_opt())
-            .collect_vec();
-
-        serde_json::to_value((inputs, outputs)).into_diagnostic()
+        write_generic_json_fields(self, |n| n.inputs(kind), |n| n.outputs(kind))
     }
 
     /// Loads node state from json
@@ -61,21 +49,10 @@ pub trait GenericRegionalNode: 'static + Debug + Clone + Send + Sync {
         value: &mut JsonValue,
     ) -> miette::Result<()> {
         let _ = (registry, kind);
-        let (inputs, outputs): (Vec<Option<EDataType>>, Vec<Option<EDataType>>) =
-            serde_json::from_value(value.take()).into_diagnostic()?;
-
-        for (ty, field) in inputs
-            .into_iter()
-            .zip(self.inputs_mut(kind).as_mut().iter_mut())
-        {
-            field.load_from(ty)?
-        }
-        for (ty, field) in outputs
-            .into_iter()
-            .zip(self.outputs_mut(kind).as_mut().iter_mut())
-        {
-            field.load_from(ty)?
-        }
+        parse_generic_json_fields(value)?
+            .inputs(self, |n| n.inputs_mut(kind))?
+            .outputs(self, |n| n.outputs_mut(kind))?
+            .done()?;
 
         Ok(())
     }
@@ -192,45 +169,39 @@ impl<T: GenericRegionalNode> RegionalNode for T {
         kind: RegionIoKind,
         region: Uuid,
         commands: &mut SnarlCommands,
-        _from: &OutPin,
+        from: &OutPin,
         to: &InPin,
         incoming_type: &NodePortType,
     ) -> miette::Result<ControlFlow<bool>> {
-        let mut inputs = self.inputs_mut(kind);
-        let Some(ty) = inputs.as_mut().get_mut(to.id.input) else {
-            bail!("Invalid input index: {}", to.id.input);
+        let changed = match generic_try_connect(
+            context,
+            commands,
+            from,
+            to,
+            incoming_type,
+            self.inputs_mut(kind).as_mut(),
+        )? {
+            ControlFlow::Break(b) => return Ok(ControlFlow::Break(b)),
+            ControlFlow::Continue(changed) => changed,
         };
 
-        if ty.as_ref().is_specific() {
-            return Ok(ControlFlow::Continue(()));
+        if changed {
+            self.state_changed(context, kind, region, to.id.node, commands);
         }
-
-        if !ty.specify_from(context.registry, incoming_type)? {
-            return Ok(ControlFlow::Break(false));
-        }
-
-        drop(inputs);
-
-        self.state_changed(context, kind, region, to.id.node, commands);
 
         Ok(ControlFlow::Continue(()))
     }
 
     fn can_output_to(
         &self,
-        _context: NodeContext,
+        context: NodeContext,
         kind: RegionIoKind,
         _region: Uuid,
         from: &OutPin,
-        _to: &InPin,
+        to: &InPin,
         target_type: &NodePortType,
     ) -> miette::Result<bool> {
-        let outputs = self.outputs(kind);
-        let Some(ty) = outputs.as_ref().get(from.id.output) else {
-            bail!("Invalid output index: {}", from.id.output);
-        };
-
-        ty.can_specify_from(target_type)
+        generic_can_output_to(context, from, to, target_type, self.outputs(kind).as_ref())
     }
 
     fn connected_to_output(
@@ -240,21 +211,19 @@ impl<T: GenericRegionalNode> RegionalNode for T {
         region: Uuid,
         commands: &mut SnarlCommands,
         from: &OutPin,
-        _to: &InPin,
+        to: &InPin,
         incoming_type: &NodePortType,
     ) -> miette::Result<()> {
-        let mut outputs = self.outputs_mut(kind);
-        let Some(ty) = outputs.as_mut().get_mut(from.id.output) else {
-            bail!("Invalid output index: {}", from.id.output);
-        };
-
-        if !ty.specify_from(context.registry, incoming_type)? {
-            bail!("Failed to specify type");
+        if generic_connected_to_output(
+            context,
+            commands,
+            from,
+            to,
+            incoming_type,
+            self.outputs_mut(kind).as_mut(),
+        )? {
+            self.state_changed(context, kind, region, from.id.node, commands);
         }
-
-        drop(outputs);
-
-        self.state_changed(context, kind, region, from.id.node, commands);
 
         Ok(())
     }

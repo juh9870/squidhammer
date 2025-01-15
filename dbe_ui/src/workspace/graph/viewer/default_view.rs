@@ -143,6 +143,8 @@ impl NodeView for DefaultNodeView {
                         ui.label(format_value(value));
                     });
                 }
+            } else {
+                docs_label(ui, &input_data.name, docs, registry, ctx.docs_ref);
             }
         } else {
             docs_label(ui, &input_data.name, docs, registry, ctx.docs_ref);

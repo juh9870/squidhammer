@@ -8,23 +8,32 @@ use crate::graph::node::ports::{InputData, NodePortType, OutputData};
 use crate::graph::node::variables::ExecutionExtras;
 use crate::graph::node::{ExecutionResult, Node, NodeContext};
 use crate::json_utils::JsonValue;
+use crate::m_try;
 use crate::project::docs::{Docs, DocsWindowRef};
 use crate::registry::ETypesRegistry;
+use crate::value::id::ETypeId;
 use crate::value::EValue;
 use downcast_rs::Downcast;
 use dyn_clone::DynClone;
 use egui_snarl::{InPin, NodeId, OutPin};
 use itertools::Itertools;
-use miette::{bail, miette, IntoDiagnostic};
+use miette::{bail, miette, Context, IntoDiagnostic};
 use std::fmt::Debug;
+use std::ops::ControlFlow;
 use ustr::Ustr;
 
+pub mod destructuring;
 pub mod macros;
 
 #[derive(Debug)]
 pub enum GenericNodeField<'a> {
+    /// A type is the list's element type.
     List(&'a Option<EDataType>),
+    /// A type is a specific type.
     Value(&'a Option<EDataType>),
+    /// A type is a struct id.
+    Struct(&'a Option<ETypeId>),
+    /// A type is fixed.
     Fixed(EDataType),
 }
 
@@ -32,6 +41,7 @@ pub enum GenericNodeField<'a> {
 pub enum GenericNodeFieldMut<'a> {
     List(&'a mut Option<EDataType>),
     Value(&'a mut Option<EDataType>),
+    Struct(&'a mut Option<ETypeId>),
     Fixed(EDataType),
 }
 
@@ -41,6 +51,7 @@ impl<'a> GenericNodeFieldMut<'a> {
             GenericNodeFieldMut::List(ty) => GenericNodeField::List(ty),
             GenericNodeFieldMut::Value(ty) => GenericNodeField::Value(ty),
             GenericNodeFieldMut::Fixed(ty) => GenericNodeField::Fixed(*ty),
+            GenericNodeFieldMut::Struct(id) => GenericNodeField::Struct(id),
         }
     }
 
@@ -74,6 +85,17 @@ impl<'a> GenericNodeFieldMut<'a> {
                 }
                 **ty = Some(incoming.ty());
             }
+            GenericNodeFieldMut::Struct(id) => {
+                if id.is_some() {
+                    bail!("Struct type already set");
+                }
+
+                let EDataType::Object { ident } = incoming.ty() else {
+                    return Ok(false);
+                };
+
+                **id = Some(ident);
+            }
             GenericNodeFieldMut::Fixed(_) => {
                 bail!("Fixed type cannot be changed");
             }
@@ -82,13 +104,23 @@ impl<'a> GenericNodeFieldMut<'a> {
     }
 
     /// Overwrites the fields with the incoming types
-    pub fn load_from(&mut self, incoming: Option<EDataType>) -> miette::Result<()> {
+    fn load_from(&mut self, incoming: Option<EDataType>) -> miette::Result<()> {
         match self {
             GenericNodeFieldMut::List(ty) => {
                 **ty = incoming;
             }
             GenericNodeFieldMut::Value(ty) => {
                 **ty = incoming;
+            }
+            GenericNodeFieldMut::Struct(ident) => {
+                let Some(incoming) = incoming else {
+                    **ident = None;
+                    return Ok(());
+                };
+                let EDataType::Object { ident: incoming } = incoming else {
+                    bail!("Expected struct type");
+                };
+                **ident = Some(incoming);
             }
             GenericNodeFieldMut::Fixed(_) => {}
         }
@@ -101,6 +133,7 @@ impl<'a> GenericNodeField<'a> {
         match self {
             GenericNodeField::List(ty) => ty.is_some(),
             GenericNodeField::Value(ty) => ty.is_some(),
+            GenericNodeField::Struct(ident) => ident.is_some(),
             GenericNodeField::Fixed(_) => true,
         }
     }
@@ -109,15 +142,10 @@ impl<'a> GenericNodeField<'a> {
         match self {
             GenericNodeField::List(ty) => registry.list_of(ty.unwrap_or_else(EDataType::null)),
             GenericNodeField::Value(ty) => ty.unwrap_or_else(EDataType::null),
+            GenericNodeField::Struct(ident) => ident
+                .map(|ident| EDataType::Object { ident })
+                .unwrap_or_else(EDataType::null),
             GenericNodeField::Fixed(ty) => *ty,
-        }
-    }
-
-    pub fn ty_opt(&self) -> Option<EDataType> {
-        match self {
-            GenericNodeField::List(ty) => **ty,
-            GenericNodeField::Value(ty) => **ty,
-            GenericNodeField::Fixed(ty) => Some(*ty),
         }
     }
 
@@ -135,9 +163,46 @@ impl<'a> GenericNodeField<'a> {
                 }
                 Ok(true)
             }
+            GenericNodeField::Struct(ident) => {
+                if ident.is_some() {
+                    bail!("Struct type already set");
+                }
+                Ok(incoming.ty().is_object())
+            }
             GenericNodeField::Fixed(_) => {
                 bail!("Fixed type cannot be changed");
             }
+        }
+    }
+
+    pub fn as_input_ty(&self, context: NodeContext, name: Ustr) -> InputData {
+        InputData::new(
+            if self.is_specific() {
+                EItemInfo::simple_type(self.ty(context.registry)).into()
+            } else {
+                NodePortType::BasedOnSource
+            },
+            name,
+        )
+    }
+
+    pub fn as_output_ty(&self, context: NodeContext, name: Ustr) -> OutputData {
+        OutputData::new(
+            if self.is_specific() {
+                EItemInfo::simple_type(self.ty(context.registry)).into()
+            } else {
+                NodePortType::BasedOnTarget
+            },
+            name,
+        )
+    }
+
+    fn save_type(&self) -> Option<EDataType> {
+        match self {
+            GenericNodeField::List(ty) => **ty,
+            GenericNodeField::Value(ty) => **ty,
+            GenericNodeField::Fixed(ty) => Some(*ty),
+            GenericNodeField::Struct(ident) => ident.map(|ident| EDataType::Object { ident }),
         }
     }
 }
@@ -145,7 +210,7 @@ impl<'a> GenericNodeField<'a> {
 pub trait GenericNode: DynClone + Debug + Send + Sync + Downcast + 'static {
     fn write_json(&self, registry: &ETypesRegistry) -> miette::Result<JsonValue> {
         let _ = (registry,);
-        write_generic_json_fields(self)
+        write_generic_json_fields(self, |n| n.inputs(), |n| n.outputs())
     }
 
     fn parse_json(
@@ -154,7 +219,10 @@ pub trait GenericNode: DynClone + Debug + Send + Sync + Downcast + 'static {
         value: &mut JsonValue,
     ) -> miette::Result<()> {
         let _ = (registry,);
-        parse_generic_json_fields(self, value)?;
+        parse_generic_json_fields(value)?
+            .inputs(self, |n| n.inputs_mut())?
+            .outputs(self, |n| n.outputs_mut())?
+            .done()?;
         Ok(())
     }
 
@@ -173,6 +241,7 @@ pub trait GenericNode: DynClone + Debug + Send + Sync + Downcast + 'static {
     fn inputs_mut(&mut self) -> impl AsMut<[GenericNodeFieldMut]>;
     fn outputs_mut(&mut self) -> impl AsMut<[GenericNodeFieldMut]>;
 
+    /// See [Node::title]
     fn title(&self, context: NodeContext, docs: &Docs) -> String {
         let _ = (context, docs);
         DocsWindowRef::Node(self.id())
@@ -250,44 +319,96 @@ pub trait GenericNode: DynClone + Debug + Send + Sync + Downcast + 'static {
     ) -> miette::Result<ExecutionResult>;
 }
 
-fn write_generic_json_fields<T: GenericNode + ?Sized>(node: &T) -> miette::Result<JsonValue> {
-    let inputs = node
-        .inputs()
+pub fn write_generic_json_fields<
+    'a,
+    T: 'a + ?Sized,
+    Inputs: FnOnce(&'a T) -> InputData,
+    InputData: AsRef<[GenericNodeField<'a>]>,
+    Outputs: FnOnce(&'a T) -> OutputData,
+    OutputData: AsRef<[GenericNodeField<'a>]>,
+>(
+    node: &'a T,
+    inputs: Inputs,
+    outputs: Outputs,
+) -> miette::Result<JsonValue> {
+    let inputs = inputs(node)
         .as_ref()
         .iter()
-        .map(|ty| ty.ty_opt())
+        .map(|ty| ty.save_type())
         .collect_vec();
-    let outputs = node
-        .outputs()
+    let outputs = outputs(node)
         .as_ref()
         .iter()
-        .map(|ty| ty.ty_opt())
+        .map(|ty| ty.save_type())
         .collect_vec();
 
     serde_json::to_value((inputs, outputs)).into_diagnostic()
 }
 
-fn parse_generic_json_fields<T: GenericNode + ?Sized>(
-    node: &mut T,
+#[allow(clippy::type_complexity)]
+pub fn parse_generic_json_fields(
     value: &mut JsonValue,
-) -> miette::Result<()> {
-    let (inputs, outputs): (Vec<Option<EDataType>>, Vec<Option<EDataType>>) =
-        serde_json::from_value(value.take()).into_diagnostic()?;
+) -> miette::Result<ParsedGeneric<Vec<Option<EDataType>>, Vec<Option<EDataType>>>> {
+    let (inputs, outputs) = serde_json::from_value(value.take()).into_diagnostic()?;
+    Ok(ParsedGeneric { inputs, outputs })
+}
 
-    for (ty, field) in inputs
-        .into_iter()
-        .zip(node.inputs_mut().as_mut().iter_mut())
-    {
-        field.load_from(ty)?
-    }
-    for (ty, field) in outputs
-        .into_iter()
-        .zip(node.outputs_mut().as_mut().iter_mut())
-    {
-        field.load_from(ty)?
-    }
+#[must_use]
+#[derive(Debug)]
+pub struct ParsedGeneric<IN, OUT> {
+    inputs: IN,
+    outputs: OUT,
+}
 
-    Ok(())
+impl<IN> ParsedGeneric<IN, Vec<Option<EDataType>>> {
+    pub(crate) fn outputs<
+        'a,
+        T: ?Sized,
+        R: AsMut<[GenericNodeFieldMut<'a>]>,
+        F: FnOnce(&'a mut T) -> R,
+    >(
+        self,
+        node: &'a mut T,
+        outputs: F,
+    ) -> miette::Result<ParsedGeneric<IN, ()>> {
+        for (ty, field) in self
+            .outputs
+            .into_iter()
+            .zip(outputs(node).as_mut().iter_mut())
+        {
+            field.load_from(ty)?
+        }
+        Ok(ParsedGeneric {
+            inputs: self.inputs,
+            outputs: (),
+        })
+    }
+}
+
+impl<OUT> ParsedGeneric<Vec<Option<EDataType>>, OUT> {
+    pub fn inputs<'a, T: ?Sized, R: AsMut<[GenericNodeFieldMut<'a>]>, F: FnOnce(&'a mut T) -> R>(
+        self,
+        node: &'a mut T,
+        inputs: F,
+    ) -> miette::Result<ParsedGeneric<(), OUT>> {
+        for (ty, field) in self
+            .inputs
+            .into_iter()
+            .zip(inputs(node).as_mut().iter_mut())
+        {
+            field.load_from(ty)?
+        }
+        Ok(ParsedGeneric {
+            inputs: (),
+            outputs: self.outputs,
+        })
+    }
+}
+
+impl ParsedGeneric<(), ()> {
+    pub fn done(self) -> miette::Result<()> {
+        Ok(())
+    }
 }
 
 impl<T: GenericNode> Node for T {
@@ -347,14 +468,7 @@ impl<T: GenericNode> Node for T {
             bail!("Invalid input index: {}", input);
         };
 
-        Ok(InputData::new(
-            if ty.is_specific() {
-                EItemInfo::simple_type(ty.ty(context.registry)).into()
-            } else {
-                NodePortType::BasedOnSource
-            },
-            self.input_names()[input].into(),
-        ))
+        Ok(ty.as_input_ty(context, self.input_names()[input].into()))
     }
 
     fn outputs_count(&self, _context: NodeContext) -> usize {
@@ -367,14 +481,7 @@ impl<T: GenericNode> Node for T {
             bail!("Invalid output index: {}", output);
         };
 
-        Ok(OutputData::new(
-            if ty.is_specific() {
-                EItemInfo::simple_type(ty.ty(context.registry)).into()
-            } else {
-                NodePortType::BasedOnTarget
-            },
-            self.output_names()[output].into(),
-        ))
+        Ok(ty.as_output_ty(context, self.output_names()[output].into()))
     }
 
     fn try_connect(
@@ -385,21 +492,20 @@ impl<T: GenericNode> Node for T {
         to: &InPin,
         incoming_type: &NodePortType,
     ) -> miette::Result<bool> {
-        {
-            let mut inputs = self.inputs_mut();
-            let Some(ty) = inputs.as_mut().get_mut(to.id.input) else {
-                bail!("Invalid input index: {}", to.id.input);
-            };
+        let changed = match generic_try_connect(
+            context,
+            commands,
+            from,
+            to,
+            incoming_type,
+            self.inputs_mut().as_mut(),
+        )? {
+            ControlFlow::Break(b) => return Ok(b),
+            ControlFlow::Continue(changed) => changed,
+        };
 
-            if !ty.as_ref().is_specific() {
-                if !ty.specify_from(context.registry, incoming_type)? {
-                    return Ok(false);
-                }
-
-                drop(inputs);
-
-                self.types_changed(context, to.id.node, commands);
-            }
+        if changed {
+            self.types_changed(context, to.id.node, commands);
         }
 
         self._default_try_connect(context, commands, from, to, incoming_type)
@@ -407,17 +513,12 @@ impl<T: GenericNode> Node for T {
 
     fn can_output_to(
         &self,
-        _context: NodeContext,
+        context: NodeContext,
         from: &OutPin,
-        _to: &InPin,
+        to: &InPin,
         target_type: &NodePortType,
     ) -> miette::Result<bool> {
-        let outputs = self.outputs();
-        let Some(ty) = outputs.as_ref().get(from.id.output) else {
-            bail!("Invalid output index: {}", from.id.output);
-        };
-
-        ty.can_specify_from(target_type)
+        generic_can_output_to(context, from, to, target_type, self.outputs().as_ref())
     }
 
     fn connected_to_output(
@@ -425,27 +526,25 @@ impl<T: GenericNode> Node for T {
         context: NodeContext,
         commands: &mut SnarlCommands,
         from: &OutPin,
-        _to: &InPin,
+        to: &InPin,
         incoming_type: &NodePortType,
     ) -> miette::Result<()> {
-        let mut outputs = self.outputs_mut();
-        let Some(ty) = outputs.as_mut().get_mut(from.id.output) else {
-            bail!("Invalid output index: {}", from.id.output);
-        };
-
-        if !ty.specify_from(context.registry, incoming_type)? {
-            bail!("Failed to specify type");
+        if generic_connected_to_output(
+            context,
+            commands,
+            from,
+            to,
+            incoming_type,
+            self.outputs_mut().as_mut(),
+        )? {
+            self.types_changed(context, from.id.node, commands);
         }
-
-        drop(outputs);
-
-        self.types_changed(context, from.id.node, commands);
 
         Ok(())
     }
 
     fn has_side_effects(&self) -> bool {
-        todo!()
+        T::has_side_effects(self)
     }
 
     fn should_execute_dependencies(
@@ -465,4 +564,79 @@ impl<T: GenericNode> Node for T {
     ) -> miette::Result<ExecutionResult> {
         T::execute(self, context, inputs, outputs, variables)
     }
+}
+
+/// Performs the generic part of the connection logic.
+///
+/// Returns [ControlFlow::Break] if the connection logic should finish early with a
+/// specific result.
+///
+/// Returns [ControlFlow::Continue] if the connection logic should continue.
+///
+/// The payload of [ControlFlow::Continue] is a boolean indicating whether the
+/// port type was changed.
+pub fn generic_try_connect(
+    context: NodeContext,
+    _commands: &mut SnarlCommands,
+    _from: &OutPin,
+    to: &InPin,
+    incoming_type: &NodePortType,
+    inputs: &mut [GenericNodeFieldMut],
+) -> miette::Result<ControlFlow<bool, bool>> {
+    let input = to.id.input;
+    let Some(ty) = inputs.get_mut(input) else {
+        bail!("Invalid input index: {}", input);
+    };
+
+    if ty.as_ref().is_specific() {
+        return Ok(ControlFlow::Continue(false));
+    }
+
+    if !ty
+        .specify_from(context.registry, incoming_type)
+        .context("Failed to process generic connection to output")?
+    {
+        return Ok(ControlFlow::Break(false));
+    }
+    Ok(ControlFlow::Continue(true))
+}
+
+pub fn generic_can_output_to(
+    _context: NodeContext,
+    from: &OutPin,
+    _to: &InPin,
+    target_type: &NodePortType,
+    outputs: &[GenericNodeField],
+) -> miette::Result<bool> {
+    let Some(ty) = outputs.as_ref().get(from.id.output) else {
+        bail!("Invalid output index: {}", from.id.output);
+    };
+
+    ty.can_specify_from(target_type)
+}
+
+/// Performs the generic part of the reverse connection logic.
+///
+/// Returns [Ok(true)] if the port type was changed.
+pub fn generic_connected_to_output(
+    context: NodeContext,
+    _commands: &mut SnarlCommands,
+    from: &OutPin,
+    _to: &InPin,
+    incoming_type: &NodePortType,
+    outputs: &mut [GenericNodeFieldMut],
+) -> miette::Result<bool> {
+    m_try(|| {
+        let Some(ty) = outputs.as_mut().get_mut(from.id.output) else {
+            bail!("Invalid output index: {}", from.id.output);
+        };
+
+        if !ty.specify_from(context.registry, incoming_type)? {
+            bail!("Failed to specify type");
+        }
+        Ok(())
+    })
+    .context("Failed to process generic connection from output")?;
+
+    Ok(true)
 }
