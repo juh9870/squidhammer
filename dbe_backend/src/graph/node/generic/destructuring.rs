@@ -1,5 +1,5 @@
 use crate::etype::eobject::EObject;
-use crate::graph::node::commands::SnarlCommands;
+use crate::graph::node::commands::{SnarlCommand, SnarlCommands};
 use crate::graph::node::generic::{generic_try_connect, GenericNodeField, GenericNodeFieldMut};
 use crate::graph::node::ports::fields::{get_field, sync_fields, IoDirection};
 use crate::graph::node::ports::{InputData, NodePortType, OutputData};
@@ -10,7 +10,7 @@ use crate::graph::node::{ExecutionResult, Node, NodeContext, NodeFactory};
 use crate::project::docs::{Docs, DocsRef};
 use crate::value::id::ETypeId;
 use crate::value::EValue;
-use egui_snarl::{InPin, NodeId, OutPin};
+use egui_snarl::{InPin, NodeId, OutPin, OutPinId};
 use miette::{bail, miette};
 use serde::{Deserialize, Serialize};
 use std::ops::ControlFlow;
@@ -75,7 +75,7 @@ impl Node for DestructuringNode {
 
     fn input_unchecked(&self, context: NodeContext, input: usize) -> miette::Result<InputData> {
         if input != 0 {
-            bail!("Invalid input index `{}`", input);
+            bail!("Destructuring only has one input")
         }
         Ok(GenericNodeField::Struct(&self.id).as_input_ty(context, "input".into()))
     }
@@ -113,7 +113,7 @@ impl Node for DestructuringNode {
         to: &InPin,
         incoming_type: &NodePortType,
     ) -> miette::Result<bool> {
-        if let ControlFlow::Break(b) = generic_try_connect(
+        let changed = match generic_try_connect(
             context,
             commands,
             from,
@@ -121,8 +121,20 @@ impl Node for DestructuringNode {
             incoming_type,
             &mut [GenericNodeFieldMut::Struct(&mut self.id)],
         )? {
-            return Ok(b);
+            ControlFlow::Continue(changed) => changed,
+            ControlFlow::Break(b) => return Ok(b),
         };
+        if changed {
+            for (idx, _) in self.fields.iter().enumerate() {
+                commands.push(SnarlCommand::DropOutputs {
+                    from: OutPinId {
+                        node: to.id.node,
+                        output: idx,
+                    },
+                });
+            }
+            self.update_state(context, commands, to.id.node)?;
+        }
 
         self._default_try_connect(context, commands, from, to, incoming_type)
     }
@@ -176,7 +188,7 @@ impl NodeFactory for DestructuringNodeFactory {
     }
 
     fn categories(&self) -> &'static [&'static str] {
-        &["utility"]
+        &["objects"]
     }
 
     fn create(&self) -> Box<dyn Node> {
