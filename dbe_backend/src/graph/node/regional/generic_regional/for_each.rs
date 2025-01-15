@@ -1,7 +1,7 @@
 use crate::etype::EDataType;
 use crate::graph::node::commands::{SnarlCommand, SnarlCommands};
 use crate::graph::node::generic::{GenericNodeField, GenericNodeFieldMut};
-use crate::graph::node::regional::array_ops::GenericRegionalNode;
+use crate::graph::node::regional::generic_regional::GenericRegionalNode;
 use crate::graph::node::regional::{remember_variables, RegionIONode, RegionIoKind};
 use crate::graph::node::variables::ExecutionExtras;
 use crate::graph::node::{ExecutionResult, NodeContext};
@@ -259,7 +259,7 @@ impl<const KIND: u8> GenericRegionalNode for ForEachLikeRegionalNode<KIND> {
             let EValue::List { values, .. } = &inputs[0] else {
                 bail!("Expected list input, got: {}", inputs[0].ty().name());
             };
-            let state = variables.get_or_init_region_data(region, || ForEachNodeState {
+            let state = variables.get_or_init_region_data(region, |_| ForEachNodeState {
                 index: 0,
                 length: values.len(),
                 output: Vec::with_capacity(values.len()),

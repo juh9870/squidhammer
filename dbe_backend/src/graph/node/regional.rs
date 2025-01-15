@@ -25,7 +25,7 @@ use ustr::Ustr;
 use utils::vec_utils::VecOperation;
 use uuid::Uuid;
 
-pub mod array_ops;
+pub mod generic_regional;
 pub mod repeat;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, EnumIs, Serialize, Deserialize)]

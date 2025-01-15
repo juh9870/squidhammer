@@ -90,7 +90,7 @@ impl RegionalNode for RepeatNode {
     ) -> miette::Result<ExecutionResult> {
         if kind.is_start() {
             let n_repeats = inputs[0].try_as_number()?;
-            let state = variables.get_or_init_region_data(region, || RepeatNodeState {
+            let state = variables.get_or_init_region_data(region, |_| RepeatNodeState {
                 repeats: n_repeats.0 as u32,
                 current: 0,
                 values: None,

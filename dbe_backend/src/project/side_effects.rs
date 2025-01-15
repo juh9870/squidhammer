@@ -351,6 +351,15 @@ impl<'a> SideEffectsContext<'a> {
         }
     }
 
+    pub fn project_files_iter(
+        &self,
+    ) -> miette::Result<impl Iterator<Item = (&Utf8PathBuf, &ProjectFile)>> {
+        match self {
+            SideEffectsContext::Context { files, .. } => Ok(files.iter()),
+            SideEffectsContext::Unavailable => bail!("Side effects context is unavailable"),
+        }
+    }
+
     // /// Grants edit access to a persistent file in the project.
     // ///
     // /// Will bail if the file is not found or is not a persistent value.

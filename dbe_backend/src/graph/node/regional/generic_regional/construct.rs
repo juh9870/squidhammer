@@ -1,6 +1,6 @@
 use crate::etype::EDataType;
 use crate::graph::node::generic::macros::generic_node_io;
-use crate::graph::node::regional::array_ops::GenericRegionalNode;
+use crate::graph::node::regional::generic_regional::GenericRegionalNode;
 use crate::graph::node::regional::{remember_variables, RegionIoKind};
 use crate::graph::node::variables::ExecutionExtras;
 use crate::graph::node::{ExecutionResult, NodeContext};
@@ -69,7 +69,7 @@ impl GenericRegionalNode for ConstructListNode {
     ) -> miette::Result<ExecutionResult> {
         if kind.is_start() {
             let n_repeats = inputs[0].try_as_number()?;
-            let state = variables.get_or_init_region_data(region, || ConstructNodeState {
+            let state = variables.get_or_init_region_data(region, |_| ConstructNodeState {
                 current: 0,
                 repeats: n_repeats.0 as usize,
                 output: Vec::with_capacity(n_repeats.0 as usize),
