@@ -53,6 +53,7 @@ pub mod enum_node;
 pub mod expression_node;
 pub mod format_node;
 pub mod functional;
+pub mod generic;
 pub mod groups;
 pub mod list;
 pub mod mappings;

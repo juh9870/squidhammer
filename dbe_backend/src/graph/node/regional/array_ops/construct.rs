@@ -1,6 +1,6 @@
 use crate::etype::EDataType;
-use crate::graph::node::regional::array_ops::macros::array_op_io;
-use crate::graph::node::regional::array_ops::ArrayOpRepeatNode;
+use crate::graph::node::generic::macros::generic_node_io;
+use crate::graph::node::regional::array_ops::GenericRegionalNode;
 use crate::graph::node::regional::{remember_variables, RegionIoKind};
 use crate::graph::node::variables::ExecutionExtras;
 use crate::graph::node::{ExecutionResult, NodeContext};
@@ -14,7 +14,7 @@ pub struct ConstructListNode {
     output_ty: Option<EDataType>,
 }
 
-impl ArrayOpRepeatNode for ConstructListNode {
+impl GenericRegionalNode for ConstructListNode {
     fn id() -> Ustr {
         "construct_list".into()
     }
@@ -33,14 +33,14 @@ impl ArrayOpRepeatNode for ConstructListNode {
         }
     }
 
-    array_op_io! {
+    generic_node_io! {
         inputs {
             Start => [Fixed(EDataType::Number)],
             End => [Value(self.output_ty)]
         }
     }
 
-    array_op_io! {
+    generic_node_io! {
         outputs {
             Start => [Fixed(EDataType::Number)],
             End => [List(self.output_ty)]

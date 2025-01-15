@@ -1,6 +1,7 @@
 use crate::etype::eitem::EItemInfo;
 use crate::etype::EDataType;
 use crate::graph::node::commands::SnarlCommands;
+use crate::graph::node::generic::{GenericNodeField, GenericNodeFieldMut};
 use crate::graph::node::ports::{InputData, NodePortType, OutputData};
 use crate::graph::node::regional::{RegionIoKind, RegionalNode};
 use crate::graph::node::variables::ExecutionExtras;
@@ -10,7 +11,7 @@ use crate::registry::ETypesRegistry;
 use crate::value::EValue;
 use egui_snarl::{InPin, NodeId, OutPin};
 use itertools::Itertools;
-use miette::{bail, miette, IntoDiagnostic};
+use miette::{bail, IntoDiagnostic};
 use std::fmt::Debug;
 use std::ops::ControlFlow;
 use ustr::Ustr;
@@ -18,138 +19,16 @@ use uuid::Uuid;
 
 pub mod construct;
 pub mod for_each;
-pub mod macros;
 
-#[derive(Debug)]
-pub enum ArrayOpField<'a> {
-    List(&'a Option<EDataType>),
-    Value(&'a Option<EDataType>),
-    Fixed(EDataType),
-}
-
-#[derive(Debug)]
-pub enum ArrayOpFieldMut<'a> {
-    List(&'a mut Option<EDataType>),
-    Value(&'a mut Option<EDataType>),
-    Fixed(EDataType),
-}
-
-impl<'a> ArrayOpFieldMut<'a> {
-    pub fn as_ref(&self) -> ArrayOpField {
-        match self {
-            ArrayOpFieldMut::List(ty) => ArrayOpField::List(ty),
-            ArrayOpFieldMut::Value(ty) => ArrayOpField::Value(ty),
-            ArrayOpFieldMut::Fixed(ty) => ArrayOpField::Fixed(*ty),
-        }
-    }
-
-    pub fn specify_from(
-        &mut self,
-        registry: &ETypesRegistry,
-        incoming: &NodePortType,
-    ) -> miette::Result<bool> {
-        if !self.as_ref().can_specify_from(incoming)? {
-            return Ok(false);
-        }
-
-        match self {
-            Self::List(ty) => {
-                if ty.is_some() {
-                    bail!("List type already set");
-                }
-                let EDataType::List { id } = incoming.ty() else {
-                    return Ok(false);
-                };
-
-                let list = registry
-                    .get_list(&id)
-                    .ok_or_else(|| miette!("Unknown list type: {}", id))?;
-
-                **ty = Some(list.value_type);
-            }
-            Self::Value(ty) => {
-                if ty.is_some() {
-                    bail!("Value type already set");
-                }
-                **ty = Some(incoming.ty());
-            }
-            ArrayOpFieldMut::Fixed(_) => {
-                bail!("Fixed type cannot be changed");
-            }
-        }
-        Ok(true)
-    }
-
-    /// Overwrites the fields with the incoming types
-    pub fn load_from(&mut self, incoming: Option<EDataType>) -> miette::Result<()> {
-        match self {
-            ArrayOpFieldMut::List(ty) => {
-                **ty = incoming;
-            }
-            ArrayOpFieldMut::Value(ty) => {
-                **ty = incoming;
-            }
-            ArrayOpFieldMut::Fixed(_) => {}
-        }
-        Ok(())
-    }
-}
-
-impl<'a> ArrayOpField<'a> {
-    pub fn is_specific(&self) -> bool {
-        match self {
-            ArrayOpField::List(ty) => ty.is_some(),
-            ArrayOpField::Value(ty) => ty.is_some(),
-            ArrayOpField::Fixed(_) => true,
-        }
-    }
-
-    pub fn ty(&self, registry: &ETypesRegistry) -> EDataType {
-        match self {
-            ArrayOpField::List(ty) => registry.list_of(ty.unwrap_or_else(EDataType::null)),
-            ArrayOpField::Value(ty) => ty.unwrap_or_else(EDataType::null),
-            ArrayOpField::Fixed(ty) => *ty,
-        }
-    }
-
-    pub fn ty_opt(&self) -> Option<EDataType> {
-        match self {
-            ArrayOpField::List(ty) => **ty,
-            ArrayOpField::Value(ty) => **ty,
-            ArrayOpField::Fixed(ty) => Some(*ty),
-        }
-    }
-
-    pub fn can_specify_from(&self, incoming: &NodePortType) -> miette::Result<bool> {
-        match self {
-            ArrayOpField::List(ty) => {
-                if ty.is_some() {
-                    bail!("List type already set");
-                }
-                Ok(incoming.ty().is_list())
-            }
-            ArrayOpField::Value(ty) => {
-                if ty.is_some() {
-                    bail!("Value type already set");
-                }
-                Ok(true)
-            }
-            ArrayOpField::Fixed(_) => {
-                bail!("Fixed type cannot be changed");
-            }
-        }
-    }
-}
-
-pub trait ArrayOpRepeatNode: 'static + Debug + Clone + Send + Sync {
+pub trait GenericRegionalNode: 'static + Debug + Clone + Send + Sync {
     fn id() -> Ustr;
     fn input_names(&self, kind: RegionIoKind) -> &[&str];
     fn output_names(&self, kind: RegionIoKind) -> &[&str];
 
-    fn inputs(&self, kind: RegionIoKind) -> impl AsRef<[ArrayOpField]>;
-    fn outputs(&self, kind: RegionIoKind) -> impl AsRef<[ArrayOpField]>;
-    fn inputs_mut(&mut self, kind: RegionIoKind) -> impl AsMut<[ArrayOpFieldMut]>;
-    fn outputs_mut(&mut self, kind: RegionIoKind) -> impl AsMut<[ArrayOpFieldMut]>;
+    fn inputs(&self, kind: RegionIoKind) -> impl AsRef<[GenericNodeField]>;
+    fn outputs(&self, kind: RegionIoKind) -> impl AsRef<[GenericNodeField]>;
+    fn inputs_mut(&mut self, kind: RegionIoKind) -> impl AsMut<[GenericNodeFieldMut]>;
+    fn outputs_mut(&mut self, kind: RegionIoKind) -> impl AsMut<[GenericNodeFieldMut]>;
 
     /// Writes node state to json
     fn write_json(
@@ -235,7 +114,7 @@ pub trait ArrayOpRepeatNode: 'static + Debug + Clone + Send + Sync {
     fn create() -> Self;
 }
 
-impl<T: ArrayOpRepeatNode> RegionalNode for T {
+impl<T: GenericRegionalNode> RegionalNode for T {
     fn id() -> Ustr {
         T::id()
     }
@@ -245,7 +124,7 @@ impl<T: ArrayOpRepeatNode> RegionalNode for T {
         _registry: &ETypesRegistry,
         kind: RegionIoKind,
     ) -> miette::Result<JsonValue> {
-        <T as ArrayOpRepeatNode>::write_json(self, _registry, kind)
+        <T as GenericRegionalNode>::write_json(self, _registry, kind)
     }
 
     fn parse_json(
@@ -254,7 +133,7 @@ impl<T: ArrayOpRepeatNode> RegionalNode for T {
         kind: RegionIoKind,
         value: &mut JsonValue,
     ) -> miette::Result<()> {
-        <T as ArrayOpRepeatNode>::parse_json(self, _registry, kind, value)
+        <T as GenericRegionalNode>::parse_json(self, _registry, kind, value)
     }
 
     fn inputs_count(&self, _context: NodeContext, kind: RegionIoKind) -> usize {
@@ -386,7 +265,7 @@ impl<T: ArrayOpRepeatNode> RegionalNode for T {
         region: Uuid,
         variables: &mut ExecutionExtras,
     ) -> miette::Result<bool> {
-        <T as ArrayOpRepeatNode>::should_execute(self, context, region, variables)
+        <T as GenericRegionalNode>::should_execute(self, context, region, variables)
     }
 
     fn execute(
@@ -398,14 +277,14 @@ impl<T: ArrayOpRepeatNode> RegionalNode for T {
         outputs: &mut Vec<EValue>,
         variables: &mut ExecutionExtras,
     ) -> miette::Result<ExecutionResult> {
-        <T as ArrayOpRepeatNode>::execute(self, context, kind, region, inputs, outputs, variables)
+        <T as GenericRegionalNode>::execute(self, context, kind, region, inputs, outputs, variables)
     }
 
     fn categories() -> &'static [&'static str] {
-        <T as ArrayOpRepeatNode>::categories()
+        <T as GenericRegionalNode>::categories()
     }
 
     fn create() -> Self {
-        <T as ArrayOpRepeatNode>::create()
+        <T as GenericRegionalNode>::create()
     }
 }
