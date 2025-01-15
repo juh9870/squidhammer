@@ -20,6 +20,7 @@ use uuid::Uuid;
 
 pub mod construct;
 pub mod for_each;
+pub mod for_each_dbeitem;
 
 pub trait GenericRegionalNode: 'static + Debug + Clone + Send + Sync {
     fn id() -> Ustr;

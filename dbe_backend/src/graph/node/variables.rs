@@ -70,11 +70,11 @@ impl<'a> ExecutionExtras<'a> {
     pub fn get_or_init_region_data<T: RegionExecutionData>(
         &mut self,
         region: Uuid,
-        init: impl FnOnce() -> T,
+        init: impl FnOnce(&mut SideEffectsContext) -> T,
     ) -> &mut T {
         self.regional_data
             .entry(region)
-            .or_insert_with(|| Box::new(init()))
+            .or_insert_with(|| Box::new(init(&mut self.side_effects)))
             .downcast_mut::<T>()
             .expect("Region data type mismatch")
     }
