@@ -1340,8 +1340,9 @@ dependencies = [
 
 [[package]]
 name = "egui-toast"
-version = "0.15.0"
-source = "git+https://github.com/fluxxcode/egui-toast.git?rev=7c5970a39458d5c8d8e5d0570e095a6d6c5140d4#7c5970a39458d5c8d8e5d0570e095a6d6c5140d4"
+version = "0.16.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d2531762f801556e7b8c445feee7b5a790aca1d5bf4d4e09a66c73b807058816"
 dependencies = [
  "egui",
 ]
@@ -1400,7 +1401,7 @@ dependencies = [
 [[package]]
 name = "egui_colors"
 version = "0.6.0"
-source = "git+https://github.com/juh9870/egui_colors.git?rev=d62bb8b2a8e7f94ace0250bc0f8f590c21db01e3#d62bb8b2a8e7f94ace0250bc0f8f590c21db01e3"
+source = "git+https://github.com/frankvgompel/egui_colors.git?rev=3611798ea18d46cc4c7d7d5078929c9486f44c84#3611798ea18d46cc4c7d7d5078929c9486f44c84"
 dependencies = [
  "egui",
  "serde",
