@@ -99,7 +99,7 @@ impl Node for ListNode {
         to: &InPin,
         incoming_type: &NodePortType,
     ) -> miette::Result<bool> {
-        if self.items_count == 0 && self.item != incoming_type.ty() {
+        if incoming_type.is_specific() && self.items_count == 0 && self.item != incoming_type.ty() {
             self.item = incoming_type.ty();
             commands.push(SnarlCommand::ReconnectOutput {
                 id: OutPinId {

@@ -1,6 +1,7 @@
 use crate::etype::EDataType;
 use crate::graph::node::commands::{SnarlCommand, SnarlCommands};
-use crate::graph::node::regional::array_ops::{ArrayOpField, ArrayOpFieldMut, ArrayOpRepeatNode};
+use crate::graph::node::generic::{GenericNodeField, GenericNodeFieldMut};
+use crate::graph::node::regional::array_ops::GenericRegionalNode;
 use crate::graph::node::regional::{remember_variables, RegionIONode, RegionIoKind};
 use crate::graph::node::variables::ExecutionExtras;
 use crate::graph::node::{ExecutionResult, NodeContext};
@@ -79,7 +80,7 @@ impl PartialEq<ForEachKind> for u8 {
     }
 }
 
-impl<const KIND: u8> ArrayOpRepeatNode for ForEachLikeRegionalNode<KIND> {
+impl<const KIND: u8> GenericRegionalNode for ForEachLikeRegionalNode<KIND> {
     fn id() -> Ustr {
         match ForEachKind::of(KIND) {
             ForEachKind::ForEach => "for_each".into(),
@@ -130,32 +131,32 @@ impl<const KIND: u8> ArrayOpRepeatNode for ForEachLikeRegionalNode<KIND> {
     //     }
     // }
 
-    fn inputs(&self, kind: RegionIoKind) -> impl AsRef<[ArrayOpField]> {
+    fn inputs(&self, kind: RegionIoKind) -> impl AsRef<[GenericNodeField]> {
         match kind {
-            RegionIoKind::Start => smallvec_n![2;ArrayOpField::List(&self.input_ty)],
+            RegionIoKind::Start => smallvec_n![2;GenericNodeField::List(&self.input_ty)],
             RegionIoKind::End => match self.kind() {
                 ForEachKind::ForEach => smallvec![],
-                ForEachKind::Map => smallvec![ArrayOpField::Value(&self.output_ty)],
-                ForEachKind::Filter => smallvec![ArrayOpField::Fixed(EDataType::Boolean)],
+                ForEachKind::Map => smallvec![GenericNodeField::Value(&self.output_ty)],
+                ForEachKind::Filter => smallvec![GenericNodeField::Fixed(EDataType::Boolean)],
                 ForEachKind::FilterMap => smallvec![
-                    ArrayOpField::Value(&self.output_ty),
-                    ArrayOpField::Fixed(EDataType::Boolean)
+                    GenericNodeField::Value(&self.output_ty),
+                    GenericNodeField::Fixed(EDataType::Boolean)
                 ],
-                ForEachKind::FlatMap => smallvec![ArrayOpField::List(&self.output_ty)],
+                ForEachKind::FlatMap => smallvec![GenericNodeField::List(&self.output_ty)],
             },
         }
     }
 
-    fn outputs(&self, kind: RegionIoKind) -> impl AsRef<[ArrayOpField]> {
+    fn outputs(&self, kind: RegionIoKind) -> impl AsRef<[GenericNodeField]> {
         match kind {
             RegionIoKind::Start => {
-                smallvec_n![2;ArrayOpField::Value(&self.input_ty), ArrayOpField::Fixed(EDataType::Number), ArrayOpField::Fixed(EDataType::Number)]
+                smallvec_n![2;GenericNodeField::Value(&self.input_ty), GenericNodeField::Fixed(EDataType::Number), GenericNodeField::Fixed(EDataType::Number)]
             }
             RegionIoKind::End => {
                 if is_map(KIND) {
-                    smallvec![ArrayOpField::List(&self.output_ty)]
+                    smallvec![GenericNodeField::List(&self.output_ty)]
                 } else if KIND == ForEachKind::Filter {
-                    smallvec![ArrayOpField::List(&self.input_ty)]
+                    smallvec![GenericNodeField::List(&self.input_ty)]
                 } else {
                     smallvec![]
                 }
@@ -163,32 +164,32 @@ impl<const KIND: u8> ArrayOpRepeatNode for ForEachLikeRegionalNode<KIND> {
         }
     }
 
-    fn inputs_mut(&mut self, kind: RegionIoKind) -> impl AsMut<[ArrayOpFieldMut]> {
+    fn inputs_mut(&mut self, kind: RegionIoKind) -> impl AsMut<[GenericNodeFieldMut]> {
         match kind {
-            RegionIoKind::Start => smallvec_n![2;ArrayOpFieldMut::List(&mut self.input_ty)],
+            RegionIoKind::Start => smallvec_n![2;GenericNodeFieldMut::List(&mut self.input_ty)],
             RegionIoKind::End => match self.kind() {
                 ForEachKind::ForEach => smallvec![],
-                ForEachKind::Map => smallvec![ArrayOpFieldMut::Value(&mut self.output_ty)],
-                ForEachKind::Filter => smallvec![ArrayOpFieldMut::Fixed(EDataType::Boolean)],
+                ForEachKind::Map => smallvec![GenericNodeFieldMut::Value(&mut self.output_ty)],
+                ForEachKind::Filter => smallvec![GenericNodeFieldMut::Fixed(EDataType::Boolean)],
                 ForEachKind::FilterMap => smallvec![
-                    ArrayOpFieldMut::Value(&mut self.output_ty),
-                    ArrayOpFieldMut::Fixed(EDataType::Boolean)
+                    GenericNodeFieldMut::Value(&mut self.output_ty),
+                    GenericNodeFieldMut::Fixed(EDataType::Boolean)
                 ],
-                ForEachKind::FlatMap => smallvec![ArrayOpFieldMut::List(&mut self.output_ty)],
+                ForEachKind::FlatMap => smallvec![GenericNodeFieldMut::List(&mut self.output_ty)],
             },
         }
     }
 
-    fn outputs_mut(&mut self, kind: RegionIoKind) -> impl AsMut<[ArrayOpFieldMut]> {
+    fn outputs_mut(&mut self, kind: RegionIoKind) -> impl AsMut<[GenericNodeFieldMut]> {
         match kind {
             RegionIoKind::Start => {
-                smallvec_n![2;ArrayOpFieldMut::Value(&mut self.input_ty), ArrayOpFieldMut::Fixed(EDataType::Number), ArrayOpFieldMut::Fixed(EDataType::Number)]
+                smallvec_n![2;GenericNodeFieldMut::Value(&mut self.input_ty), GenericNodeFieldMut::Fixed(EDataType::Number), GenericNodeFieldMut::Fixed(EDataType::Number)]
             }
             RegionIoKind::End => {
                 if is_map(KIND) {
-                    smallvec![ArrayOpFieldMut::List(&mut self.output_ty)]
+                    smallvec![GenericNodeFieldMut::List(&mut self.output_ty)]
                 } else if KIND == ForEachKind::Filter {
-                    smallvec![ArrayOpFieldMut::List(&mut self.input_ty)]
+                    smallvec![GenericNodeFieldMut::List(&mut self.input_ty)]
                 } else {
                     smallvec![]
                 }
