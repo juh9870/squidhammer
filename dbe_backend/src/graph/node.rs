@@ -7,6 +7,7 @@ use crate::graph::node::enum_node::EnumNodeFactory;
 use crate::graph::node::expression_node::ExpressionNodeFactory;
 use crate::graph::node::format_node::FormatNodeFactory;
 use crate::graph::node::functional::functional_nodes;
+use crate::graph::node::generic::destructuring::DestructuringNodeFactory;
 use crate::graph::node::groups::input::GroupInputNodeFactory;
 use crate::graph::node::groups::output::GroupOutputNodeFactory;
 use crate::graph::node::groups::subgraph::SubgraphNodeFactory;
@@ -96,6 +97,7 @@ fn default_nodes() -> impl Iterator<Item = (Ustr, Arc<dyn NodeFactory>)> {
     v.push(Arc::new(MappingsNodeFactory));
     v.push(Arc::new(FormatNodeFactory));
     v.push(Arc::new(ExpressionNodeFactory));
+    v.push(Arc::new(DestructuringNodeFactory));
     v.push(Arc::new(RegionalNodeFactory::<RepeatNode>::INSTANCE));
     v.push(Arc::new(RegionalNodeFactory::<ListForEachNode>::INSTANCE));
     v.push(Arc::new(RegionalNodeFactory::<ListFilterNode>::INSTANCE));

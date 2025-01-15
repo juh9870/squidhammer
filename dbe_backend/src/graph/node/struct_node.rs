@@ -15,7 +15,7 @@ use crate::project::docs::{Docs, DocsRef};
 use crate::value::id::ETypeId;
 use crate::value::EValue;
 use egui_snarl::NodeId;
-use miette::miette;
+use miette::{bail, miette};
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 use ustr::Ustr;
@@ -27,7 +27,7 @@ pub struct StructNode {
     pub fields: Vec<Ustr>,
 }
 
-struct StructNodeFieldMapper;
+pub struct StructNodeFieldMapper;
 
 impl FieldMapper for StructNodeFieldMapper {
     type Field = EStructField;
@@ -87,16 +87,16 @@ impl Node for StructNode {
     }
 
     fn inputs_count(&self, context: NodeContext) -> usize {
-        let Some(data) = context.registry.get_struct(&self.id) else {
+        let Some(_) = context.registry.get_struct(&self.id) else {
             return 0;
         };
 
-        data.fields.len()
+        self.fields.len()
     }
 
     fn input_unchecked(&self, context: NodeContext, input: usize) -> miette::Result<InputData> {
         let Some(data) = context.registry.get_struct(&self.id) else {
-            panic!("Unknown struct")
+            bail!("Unknown struct `{}`", self.id);
         };
 
         let field = get_field(&StructNodeFieldMapper, &data.fields, &self.fields, input);
@@ -117,11 +117,11 @@ impl Node for StructNode {
 
     fn output_unchecked(&self, context: NodeContext, output: usize) -> miette::Result<OutputData> {
         let Some(_) = context.registry.get_struct(&self.id) else {
-            panic!("Unknown struct")
+            bail!("Unknown struct `{}`", self.id);
         };
 
         if output != 0 {
-            panic!("Struct only has one output")
+            bail!("Struct only has one output")
         }
 
         Ok(OutputData::new(
