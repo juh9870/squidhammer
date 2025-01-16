@@ -340,7 +340,7 @@ impl GenericRegionalNode for ForEachDbeItem {
     }
 
     fn categories() -> &'static [&'static str] {
-        &["objects"]
+        &["objects", "utility.iterators"]
     }
 
     fn create() -> Self {
