@@ -109,7 +109,7 @@ impl GenericRegionalNode for ConstructListNode {
     }
 
     fn categories() -> &'static [&'static str] {
-        &["list"]
+        &["list", "utility.iterators"]
     }
 
     fn create() -> Self {

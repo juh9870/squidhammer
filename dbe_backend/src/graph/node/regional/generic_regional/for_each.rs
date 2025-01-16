@@ -351,7 +351,7 @@ impl<const KIND: u8> GenericRegionalNode for ForEachLikeRegionalNode<KIND> {
     }
 
     fn categories() -> &'static [&'static str] {
-        &["list"]
+        &["list", "utility.iterators"]
     }
 
     fn create() -> Self {

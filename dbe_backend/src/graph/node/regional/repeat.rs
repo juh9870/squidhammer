@@ -122,7 +122,7 @@ impl RegionalNode for RepeatNode {
     }
 
     fn categories() -> &'static [&'static str] {
-        &["utility"]
+        &["utility", "utility.iterators"]
     }
 
     fn create() -> Self {
