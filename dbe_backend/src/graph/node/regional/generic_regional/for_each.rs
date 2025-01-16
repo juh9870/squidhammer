@@ -197,7 +197,7 @@ impl<const KIND: u8> GenericRegionalNode for ForEachLikeRegionalNode<KIND> {
         }
     }
 
-    fn state_changed(
+    fn types_changed(
         &mut self,
         context: NodeContext,
         kind: RegionIoKind,

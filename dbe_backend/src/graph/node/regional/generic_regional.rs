@@ -1,5 +1,6 @@
 use crate::etype::eitem::EItemInfo;
 use crate::graph::node::commands::SnarlCommands;
+use crate::graph::node::editable_state::EditableState;
 use crate::graph::node::generic::{
     generic_can_output_to, generic_connected_to_output, generic_try_connect,
     parse_generic_json_fields, write_generic_json_fields, GenericNodeField, GenericNodeFieldMut,
@@ -58,9 +59,41 @@ pub trait GenericRegionalNode: 'static + Debug + Clone + Send + Sync {
         Ok(())
     }
 
+    /// See [Node::has_editable_state]
+    fn has_editable_state(&self, kind: RegionIoKind) -> bool {
+        let _ = (kind,);
+        false
+    }
+
+    /// See [Node::editable_state]
+    fn editable_state(&self, kind: RegionIoKind) -> EditableState {
+        assert!(
+            self.has_editable_state(kind),
+            "editable_state should only be called if has_editable_state returns true"
+        );
+        unimplemented!()
+    }
+
+    /// See [Node::apply_editable_state]
+    fn apply_editable_state(
+        &mut self,
+        _context: NodeContext,
+        kind: RegionIoKind,
+        state: EditableState,
+        commands: &mut SnarlCommands,
+        node_id: NodeId,
+    ) -> miette::Result<()> {
+        let _ = (state, commands, node_id);
+        assert!(
+            self.has_editable_state(kind),
+            "apply_editable_state should only be called if has_editable_state returns true"
+        );
+        unimplemented!()
+    }
+
     /// Called after one of the node's inputs types has changed, allowing the
     /// node to update state of its pair
-    fn state_changed(
+    fn types_changed(
         &mut self,
         context: NodeContext,
         kind: RegionIoKind,
@@ -112,6 +145,27 @@ impl<T: GenericRegionalNode> RegionalNode for T {
         value: &mut JsonValue,
     ) -> miette::Result<()> {
         <T as GenericRegionalNode>::parse_json(self, _registry, kind, value)
+    }
+
+    fn has_editable_state(&self, kind: RegionIoKind) -> bool {
+        <T as GenericRegionalNode>::has_editable_state(self, kind)
+    }
+
+    fn editable_state(&self, kind: RegionIoKind) -> EditableState {
+        <T as GenericRegionalNode>::editable_state(self, kind)
+    }
+
+    fn apply_editable_state(
+        &mut self,
+        context: NodeContext,
+        kind: RegionIoKind,
+        state: EditableState,
+        commands: &mut SnarlCommands,
+        node_id: NodeId,
+    ) -> miette::Result<()> {
+        <T as GenericRegionalNode>::apply_editable_state(
+            self, context, kind, state, commands, node_id,
+        )
     }
 
     fn inputs_count(&self, _context: NodeContext, kind: RegionIoKind) -> usize {
@@ -187,7 +241,7 @@ impl<T: GenericRegionalNode> RegionalNode for T {
         };
 
         if changed {
-            self.state_changed(context, kind, region, to.id.node, commands);
+            self.types_changed(context, kind, region, to.id.node, commands);
         }
 
         Ok(ControlFlow::Continue(()))
@@ -223,7 +277,7 @@ impl<T: GenericRegionalNode> RegionalNode for T {
             incoming_type,
             self.outputs_mut(kind).as_mut(),
         )? {
-            self.state_changed(context, kind, region, from.id.node, commands);
+            self.types_changed(context, kind, region, from.id.node, commands);
         }
 
         Ok(())
