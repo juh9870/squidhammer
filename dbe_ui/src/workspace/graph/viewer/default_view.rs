@@ -1,3 +1,4 @@
+use crate::error::report_error;
 use crate::main_toolbar::docs::{docs_hover_type, docs_label};
 use crate::ui_props::PROP_OBJECT_GRAPH_INLINE;
 use crate::workspace::editors::{editor_for_item, EditorContext};
@@ -199,7 +200,13 @@ impl NodeView for DefaultNodeView {
         let res = show_state_editor(ui, viewer, node.id(), &mut state)?;
 
         if res.changed {
-            node.apply_editable_state(state, &mut viewer.commands, node_id)?;
+            node.apply_editable_state(
+                viewer.ctx.as_node_context(),
+                state,
+                &mut viewer.commands,
+                node_id,
+            )
+            .unwrap_or_else(report_error);
         }
 
         Ok(())

@@ -282,6 +282,7 @@ pub trait Node: DynClone + Debug + Send + Sync + Downcast + 'static {
     ///   an incompatible state was passed
     fn apply_editable_state(
         &mut self,
+        _context: NodeContext,
         state: EditableState,
         commands: &mut SnarlCommands,
         node_id: NodeId,

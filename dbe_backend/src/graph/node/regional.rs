@@ -1,4 +1,5 @@
 use crate::graph::node::commands::{SnarlCommand, SnarlCommands};
+use crate::graph::node::editable_state::EditableState;
 use crate::graph::node::groups::utils::{
     get_graph_io_field, get_port_input, get_port_output, sync_fields,
 };
@@ -128,6 +129,25 @@ impl<T: RegionalNode> Node for RegionIONode<T> {
         );
 
         Ok(())
+    }
+
+    fn has_editable_state(&self) -> bool {
+        self.node.has_editable_state(self.kind)
+    }
+
+    fn editable_state(&self) -> EditableState {
+        self.node.editable_state(self.kind)
+    }
+
+    fn apply_editable_state(
+        &mut self,
+        context: NodeContext,
+        state: EditableState,
+        commands: &mut SnarlCommands,
+        node_id: NodeId,
+    ) -> miette::Result<()> {
+        self.node
+            .apply_editable_state(context, self.kind, state, commands, node_id)
     }
 
     fn inputs_count(&self, context: NodeContext) -> usize {
@@ -425,6 +445,38 @@ pub trait RegionalNode: 'static + Debug + Clone + Send + Sync {
     ) -> miette::Result<()> {
         let _ = (registry, kind, value);
         Ok(())
+    }
+
+    /// See [Node::has_editable_state]
+    fn has_editable_state(&self, kind: RegionIoKind) -> bool {
+        let _ = (kind,);
+        false
+    }
+
+    /// See [Node::editable_state]
+    fn editable_state(&self, kind: RegionIoKind) -> EditableState {
+        assert!(
+            self.has_editable_state(kind),
+            "editable_state should only be called if has_editable_state returns true"
+        );
+        unimplemented!()
+    }
+
+    /// See [Node::apply_editable_state]
+    fn apply_editable_state(
+        &mut self,
+        _context: NodeContext,
+        kind: RegionIoKind,
+        state: EditableState,
+        commands: &mut SnarlCommands,
+        node_id: NodeId,
+    ) -> miette::Result<()> {
+        let _ = (state, commands, node_id);
+        assert!(
+            self.has_editable_state(kind),
+            "apply_editable_state should only be called if has_editable_state returns true"
+        );
+        unimplemented!()
     }
 
     fn inputs_count(&self, context: NodeContext, kind: RegionIoKind) -> usize;

@@ -113,6 +113,7 @@ impl Node for FormatNode {
 
     fn apply_editable_state(
         &mut self,
+        _context: NodeContext,
         state: EditableState,
         commands: &mut SnarlCommands,
         node_id: NodeId,

@@ -3,6 +3,7 @@ use crate::project::side_effects::SideEffectsContext;
 use crate::value::EValue;
 use ahash::AHashMap;
 use miette::{bail, miette};
+use std::collections::hash_map::Entry;
 use uuid::Uuid;
 
 #[derive(derive_more::Debug)]
@@ -77,6 +78,19 @@ impl<'a> ExecutionExtras<'a> {
             .or_insert_with(|| Box::new(init(&mut self.side_effects)))
             .downcast_mut::<T>()
             .expect("Region data type mismatch")
+    }
+
+    pub fn get_or_try_init_region_data<T: RegionExecutionData>(
+        &mut self,
+        region: Uuid,
+        init: impl FnOnce(&mut SideEffectsContext) -> miette::Result<T>,
+    ) -> miette::Result<&mut T> {
+        let e = match self.regional_data.entry(region) {
+            Entry::Occupied(e) => e.into_mut(),
+            Entry::Vacant(e) => e.insert(Box::new(init(&mut self.side_effects)?)),
+        };
+
+        Ok(e.downcast_mut::<T>().expect("Region data type mismatch"))
     }
 
     pub fn get_region_data<T: RegionExecutionData>(&mut self, region: Uuid) -> Option<&mut T> {
