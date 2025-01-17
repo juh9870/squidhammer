@@ -3,7 +3,6 @@ use crate::project::side_effects::mappings::Mappings;
 use crate::project::{Project, ProjectFile};
 use crate::registry::ETypesRegistry;
 use crate::value::EValue;
-use ahash::AHashMap;
 use camino::{Utf8Path, Utf8PathBuf};
 use egui_snarl::NodeId;
 use itertools::Itertools;
@@ -12,6 +11,7 @@ use miette::{bail, WrapErr};
 use std::collections::{btree_map, hash_map, BTreeMap};
 use std::hash::{Hash, Hasher};
 use tracing::info;
+use utils::map::HashMap;
 use uuid::Uuid;
 
 pub mod mappings;
@@ -97,7 +97,7 @@ impl SideEffect {
 #[derive(Debug, Default)]
 pub struct SideEffects {
     effects: Vec<(SideEffectEmitter, SideEffect)>,
-    mappings: AHashMap<Utf8PathBuf, (u64, Mappings)>,
+    mappings: HashMap<Utf8PathBuf, (u64, Mappings)>,
 }
 
 impl SideEffects {
@@ -202,7 +202,7 @@ impl SideEffects {
 }
 
 fn hash_of(value: impl Hash) -> u64 {
-    let mut hasher = ahash::AHasher::default();
+    let mut hasher = utils::map::Hasher::default();
     value.hash(&mut hasher);
     hasher.finish()
 }

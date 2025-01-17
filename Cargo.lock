@@ -1059,7 +1059,6 @@ checksum = "96a6ac251f4a2aca6b3f91340350eab87ae57c3f127ffeb585e92bd336717991"
 name = "dbe_backend"
 version = "0.1.0"
 dependencies = [
- "ahash",
  "atomic_refcell",
  "camino",
  "collection_traits",
@@ -1080,13 +1079,13 @@ dependencies = [
  "maybe-owned",
  "miette",
  "ordered-float",
- "ordermap",
  "parking_lot",
  "paste",
  "path-clean",
  "petgraph",
  "rand",
  "random_color",
+ "ringbuffer",
  "rstest",
  "sanitise-file-name",
  "serde",
@@ -1108,7 +1107,6 @@ dependencies = [
 name = "dbe_ui"
 version = "0.1.0"
 dependencies = [
- "ahash",
  "atomic_refcell",
  "camino",
  "cansi",
@@ -3669,6 +3667,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "19b30a45b0cd0bcca8037f3d0dc3421eaf95327a17cad11964fb8179b4fc4832"
 
 [[package]]
+name = "ringbuffer"
+version = "0.15.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3df6368f71f205ff9c33c076d170dd56ebf68e8161c733c0caa07a7a5509ed53"
+
+[[package]]
 name = "ron"
 version = "0.8.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4502,12 +4506,14 @@ checksum = "06abde3611657adf66d383f00b093d7faecc7fa57071cce2578660c9f1010821"
 name = "utils"
 version = "0.1.0"
 dependencies = [
+ "ahash",
  "collection_traits",
  "ecolor",
  "emath",
  "itertools",
  "miette",
  "num-traits",
+ "ordermap",
  "rstest",
  "smallvec",
  "strum",

@@ -13,7 +13,7 @@ use crate::workspace::editors::string::StringEditor;
 use crate::workspace::editors::structs::StructEditor;
 use crate::workspace::editors::utils::EditorSize;
 use crate::workspace::editors::wrapped::WrappedEditor;
-use ahash::AHashMap;
+use ::utils::map::HashMap;
 use dbe_backend::diagnostic::context::DiagnosticContextRef;
 use dbe_backend::etype::econst::ETypeConst;
 use dbe_backend::etype::eitem::EItemInfo;
@@ -99,7 +99,7 @@ fn default_editors() -> impl Iterator<Item = (Ustr, Box<dyn Editor>)> {
     ];
     v.into_iter()
 }
-type Props<'a> = &'a AHashMap<FieldPropertyId, ETypeConst>;
+type Props<'a> = &'a HashMap<FieldPropertyId, ETypeConst>;
 
 trait EditorProps: std::any::Any + DynClone + Downcast {
     fn pack(self) -> DynProps

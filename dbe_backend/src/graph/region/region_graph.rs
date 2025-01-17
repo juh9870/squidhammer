@@ -1,5 +1,4 @@
 use crate::graph::node::SnarlNode;
-use ahash::AHashMap;
 use egui_snarl::{InPinId, NodeId, OutPinId, Snarl};
 use itertools::Itertools;
 use miette::Diagnostic;
@@ -12,6 +11,7 @@ use std::collections::hash_map::Entry;
 use std::iter::once;
 use std::marker::PhantomData;
 use thiserror::Error;
+use utils::map::HashMap;
 use uuid::Uuid;
 
 #[derive(Debug)]
@@ -68,11 +68,11 @@ impl RegionGraph {
 impl RegionGraph {
     /// Attempts to build a region graph for the given node graph
     pub fn build_regions_graph(snarl: &Snarl<SnarlNode>) -> Self {
-        let mut outputs = AHashMap::<NodeId, Vec<(OutPinId, InPinId)>>::new();
+        let mut outputs = HashMap::<NodeId, Vec<(OutPinId, InPinId)>>::default();
 
         let mut node_graph =
             petgraph::acyclic::Acyclic::<petgraph::graph::DiGraph<NodeId, ()>>::new();
-        let mut node_mapping = AHashMap::new();
+        let mut node_mapping = HashMap::default();
         for (node, _) in snarl.node_ids() {
             node_mapping.insert(node, node_graph.add_node(node));
         }
@@ -125,8 +125,8 @@ pub struct NodeWithSeparation {
 #[derive(Debug)]
 pub struct RegionGraphData {
     topological_order: Vec<Uuid>,
-    regions: AHashMap<Uuid, RegionGraphRegionData>,
-    regions_by_node: AHashMap<NodeId, Uuid>,
+    regions: HashMap<Uuid, RegionGraphRegionData>,
+    regions_by_node: HashMap<NodeId, Uuid>,
 }
 
 impl RegionGraphData {
@@ -170,11 +170,11 @@ struct RegionGraphBuilder<'a> {
     /// Reference to the graph
     snarl: &'a Snarl<SnarlNode>,
     /// usize mappings for faster region access
-    region_ids: AHashMap<Uuid, usize>,
+    region_ids: HashMap<Uuid, usize>,
     region_data: Vec<RegionBuilderData>,
-    node_data: AHashMap<NodeId, RegionBuilderNode>,
+    node_data: HashMap<NodeId, RegionBuilderNode>,
     /// Output connections of the nodes
-    outputs: AHashMap<NodeId, Vec<(OutPinId, InPinId)>>,
+    outputs: HashMap<NodeId, Vec<(OutPinId, InPinId)>>,
 }
 
 #[derive(Debug)]
@@ -196,7 +196,7 @@ struct RegionBuilderNode {
 impl<'a> RegionGraphBuilder<'a> {
     fn new(
         snarl: &'a Snarl<SnarlNode>,
-        outputs: AHashMap<NodeId, Vec<(OutPinId, InPinId)>>,
+        outputs: HashMap<NodeId, Vec<(OutPinId, InPinId)>>,
     ) -> Self {
         Self {
             snarl,
@@ -294,8 +294,8 @@ impl RegionGraphBuilder<'_> {
 
     fn calculate_node_inputs(&mut self) -> Result<(), GraphRegionBuildError> {
         fn fill_inputs_recursive(
-            outputs: &AHashMap<NodeId, Vec<(OutPinId, InPinId)>>,
-            nodes: &mut AHashMap<NodeId, RegionBuilderNode>,
+            outputs: &HashMap<NodeId, Vec<(OutPinId, InPinId)>>,
+            nodes: &mut HashMap<NodeId, RegionBuilderNode>,
             region: usize,
             node: NodeId,
         ) {
@@ -627,7 +627,10 @@ pub enum GraphRegionBuildError {
         a: (Uuid, NodeId),
         b: (Uuid, NodeId),
     },
-    #[error("Region {} has multiple parent regions: {}", format_region_with_id(.region), format_region_ids(.parents))]
+    #[error("Region {} has multiple parent regions: {}",
+        format_region_with_id(.region),
+        format_region_ids(.parents)
+    )]
     MultipleParentRegions {
         region: (Uuid, NodeId),
         parents: Vec<(Uuid, NodeId)>,

@@ -10,10 +10,10 @@ use crate::json_utils::{json_kind, JsonMap, JsonValue};
 use crate::registry::ETypesRegistry;
 use crate::value::id::ETypeId;
 use crate::value::EValue;
-use ahash::AHashMap;
 use itertools::Itertools;
 use miette::{bail, miette, Context};
 use ustr::{Ustr, UstrMap};
+use utils::map::HashMap;
 
 pub mod pattern;
 pub mod variant;
@@ -24,7 +24,7 @@ pub struct EEnumData {
     pub generic_arguments_values: Vec<EItemInfo>,
     pub ident: ETypeId,
     pub repr: Option<Repr>,
-    pub extra_properties: AHashMap<ObjectPropertyId, ETypeConst>,
+    pub extra_properties: HashMap<ObjectPropertyId, ETypeConst>,
     title: ObjectTitle,
     tagged_repr: Option<Tagged>,
     variants: Vec<EEnumVariant>,
@@ -37,7 +37,7 @@ impl EEnumData {
         generic_arguments: Vec<Ustr>,
         repr: Option<Repr>,
         tagged_repr: Option<Tagged>,
-        extra_properties: AHashMap<ObjectPropertyId, ETypeConst>,
+        extra_properties: HashMap<ObjectPropertyId, ETypeConst>,
     ) -> Self {
         Self {
             generic_arguments,
@@ -291,7 +291,7 @@ impl EEnumData {
 }
 
 impl EObject for EEnumData {
-    fn extra_properties(&self) -> &AHashMap<ObjectPropertyId, ETypeConst> {
+    fn extra_properties(&self) -> &HashMap<ObjectPropertyId, ETypeConst> {
         &self.extra_properties
     }
 

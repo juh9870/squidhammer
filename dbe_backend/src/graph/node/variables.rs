@@ -1,9 +1,9 @@
 use crate::graph::region::RegionExecutionData;
 use crate::project::side_effects::SideEffectsContext;
 use crate::value::EValue;
-use ahash::AHashMap;
 use miette::{bail, miette};
 use std::collections::hash_map::Entry;
+use utils::map::HashMap;
 use uuid::Uuid;
 
 #[derive(derive_more::Debug)]
@@ -12,7 +12,7 @@ pub struct ExecutionExtras<'a> {
     group_inputs: &'a [EValue],
     group_outputs: &'a mut Option<Vec<EValue>>,
     #[debug("(...)")]
-    regional_data: &'a mut AHashMap<Uuid, Box<dyn RegionExecutionData>>,
+    regional_data: &'a mut HashMap<Uuid, Box<dyn RegionExecutionData>>,
     pub side_effects: SideEffectsContext<'a>,
 }
 
@@ -21,7 +21,7 @@ impl<'a> ExecutionExtras<'a> {
         is_node_group: bool,
         group_inputs: &'a [EValue],
         group_outputs: &'a mut Option<Vec<EValue>>,
-        regional_data: &'a mut AHashMap<Uuid, Box<dyn RegionExecutionData>>,
+        regional_data: &'a mut HashMap<Uuid, Box<dyn RegionExecutionData>>,
         side_effects: SideEffectsContext<'a>,
     ) -> Self {
         Self {

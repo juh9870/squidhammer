@@ -1,10 +1,10 @@
 use crate::value::EValue;
-use ahash::AHashMap;
 use egui_snarl::NodeId;
+use utils::map::HashMap;
 
 #[derive(Debug, Default)]
 pub struct GraphCache {
-    nodes: AHashMap<NodeId, Vec<EValue>>,
+    nodes: HashMap<NodeId, Vec<EValue>>,
 }
 
 impl GraphCache {

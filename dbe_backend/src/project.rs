@@ -11,7 +11,6 @@ use crate::registry::ETypesRegistry;
 use crate::validation::{clear_validation_cache, validate};
 use crate::value::id::ETypeId;
 use crate::value::EValue;
-use ahash::AHashSet;
 use camino::{Utf8Path, Utf8PathBuf};
 use diagnostic::context::DiagnosticContext;
 use diagnostic::diagnostic::DiagnosticLevel;
@@ -20,6 +19,7 @@ use serde::{Deserialize, Serialize};
 use std::collections::{BTreeMap, BTreeSet};
 use std::path::{Path, PathBuf};
 use tracing::info;
+use utils::map::HashSet;
 use uuid::Uuid;
 use walkdir::WalkDir;
 
@@ -43,7 +43,7 @@ pub struct Project<IO> {
     pub files: BTreeMap<Utf8PathBuf, ProjectFile>,
     pub graphs: ProjectGraphs,
     /// Files that should be deleted on save
-    pub to_delete: AHashSet<Utf8PathBuf>,
+    pub to_delete: HashSet<Utf8PathBuf>,
     /// Root folder of the project
     pub root: Utf8PathBuf,
     io: IO,

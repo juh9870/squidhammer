@@ -7,7 +7,6 @@ publish = false
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-ahash = { workspace = true, features = ["serde"] }
 atomic_refcell = { workspace = true }
 camino = { workspace = true, features = ["serde", "serde1"] }
 collection_traits = { workspace = true, features = ["smallvec"] }
@@ -28,12 +27,12 @@ knus = { workspace = true }
 maybe-owned = { workspace = true }
 miette = { workspace = true }
 ordered-float = { workspace = true, features = ["serde"] }
-ordermap = { workspace = true }
 parking_lot = { workspace = true }
 paste = { workspace = true }
 path-clean = { workspace = true }
 petgraph = { workspace = true }
 random_color = { workspace = true }
+ringbuffer = { workspace = true }
 sanitise-file-name = { workspace = true }
 serde = { workspace = true, features = ["derive"] }
 serde_json = { workspace = true }

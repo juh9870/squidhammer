@@ -5,7 +5,6 @@ use crate::registry::ETypesRegistry;
 use crate::validation::DataValidator;
 use crate::value::id::ETypeId;
 use crate::value::{ENumber, EValue};
-use ahash::{AHashMap, AHashSet};
 use camino::Utf8PathBuf;
 use diagnostic::context::DiagnosticContextMut;
 use itertools::Itertools;
@@ -20,10 +19,11 @@ use std::fmt::Display;
 use std::sync::Arc;
 use thiserror::Error;
 use ustr::{Ustr, UstrMap};
+use utils::map::{HashMap, HashSet};
 
 #[derive(Default)]
 pub struct NumericIDsRegistry {
-    ids: UstrMap<AHashMap<ENumber, BTreeSet<String>>>,
+    ids: UstrMap<HashMap<ENumber, BTreeSet<String>>>,
 }
 
 type Data = RwLock<NumericIDsRegistry>;
@@ -148,7 +148,7 @@ impl ConfigMerge for ReservedIdConfig {
 struct ReservedIdTypeConfig {
     /// Reserved IDs
     #[serde(default)]
-    reserved_ids: AHashSet<ENumber>,
+    reserved_ids: HashSet<ENumber>,
     /// Other types that this type cannot share IDs with
     #[serde(default)]
     conflicting_types: Vec<Ustr>,

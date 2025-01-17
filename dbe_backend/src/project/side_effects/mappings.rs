@@ -2,13 +2,13 @@ use crate::etype::EDataType;
 use crate::registry::ETypesRegistry;
 use crate::value::id::ETypeId;
 use crate::value::EValue;
-use ahash::{AHashMap, AHashSet};
 use miette::{bail, miette, Context, IntoDiagnostic};
 use serde::{Deserialize, Serialize};
 use smallvec::SmallVec;
 use std::collections::hash_map::Entry;
 use std::ops::RangeInclusive;
 use std::sync::LazyLock;
+use utils::map::{HashMap, HashSet};
 
 pub static STORAGE_ID: LazyLock<ETypeId> =
     LazyLock::new(|| ETypeId::from_raw("sys:mappings/storage".into()));
@@ -18,15 +18,15 @@ pub static RANGE_ID: LazyLock<ETypeId> =
 #[derive(Debug, Clone, Default)]
 pub struct Mappings {
     /// Mapping of the string id <-> numeric ID
-    ids: AHashMap<String, MappingEntry>,
+    ids: HashMap<String, MappingEntry>,
     /// List of string IDs that were "created" by the current session
     ///
     /// Mainly here to allow for proper functioning of the [Mappings::new_id],
     /// which checks whenever the ID was already "created" during the current
     /// session
-    currently_created: AHashSet<String>,
+    currently_created: HashSet<String>,
     /// Set of all occupied IDs
-    occupied_ids: AHashSet<i64>,
+    occupied_ids: HashSet<i64>,
     /// List of available ID ranges
     ///
     /// This uses range iterators, that are consumed when an ID is taken. Due
@@ -167,7 +167,7 @@ impl Mappings {
 
 #[derive(Debug, Serialize, Deserialize)]
 struct PackedMappings {
-    values: AHashMap<String, f64>,
+    values: HashMap<String, f64>,
     ranges: SmallVec<[PackedRange; 1]>,
 }
 
@@ -227,7 +227,7 @@ impl PackedMappings {
 
 fn next_id_raw(
     available_ids: &mut [RangeInclusive<i64>],
-    occupied_ids: &mut AHashSet<i64>,
+    occupied_ids: &mut HashSet<i64>,
 ) -> miette::Result<i64> {
     let ids = available_ids;
 

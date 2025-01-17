@@ -1,6 +1,4 @@
-use ahash::AHashSet;
 use camino::Utf8PathBuf;
-use std::collections::{HashMap, HashSet};
 use std::hash::{BuildHasher, Hash};
 
 pub trait ConfigMerge {
@@ -25,7 +23,8 @@ impl<T> ConfigMerge for Vec<T> {
     }
 }
 
-impl<T: Eq + Hash, S: BuildHasher> ConfigMerge for HashSet<T, S> {
+#[allow(clippy::disallowed_types)]
+impl<T: Eq + Hash, S: BuildHasher> ConfigMerge for std::collections::HashSet<T, S> {
     fn merge(
         &mut self,
         _paths: &[&Utf8PathBuf],
@@ -38,20 +37,10 @@ impl<T: Eq + Hash, S: BuildHasher> ConfigMerge for HashSet<T, S> {
     }
 }
 
-impl<T: Eq + Hash, S: BuildHasher> ConfigMerge for AHashSet<T, S> {
-    fn merge(
-        &mut self,
-        _paths: &[&Utf8PathBuf],
-        other: Self,
-        _other_path: &Utf8PathBuf,
-    ) -> miette::Result<()> {
-        self.extend(other);
-
-        Ok(())
-    }
-}
-
-impl<K: Eq + Hash, M: ConfigMerge, S: BuildHasher> ConfigMerge for HashMap<K, M, S> {
+#[allow(clippy::disallowed_types)]
+impl<K: Eq + Hash, M: ConfigMerge, S: BuildHasher> ConfigMerge
+    for std::collections::HashMap<K, M, S>
+{
     fn merge(
         &mut self,
         paths: &[&Utf8PathBuf],

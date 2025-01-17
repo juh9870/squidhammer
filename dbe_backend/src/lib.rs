@@ -1,4 +1,4 @@
-extern crate core;
+#![deny(clippy::disallowed_types)]
 
 pub mod etype;
 pub mod graph;
@@ -17,5 +17,3 @@ pub use diagnostic;
 pub(crate) fn m_try<T>(func: impl FnOnce() -> miette::Result<T>) -> miette::Result<T> {
     func()
 }
-
-pub(crate) type OrderMap<K, V> = ordermap::OrderMap<K, V, ahash::RandomState>;

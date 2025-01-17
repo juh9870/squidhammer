@@ -2,13 +2,13 @@ use crate::workspace::editors::utils::{
     labeled_collapsing_header, unsupported, EditorResultExt, EditorSize,
 };
 use crate::workspace::editors::{editor_for_type, DynProps, Editor, EditorContext, EditorResponse};
-use ahash::AHashSet;
 use dbe_backend::diagnostic::context::DiagnosticContextRef;
 use dbe_backend::project::docs::DocsRef;
 use dbe_backend::value::EValue;
 use egui::{Button, Ui};
 use egui_hooks::UseHookExt;
 use miette::miette;
+use utils::map::HashSet;
 
 #[derive(Debug)]
 pub struct MapEditor;
@@ -52,7 +52,7 @@ impl Editor for MapEditor {
                         let value_editor = editor_for_type(ctx.registry, &value_ty);
                         let key_editor = editor_for_type(ctx.registry, &key_ty);
 
-                        let used_keys = values.keys().cloned().collect::<AHashSet<_>>();
+                        let used_keys = values.keys().cloned().collect::<HashSet<_>>();
                         let mut moved_key = None::<(EValue, EValue)>;
                         let mut removed_key = None::<EValue>;
 

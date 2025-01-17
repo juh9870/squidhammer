@@ -1,7 +1,6 @@
 use crate::etype::eobject::EObject;
 use crate::registry::ETypesRegistry;
 use crate::value::id::ETypeId;
-use ahash::AHashMap;
 use camino::Utf8PathBuf;
 use duplicate::duplicate_item;
 use miette::bail;
@@ -13,6 +12,7 @@ use std::sync::LazyLock;
 use strum::EnumIs;
 use tracing::warn;
 use ustr::Ustr;
+use utils::map::HashMap;
 
 /// Main structure for storing documentation
 ///
@@ -28,16 +28,16 @@ pub enum Docs {
     Stub,
 }
 
-static STUB_NODES: LazyLock<AHashMap<String, WithLocation<NodeDocs>>> =
+static STUB_NODES: LazyLock<HashMap<String, WithLocation<NodeDocs>>> =
     LazyLock::new(Default::default);
 
-static STUB_TYPES: LazyLock<AHashMap<ETypeId, WithLocation<TypeDocs>>> =
+static STUB_TYPES: LazyLock<HashMap<ETypeId, WithLocation<TypeDocs>>> =
     LazyLock::new(Default::default);
 
 #[derive(Debug, Default)]
 pub struct DocsContent {
-    nodes: AHashMap<String, WithLocation<NodeDocs>>,
-    types: AHashMap<ETypeId, WithLocation<TypeDocs>>,
+    nodes: HashMap<String, WithLocation<NodeDocs>>,
+    types: HashMap<ETypeId, WithLocation<TypeDocs>>,
 }
 
 impl Docs {
@@ -151,9 +151,9 @@ impl Docs {
 #[derive(Debug, Serialize, Deserialize)]
 pub struct DocsFile {
     #[serde(default)]
-    pub nodes: AHashMap<String, NodeDocs>,
+    pub nodes: HashMap<String, NodeDocs>,
     #[serde(default)]
-    pub types: AHashMap<ETypeId, TypeDocs>,
+    pub types: HashMap<ETypeId, TypeDocs>,
 }
 
 impl DocsFile {

@@ -6,12 +6,11 @@ use crate::graph::node::{get_node_factory, NodeContext, SnarlNode};
 use crate::graph::region::region_graph::RegionGraph;
 use crate::graph::region::RegionInfo;
 use crate::json_utils::JsonValue;
+use crate::m_try;
 use crate::project::docs::Docs;
 use crate::project::side_effects::SideEffectsContext;
 use crate::registry::ETypesRegistry;
 use crate::value::EValue;
-use crate::{m_try, OrderMap};
-use ahash::AHashMap;
 use egui_snarl::{InPinId, NodeId, OutPinId, Snarl};
 use emath::Pos2;
 use itertools::Itertools;
@@ -22,6 +21,7 @@ use smallvec::SmallVec;
 use std::fmt::Debug;
 use std::hash::{Hash, Hasher};
 use ustr::Ustr;
+use utils::map::{HashMap, OrderMap};
 use uuid::Uuid;
 
 pub mod cache;
@@ -80,7 +80,10 @@ impl Graph {
     pub fn parse_json(registry: &ETypesRegistry, value: &mut JsonValue) -> miette::Result<Self> {
         let mut snarl = Snarl::<SnarlNode>::new();
         let packed: PackedGraph = PackedGraph::deserialize(value.take()).into_diagnostic()?;
-        let mut mapping = AHashMap::with_capacity(packed.nodes.len());
+        let mut mapping = HashMap::with_capacity_and_hasher(
+            packed.nodes.len(),
+            utils::map::BuildHasher::default(),
+        );
 
         m_try(|| {
             for (serialized_id, mut node) in packed.nodes {
@@ -233,7 +236,7 @@ impl Graph {
             regions: self.regions.values().cloned().collect_vec(),
         };
 
-        let mut inline_values = AHashMap::new();
+        let mut inline_values = HashMap::default();
 
         for (pin, value) in &self.inline_values {
             let Some(node) = self.snarl.get_node(pin.node) else {

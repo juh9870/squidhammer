@@ -1,5 +1,4 @@
 use crate::etype::econst::ETypeConst;
-use ahash::AHashMap;
 use atomic_refcell::AtomicRefCell;
 use miette::IntoDiagnostic;
 use squidfmt::PreparedFmt;
@@ -7,9 +6,10 @@ use std::collections::hash_map::Entry;
 use std::ops::Deref;
 use std::sync::LazyLock;
 use ustr::{ustr, Ustr};
+use utils::map::HashMap;
 
-static FMTS: LazyLock<AtomicRefCell<AHashMap<String, &'static PreparedFmt>>> =
-    LazyLock::new(|| AtomicRefCell::new(AHashMap::default()));
+static FMTS: LazyLock<AtomicRefCell<HashMap<String, &'static PreparedFmt>>> =
+    LazyLock::new(|| AtomicRefCell::new(HashMap::default()));
 
 pub fn get_formatter(str: &str) -> miette::Result<&'static PreparedFmt> {
     let borrow = FMTS.borrow();

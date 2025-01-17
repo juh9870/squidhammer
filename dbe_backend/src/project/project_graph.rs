@@ -4,7 +4,6 @@ use crate::graph::Graph;
 use crate::json_utils::JsonValue;
 use crate::project::ProjectFile;
 use crate::registry::ETypesRegistry;
-use ahash::AHashMap;
 use camino::Utf8PathBuf;
 use miette::{bail, Context, IntoDiagnostic};
 use serde::{Deserialize, Serialize};
@@ -12,11 +11,12 @@ use smallvec::SmallVec;
 use std::collections::hash_map::Entry;
 use std::hash::Hash;
 use strum::EnumIs;
+use utils::map::HashMap;
 use uuid::Uuid;
 
 #[derive(Debug)]
 pub struct NodeGroup {
-    pub nodes: AHashMap<Uuid, Graph>,
+    pub nodes: HashMap<Uuid, Graph>,
 }
 
 #[derive(Debug, Clone, Hash)]
@@ -213,10 +213,10 @@ enum SerializedGraphRepr {
 #[derive(Debug, Default)]
 pub struct ProjectGraphs {
     /// All project graphs
-    pub graphs: AHashMap<Uuid, ProjectGraph>,
+    pub graphs: HashMap<Uuid, ProjectGraph>,
     /// Cache for project graphs. Should only be used when executing graph standalone, not as a node group
-    pub cache: AHashMap<Uuid, GraphCache>,
-    paths: AHashMap<Uuid, Utf8PathBuf>,
+    pub cache: HashMap<Uuid, GraphCache>,
+    paths: HashMap<Uuid, Utf8PathBuf>,
 }
 
 impl ProjectGraphs {

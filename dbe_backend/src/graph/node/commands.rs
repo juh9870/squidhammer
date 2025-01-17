@@ -1,11 +1,11 @@
 use crate::etype::EDataType;
 use crate::graph::editing::GraphEditingContext;
 use crate::graph::region::{RegionInfo, RegionVariable};
-use ahash::AHashMap;
 use egui_snarl::{InPinId, NodeId, OutPinId};
 use itertools::Itertools;
 use smallvec::SmallVec;
 use tracing::debug;
+use utils::map::HashMap;
 use utils::vec_utils::VecOperation;
 use uuid::Uuid;
 
@@ -171,7 +171,7 @@ impl SnarlCommand {
                     .iter()
                     .filter(|(pin, _)| pin.node == node)
                     .map(|(pin, value)| (*pin, value.clone()))
-                    .collect::<AHashMap<_, _>>();
+                    .collect::<HashMap<_, _>>();
 
                 for (i, target) in indices.iter().copied().enumerate() {
                     if target == i {
