@@ -14,7 +14,6 @@ use crate::registry::config::ExtraConfig;
 use crate::serialization::deserialize_etype;
 use crate::value::id::{EListId, EMapId, ETypeId};
 use crate::value::EValue;
-use ahash::AHashMap;
 use atomic_refcell::AtomicRefCell;
 use camino::Utf8PathBuf;
 use itertools::Itertools;
@@ -27,6 +26,7 @@ use std::collections::BTreeMap;
 use std::fmt::Debug;
 use std::sync::{Arc, LazyLock};
 use ustr::{Ustr, UstrMap};
+use utils::map::HashMap;
 
 pub mod config;
 
@@ -101,7 +101,7 @@ impl EObjectType {
 }
 
 impl EObject for EObjectType {
-    fn extra_properties(&self) -> &AHashMap<ObjectPropertyId, ETypeConst> {
+    fn extra_properties(&self) -> &HashMap<ObjectPropertyId, ETypeConst> {
         match self {
             EObjectType::Struct(s) => s.extra_properties(),
             EObjectType::Enum(e) => e.extra_properties(),
@@ -178,7 +178,7 @@ pub struct ETypesRegistry {
     /// Read/write data used by various editors, validators, etc
     extra_data: RwLock<BTreeMap<TypeId, Arc<dyn Any + Send + Sync>>>,
     /// Read/write cache storage
-    cache: RwLock<AHashMap<String, Arc<dyn Any + Send + Sync>>>,
+    cache: RwLock<HashMap<String, Arc<dyn Any + Send + Sync>>>,
     /// Read-only configuration used by various editors, validators, etc
     extra_config: BTreeMap<String, SmallVec<[(Utf8PathBuf, JsonValue); 1]>>,
 }

@@ -4,11 +4,11 @@ use crate::etype::property::ObjectPropertyId;
 use crate::json_utils::repr::Repr;
 use crate::registry::ETypesRegistry;
 use crate::value::id::ETypeId;
-use ahash::AHashMap;
 use ustr::Ustr;
+use utils::map::HashMap;
 
 pub trait EObject {
-    fn extra_properties(&self) -> &AHashMap<ObjectPropertyId, ETypeConst>;
+    fn extra_properties(&self) -> &HashMap<ObjectPropertyId, ETypeConst>;
 
     fn repr(&self) -> Option<&Repr>;
 

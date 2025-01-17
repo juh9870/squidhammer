@@ -1,5 +1,4 @@
 use crate::etype::econst::ETypeConst;
-use ahash::AHashMap;
 use atomic_refcell::AtomicRefCell;
 use itertools::Itertools;
 use miette::Context;
@@ -10,11 +9,12 @@ use std::hash::Hash;
 use std::marker::PhantomData;
 use std::sync::LazyLock;
 use tracing::error;
+use utils::map::HashMap;
 
 pub mod default_properties;
 pub mod wrappers;
 
-static ALL_PROPERTIES: LazyLock<AtomicRefCell<AHashMap<(String, PropertyKind), PropertyInfo>>> =
+static ALL_PROPERTIES: LazyLock<AtomicRefCell<HashMap<(String, PropertyKind), PropertyInfo>>> =
     LazyLock::new(|| AtomicRefCell::new(Default::default()));
 
 pub type PropValidator = fn(ETypeConst) -> miette::Result<()>;
@@ -116,8 +116,8 @@ macro_rules! extra_properties {
 }
 
 pub fn field_props(
-    props: AHashMap<String, ETypeConst>,
-) -> miette::Result<AHashMap<FieldPropertyId, ETypeConst>> {
+    props: HashMap<String, ETypeConst>,
+) -> miette::Result<HashMap<FieldPropertyId, ETypeConst>> {
     let all_props = ALL_PROPERTIES.borrow();
     props
         .into_iter()
@@ -129,8 +129,8 @@ pub fn field_props(
 }
 
 pub fn object_props(
-    props: AHashMap<String, ETypeConst>,
-) -> miette::Result<AHashMap<ObjectPropertyId, ETypeConst>> {
+    props: HashMap<String, ETypeConst>,
+) -> miette::Result<HashMap<ObjectPropertyId, ETypeConst>> {
     let all_props = ALL_PROPERTIES.borrow();
     props
         .into_iter()
@@ -142,7 +142,7 @@ pub fn object_props(
 }
 
 fn check_prop(
-    all_props: &AHashMap<(String, PropertyKind), PropertyInfo>,
+    all_props: &HashMap<(String, PropertyKind), PropertyInfo>,
     id: &str,
     kind: PropertyKind,
     value: ETypeConst,
@@ -215,7 +215,7 @@ pub struct FieldPropertyId(Cow<'static, str>);
 pub struct ObjectPropertyId(Cow<'static, str>);
 
 impl<T: TryFrom<ETypeConst, Error: Debug>> FieldProperty<T> {
-    pub fn get(&self, props: &AHashMap<FieldPropertyId, ETypeConst>, default: T) -> T {
+    pub fn get(&self, props: &HashMap<FieldPropertyId, ETypeConst>, default: T) -> T {
         self.0.assert_registered(PropertyKind::Field);
         self.0.get(
             props.get(&FieldPropertyId(Cow::Borrowed(self.0.info.id))),
@@ -223,7 +223,7 @@ impl<T: TryFrom<ETypeConst, Error: Debug>> FieldProperty<T> {
         )
     }
 
-    pub fn try_get(&self, props: &AHashMap<FieldPropertyId, ETypeConst>) -> Option<T> {
+    pub fn try_get(&self, props: &HashMap<FieldPropertyId, ETypeConst>) -> Option<T> {
         self.0.assert_registered(PropertyKind::Field);
         self.0
             .try_get(props.get(&FieldPropertyId(Cow::Borrowed(self.0.info.id))))
@@ -231,7 +231,7 @@ impl<T: TryFrom<ETypeConst, Error: Debug>> FieldProperty<T> {
 }
 
 impl<T: TryFrom<ETypeConst, Error: Debug>> ObjectProperty<T> {
-    pub fn get(&self, props: &AHashMap<ObjectPropertyId, ETypeConst>, default: T) -> T {
+    pub fn get(&self, props: &HashMap<ObjectPropertyId, ETypeConst>, default: T) -> T {
         self.0.assert_registered(PropertyKind::Object);
         self.0.get(
             props.get(&ObjectPropertyId(Cow::Borrowed(self.0.info.id))),
@@ -239,7 +239,7 @@ impl<T: TryFrom<ETypeConst, Error: Debug>> ObjectProperty<T> {
         )
     }
 
-    pub fn try_get(&self, props: &AHashMap<ObjectPropertyId, ETypeConst>) -> Option<T> {
+    pub fn try_get(&self, props: &HashMap<ObjectPropertyId, ETypeConst>) -> Option<T> {
         self.0.assert_registered(PropertyKind::Object);
         self.0
             .try_get(props.get(&ObjectPropertyId(Cow::Borrowed(self.0.info.id))))

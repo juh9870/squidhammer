@@ -10,12 +10,12 @@ use crate::m_try;
 use crate::registry::ETypesRegistry;
 use crate::value::id::ETypeId;
 use crate::value::EValue;
-use ahash::AHashMap;
 use itertools::Itertools;
 use miette::{bail, miette, Context};
 use std::collections::BTreeMap;
 use tracing::warn;
 use ustr::{Ustr, UstrMap};
+use utils::map::HashMap;
 
 #[derive(Debug, Clone)]
 pub struct EStructData {
@@ -25,7 +25,7 @@ pub struct EStructData {
     pub fields: Vec<EStructField>,
     // pub id_field: Option<usize>,
     pub repr: Option<Repr>,
-    pub extra_properties: AHashMap<ObjectPropertyId, ETypeConst>,
+    pub extra_properties: HashMap<ObjectPropertyId, ETypeConst>,
     title: ObjectTitle,
 }
 
@@ -46,7 +46,7 @@ impl EStructData {
         ident: ETypeId,
         generic_arguments: Vec<Ustr>,
         repr: Option<Repr>,
-        extra_properties: AHashMap<ObjectPropertyId, ETypeConst>,
+        extra_properties: HashMap<ObjectPropertyId, ETypeConst>,
     ) -> EStructData {
         Self {
             generic_arguments,
@@ -267,7 +267,7 @@ impl EStructData {
 }
 
 impl EObject for EStructData {
-    fn extra_properties(&self) -> &AHashMap<ObjectPropertyId, ETypeConst> {
+    fn extra_properties(&self) -> &HashMap<ObjectPropertyId, ETypeConst> {
         &self.extra_properties
     }
 

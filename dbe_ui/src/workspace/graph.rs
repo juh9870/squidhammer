@@ -4,7 +4,6 @@ use crate::ui_props::{PROP_OBJECT_GRAPH_SEARCH_HIDE, PROP_OBJECT_PIN_COLOR};
 use crate::widgets::report::diagnostic_widget;
 use crate::workspace::graph::rects::NodeRects;
 use crate::workspace::graph::viewer::get_viewer;
-use ahash::AHashMap;
 use dbe_backend::diagnostic::context::DiagnosticContextRef;
 use dbe_backend::diagnostic::prelude::{Diagnostic, DiagnosticLevel};
 use dbe_backend::etype::econst::ETypeConst;
@@ -32,6 +31,7 @@ use std::iter::Peekable;
 use std::ops::DerefMut;
 use std::sync::Arc;
 use ustr::Ustr;
+use utils::map::HashMap;
 
 pub mod rects;
 pub mod toolbar;
@@ -322,7 +322,7 @@ impl<'a> SnarlViewer<SnarlNode> for GraphViewer<'a> {
                     all_nodes
                         .chain(objects)
                         .map(|n| (n.as_ref().to_string(), n))
-                        .collect::<AHashMap<_, _>>()
+                        .collect::<HashMap<_, _>>()
                 },
                 (),
             );

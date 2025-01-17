@@ -1,4 +1,3 @@
-use ahash::{AHashMap, AHasher};
 use dbe_backend::graph::region::region_graph::RegionGraphData;
 use egui::emath::OrderedFloat;
 use egui::{Pos2, Rect};
@@ -9,14 +8,15 @@ use std::hash::{Hash, Hasher};
 use utils::convex_math::convex_hull_2d::{Convex, ConvexHull2D};
 use utils::convex_math::convex_winding_direction;
 use utils::convex_math::minkowski::minkowski;
+use utils::map::HashMap;
 use uuid::Uuid;
 
 /// Stores node rects in screen space
 #[derive(Debug, Clone, Default)]
 pub struct NodeRects {
     /// node rects
-    graph_nodes: AHashMap<NodeId, Rect>,
-    region_hull_cache: AHashMap<Uuid, CachedHull>,
+    graph_nodes: HashMap<NodeId, Rect>,
+    region_hull_cache: HashMap<Uuid, CachedHull>,
 }
 
 #[derive(Debug, Clone)]
@@ -39,7 +39,7 @@ impl NodeRects {
         viewport: &Viewport,
     ) -> Option<Vec<Pos2>> {
         let region_data = region_graph.region_data(region);
-        let mut hasher = AHasher::default();
+        let mut hasher = utils::map::Hasher::default();
         let mut points = Vec::with_capacity(region_data.nodes.len() * 4);
         for node in &region_data.nodes {
             if let Some(rect) = self.graph_nodes.get(&node.node) {

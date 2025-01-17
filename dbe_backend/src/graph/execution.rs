@@ -7,17 +7,17 @@ use crate::graph::node::{ExecutionResult, NodeContext};
 use crate::graph::region::region_graph::{RegionGraph, RegionGraphData};
 use crate::graph::region::{RegionExecutionData, RegionInfo};
 use crate::graph::Graph;
+use crate::m_try;
 use crate::project::project_graph::ProjectGraphs;
 use crate::project::side_effects::SideEffectsContext;
 use crate::registry::ETypesRegistry;
 use crate::value::EValue;
-use crate::{m_try, OrderMap};
-use ahash::AHashMap;
 use egui_snarl::{InPinId, NodeId, OutPinId, Snarl};
 use maybe_owned::MaybeOwnedMut;
 use miette::{bail, miette, Context};
 use smallvec::SmallVec;
 use std::ops::{Deref, DerefMut};
+use utils::map::{HashMap, OrderMap};
 use uuid::Uuid;
 
 macro_rules! node_context {
@@ -442,7 +442,7 @@ pub struct PartialGraphExecutionContext<'a> {
     pub regions: &'a OrderMap<Uuid, RegionInfo>,
     pub region_graph: &'a RegionGraph,
     #[debug("(...)")]
-    pub regional_data: MaybeOwnedMut<'a, AHashMap<Uuid, Box<dyn RegionExecutionData>>>,
+    pub regional_data: MaybeOwnedMut<'a, HashMap<Uuid, Box<dyn RegionExecutionData>>>,
     cache: &'a mut GraphCache,
 }
 

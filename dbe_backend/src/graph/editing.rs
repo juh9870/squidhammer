@@ -9,19 +9,20 @@ use crate::graph::node::{get_node_factory, Node, NodeContext, SnarlNode};
 use crate::graph::region::region_graph::RegionGraph;
 use crate::graph::region::RegionInfo;
 use crate::graph::Graph;
+use crate::m_try;
 use crate::project::docs::Docs;
 use crate::project::project_graph::ProjectGraphs;
 use crate::project::side_effects::SideEffectsContext;
 use crate::registry::{EObjectType, ETypesRegistry};
 use crate::value::id::{EListId, ETypeId};
 use crate::value::EValue;
-use crate::{m_try, OrderMap};
 use egui_snarl::{InPin, InPinId, NodeId, OutPin, OutPinId, Snarl};
 use emath::Pos2;
 use miette::Context;
 use smallvec::{smallvec, SmallVec};
 use std::ops::{Deref, DerefMut};
 use ustr::Ustr;
+use utils::map::OrderMap;
 use uuid::Uuid;
 
 macro_rules! node_context {
@@ -116,8 +117,8 @@ impl<'a, 'snarl> GraphEditingContext<'a, 'snarl> {
         }
 
         match self.ctx.inline_values.entry(pin) {
-            ordermap::map::Entry::Occupied(_) => Ok(true),
-            ordermap::map::Entry::Vacant(e) => {
+            utils::map::OrderMapEntry::Occupied(_) => Ok(true),
+            utils::map::OrderMapEntry::Vacant(e) => {
                 let value = node.default_input_value(node_context!(self.ctx), pin.input)?;
                 e.insert(value.into_owned());
                 Ok(true)

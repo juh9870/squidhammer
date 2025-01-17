@@ -1,9 +1,10 @@
+#![deny(clippy::disallowed_types)]
+
 use crate::error::report_error;
 use crate::main_toolbar::{ToolPanel, ToolPanelViewer};
 use crate::widgets::collapsible_toolbar::CollapsibleToolbar;
 use crate::widgets::dpanel::DPanelSide;
 use crate::workspace::Tab;
-use ahash::AHashMap;
 use dbe_backend::project::io::FilesystemIO;
 use dbe_backend::project::Project;
 use egui::{Align2, Color32, Context, FontData, FontDefinitions, FontFamily, Id, Ui};
@@ -20,6 +21,7 @@ use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, OnceLock};
 use tracing::info;
+use utils::map::HashMap;
 
 mod diagnostics_list;
 mod error;
@@ -40,7 +42,7 @@ pub struct DbeApp {
     open_file_dialog: Option<FileDialog>,
     collector: EventCollector,
     toasts: Vec<Toast>,
-    modals: AHashMap<&'static str, ModalFn>,
+    modals: HashMap<&'static str, ModalFn>,
     history: Vec<PathBuf>,
     tabs: DockState<Tab>,
 
@@ -265,7 +267,7 @@ impl DbeApp {
         toasts.show(ctx);
 
         let mut modals = std::mem::take(&mut self.modals);
-        for (_, modal) in &mut modals {
+        for modal in modals.values_mut() {
             modal(self, ctx);
         }
         self.modals = modals;

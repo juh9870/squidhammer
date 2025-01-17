@@ -8,24 +8,24 @@ use crate::json_utils::repr::Repr;
 use crate::registry::ETypesRegistry;
 use crate::validation::Validator;
 use crate::value::EValue;
-use ahash::AHashMap;
 use atomic_refcell::AtomicRefCell;
 use std::sync::{Arc, LazyLock};
 use strum::EnumIs;
 use tracing::error;
 use ustr::Ustr;
+use utils::map::HashMap;
 
 #[derive(Debug, Clone)]
 pub struct EItemInfoSpecific {
     pub ty: EDataType,
-    pub extra_properties: AHashMap<FieldPropertyId, ETypeConst>,
+    pub extra_properties: HashMap<FieldPropertyId, ETypeConst>,
     pub validators: Vec<Validator>,
 }
 
 #[derive(Debug, Clone)]
 pub struct EItemInfoGeneric {
     pub argument_name: Ustr,
-    pub extra_properties: AHashMap<FieldPropertyId, ETypeConst>,
+    pub extra_properties: HashMap<FieldPropertyId, ETypeConst>,
     pub validators: Vec<Validator>,
 }
 
@@ -37,7 +37,7 @@ pub enum EItemInfo {
 
 impl EItemInfo {
     pub fn simple_type(ty: EDataType) -> Self {
-        static CACHE: LazyLock<AtomicRefCell<AHashMap<EDataType, EItemInfo>>> =
+        static CACHE: LazyLock<AtomicRefCell<HashMap<EDataType, EItemInfo>>> =
             LazyLock::new(|| AtomicRefCell::new(Default::default()));
         CACHE
             .borrow_mut()
@@ -104,7 +104,7 @@ impl EItemInfo {
         }
     }
 
-    pub fn extra_properties(&self) -> &AHashMap<FieldPropertyId, ETypeConst> {
+    pub fn extra_properties(&self) -> &HashMap<FieldPropertyId, ETypeConst> {
         match self {
             EItemInfo::Specific(ty) => &ty.extra_properties,
             EItemInfo::Generic(ty) => &ty.extra_properties,

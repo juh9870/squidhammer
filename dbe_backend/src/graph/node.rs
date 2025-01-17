@@ -39,7 +39,6 @@ use dyn_hash::DynHash;
 use egui_snarl::{InPin, NodeId, OutPin, Snarl};
 use emath::Pos2;
 use miette::bail;
-use ordermap::OrderMap;
 use smallvec::{smallvec, SmallVec};
 use std::collections::BTreeMap;
 use std::fmt::Debug;
@@ -48,6 +47,7 @@ use std::ops::{Deref, DerefMut};
 use std::sync::{Arc, LazyLock};
 use strum::EnumIs;
 use ustr::{Ustr, UstrMap};
+use utils::map::OrderMap;
 use uuid::Uuid;
 
 pub mod colors;
@@ -148,7 +148,7 @@ pub struct NodeContext<'a> {
     pub registry: &'a ETypesRegistry,
     pub inputs: &'a SmallVec<[GraphInput; 1]>,
     pub outputs: &'a SmallVec<[GraphOutput; 1]>,
-    pub regions: &'a OrderMap<Uuid, RegionInfo, ahash::RandomState>,
+    pub regions: &'a OrderMap<Uuid, RegionInfo>,
     pub region_graph: &'a RegionGraph,
     pub graphs: Option<&'a ProjectGraphs>,
 }

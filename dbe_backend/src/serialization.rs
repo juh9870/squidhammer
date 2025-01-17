@@ -10,7 +10,6 @@ use crate::registry::{EObjectType, ETypesRegistry};
 use crate::serialization::item::ThingItem;
 use crate::validation::{validator_by_name, Validator};
 use crate::value::id::ETypeId;
-use ahash::AHashMap;
 use itertools::Itertools;
 use knus::ast::{Literal, TypeName};
 use knus::errors::DecodeError;
@@ -19,6 +18,7 @@ use knus::traits::ErrorSpan;
 use knus::{DecodeScalar, Error};
 use miette::{bail, miette, Context, IntoDiagnostic};
 use ustr::Ustr;
+use utils::map::HashMap;
 
 mod item;
 
@@ -58,7 +58,7 @@ struct ThingStruct {
     #[knus(property, str)]
     pub repr: Option<Repr>,
     #[knus(properties)]
-    pub extra_properties: AHashMap<String, ETypeConst>,
+    pub extra_properties: HashMap<String, ETypeConst>,
     #[knus(children)]
     pub fields: Vec<ThingItem>,
 }
@@ -74,7 +74,7 @@ struct ThingEnum {
     #[knus(property, str)]
     pub content: Option<Ustr>,
     #[knus(properties)]
-    pub extra_properties: AHashMap<String, ETypeConst>,
+    pub extra_properties: HashMap<String, ETypeConst>,
     #[knus(children)]
     variants: Vec<ThingItem>,
 }
@@ -144,7 +144,7 @@ impl ThingEnum {
     }
 }
 
-fn validators(extra_properties: &AHashMap<String, ETypeConst>) -> miette::Result<Vec<Validator>> {
+fn validators(extra_properties: &HashMap<String, ETypeConst>) -> miette::Result<Vec<Validator>> {
     let mut validators = vec![];
     for (key, optional) in [("validator", false), ("editor", true)] {
         if let Some(prop) = extra_properties.get(key) {
@@ -200,7 +200,6 @@ impl<S: ErrorSpan> DecodeScalar<S> for ETypeConst {
 }
 
 mod tests {
-
     #[test]
     fn parse_test() {
         let ty = super::parse_kdl(

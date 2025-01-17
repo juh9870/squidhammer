@@ -6,7 +6,6 @@ use crate::m_try;
 use crate::registry::ETypesRegistry;
 use crate::serialization::validators;
 use crate::value::id::ETypeId;
-use ahash::AHashMap;
 use itertools::Itertools;
 use miette::{bail, Context, Diagnostic};
 use std::fmt::Display;
@@ -14,6 +13,7 @@ use std::sync::Arc;
 use strum::EnumString;
 use thiserror::Error;
 use ustr::{Ustr, UstrMap};
+use utils::map::HashMap;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, EnumString)]
 #[strum(serialize_all = "snake_case")]
@@ -37,7 +37,7 @@ pub struct ThingItem {
     #[knus(arguments)]
     pub arguments: Vec<ETypeConst>,
     #[knus(properties)]
-    pub extra_properties: AHashMap<String, ETypeConst>,
+    pub extra_properties: HashMap<String, ETypeConst>,
     #[knus(children)]
     pub generics: Vec<ThingItem>,
 }
@@ -208,7 +208,8 @@ fn generic_name(val: ETypeConst, pos: usize, generic_arguments: &[Ustr]) -> miet
 }
 
 #[derive(Debug, Error)]
-#[error("argument at position {} has generic type `{}` which is not defined in the object's generic arguments", .1, .0)]
+#[error("argument at position {} has generic type `{}` which is not defined in the object's generic arguments", .1, .0
+)]
 struct BadGenericArg(Ustr, usize, Vec<Ustr>);
 
 impl Diagnostic for BadGenericArg {
