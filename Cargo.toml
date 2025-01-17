@@ -14,6 +14,7 @@ members = [
 ]
 
 [workspace.dependencies]
+ordermap = "0.5.4"
 ahash = "0.8.11"
 anyhow = "1.0.95"
 atomic_refcell = "0.1.13"
@@ -29,9 +30,10 @@ derive_more = "1.0.0"
 downcast-rs = "2.0.1"
 duplicate = "2.0.0"
 dyn-clone = "1.0.17"
+dyn-hash = "0.2.0"
+ecolor = "0.30.0"
 eframe = "0.30"
 egui = "0.30"
-ecolor = "0.30.0"
 egui-modal = "0.6.0"
 egui-snarl = { git = "https://github.com/juh9870/egui-snarl.git", rev = "59a3427e4a3168c23444b24925d33cc0ec8bd204" }
 egui-toast = "0.16.0"

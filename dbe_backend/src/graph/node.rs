@@ -32,16 +32,18 @@ use crate::project::docs::{Docs, DocsWindowRef};
 use crate::project::project_graph::ProjectGraphs;
 use crate::registry::ETypesRegistry;
 use crate::value::EValue;
-use ahash::AHashMap;
 use atomic_refcell::{AtomicRef, AtomicRefCell};
 use downcast_rs::{impl_downcast, Downcast};
 use dyn_clone::DynClone;
+use dyn_hash::DynHash;
 use egui_snarl::{InPin, NodeId, OutPin, Snarl};
 use emath::Pos2;
 use miette::bail;
+use ordermap::OrderMap;
 use smallvec::{smallvec, SmallVec};
 use std::collections::BTreeMap;
 use std::fmt::Debug;
+use std::hash::Hash;
 use std::ops::{Deref, DerefMut};
 use std::sync::{Arc, LazyLock};
 use strum::EnumIs;
@@ -146,12 +148,12 @@ pub struct NodeContext<'a> {
     pub registry: &'a ETypesRegistry,
     pub inputs: &'a SmallVec<[GraphInput; 1]>,
     pub outputs: &'a SmallVec<[GraphOutput; 1]>,
-    pub regions: &'a AHashMap<Uuid, RegionInfo>,
+    pub regions: &'a OrderMap<Uuid, RegionInfo, ahash::RandomState>,
     pub region_graph: &'a RegionGraph,
     pub graphs: Option<&'a ProjectGraphs>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Hash)]
 pub struct SnarlNode {
     pub node: Box<dyn Node>,
     pub color_scheme: Option<NodeColorScheme>,
@@ -172,6 +174,16 @@ impl SnarlNode {
             title.clone()
         } else {
             self.node.title(context, docs)
+        }
+    }
+}
+
+impl Clone for SnarlNode {
+    fn clone(&self) -> Self {
+        Self {
+            node: dyn_clone::clone_box(&*self.node),
+            color_scheme: self.color_scheme.clone(),
+            custom_title: self.custom_title.clone(),
         }
     }
 }
@@ -198,7 +210,7 @@ pub enum ExecutionResult {
     RerunRegion { region: Uuid },
 }
 
-pub trait Node: DynClone + Debug + Send + Sync + Downcast + 'static {
+pub trait Node: DynClone + DynHash + Debug + Send + Sync + Downcast + 'static {
     /// Writes node state to json
     fn write_json(&self, registry: &ETypesRegistry) -> miette::Result<JsonValue> {
         let _ = (registry,);
@@ -478,3 +490,4 @@ pub trait Node: DynClone + Debug + Send + Sync + Downcast + 'static {
 }
 
 impl_downcast!(Node);
+dyn_hash::hash_trait_object!(Node);

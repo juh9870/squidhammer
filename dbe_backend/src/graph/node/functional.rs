@@ -6,6 +6,7 @@ use crate::graph::node::{InputData, Node, NodeContext, NodeFactory, OutputData};
 use crate::project::side_effects::SideEffect;
 use crate::value::{ENumber, EValue};
 use std::fmt::{Debug, Formatter};
+use std::hash::{Hash, Hasher};
 use std::marker::PhantomData;
 use std::sync::Arc;
 
@@ -61,6 +62,11 @@ impl<Input, Output, F: Clone + Send + Sync> Clone for FuncNode<Input, Output, F>
             categories: self.categories,
             has_side_effects: self.has_side_effects,
         }
+    }
+}
+impl<Input, Output, F: Clone + Send + Sync> Hash for FuncNode<Input, Output, F> {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.id.hash(state); // no state to hash, id is enough
     }
 }
 

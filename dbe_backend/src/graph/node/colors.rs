@@ -1,10 +1,28 @@
 use egui_colors::{Colorix, Theme};
 use serde::{Deserialize, Serialize};
+use std::hash::{Hash, Hasher};
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct NodeColorScheme {
     pub theme: Box<Colorix>,
     pub dark_mode: bool,
+}
+
+impl PartialEq for NodeColorScheme {
+    fn eq(&self, other: &Self) -> bool {
+        self.theme.theme() == other.theme.theme() && self.dark_mode == other.dark_mode
+    }
+}
+
+impl Eq for NodeColorScheme {}
+
+impl Hash for NodeColorScheme {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        for c in self.theme.theme() {
+            c.rgb().hash(state)
+        }
+        self.dark_mode.hash(state);
+    }
 }
 
 impl NodeColorScheme {

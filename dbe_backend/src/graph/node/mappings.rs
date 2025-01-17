@@ -16,7 +16,7 @@ pub static KIND_ID: LazyLock<ETypeId> =
 pub static RANGE_ID: LazyLock<ETypeId> =
     LazyLock::new(|| ETypeId::from_raw("sys:math/range".into()));
 
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Hash, Default)]
 pub struct MappingsNode {}
 
 impl Node for MappingsNode {

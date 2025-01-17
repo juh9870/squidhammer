@@ -9,7 +9,7 @@ use crate::value::EValue;
 use ustr::Ustr;
 use uuid::Uuid;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Hash)]
 pub struct ConstructListNode {
     output_ty: Option<EDataType>,
 }

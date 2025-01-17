@@ -12,7 +12,7 @@ use egui_snarl::{InPin, InPinId, OutPin, OutPinId};
 use serde::{Deserialize, Serialize};
 use ustr::Ustr;
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Hash, Serialize, Deserialize)]
 pub struct ListNode {
     item: EDataType,
     /// Determines whenever the list retains its type once empty

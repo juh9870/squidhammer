@@ -11,7 +11,7 @@ use miette::bail;
 use serde::{Deserialize, Serialize};
 use ustr::Ustr;
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Hash, Serialize, Deserialize)]
 pub struct SavingNode<const ALLOW_ANY: bool>;
 
 impl<const ALLOW_ANY: bool> Node for SavingNode<ALLOW_ANY> {

@@ -16,6 +16,7 @@ diagnostic = { workspace = true }
 downcast-rs = { workspace = true }
 duplicate = { workspace = true }
 dyn-clone = { workspace = true }
+dyn-hash = { workspace = true }
 egui-snarl = { workspace = true, features = ["serde"] }
 egui_colors = { workspace = true, features = ["serde"] }
 emath = { workspace = true }
@@ -27,6 +28,7 @@ knus = { workspace = true }
 maybe-owned = { workspace = true }
 miette = { workspace = true }
 ordered-float = { workspace = true, features = ["serde"] }
+ordermap = { workspace = true }
 parking_lot = { workspace = true }
 paste = { workspace = true }
 path-clean = { workspace = true }

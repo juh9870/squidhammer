@@ -15,6 +15,7 @@ use crate::value::EValue;
 use egui_snarl::{InPin, NodeId, OutPin};
 use miette::bail;
 use std::fmt::Debug;
+use std::hash::Hash;
 use std::ops::ControlFlow;
 use ustr::Ustr;
 use uuid::Uuid;
@@ -23,7 +24,7 @@ pub mod construct;
 pub mod for_each;
 pub mod for_each_dbeitem;
 
-pub trait GenericRegionalNode: 'static + Debug + Clone + Send + Sync {
+pub trait GenericRegionalNode: 'static + Debug + Clone + Hash + Send + Sync {
     fn id() -> Ustr;
     fn input_names(&self, kind: RegionIoKind) -> &[&str];
     fn output_names(&self, kind: RegionIoKind) -> &[&str];

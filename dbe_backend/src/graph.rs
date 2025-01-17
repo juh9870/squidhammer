@@ -6,19 +6,21 @@ use crate::graph::node::{get_node_factory, NodeContext, SnarlNode};
 use crate::graph::region::region_graph::RegionGraph;
 use crate::graph::region::RegionInfo;
 use crate::json_utils::JsonValue;
-use crate::m_try;
 use crate::project::docs::Docs;
 use crate::project::side_effects::SideEffectsContext;
 use crate::registry::ETypesRegistry;
 use crate::value::EValue;
+use crate::{m_try, OrderMap};
 use ahash::AHashMap;
 use egui_snarl::{InPinId, NodeId, OutPinId, Snarl};
 use emath::Pos2;
 use itertools::Itertools;
 use miette::{miette, Context, IntoDiagnostic};
+use ordered_float::OrderedFloat;
 use serde::{Deserialize, Serialize};
 use smallvec::SmallVec;
 use std::fmt::Debug;
+use std::hash::{Hash, Hasher};
 use ustr::Ustr;
 use uuid::Uuid;
 
@@ -34,11 +36,44 @@ pub mod region;
 #[derive(Debug, Default)]
 pub struct Graph {
     snarl: Snarl<SnarlNode>,
-    inline_values: AHashMap<InPinId, EValue>,
+    inline_values: OrderMap<InPinId, EValue>,
     inputs: SmallVec<[GraphInput; 1]>,
     outputs: SmallVec<[GraphOutput; 1]>,
-    regions: AHashMap<Uuid, RegionInfo>,
+    regions: OrderMap<Uuid, RegionInfo>,
     region_graph: RegionGraph,
+}
+
+impl Clone for Graph {
+    fn clone(&self) -> Self {
+        Self {
+            snarl: self.snarl.clone(),
+            inline_values: self.inline_values.clone(),
+            inputs: self.inputs.clone(),
+            outputs: self.outputs.clone(),
+            regions: self.regions.clone(),
+            region_graph: RegionGraph::default(),
+        }
+    }
+}
+
+impl Hash for Graph {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.inline_values.hash(state);
+        self.inputs.hash(state);
+        self.outputs.hash(state);
+
+        for (id, node) in self
+            .snarl
+            .nodes_ids_data()
+            .sorted_unstable_by_key(|(id, _)| *id)
+        {
+            id.hash(state);
+            node.value.hash(state);
+            OrderedFloat(node.pos.x).hash(state);
+            OrderedFloat(node.pos.y).hash(state);
+            node.open.hash(state);
+        }
+    }
 }
 
 impl Graph {
@@ -71,7 +106,8 @@ impl Graph {
         })
         .context("failed to create nodes")?;
 
-        let inputs = AHashMap::with_capacity(packed.inline_values.len());
+        let inputs =
+            OrderMap::with_capacity_and_hasher(packed.inline_values.len(), Default::default());
 
         let mut graph = Self {
             snarl,
@@ -291,11 +327,11 @@ impl Graph {
         &mut self.outputs
     }
 
-    pub fn regions(&self) -> &AHashMap<Uuid, RegionInfo> {
+    pub fn regions(&self) -> &OrderMap<Uuid, RegionInfo> {
         &self.regions
     }
 
-    pub fn regions_mut(&mut self) -> &mut AHashMap<Uuid, RegionInfo> {
+    pub fn regions_mut(&mut self) -> &mut OrderMap<Uuid, RegionInfo> {
         &mut self.regions
     }
 

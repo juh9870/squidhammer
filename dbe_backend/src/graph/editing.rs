@@ -9,19 +9,17 @@ use crate::graph::node::{get_node_factory, Node, NodeContext, SnarlNode};
 use crate::graph::region::region_graph::RegionGraph;
 use crate::graph::region::RegionInfo;
 use crate::graph::Graph;
-use crate::m_try;
 use crate::project::docs::Docs;
 use crate::project::project_graph::ProjectGraphs;
 use crate::project::side_effects::SideEffectsContext;
 use crate::registry::{EObjectType, ETypesRegistry};
 use crate::value::id::{EListId, ETypeId};
 use crate::value::EValue;
-use ahash::AHashMap;
+use crate::{m_try, OrderMap};
 use egui_snarl::{InPin, InPinId, NodeId, OutPin, OutPinId, Snarl};
 use emath::Pos2;
 use miette::Context;
 use smallvec::{smallvec, SmallVec};
-use std::collections::hash_map::Entry;
 use std::ops::{Deref, DerefMut};
 use ustr::Ustr;
 use uuid::Uuid;
@@ -118,8 +116,8 @@ impl<'a, 'snarl> GraphEditingContext<'a, 'snarl> {
         }
 
         match self.ctx.inline_values.entry(pin) {
-            Entry::Occupied(_) => Ok(true),
-            Entry::Vacant(e) => {
+            ordermap::map::Entry::Occupied(_) => Ok(true),
+            ordermap::map::Entry::Vacant(e) => {
                 let value = node.default_input_value(node_context!(self.ctx), pin.input)?;
                 e.insert(value.into_owned());
                 Ok(true)
@@ -303,10 +301,10 @@ impl<'a, 'snarl> GraphEditingContext<'a, 'snarl> {
 
 #[derive(Debug)]
 pub struct PartialGraphEditingContext<'a> {
-    pub inline_values: &'a mut AHashMap<InPinId, EValue>,
+    pub inline_values: &'a mut OrderMap<InPinId, EValue>,
     pub inputs: &'a mut SmallVec<[GraphInput; 1]>,
     pub outputs: &'a mut SmallVec<[GraphOutput; 1]>,
-    pub regions: &'a mut AHashMap<Uuid, RegionInfo>,
+    pub regions: &'a mut OrderMap<Uuid, RegionInfo>,
     pub region_graph: &'a mut RegionGraph,
     pub registry: &'a ETypesRegistry,
     pub docs: &'a Docs,

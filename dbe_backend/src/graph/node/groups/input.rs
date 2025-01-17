@@ -13,7 +13,7 @@ use serde::{Deserialize, Serialize};
 use ustr::Ustr;
 use uuid::Uuid;
 
-#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+#[derive(Debug, Clone, Hash, Default, Serialize, Deserialize)]
 pub struct GroupInputNode {
     pub ids: Vec<Uuid>,
 }
