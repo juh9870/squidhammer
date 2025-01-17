@@ -1,4 +1,5 @@
 use crate::etype::eitem::EItemInfo;
+use crate::etype::EDataType;
 use crate::graph::node::commands::{SnarlCommand, SnarlCommands};
 use crate::graph::node::ports::NodePortType;
 use crate::graph::node::{
@@ -8,9 +9,9 @@ use crate::value::EValue;
 use egui_snarl::{InPin, InPinId, OutPin, OutPinId};
 use ustr::Ustr;
 
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Hash, Default)]
 pub struct RerouteNode {
-    inputs: Vec<EItemInfo>,
+    inputs: Vec<EDataType>,
 }
 
 impl Node for RerouteNode {
@@ -31,7 +32,7 @@ impl Node for RerouteNode {
             return Ok(InputData::new(NodePortType::BasedOnSource, "".into()));
         }
         Ok(InputData::new(
-            self.inputs[input].clone().into(),
+            EItemInfo::simple_type(self.inputs[input]).into(),
             input.to_string().into(),
         ))
     }
@@ -42,7 +43,7 @@ impl Node for RerouteNode {
 
     fn output_unchecked(&self, _context: NodeContext, output: usize) -> miette::Result<OutputData> {
         Ok(OutputData::new(
-            self.inputs[output].clone().into(),
+            EItemInfo::simple_type(self.inputs[output]).into(),
             output.to_string().into(),
         ))
     }
@@ -61,9 +62,9 @@ impl Node for RerouteNode {
 
         let i = to.id.input;
         if i == self.inputs.len() {
-            self.inputs.push(info.clone());
-        } else if self.inputs[i].ty() != incoming_type.ty() {
-            self.inputs[i] = info.clone();
+            self.inputs.push(info.ty());
+        } else if self.inputs[i] != incoming_type.ty() {
+            self.inputs[i] = info.ty();
             // Reconnect the corresponding output pin to propagate type
             // changes and clear invalid connections
             commands.push(SnarlCommand::ReconnectOutput {

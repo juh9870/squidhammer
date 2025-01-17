@@ -16,7 +16,7 @@ use serde::{Deserialize, Serialize};
 use std::ops::ControlFlow;
 use ustr::Ustr;
 
-#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+#[derive(Debug, Clone, Hash, Default, Serialize, Deserialize)]
 pub struct DestructuringNode {
     pub id: Option<ETypeId>,
     pub fields: Vec<Ustr>,

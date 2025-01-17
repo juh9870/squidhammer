@@ -19,7 +19,7 @@ use squidfmt::PreparedFmt;
 use std::fmt::Formatter;
 use ustr::Ustr;
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Hash, Serialize, Deserialize)]
 pub struct FormatNode {
     format: String,
     keys: Vec<Ustr>,

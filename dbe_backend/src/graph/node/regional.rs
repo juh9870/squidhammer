@@ -19,6 +19,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::json;
 use smallvec::SmallVec;
 use std::fmt::Debug;
+use std::hash::Hash;
 use std::marker::PhantomData;
 use std::ops::ControlFlow;
 use strum::EnumIs;
@@ -35,7 +36,7 @@ pub enum RegionIoKind {
     End,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Hash)]
 pub struct RegionIONode<T: RegionalNode> {
     region: Uuid,
     kind: RegionIoKind,
@@ -419,7 +420,7 @@ impl<T: RegionalNode> NodeFactory for RegionalNodeFactory<T> {
     }
 }
 
-pub trait RegionalNode: 'static + Debug + Clone + Send + Sync {
+pub trait RegionalNode: 'static + Debug + Clone + Hash + Send + Sync {
     fn id() -> Ustr;
 
     /// Checks whether the region can have variables

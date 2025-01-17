@@ -10,6 +10,7 @@ use miette::{bail, Context, IntoDiagnostic};
 use serde::{Deserialize, Serialize};
 use smallvec::SmallVec;
 use std::collections::hash_map::Entry;
+use std::hash::Hash;
 use strum::EnumIs;
 use uuid::Uuid;
 
@@ -18,7 +19,7 @@ pub struct NodeGroup {
     pub nodes: AHashMap<Uuid, Graph>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Hash)]
 pub struct ProjectGraph {
     pub id: Uuid,
     pub name: String,
@@ -33,6 +34,24 @@ pub struct ProjectGraph {
 enum GraphHolder {
     Graph(Box<Graph>),
     Editing,
+}
+
+impl Clone for GraphHolder {
+    fn clone(&self) -> Self {
+        match self {
+            GraphHolder::Graph(g) => GraphHolder::Graph(g.clone()),
+            GraphHolder::Editing => panic!("Cannot clone graph: graph is being edited"),
+        }
+    }
+}
+
+impl Hash for GraphHolder {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        match self {
+            GraphHolder::Graph(g) => g.hash(state),
+            GraphHolder::Editing => panic!("Cannot hash graph: graph is being edited"),
+        }
+    }
 }
 
 impl ProjectGraph {

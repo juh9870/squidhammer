@@ -13,7 +13,7 @@ pub mod formatting;
 #[cfg(test)]
 mod tests;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq, Hash)]
 pub struct PreparedFmt {
     segments: Segments,
     keys: Keys,
@@ -53,7 +53,7 @@ impl PreparedFmt {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq, Hash)]
 #[non_exhaustive]
 pub enum Segment {
     Literal(String),

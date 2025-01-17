@@ -10,7 +10,7 @@ use miette::bail;
 use ustr::Ustr;
 use uuid::Uuid;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Hash)]
 pub struct RepeatNode;
 
 impl RegionalNode for RepeatNode {

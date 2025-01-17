@@ -23,7 +23,7 @@ use ustr::Ustr;
 use utils::smallvec_n;
 use uuid::Uuid;
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Hash, Serialize, Deserialize)]
 pub struct ForEachDbeItem {
     output_ty: Option<EDataType>,
     is_enum: bool,

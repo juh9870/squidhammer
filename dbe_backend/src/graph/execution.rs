@@ -7,11 +7,11 @@ use crate::graph::node::{ExecutionResult, NodeContext};
 use crate::graph::region::region_graph::{RegionGraph, RegionGraphData};
 use crate::graph::region::{RegionExecutionData, RegionInfo};
 use crate::graph::Graph;
-use crate::m_try;
 use crate::project::project_graph::ProjectGraphs;
 use crate::project::side_effects::SideEffectsContext;
 use crate::registry::ETypesRegistry;
 use crate::value::EValue;
+use crate::{m_try, OrderMap};
 use ahash::AHashMap;
 use egui_snarl::{InPinId, NodeId, OutPinId, Snarl};
 use maybe_owned::MaybeOwnedMut;
@@ -73,7 +73,7 @@ impl<'a> GraphExecutionContext<'a, 'a> {
         snarl: &'a Snarl<SnarlNode>,
         inputs: &'a SmallVec<[GraphInput; 1]>,
         outputs: &'a SmallVec<[GraphOutput; 1]>,
-        inline_values: &'a AHashMap<InPinId, EValue>,
+        inline_values: &'a OrderMap<InPinId, EValue>,
         registry: &'a ETypesRegistry,
         graphs: Option<&'a ProjectGraphs>,
         cache: &'a mut GraphCache,
@@ -81,7 +81,7 @@ impl<'a> GraphExecutionContext<'a, 'a> {
         is_node_group: bool,
         input_values: &'a [EValue],
         output_values: &'a mut Option<Vec<EValue>>,
-        regions: &'a AHashMap<Uuid, RegionInfo>,
+        regions: &'a OrderMap<Uuid, RegionInfo>,
         region_graph: &'a RegionGraph,
     ) -> Self {
         Self {
@@ -432,14 +432,14 @@ fn should_run_node(
 pub struct PartialGraphExecutionContext<'a> {
     pub inputs: &'a SmallVec<[GraphInput; 1]>,
     pub outputs: &'a SmallVec<[GraphOutput; 1]>,
-    pub inline_values: &'a AHashMap<InPinId, EValue>,
+    pub inline_values: &'a OrderMap<InPinId, EValue>,
     pub registry: &'a ETypesRegistry,
     pub graphs: Option<&'a ProjectGraphs>,
     pub side_effects: SideEffectsContext<'a>,
     pub is_node_group: bool,
     pub input_values: &'a [EValue],
     pub output_values: &'a mut Option<Vec<EValue>>,
-    pub regions: &'a AHashMap<Uuid, RegionInfo>,
+    pub regions: &'a OrderMap<Uuid, RegionInfo>,
     pub region_graph: &'a RegionGraph,
     #[debug("(...)")]
     pub regional_data: MaybeOwnedMut<'a, AHashMap<Uuid, Box<dyn RegionExecutionData>>>,

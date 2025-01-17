@@ -17,7 +17,7 @@ use serde::{Deserialize, Serialize};
 use smallvec::smallvec;
 use ustr::{ustr, Ustr};
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Hash, Serialize, Deserialize)]
 pub struct EnumNode {
     variant: Option<EEnumVariantId>,
 }

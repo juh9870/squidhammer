@@ -15,6 +15,7 @@ use crate::value::id::ETypeId;
 use crate::value::EValue;
 use downcast_rs::Downcast;
 use dyn_clone::DynClone;
+use dyn_hash::DynHash;
 use egui_snarl::{InPin, NodeId, OutPin};
 use itertools::Itertools;
 use miette::{bail, miette, Context, IntoDiagnostic};
@@ -207,7 +208,7 @@ impl<'a> GenericNodeField<'a> {
     }
 }
 
-pub trait GenericNode: DynClone + Debug + Send + Sync + Downcast + 'static {
+pub trait GenericNode: DynClone + DynHash + Debug + Send + Sync + Downcast + 'static {
     fn write_json(&self, registry: &ETypesRegistry) -> miette::Result<JsonValue> {
         let _ = (registry,);
         write_generic_json_fields(self, |n| n.inputs(), |n| n.outputs())

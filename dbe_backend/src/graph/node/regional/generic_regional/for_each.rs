@@ -21,7 +21,7 @@ pub type ListFilterNode = ForEachLikeRegionalNode<{ ForEachKind::Filter as u8 }>
 pub type ListFilterMapNode = ForEachLikeRegionalNode<{ ForEachKind::FilterMap as u8 }>;
 pub type ListFlatMapNode = ForEachLikeRegionalNode<{ ForEachKind::FlatMap as u8 }>;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Hash)]
 pub struct ForEachLikeRegionalNode<const KIND: u8> {
     input_ty: Option<EDataType>,
     output_ty: Option<EDataType>,

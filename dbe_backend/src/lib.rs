@@ -17,3 +17,5 @@ pub use diagnostic;
 pub(crate) fn m_try<T>(func: impl FnOnce() -> miette::Result<T>) -> miette::Result<T> {
     func()
 }
+
+pub(crate) type OrderMap<K, V> = ordermap::OrderMap<K, V, ahash::RandomState>;

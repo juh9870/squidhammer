@@ -13,6 +13,7 @@ use exmex::{Express, FlatEx};
 use miette::{bail, IntoDiagnostic};
 use serde::{Deserialize, Serialize};
 use smallvec::smallvec;
+use std::hash::{Hash, Hasher};
 use ustr::{ustr, Ustr};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -21,6 +22,13 @@ pub struct ExpressionNode {
     variables: Vec<Ustr>,
     #[serde(skip)]
     expr: Option<FlatEx<f64>>,
+}
+
+impl Hash for ExpressionNode {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.expression.hash(state);
+        self.variables.hash(state);
+    }
 }
 
 impl ExpressionNode {
