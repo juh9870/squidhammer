@@ -13,6 +13,7 @@ use crate::project::docs::{Docs, DocsRef};
 use crate::registry::ETypesRegistry;
 use crate::value::EValue;
 use egui_snarl::{InPin, InPinId, NodeId, OutPin};
+use miette::bail;
 use serde::{Deserialize, Serialize};
 use smallvec::smallvec;
 use ustr::{ustr, Ustr};
@@ -27,6 +28,16 @@ impl EnumNode {
         Self {
             variant: Some(variant),
         }
+    }
+
+    pub fn from_value(value: &EValue) -> miette::Result<Self> {
+        let EValue::Enum { variant, .. } = value else {
+            bail!("Expected enum value");
+        };
+
+        Ok(Self {
+            variant: Some(*variant),
+        })
     }
 
     fn get_data<'a>(
