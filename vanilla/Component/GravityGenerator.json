@@ -13,5 +13,8 @@
   "PossibleModifications": [
     2,
     1
-  ]
+  ],
+  "Restrictions": {
+    "ComponentGroupTag": 9
+  }
 }
