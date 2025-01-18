@@ -7,7 +7,7 @@ use crate::widgets::dpanel::DPanelSide;
 use crate::workspace::Tab;
 use dbe_backend::project::io::FilesystemIO;
 use dbe_backend::project::Project;
-use egui::{Align2, Color32, Context, FontData, FontDefinitions, FontFamily, Id, Ui};
+use egui::{Align2, Button, Color32, Context, FontData, FontDefinitions, FontFamily, Id, Ui};
 use egui_colors::Colorix;
 use egui_dock::DockState;
 use egui_file::FileDialog;
@@ -213,8 +213,32 @@ impl DbeApp {
                 });
                 ui.add_space(16.0);
 
-                if ui.button("Clear All").clicked() {
-                    // self.snarl = Default::default();
+                if let Some(project) = &self.project {
+                    let mut want_undo = false;
+                    let mut want_redo = false;
+
+                    ui.horizontal(|ui| {
+                        if ui
+                            .add_enabled(project.history.can_undo(), Button::new("Undo"))
+                            .clicked()
+                        {
+                            want_undo = true;
+                        }
+                        if ui
+                            .add_enabled(project.history.can_redo(), Button::new("Redo"))
+                            .clicked()
+                        {
+                            want_redo = true;
+                        }
+                    });
+
+                    if want_undo && want_redo {
+                        report_error(miette!("Can't undo and redo at the same time"));
+                    } else if want_undo {
+                        self.undo();
+                    } else if want_redo {
+                        self.redo();
+                    }
                 }
             });
         });
@@ -378,7 +402,7 @@ impl DbeApp {
                     kind: ToastKind::Info,
                     text: format!("Undid change to: {}", data).into(),
                     options: ToastOptions::default()
-                        .duration_in_seconds(3.0)
+                        .duration_in_seconds(2.0)
                         .show_progress(true),
                     style: Default::default(),
                 });
@@ -399,7 +423,7 @@ impl DbeApp {
                     kind: ToastKind::Info,
                     text: format!("Redone change to: {}", data).into(),
                     options: ToastOptions::default()
-                        .duration_in_seconds(3.0)
+                        .duration_in_seconds(2.0)
                         .show_progress(true),
                     style: Default::default(),
                 });
