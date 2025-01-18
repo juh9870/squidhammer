@@ -272,6 +272,8 @@ impl Ctx {
                     _ => format!("\"{}\"", default),
                 };
                 args.push(format!("default={}", default));
+            } else if matches!(member.ty, SchemaStructMemberType::Color) {
+                args.push("default=\"#FFFFFFFF\"".to_string());
             }
             if let Some(description) = &member.description {
                 args.push(format!("description=\"{}\"", description));

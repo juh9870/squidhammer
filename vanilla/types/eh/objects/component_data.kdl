@@ -13,7 +13,7 @@ struct title="ComponentData" graph_inline=false {
 	}
 	number "Level" min=0 type="int"
 	string "Icon" editor="eh:image"
-	object "Color" "color:argb"
+	object "Color" default="#FFFFFFFF" "color:argb"
 	string "Layout" editor="eh:layout"
 	string "CellType"
 	object "DeviceId" "sys:optional" alias="Device" {

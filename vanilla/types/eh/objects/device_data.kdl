@@ -10,7 +10,7 @@ struct title="DeviceData" graph_inline=false {
 	number "Lifetime" min=0 max=1000
 	object "Offset" "sys:vec2"
 	object "ActivationType" "eh:enums/activation_type"
-	object "Color" "color:argb"
+	object "Color" default="#FFFFFFFF" "color:argb"
 	string "Sound" editor="eh:audioclip"
 	string "EffectPrefab" editor="eh:prefab"
 	object "VisualEffect" "sys:optional" {

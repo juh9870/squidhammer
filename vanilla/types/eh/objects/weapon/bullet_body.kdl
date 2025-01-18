@@ -8,7 +8,7 @@ struct title="BulletBody" graph_inline=true {
 	number "Lifetime" min=0 max=1000000000
 	number "Weight" min=0 max=1000000000
 	number "HitPoints" min=0 max=1000000000 type="int"
-	object "Color" "color:argb"
+	object "Color" default="#FFFFFFFF" "color:argb"
 	object "BulletPrefab" "sys:optional" {
 		object "Item" "sys:ids/numeric_ref" {
 			const "Id" "eh:objects/weapon/bullet_perfab"

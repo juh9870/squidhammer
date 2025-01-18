@@ -2,6 +2,6 @@ struct title="QuestItemData" graph_inline=false {
 	string "Name"
 	string "Description"
 	string "Icon" editor="eh:image"
-	object "Color" "color:argb"
+	object "Color" default="#FFFFFFFF" "color:argb"
 	number "Price" min=0 max=1000000000 type="int"
 }
