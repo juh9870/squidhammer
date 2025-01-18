@@ -1,6 +1,6 @@
-use crate::workspace::editors::{EditorContext, Props};
+use crate::workspace::editors::{EditorContext, ObjectProps, Props};
 use dbe_backend::etype::econst::ETypeConst;
-use dbe_backend::etype::property::FieldProperty;
+use dbe_backend::etype::property::{FieldProperty, ObjectProperty, PropertyInfo};
 use dbe_backend::value::EValue;
 use egui::collapsing_header::CollapsingState;
 use egui::{InnerResponse, RichText, Ui, WidgetText};
@@ -42,10 +42,40 @@ impl EditorSize {
     }
 }
 
+pub trait PropLike<T> {
+    type Storage<'a>;
+    fn try_get<'a>(&self, props: Self::Storage<'a>) -> Option<T>;
+    fn info(&self) -> &PropertyInfo;
+}
+
+impl<T: From<ETypeConst>> PropLike<T> for ObjectProperty<T> {
+    type Storage<'a> = ObjectProps<'a>;
+
+    fn try_get<'a>(&self, props: Self::Storage<'a>) -> Option<T> {
+        self.try_get(props)
+    }
+
+    fn info(&self) -> &PropertyInfo {
+        self.info()
+    }
+}
+
+impl<T: From<ETypeConst>> PropLike<T> for FieldProperty<T> {
+    type Storage<'a> = Props<'a>;
+
+    fn try_get<'a>(&self, props: Self::Storage<'a>) -> Option<T> {
+        self.try_get(props)
+    }
+
+    fn info(&self) -> &PropertyInfo {
+        self.info()
+    }
+}
+
 #[inline(always)]
-pub fn prop_opt<'a, T: TryFrom<ETypeConst, Error = miette::Error>>(
-    props: impl Into<Option<Props<'a>>>,
-    prop: &FieldProperty<ETypeConst>,
+pub fn prop_opt<'a, T: TryFrom<ETypeConst, Error = miette::Error>, Prop: PropLike<ETypeConst>>(
+    props: impl Into<Option<Prop::Storage<'a>>>,
+    prop: &Prop,
 ) -> miette::Result<Option<T>> {
     if let Some(value) = props.into().and_then(|props| prop.try_get(props)) {
         Ok(Some(T::try_from(value).map_err(|e| {
@@ -57,9 +87,9 @@ pub fn prop_opt<'a, T: TryFrom<ETypeConst, Error = miette::Error>>(
 }
 
 #[inline(always)]
-pub fn prop<'a, T: TryFrom<ETypeConst, Error = miette::Error>>(
-    props: impl Into<Option<Props<'a>>>,
-    prop: &FieldProperty<ETypeConst>,
+pub fn prop<'a, T: TryFrom<ETypeConst, Error = miette::Error>, Prop: PropLike<ETypeConst>>(
+    props: impl Into<Option<Prop::Storage<'a>>>,
+    prop: &Prop,
     default: T,
 ) -> miette::Result<T> {
     prop_opt(props, prop).map(|o| o.unwrap_or(default))
@@ -67,9 +97,13 @@ pub fn prop<'a, T: TryFrom<ETypeConst, Error = miette::Error>>(
 
 #[inline(always)]
 #[allow(dead_code)]
-pub fn prop_required<'a, T: TryFrom<ETypeConst, Error = miette::Error>>(
-    props: impl Into<Option<Props<'a>>>,
-    prop: &FieldProperty<ETypeConst>,
+pub fn prop_required<
+    'a,
+    T: TryFrom<ETypeConst, Error = miette::Error>,
+    Prop: PropLike<ETypeConst>,
+>(
+    props: impl Into<Option<Prop::Storage<'a>>>,
+    prop: &Prop,
 ) -> miette::Result<T> {
     prop_opt(props, prop)
         .and_then(|s| s.ok_or_else(|| miette!("required property `{}` is missing", prop.info().id)))

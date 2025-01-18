@@ -4,12 +4,14 @@ use crate::workspace::editors::{
     cast_props, DynProps, Editor, EditorContext, EditorProps, EditorResponse,
 };
 use dbe_backend::diagnostic::context::DiagnosticContextRef;
+use dbe_backend::etype::econst::ETypeConst;
 use dbe_backend::etype::eitem::EItemInfo;
 use dbe_backend::registry::ETypesRegistry;
 use dbe_backend::value::{ENumber, EValue};
 use egui::{DragValue, Slider, Ui};
 use num_traits::Float;
 use std::ops::RangeInclusive;
+use utils::map::HashMap;
 
 #[derive(Debug)]
 pub struct NumberEditor {
@@ -23,7 +25,12 @@ impl NumberEditor {
 }
 
 impl Editor for NumberEditor {
-    fn props(&self, _reg: &ETypesRegistry, item: Option<&EItemInfo>) -> miette::Result<DynProps> {
+    fn props(
+        &self,
+        _reg: &ETypesRegistry,
+        item: Option<&EItemInfo>,
+        _object_props: DynProps,
+    ) -> miette::Result<DynProps> {
         let props = item.map(|i| i.extra_properties());
         let min = props.and_then(|p| PROP_FIELD_MIN.try_get(p));
         let max = props.and_then(|p| PROP_FIELD_MAX.try_get(p));

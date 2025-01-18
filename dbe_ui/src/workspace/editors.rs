@@ -18,7 +18,7 @@ use dbe_backend::diagnostic::context::DiagnosticContextRef;
 use dbe_backend::etype::econst::ETypeConst;
 use dbe_backend::etype::eitem::EItemInfo;
 use dbe_backend::etype::eobject::EObject;
-use dbe_backend::etype::property::FieldPropertyId;
+use dbe_backend::etype::property::{FieldPropertyId, ObjectPropertyId};
 use dbe_backend::etype::EDataType;
 use dbe_backend::project::docs::Docs;
 use dbe_backend::project::docs::DocsRef;
@@ -100,6 +100,7 @@ fn default_editors() -> impl Iterator<Item = (Ustr, Box<dyn Editor>)> {
     v.into_iter()
 }
 type Props<'a> = &'a HashMap<FieldPropertyId, ETypeConst>;
+type ObjectProps<'a> = &'a HashMap<ObjectPropertyId, ETypeConst>;
 
 trait EditorProps: std::any::Any + DynClone + Downcast {
     fn pack(self) -> DynProps
@@ -119,7 +120,22 @@ fn cast_props<T: EditorProps>(props: &DynProps) -> &T {
 type DynProps = Option<Box<dyn EditorProps>>;
 
 trait Editor: std::any::Any + Send + Sync + Debug {
-    fn props(&self, _reg: &ETypesRegistry, _item: Option<&EItemInfo>) -> miette::Result<DynProps> {
+    fn props(
+        &self,
+        reg: &ETypesRegistry,
+        item: Option<&EItemInfo>,
+        object_props: DynProps,
+    ) -> miette::Result<DynProps> {
+        let _ = (reg, item, object_props);
+        Ok(None)
+    }
+
+    fn object_props(
+        &self,
+        reg: &ETypesRegistry,
+        props: &HashMap<ObjectPropertyId, ETypeConst>,
+    ) -> miette::Result<DynProps> {
+        let _ = (reg, props);
         Ok(None)
     }
 
@@ -214,9 +230,9 @@ pub fn editor_for_value(reg: &ETypesRegistry, value: &EValue) -> EditorData {
 
 pub fn editor_for_type(reg: &ETypesRegistry, ty: &EDataType) -> EditorData {
     m_try(|| {
-        let editor = editor_for_raw(reg, ty, None)?;
+        let (editor, object_props) = editor_for_raw(reg, ty, None)?;
 
-        Ok(EditorData(editor, editor.props(reg, None)?))
+        Ok(EditorData(editor, editor.props(reg, None, object_props)?))
     })
     .unwrap_or_else(|err| EditorData(&ErrorEditor, ErrorProps(err.to_string()).pack()))
 }
@@ -225,9 +241,12 @@ pub fn editor_for_item(reg: &ETypesRegistry, item: &EItemInfo) -> EditorData {
     m_try(|| {
         let name = PROP_FIELD_EDITOR.try_get(item.extra_properties());
 
-        let editor = editor_for_raw(reg, &item.ty(), name)?;
+        let (editor, object_props) = editor_for_raw(reg, &item.ty(), name)?;
 
-        Ok(EditorData(editor, editor.props(reg, Some(item))?))
+        Ok(EditorData(
+            editor,
+            editor.props(reg, Some(item), object_props)?,
+        ))
     })
     .unwrap_or_else(|err| EditorData(&ErrorEditor, ErrorProps(err.to_string()).pack()))
 }
@@ -236,7 +255,7 @@ fn editor_for_raw(
     reg: &ETypesRegistry,
     ty: &EDataType,
     name: Option<Ustr>,
-) -> miette::Result<&'static dyn Editor> {
+) -> miette::Result<(&'static dyn Editor, DynProps)> {
     let name = match name {
         None => match ty {
             EDataType::Number => "number".into(),
@@ -247,14 +266,21 @@ fn editor_for_raw(
                 let data = reg
                     .get_object(ident)
                     .ok_or_else(|| miette!("Unknown object ID `{}`", ident))?;
-                if let Some(prop) = PROP_OBJECT_EDITOR.try_get(data.extra_properties()) {
+                let name = if let Some(prop) = PROP_OBJECT_EDITOR.try_get(data.extra_properties()) {
                     prop
                 } else {
                     match data {
                         EObjectType::Struct(_) => "struct".into(),
                         EObjectType::Enum(_) => "enum".into(),
                     }
-                }
+                };
+
+                let Some(editor) = EDITORS.get(&name) else {
+                    bail!("unknown editor `{}`", name)
+                };
+
+                let props = editor.object_props(reg, data.extra_properties())?;
+                return Ok((editor.deref(), props));
             }
             EDataType::List { .. } => "list".into(),
             EDataType::Map { .. } => "map".into(),
@@ -266,7 +292,7 @@ fn editor_for_raw(
         bail!("unknown editor `{}`", name)
     };
 
-    Ok(editor.deref())
+    Ok((editor.deref(), None))
 }
 
 impl EditorData {

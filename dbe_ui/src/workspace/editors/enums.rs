@@ -1,5 +1,5 @@
 use crate::main_toolbar::docs::docs_hover;
-use crate::ui_props::PROP_FIELD_KIND;
+use crate::ui_props::{PROP_FIELD_KIND, PROP_OBJECT_KIND};
 use crate::widgets::report::diagnostics_column;
 use crate::workspace::editors::utils::{
     inline_error, labeled_error, labeled_field, prop, unsupported, EditorSize,
@@ -14,13 +14,16 @@ use dbe_backend::etype::eenum::pattern::EnumPattern;
 use dbe_backend::etype::eenum::variant::{EEnumVariant, EEnumVariantId, EEnumVariantWithId};
 use dbe_backend::etype::eenum::EEnumData;
 use dbe_backend::etype::eitem::EItemInfo;
+use dbe_backend::etype::property::ObjectPropertyId;
 use dbe_backend::project::docs::DocsRef;
 use dbe_backend::registry::ETypesRegistry;
 use dbe_backend::value::EValue;
 use egui::collapsing_header::CollapsingState;
 use egui::{Align, Direction, Ui};
 use miette::{bail, miette};
+use std::ops::Deref;
 use tracing::error;
+use utils::map::HashMap;
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
 enum EnumEditorType {
@@ -52,12 +55,34 @@ impl TryFrom<ETypeConst> for EnumEditorType {
 pub struct EnumEditor;
 
 impl Editor for EnumEditor {
-    fn props(&self, _reg: &ETypesRegistry, item: Option<&EItemInfo>) -> miette::Result<DynProps> {
+    fn props(
+        &self,
+        _reg: &ETypesRegistry,
+        item: Option<&EItemInfo>,
+        object_props: DynProps,
+    ) -> miette::Result<DynProps> {
         let kind = prop(
             item.map(|i| i.extra_properties()),
-            &PROP_FIELD_KIND,
+            PROP_FIELD_KIND.deref(),
             EnumEditorType::Auto,
         )?;
+
+        let kind = if kind == EnumEditorType::Auto {
+            let obj_props = cast_props::<EnumEditorProps>(&object_props);
+            obj_props.ty
+        } else {
+            kind
+        };
+
+        Ok(EnumEditorProps { ty: kind }.pack())
+    }
+
+    fn object_props(
+        &self,
+        _reg: &ETypesRegistry,
+        props: &HashMap<ObjectPropertyId, ETypeConst>,
+    ) -> miette::Result<DynProps> {
+        let kind = prop(props, PROP_OBJECT_KIND.deref(), EnumEditorType::Auto)?;
 
         Ok(EnumEditorProps { ty: kind }.pack())
     }
@@ -94,7 +119,7 @@ impl Editor for EnumEditor {
         editor.hide_const_body();
 
         match props.ty {
-            EnumEditorType::Toggle | EnumEditorType::Auto if editor.is_auto_toggle() => {
+            EnumEditorType::Toggle => {
                 if !editor.can_be_toggle() {
                     labeled_error(
                         ui,
@@ -223,10 +248,6 @@ impl<'a> EnumEditorData<'a> {
         self.enum_data.variants().len() == 2
     }
 
-    fn is_auto_toggle(&self) -> bool {
-        false
-    }
-
     fn change_variant(&mut self, new_variant: EEnumVariantId) {
         *self.variant = new_variant;
         match new_variant.variant(self.ctx.registry) {
@@ -287,9 +308,9 @@ impl<'a> EnumEditorData<'a> {
             ui.toggle_value(
                 checked,
                 if *checked {
-                    first.0.name.as_str()
-                } else {
                     second.0.name.as_str()
+                } else {
+                    first.0.name.as_str()
                 },
             );
         })
@@ -308,12 +329,12 @@ impl<'a> EnumEditorData<'a> {
             }
         };
 
-        let checked = self.variant == first.1;
+        let checked = self.variant == second.1;
 
         let mut after_check = checked;
         checkbox(ui, &mut after_check, first, second);
         if after_check != checked {
-            self.change_variant(if after_check { *first.1 } else { *second.1 })
+            self.change_variant(if after_check { *second.1 } else { *first.1 })
         }
     }
 

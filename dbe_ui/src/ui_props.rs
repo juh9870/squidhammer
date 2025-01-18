@@ -36,6 +36,7 @@ extra_properties! {
     pub prop<field> show_file_path: bool;
     pub prop<field> show_field_path: bool;
 
+    pub prop<object> kind: ETypeConst;
     pub prop<object> pin_color: PinColor;
     pub prop<object> graph_search_hide: bool;
     pub prop<object> graph_inline: bool;
