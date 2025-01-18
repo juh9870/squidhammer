@@ -2,6 +2,8 @@
 name = "squidfmt"
 version = "0.1.0"
 edition = "2021"
+repository = "https://github.com/juh9870/dbe"
+publish = false
 
 [dependencies]
 smallvec = { workspace = true }
@@ -11,3 +13,6 @@ thiserror = { workspace = true }
 insta = { workspace = true, features = ["glob"] }
 serde = { workspace = true, features = ["derive"] }
 toml = { workspace = true }
+
+[package.metadata.release]
+release = false

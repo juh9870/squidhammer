@@ -2,6 +2,8 @@
 name = "collection_traits"
 version = "0.1.0"
 edition = "2021"
+repository = "https://github.com/juh9870/dbe"
+publish = false
 
 [dependencies]
 duplicate = { workspace = true }
@@ -9,3 +11,6 @@ smallvec = { workspace = true, optional = true, features = ["const_generics"] }
 
 [features]
 smallvec = ["dep:smallvec"]
+
+[package.metadata.release]
+release = false
