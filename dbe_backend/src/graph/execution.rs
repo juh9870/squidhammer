@@ -105,20 +105,20 @@ impl<'a> GraphExecutionContext<'a, 'a> {
     }
 }
 
-impl<'a, 'snarl> Deref for GraphExecutionContext<'a, 'snarl> {
+impl<'a> Deref for GraphExecutionContext<'a, '_> {
     type Target = PartialGraphExecutionContext<'a>;
 
     fn deref(&self) -> &Self::Target {
         &self.ctx
     }
 }
-impl<'a, 'snarl> DerefMut for GraphExecutionContext<'a, 'snarl> {
+impl DerefMut for GraphExecutionContext<'_, '_> {
     fn deref_mut(&mut self) -> &mut Self::Target {
         &mut self.ctx
     }
 }
 
-impl<'a, 'snarl> GraphExecutionContext<'a, 'snarl> {
+impl GraphExecutionContext<'_, '_> {
     /// Marks the node and all downstream nodes as dirty
     pub fn mark_dirty(&mut self, node: NodeId) {
         self.mark_dirty_inner(node, &mut SmallVec::new());
@@ -160,7 +160,7 @@ impl<'a, 'snarl> GraphExecutionContext<'a, 'snarl> {
     }
 }
 
-impl<'a, 'snarl> GraphExecutionContext<'a, 'snarl> {
+impl GraphExecutionContext<'_, '_> {
     pub fn mark_dirty_inner(&mut self, node: NodeId, marked: &mut SmallVec<[NodeId; 4]>) {
         if marked.contains(&node) {
             return;
@@ -410,10 +410,10 @@ fn should_run_node(
         }
 
         // Can't run nodes in region that isn't the direct child
-        if !regions_graph
+        if regions_graph
             .region_parents(&region)
             .first()
-            .is_some_and(|reg| *reg == cur_region)
+            .is_none_or(|reg| *reg != cur_region)
         {
             return false;
         }

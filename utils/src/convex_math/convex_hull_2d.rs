@@ -25,7 +25,7 @@ where
     pub hulls: Vec<usize>,
 }
 
-impl<'a, T: Float, P> ConvexHull2D<'a, T, P>
+impl<T: Float, P> ConvexHull2D<'_, T, P>
 where
     P: Into<[T; 2]> + Clone + Copy + Send + Sync + Index<usize, Output = T>,
 {

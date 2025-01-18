@@ -72,20 +72,20 @@ impl<'a> GraphEditingContext<'a, 'a> {
     }
 }
 
-impl<'a, 'snarl> Deref for GraphEditingContext<'a, 'snarl> {
+impl<'a> Deref for GraphEditingContext<'a, '_> {
     type Target = PartialGraphEditingContext<'a>;
 
     fn deref(&self) -> &Self::Target {
         &self.ctx
     }
 }
-impl<'a, 'snarl> DerefMut for GraphEditingContext<'a, 'snarl> {
+impl DerefMut for GraphEditingContext<'_, '_> {
     fn deref_mut(&mut self) -> &mut Self::Target {
         &mut self.ctx
     }
 }
 
-impl<'a, 'snarl> GraphEditingContext<'a, 'snarl> {
+impl GraphEditingContext<'_, '_> {
     pub fn as_execution_context(&mut self) -> GraphExecutionContext {
         GraphExecutionContext::new(
             self.snarl,

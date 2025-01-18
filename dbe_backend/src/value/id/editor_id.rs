@@ -47,7 +47,7 @@ impl serde::Serialize for EditorId {
 
 struct EditorIdVisitor;
 
-impl<'de> serde::de::Visitor<'de> for EditorIdVisitor {
+impl serde::de::Visitor<'_> for EditorIdVisitor {
     type Value = EditorId;
 
     fn expecting(&self, formatter: &mut Formatter) -> std::fmt::Result {

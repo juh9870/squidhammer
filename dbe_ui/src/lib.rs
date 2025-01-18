@@ -210,6 +210,11 @@ impl DbeApp {
                         ctx.send_viewport_cmd(egui::ViewportCommand::Close);
                         ui.close_menu();
                     }
+
+                    #[cfg(debug_assertions)]
+                    if ui.button("PANIC").clicked() {
+                        panic!("User clicked the panic button");
+                    }
                 });
                 ui.add_space(16.0);
 

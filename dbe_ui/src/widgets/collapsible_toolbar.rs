@@ -72,7 +72,7 @@ pub struct CollapsibleToolbar<'a, Tab: SerializableAny> {
     global_drag_id: Option<Id>,
 }
 
-impl<'a, Tab: SerializableAny> CollapsibleToolbar<'a, Tab> {}
+impl<Tab: SerializableAny> CollapsibleToolbar<'_, Tab> {}
 
 impl<'a, Tab: SerializableAny> CollapsibleToolbar<'a, Tab> {
     pub fn new(

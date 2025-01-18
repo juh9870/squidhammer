@@ -57,7 +57,7 @@ impl ObjectTitle {
 
 struct FmtStub<'a, T: EObject>(&'a T);
 
-impl<'a, T: EObject> FormatKeys for FmtStub<'a, T> {
+impl<T: EObject> FormatKeys for FmtStub<'_, T> {
     fn fmt(&self, key: &str, f: &mut Formatter<'_>) -> Result<(), FormatKeyError> {
         if !self
             .0
@@ -74,7 +74,7 @@ impl<'a, T: EObject> FormatKeys for FmtStub<'a, T> {
 
 struct FmtTitle<'a, T: EObject>(&'a T, &'a ETypesRegistry);
 
-impl<'a, T: EObject> FormatKeys for FmtTitle<'a, T> {
+impl<T: EObject> FormatKeys for FmtTitle<'_, T> {
     fn fmt(&self, key: &str, f: &mut Formatter<'_>) -> Result<(), FormatKeyError> {
         let Some((pos, name)) = self
             .0
