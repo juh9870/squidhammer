@@ -10,6 +10,7 @@ use std::borrow::Cow;
 
 pub mod colors;
 pub mod docs;
+pub mod history;
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum ToolPanel {
@@ -18,6 +19,7 @@ pub enum ToolPanel {
     Log,
     Theme,
     Docs,
+    History,
 }
 
 pub struct ToolPanelViewer<'a>(pub &'a mut DbeApp);
@@ -32,6 +34,7 @@ impl ToolbarViewer for ToolPanelViewer<'_> {
             ToolPanel::Log => "Log".into(),
             ToolPanel::Theme => "Theme".into(),
             ToolPanel::Docs => "Docs".into(),
+            ToolPanel::History => "Undo History".into(),
         }
     }
 
@@ -51,6 +54,9 @@ impl ToolbarViewer for ToolPanelViewer<'_> {
             }
             ToolPanel::Docs => {
                 docs::docs_tab(ui, self.0);
+            }
+            ToolPanel::History => {
+                history::history_tab(ui, self.0);
             }
         }
     }

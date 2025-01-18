@@ -15,7 +15,7 @@ use egui_toast::{Toast, ToastKind, ToastOptions, Toasts};
 use egui_tracing::EventCollector;
 use inline_tweak::tweak;
 use itertools::Itertools;
-use miette::{IntoDiagnostic, WrapErr};
+use miette::{miette, IntoDiagnostic, WrapErr};
 use serde::{Deserialize, Serialize};
 use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicBool, Ordering};
@@ -168,6 +168,13 @@ impl DbeApp {
 
         // self.colorix = Colorix::init(ctx, [ColorPreset::Red; 12]);
 
+        if let Some(project) = &mut self.project {
+            let time = ctx.input(|i| i.time);
+            project
+                .history
+                .set_time(&project.files, &project.graphs, time);
+        }
+
         egui::TopBottomPanel::top("top_panel").show(ctx, |ui| {
             // The top panel is often a good place for a menu bar:
 
@@ -230,7 +237,7 @@ impl DbeApp {
         CollapsibleToolbar::new(
             DPanelSide::Right,
             &[ToolPanel::Diagnostics, ToolPanel::Docs],
-            &[],
+            &[ToolPanel::History],
         )
         .default_selected_start(0)
         .global_drag_id(global_drag_id)
@@ -356,6 +363,51 @@ impl DbeApp {
         }
 
         self.history.insert(0, path);
+    }
+}
+
+impl DbeApp {
+    fn undo(&mut self) {
+        let Some(project) = &mut self.project else {
+            report_error(miette!("Cannot undo: no project loaded"));
+            return;
+        };
+        match project.undo() {
+            Ok(data) => {
+                self.toasts.push(Toast {
+                    kind: ToastKind::Info,
+                    text: format!("Undid change to: {}", data).into(),
+                    options: ToastOptions::default()
+                        .duration_in_seconds(3.0)
+                        .show_progress(true),
+                    style: Default::default(),
+                });
+            }
+            Err(err) => {
+                report_error(err);
+            }
+        }
+    }
+    fn redo(&mut self) {
+        let Some(project) = &mut self.project else {
+            report_error(miette!("Cannot redo: no project loaded"));
+            return;
+        };
+        match project.redo() {
+            Ok(data) => {
+                self.toasts.push(Toast {
+                    kind: ToastKind::Info,
+                    text: format!("Redone change to: {}", data).into(),
+                    options: ToastOptions::default()
+                        .duration_in_seconds(3.0)
+                        .show_progress(true),
+                    style: Default::default(),
+                });
+            }
+            Err(err) => {
+                report_error(err);
+            }
+        }
     }
 }
 

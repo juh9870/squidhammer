@@ -73,6 +73,14 @@ impl Hash for Graph {
             OrderedFloat(node.pos.y).hash(state);
             node.open.hash(state);
         }
+
+        self.snarl
+            .wires()
+            .sorted_unstable()
+            .for_each(|(out_pin, in_pin)| {
+                in_pin.hash(state);
+                out_pin.hash(state);
+            });
     }
 }
 

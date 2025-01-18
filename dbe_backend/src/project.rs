@@ -7,6 +7,7 @@ use crate::project::docs::{Docs, DocsFile};
 use crate::project::io::{FilesystemIO, ProjectIO};
 use crate::project::project_graph::{ProjectGraph, ProjectGraphs};
 use crate::project::side_effects::SideEffectsContext;
+use crate::project::undo::{UndoHistory, UndoSettings};
 use crate::registry::ETypesRegistry;
 use crate::validation::{clear_validation_cache, validate};
 use crate::value::id::ETypeId;
@@ -27,6 +28,7 @@ pub mod docs;
 pub mod io;
 pub mod project_graph;
 pub mod side_effects;
+pub mod undo;
 
 pub const EXTENSION_GRAPH: &str = "dbegraph";
 pub const EXTENSION_VALUE: &str = "dbevalue";
@@ -44,6 +46,7 @@ pub struct Project<IO> {
     pub graphs: ProjectGraphs,
     /// Files that should be deleted on save
     pub to_delete: HashSet<Utf8PathBuf>,
+    pub history: UndoHistory,
     /// Root folder of the project
     pub root: Utf8PathBuf,
     io: IO,
@@ -241,6 +244,7 @@ impl<IO: ProjectIO> Project<IO> {
             files: Default::default(),
             graphs: Default::default(),
             to_delete: Default::default(),
+            history: UndoHistory::new(UndoSettings::default()),
             root,
             io,
         };
@@ -490,6 +494,24 @@ impl<IO: ProjectIO> Project<IO> {
         }
 
         Ok(())
+    }
+}
+
+impl<IO> Project<IO> {
+    /// See [UndoHistory::undo]
+    pub fn undo(&mut self) -> miette::Result<Utf8PathBuf> {
+        self.history.undo(&mut self.files, &mut self.graphs)
+    }
+
+    /// See [UndoHistory::redo]
+    pub fn redo(&mut self) -> miette::Result<Utf8PathBuf> {
+        self.history.redo(&mut self.files, &mut self.graphs)
+    }
+
+    /// See [UndoHistory::check_file]
+    pub fn file_changed(&mut self, path: &Utf8PathBuf, force_snapshot: bool) -> miette::Result<()> {
+        self.history
+            .check_file(&self.files, &self.graphs, path, force_snapshot)
     }
 
     pub fn import_root(&self) -> EDataType {
