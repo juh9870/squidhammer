@@ -17,5 +17,8 @@
     7,
     1,
     10
-  ]
+  ],
+  "Restrictions": {
+    "ComponentGroupTag": 12
+  }
 }

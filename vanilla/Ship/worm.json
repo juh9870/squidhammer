@@ -7,6 +7,7 @@
       "WeaponClass": "L"
     }
   ],
+  "EngineColor": "#00000000",
   "Faction": 12,
   "Features": {
     "BuiltinDevices": [

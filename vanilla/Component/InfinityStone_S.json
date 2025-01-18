@@ -17,6 +17,7 @@
     6
   ],
   "Restrictions": {
+    "ComponentGroupTag": 10,
     "ShipSizes": [
       0,
       1,

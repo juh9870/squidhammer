@@ -2,7 +2,6 @@
   "Body": {
     "BulletPrefab": 5,
     "CanBeDisarmed": true,
-    "Color": "#FFFFFF",
     "EnergyCost": 30,
     "Lifetime": 10,
     "Range": 300,
