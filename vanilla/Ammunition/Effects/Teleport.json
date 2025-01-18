@@ -1,46 +1,13 @@
 {
   "Elements": [
     {
-      "Color": "#00000000",
-      "ColorMode": 0,
       "GrowthRate": 2,
       "Image": "twirl",
-      "Inverse": false,
-      "Lifetime": 1,
-      "Loop": false,
-      "Offset": {
-        "x": 0,
-        "y": 0
-      },
-      "ParticleSize": 1,
-      "Quantity": 1,
-      "Rotation": 0,
-      "Size": 1,
-      "StartTime": 0,
-      "TurnRate": -360,
-      "Type": 0,
-      "UseRealTime": false
+      "TurnRate": -360
     },
     {
-      "Color": "#00000000",
-      "ColorMode": 0,
-      "GrowthRate": 0,
       "Image": "star",
-      "Inverse": false,
-      "Lifetime": 1,
-      "Loop": false,
-      "Offset": {
-        "x": 0,
-        "y": 0
-      },
-      "ParticleSize": 1,
-      "Quantity": 1,
-      "Rotation": 0,
-      "Size": 1.5,
-      "StartTime": 0,
-      "TurnRate": 0,
-      "Type": 0,
-      "UseRealTime": false
+      "Size": 1.5
     }
   ],
   "Id": 17,

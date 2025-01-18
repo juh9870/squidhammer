@@ -1,14 +1,10 @@
 {
-  "AmmunitionId": null,
   "Availability": 1,
   "CellType": "2",
   "Color": "#A0A0A0",
   "ComponentStatsId": 3,
-  "Description": "",
   "DeviceId": 11,
   "DisplayCategory": 6,
-  "DroneBayId": null,
-  "DroneId": null,
   "Faction": 2,
   "Icon": "repairbot2",
   "Id": 79,
@@ -21,14 +17,5 @@
     7,
     1,
     10
-  ],
-  "Restrictions": {
-    "ComponentGroupTag": null,
-    "MaxComponentAmount": 0,
-    "NotForMechanicShips": false,
-    "NotForOrganicShips": false,
-    "ShipSizes": []
-  },
-  "WeaponId": null,
-  "WeaponSlotType": ""
+  ]
 }

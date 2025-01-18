@@ -3,23 +3,14 @@
   "Color": "#C0FFFF80",
   "ControlButtonIcon": "controls_boost",
   "Cooldown": 1,
-  "DeviceClass": 0,
   "EffectPrefab": "Flicker",
   "EnergyConsumption": 0.3,
   "Id": 1,
   "ItemType": 2,
-  "Lifetime": 0,
-  "ObjectPrefab": "",
   "Offset": {
-    "x": -0.1,
-    "y": 0
+    "x": -0.1
   },
-  "PassiveEnergyConsumption": 0,
   "Power": 4,
-  "Prefab": null,
-  "Range": 0,
   "ScaleEnergyWithShipSize": false,
-  "Size": 2,
-  "Sound": "",
-  "VisualEffect": null
+  "Size": 2
 }

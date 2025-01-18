@@ -2,49 +2,18 @@
   "Barrels": [
     {
       "AutoAimingArc": 360,
-      "Image": "",
-      "Offset": 0.2,
-      "Position": {
-        "x": 0,
-        "y": 0
-      },
-      "Rotation": 0,
-      "RotationSpeed": 0,
-      "Size": 0,
-      "WeaponClass": ""
+      "Offset": 0.2
     }
   ],
-  "CellsExpansions": 0,
-  "ColliderTolerance": 0.02,
-  "Description": "",
   "EngineColor": "#40FFC300",
   "Engines": [
     {
       "Position": {
-        "x": -0.8,
-        "y": 0
+        "x": -0.8
       },
       "Size": 0.3
     }
   ],
-  "Faction": null,
-  "Features": {
-    "ArmorBonus": 0,
-    "BuiltinDevices": [],
-    "DroneAttackBonus": 0,
-    "DroneBuildSpeedBonus": 0,
-    "DroneDefenseBonus": 0,
-    "EnergyBonus": 0,
-    "EnergyResistance": 0,
-    "EquipmentWeightBonus": 0,
-    "HeatResistance": 0,
-    "KineticResistance": 0,
-    "Regeneration": false,
-    "ShieldBonus": 0,
-    "ShipWeightBonus": 0,
-    "TurnRateBonus": 0,
-    "VelocityBonus": 0
-  },
   "IconImage": "fns3",
   "IconScale": 0.9,
   "Id": 75,
@@ -53,7 +22,5 @@
   "ModelImage": "fns3",
   "ModelScale": 1.5,
   "Name": "$fn_Destroyer3",
-  "ShipRarity": 0,
-  "ShipType": 0,
   "SizeClass": 1
 }

@@ -6,10 +6,7 @@
   "FireRate": 0.125,
   "Id": 8,
   "ItemType": 3,
-  "Magazine": 0,
-  "ShotEffectPrefab": "",
   "ShotSound": "launch_04",
-  "Spread": 0,
   "VisualEffect": 16,
   "WeaponClass": 5
 }

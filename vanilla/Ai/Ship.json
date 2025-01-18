@@ -5,22 +5,13 @@
     "Nodes": [
       {
         "ItemId": 17,
-        "Requirement": {
-          "Type": 0
-        },
         "Type": 1
       },
       {
         "ItemId": 14,
-        "Requirement": {
-          "Type": 0
-        },
         "Type": 1
       }
     ],
-    "Requirement": {
-      "Type": 0
-    },
     "Type": 2
   }
 }

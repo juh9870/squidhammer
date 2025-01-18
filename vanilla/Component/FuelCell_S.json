@@ -1,32 +1,15 @@
 {
-  "AmmunitionId": null,
   "Availability": 1,
-  "CellType": "",
-  "Color": "#00000000",
   "ComponentStatsId": 67,
-  "Description": "",
-  "DeviceId": null,
   "DisplayCategory": 3,
-  "DroneBayId": null,
-  "DroneId": null,
   "Faction": -1,
   "Icon": "fueltank11",
   "Id": 67,
   "ItemType": 1,
   "Layout": "1",
-  "Level": 0,
   "Name": "$FuelCell_S",
   "PossibleModifications": [
     9,
     1
-  ],
-  "Restrictions": {
-    "ComponentGroupTag": null,
-    "MaxComponentAmount": 0,
-    "NotForMechanicShips": false,
-    "NotForOrganicShips": false,
-    "ShipSizes": []
-  },
-  "WeaponId": null,
-  "WeaponSlotType": ""
+  ]
 }

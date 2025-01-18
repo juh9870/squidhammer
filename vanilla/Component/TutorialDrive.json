@@ -1,33 +1,16 @@
 {
-  "AmmunitionId": null,
-  "Availability": 0,
   "CellType": "5",
-  "Color": "#00000000",
   "ComponentStatsId": 1,
-  "Description": "",
-  "DeviceId": null,
   "DisplayCategory": 4,
-  "DroneBayId": null,
-  "DroneId": null,
   "Faction": -1,
   "Icon": "engine1",
   "Id": 86,
   "ItemType": 1,
   "Layout": "1",
-  "Level": 0,
   "Name": "TutorialDrive",
   "PossibleModifications": [
     2,
     11,
     1
-  ],
-  "Restrictions": {
-    "ComponentGroupTag": null,
-    "MaxComponentAmount": 0,
-    "NotForMechanicShips": false,
-    "NotForOrganicShips": false,
-    "ShipSizes": []
-  },
-  "WeaponId": null,
-  "WeaponSlotType": ""
+  ]
 }

@@ -9,8 +9,7 @@
           "MaxAmount": 11000,
           "MinAmount": 9500,
           "Type": 25
-        },
-        "Weight": 0
+        }
       },
       {
         "Loot": {
@@ -18,8 +17,7 @@
           "MaxAmount": 11000,
           "MinAmount": 9500,
           "Type": 25
-        },
-        "Weight": 0
+        }
       }
     ],
     "Type": 21

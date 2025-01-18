@@ -1,9 +1,7 @@
 {
   "Color": "#C0FFFF",
-  "Description": "",
   "Icon": "snowflake",
   "Id": 25,
   "ItemType": 20,
-  "Name": "$Snowflakes",
-  "Price": 0
+  "Name": "$Snowflakes"
 }

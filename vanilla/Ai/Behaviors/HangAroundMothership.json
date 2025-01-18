@@ -5,34 +5,19 @@
     "Node": {
       "Nodes": [
         {
-          "Requirement": {
-            "Type": 0
-          },
           "Type": 204
         },
         {
           "MaxValue": 4,
           "MinValue": 2,
-          "Requirement": {
-            "Type": 0
-          },
           "Type": 124
         },
         {
           "MaxValue": 0.5,
-          "Requirement": {
-            "Type": 0
-          },
           "Type": 113
         }
       ],
-      "Requirement": {
-        "Type": 0
-      },
       "Type": 3
-    },
-    "Requirement": {
-      "Type": 0
     },
     "Type": 11
   }

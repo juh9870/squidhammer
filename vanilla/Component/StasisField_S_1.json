@@ -4,17 +4,12 @@
   "CellType": "4",
   "Color": "#FFA0FF",
   "ComponentStatsId": 3,
-  "Description": "",
-  "DeviceId": null,
   "DisplayCategory": 1,
-  "DroneBayId": null,
-  "DroneId": null,
   "Faction": 4,
   "Icon": "torpedo1",
   "Id": 147,
   "ItemType": 1,
   "Layout": "1010",
-  "Level": 0,
   "Name": "$StasisField_S_1",
   "PossibleModifications": [
     13,
@@ -27,13 +22,5 @@
     7,
     1
   ],
-  "Restrictions": {
-    "ComponentGroupTag": null,
-    "MaxComponentAmount": 0,
-    "NotForMechanicShips": false,
-    "NotForOrganicShips": false,
-    "ShipSizes": []
-  },
-  "WeaponId": 81,
-  "WeaponSlotType": ""
+  "WeaponId": 81
 }

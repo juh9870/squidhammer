@@ -1,23 +1,8 @@
 {
   "Elements": [
     {
-      "Color": "#00000000",
-      "ColorMode": 0,
-      "GrowthRate": 0,
       "Image": "beam",
-      "Inverse": false,
-      "Lifetime": 1,
       "Loop": true,
-      "Offset": {
-        "x": 0,
-        "y": 0
-      },
-      "ParticleSize": 1,
-      "Quantity": 1,
-      "Rotation": 0,
-      "Size": 1,
-      "StartTime": 0,
-      "TurnRate": 0,
       "Type": 7,
       "UseRealTime": true
     }

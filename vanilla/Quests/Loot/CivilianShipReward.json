@@ -6,8 +6,7 @@
       {
         "Loot": {
           "Type": 5
-        },
-        "Weight": 0
+        }
       },
       {
         "Loot": {
@@ -33,7 +32,6 @@
             {
               "Loot": {
                 "Factions": {
-                  "List": [],
                   "Type": 3
                 },
                 "MaxAmount": 2,
@@ -74,8 +72,7 @@
           "MaxAmount": 3,
           "MinAmount": 1,
           "Type": 20
-        },
-        "Weight": 0
+        }
       }
     ],
     "Type": 21

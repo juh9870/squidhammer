@@ -4,11 +4,7 @@
   "CellType": "4",
   "Color": "#8080FF",
   "ComponentStatsId": 278,
-  "Description": "",
-  "DeviceId": null,
   "DisplayCategory": 1,
-  "DroneBayId": null,
-  "DroneId": null,
   "Faction": 19,
   "Icon": "detonator1",
   "Id": 278,
@@ -21,13 +17,6 @@
     5,
     1
   ],
-  "Restrictions": {
-    "ComponentGroupTag": null,
-    "MaxComponentAmount": 0,
-    "NotForMechanicShips": false,
-    "NotForOrganicShips": false,
-    "ShipSizes": []
-  },
   "WeaponId": 128,
   "WeaponSlotType": "S"
 }

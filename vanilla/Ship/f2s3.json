@@ -1,50 +1,22 @@
 {
   "Barrels": [
     {
-      "AutoAimingArc": 0,
-      "Image": "",
-      "Offset": 0,
       "Position": {
-        "x": 0.9,
-        "y": 0
+        "x": 0.9
       },
-      "Rotation": 0,
-      "RotationSpeed": 0,
-      "Size": 0,
       "WeaponClass": "S"
     }
   ],
-  "CellsExpansions": 0,
-  "ColliderTolerance": 0.02,
-  "Description": "",
   "EngineColor": "#40FFBABA",
   "Engines": [
     {
       "Position": {
-        "x": -0.7,
-        "y": 0
+        "x": -0.7
       },
       "Size": 0.3
     }
   ],
   "Faction": 2,
-  "Features": {
-    "ArmorBonus": 0,
-    "BuiltinDevices": [],
-    "DroneAttackBonus": 0,
-    "DroneBuildSpeedBonus": 0,
-    "DroneDefenseBonus": 0,
-    "EnergyBonus": 0,
-    "EnergyResistance": 0,
-    "EquipmentWeightBonus": 0,
-    "HeatResistance": 0,
-    "KineticResistance": 0,
-    "Regeneration": false,
-    "ShieldBonus": 0,
-    "ShipWeightBonus": 0,
-    "TurnRateBonus": 0,
-    "VelocityBonus": 0
-  },
   "IconImage": "f2s3",
   "IconScale": 0.7,
   "Id": 26,
@@ -53,7 +25,5 @@
   "ModelImage": "f2s3",
   "ModelScale": 1.5,
   "Name": "$f2_Cruiser",
-  "ShipRarity": 0,
-  "ShipType": 0,
   "SizeClass": 2
 }

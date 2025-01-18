@@ -9,51 +9,28 @@
         {
           "Nodes": [
             {
-              "Requirement": {
-                "Type": 0
-              },
               "Text": "need_repair",
               "Type": 304
             },
             {
               "ItemId": 108,
-              "Requirement": {
-                "Type": 0
-              },
               "Type": 1
             },
             {
-              "Requirement": {
-                "Type": 0
-              },
               "Result": true,
               "Text": "wait_for_help",
               "Type": 302
             }
           ],
-          "Requirement": {
-            "Type": 0
-          },
           "Type": 3
         },
         {
-          "Requirement": {
-            "Type": 0
-          },
-          "Result": false,
           "Text": "wait_for_help",
           "Type": 302
         }
       ],
-      "Requirement": {
-        "Type": 0
-      },
       "Type": 2
     },
-    "Requirement": {
-      "Type": 0
-    },
-    "Result": false,
     "Type": 7
   }
 }

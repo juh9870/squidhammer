@@ -2,82 +2,43 @@
   "Id": 143,
   "ItemType": 28,
   "RootNode": {
-    "Cooldown": 0,
     "Nodes": [
       {
-        "Color": "#00000000",
-        "Requirement": {
-          "Type": 0
-        },
         "Text": "$Provoking1",
         "Type": 300
       },
       {
-        "Color": "#00000000",
-        "Requirement": {
-          "Type": 0
-        },
         "Text": "$Provoking2",
         "Type": 300
       },
       {
-        "Color": "#00000000",
-        "Requirement": {
-          "Type": 0
-        },
         "Text": "$Provoking3",
         "Type": 300
       },
       {
-        "Color": "#00000000",
-        "Requirement": {
-          "Type": 0
-        },
         "Text": "$Provoking4",
         "Type": 300
       },
       {
-        "Color": "#00000000",
-        "Requirement": {
-          "Type": 0
-        },
         "Text": "$Provoking5",
         "Type": 300
       },
       {
-        "Requirement": {
-          "Type": 0
-        },
         "Type": 0
       },
       {
-        "Requirement": {
-          "Type": 0
-        },
         "Type": 0
       },
       {
-        "Requirement": {
-          "Type": 0
-        },
         "Type": 0
       },
       {
-        "Requirement": {
-          "Type": 0
-        },
         "Type": 0
       },
       {
-        "Requirement": {
-          "Type": 0
-        },
         "Type": 0
       }
     ],
-    "Requirement": {
-      "Type": 0
-    },
     "Type": 5
   }
 }

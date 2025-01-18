@@ -1,15 +1,11 @@
 {
-  "AmmunitionId": null,
   "Availability": 4,
   "CellType": "1",
   "Color": "#C5AFFF",
   "ComponentStatsId": 2,
-  "Description": "",
-  "DeviceId": null,
   "DisplayCategory": 5,
   "DroneBayId": 1,
   "DroneId": 231,
-  "Faction": null,
   "Icon": "dronebay1",
   "Id": 219,
   "ItemType": 1,
@@ -23,14 +19,5 @@
     20,
     1,
     2
-  ],
-  "Restrictions": {
-    "ComponentGroupTag": null,
-    "MaxComponentAmount": 0,
-    "NotForMechanicShips": false,
-    "NotForOrganicShips": false,
-    "ShipSizes": []
-  },
-  "WeaponId": null,
-  "WeaponSlotType": ""
+  ]
 }

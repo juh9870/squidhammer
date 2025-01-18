@@ -3,65 +3,23 @@
     {
       "Color": "#000000",
       "ColorMode": 1,
-      "GrowthRate": 0,
-      "Image": "star",
-      "Inverse": false,
-      "Lifetime": 1,
-      "Loop": false,
-      "Offset": {
-        "x": 0,
-        "y": 0
-      },
-      "ParticleSize": 1,
-      "Quantity": 1,
-      "Rotation": 0,
-      "Size": 1,
-      "StartTime": 0,
-      "TurnRate": 0,
-      "Type": 0,
-      "UseRealTime": false
+      "Image": "star"
     },
     {
-      "Color": "#00000000",
       "ColorMode": 2,
-      "GrowthRate": 0,
       "Image": "beam",
-      "Inverse": false,
       "Lifetime": 0.5,
-      "Loop": false,
-      "Offset": {
-        "x": 0,
-        "y": 0
-      },
       "ParticleSize": 1.5,
       "Quantity": 6,
-      "Rotation": 0,
       "Size": 2,
-      "StartTime": 0,
       "TurnRate": 1,
-      "Type": 8,
-      "UseRealTime": false
+      "Type": 8
     },
     {
-      "Color": "#00000000",
       "ColorMode": 2,
       "GrowthRate": -1,
       "Image": "cloud",
-      "Inverse": false,
-      "Lifetime": 1,
-      "Loop": false,
-      "Offset": {
-        "x": 0,
-        "y": 0
-      },
-      "ParticleSize": 1,
-      "Quantity": 1,
-      "Rotation": 0,
-      "Size": 2,
-      "StartTime": 0,
-      "TurnRate": 0,
-      "Type": 0,
-      "UseRealTime": false
+      "Size": 2
     }
   ],
   "Id": 13,

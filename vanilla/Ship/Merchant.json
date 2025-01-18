@@ -1,50 +1,20 @@
 {
   "Barrels": [
     {
-      "AutoAimingArc": 0,
-      "Image": "",
-      "Offset": 0,
       "Position": {
-        "x": 1,
-        "y": 0
-      },
-      "Rotation": 0,
-      "RotationSpeed": 0,
-      "Size": 0,
-      "WeaponClass": ""
+        "x": 1
+      }
     }
   ],
-  "CellsExpansions": 0,
-  "ColliderTolerance": 0.02,
-  "Description": "",
   "EngineColor": "#403F3F7F",
   "Engines": [
     {
       "Position": {
-        "x": -1,
-        "y": 0
+        "x": -1
       },
       "Size": 0.4
     }
   ],
-  "Faction": null,
-  "Features": {
-    "ArmorBonus": 0,
-    "BuiltinDevices": [],
-    "DroneAttackBonus": 0,
-    "DroneBuildSpeedBonus": 0,
-    "DroneDefenseBonus": 0,
-    "EnergyBonus": 0,
-    "EnergyResistance": 0,
-    "EquipmentWeightBonus": 0,
-    "HeatResistance": 0,
-    "KineticResistance": 0,
-    "Regeneration": false,
-    "ShieldBonus": 0,
-    "ShipWeightBonus": 0,
-    "TurnRateBonus": 0,
-    "VelocityBonus": 0
-  },
   "IconImage": "merchant",
   "IconScale": 0.7,
   "Id": 81,
@@ -54,6 +24,5 @@
   "ModelScale": 4,
   "Name": "$MerchantShip",
   "ShipRarity": 1,
-  "ShipType": 0,
   "SizeClass": 2
 }

@@ -4,17 +4,12 @@
   "CellType": "4",
   "Color": "#C2FFC0",
   "ComponentStatsId": 1,
-  "Description": "",
-  "DeviceId": null,
   "DisplayCategory": 1,
-  "DroneBayId": null,
-  "DroneId": null,
   "Faction": 10,
   "Icon": "laser1",
   "Id": 145,
   "ItemType": 1,
   "Layout": "1010",
-  "Level": 0,
   "Name": "$RepairBeam_S_1",
   "PossibleModifications": [
     5,
@@ -22,13 +17,6 @@
     7,
     1
   ],
-  "Restrictions": {
-    "ComponentGroupTag": null,
-    "MaxComponentAmount": 0,
-    "NotForMechanicShips": false,
-    "NotForOrganicShips": false,
-    "ShipSizes": []
-  },
   "WeaponId": 72,
   "WeaponSlotType": "L"
 }

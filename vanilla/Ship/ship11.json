@@ -1,49 +1,25 @@
 {
   "Barrels": [
     {
-      "AutoAimingArc": 0,
-      "Image": "",
-      "Offset": 0,
       "Position": {
-        "x": 0.7,
-        "y": 0
+        "x": 0.7
       },
-      "Rotation": 0,
-      "RotationSpeed": 0,
-      "Size": 0,
       "WeaponClass": "T"
     }
   ],
-  "CellsExpansions": 0,
-  "ColliderTolerance": 0.02,
-  "Description": "",
   "EngineColor": "#4008FF00",
   "Engines": [
     {
       "Position": {
-        "x": -0.55,
-        "y": 0
+        "x": -0.55
       },
       "Size": 0.2
     }
   ],
   "Faction": 18,
   "Features": {
-    "ArmorBonus": 0,
-    "BuiltinDevices": [],
-    "DroneAttackBonus": 0,
-    "DroneBuildSpeedBonus": 0,
-    "DroneDefenseBonus": 0,
-    "EnergyBonus": 0,
-    "EnergyResistance": 0,
     "EquipmentWeightBonus": -0.8,
-    "HeatResistance": 0,
-    "KineticResistance": 0,
-    "Regeneration": false,
-    "ShieldBonus": 0,
-    "ShipWeightBonus": -0.8,
-    "TurnRateBonus": 0,
-    "VelocityBonus": 0
+    "ShipWeightBonus": -0.8
   },
   "IconImage": "ship11",
   "IconScale": 1,
@@ -53,7 +29,5 @@
   "ModelImage": "ship11",
   "ModelScale": 1.8,
   "Name": "$ship_11",
-  "ShipRarity": 0,
-  "ShipType": 0,
   "SizeClass": 1
 }

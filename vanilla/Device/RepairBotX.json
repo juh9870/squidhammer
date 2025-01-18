@@ -10,16 +10,9 @@
   "ItemType": 2,
   "Lifetime": 20,
   "ObjectPrefab": "RepairBot",
-  "Offset": {
-    "x": 0,
-    "y": 0
-  },
   "PassiveEnergyConsumption": 5,
   "Power": 20,
-  "Prefab": null,
   "Range": 1.5,
-  "ScaleEnergyWithShipSize": true,
   "Size": 1,
-  "Sound": "*flux_01",
-  "VisualEffect": null
+  "Sound": "*flux_01"
 }

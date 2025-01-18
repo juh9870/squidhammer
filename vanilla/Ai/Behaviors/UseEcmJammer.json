@@ -5,16 +5,10 @@
     "Nodes": [
       {
         "MinValue": 0.8,
-        "Requirement": {
-          "Type": 0
-        },
         "Type": 50
       },
       {
         "DeviceClass": 1,
-        "Requirement": {
-          "Type": 0
-        },
         "Type": 114
       }
     ],

@@ -5,30 +5,16 @@
     "Nodes": [
       {
         "ItemId": 103,
-        "Requirement": {
-          "Type": 0
-        },
         "Type": 1
       },
       {
-        "MaxValue": 3.5,
-        "MinValue": 2.5,
-        "Requirement": {
-          "Type": 0
-        },
         "Type": 202
       },
       {
         "DeviceClass": 6,
-        "Requirement": {
-          "Type": 0
-        },
         "Type": 114
       }
     ],
-    "Requirement": {
-      "Type": 0
-    },
     "Type": 4
   }
 }

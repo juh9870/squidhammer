@@ -1,81 +1,34 @@
 {
-  "AvailableForEnemy": true,
-  "AvailableForPlayer": true,
-  "BuildFaction": null,
   "Components": [
     {
-      "BarrelId": 0,
-      "Behaviour": 0,
       "ComponentId": 60,
-      "KeyBinding": 0,
-      "Modification": null,
-      "Quality": 0,
       "X": 2,
       "Y": 2
     },
     {
-      "BarrelId": 0,
-      "Behaviour": 0,
       "ComponentId": 60,
-      "KeyBinding": 0,
-      "Modification": null,
-      "Quality": 0,
-      "X": 0,
       "Y": 2
     },
     {
-      "BarrelId": 0,
-      "Behaviour": 0,
       "ComponentId": 154,
-      "KeyBinding": 0,
-      "Modification": null,
-      "Quality": 0,
-      "X": 1,
-      "Y": 0
+      "X": 1
     },
     {
-      "BarrelId": 0,
-      "Behaviour": 0,
       "ComponentId": 78,
-      "KeyBinding": 0,
-      "Modification": null,
-      "Quality": 0,
-      "X": 0,
       "Y": 1
     },
     {
-      "BarrelId": 0,
-      "Behaviour": 0,
       "ComponentId": 78,
-      "KeyBinding": 0,
-      "Modification": null,
-      "Quality": 0,
       "X": 2,
       "Y": 1
     },
     {
-      "BarrelId": 0,
-      "Behaviour": 0,
       "ComponentId": 67,
-      "KeyBinding": 0,
-      "Modification": null,
-      "Quality": 0,
       "X": 1,
       "Y": 2
     }
   ],
-  "CustomAI": null,
-  "DifficultyClass": 0,
-  "ExtendedLayout": false,
   "Id": 185,
   "ItemType": 8,
-  "LeftSatelliteBuild": null,
-  "Perks": {
-    "Perk1": 0,
-    "Perk2": 0,
-    "Perk3": 0
-  },
-  "RandomColor": false,
-  "RightSatelliteBuild": null,
   "ShipId": 88
 }

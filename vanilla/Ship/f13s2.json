@@ -1,62 +1,32 @@
 {
   "Barrels": [
     {
-      "AutoAimingArc": 0,
-      "Image": "",
-      "Offset": 0,
       "Position": {
         "x": 1,
         "y": 0.15
       },
-      "Rotation": 0,
-      "RotationSpeed": 0,
-      "Size": 0,
       "WeaponClass": "C"
     },
     {
-      "AutoAimingArc": 0,
-      "Image": "",
-      "Offset": 0,
       "Position": {
         "x": 1,
         "y": -0.15
       },
-      "Rotation": 0,
-      "RotationSpeed": 0,
-      "Size": 0,
       "WeaponClass": "M"
     }
   ],
-  "CellsExpansions": 0,
-  "ColliderTolerance": 0.02,
-  "Description": "",
   "EngineColor": "#80FF8D00",
   "Engines": [
     {
       "Position": {
-        "x": -0.9,
-        "y": 0
+        "x": -0.9
       },
       "Size": 0.2
     }
   ],
   "Faction": 13,
   "Features": {
-    "ArmorBonus": 0,
-    "BuiltinDevices": [],
-    "DroneAttackBonus": 0,
-    "DroneBuildSpeedBonus": 0,
-    "DroneDefenseBonus": 0,
-    "EnergyBonus": 0,
-    "EnergyResistance": 1,
-    "EquipmentWeightBonus": 0,
-    "HeatResistance": 0,
-    "KineticResistance": 0,
-    "Regeneration": false,
-    "ShieldBonus": 0,
-    "ShipWeightBonus": 0,
-    "TurnRateBonus": 0,
-    "VelocityBonus": 0
+    "EnergyResistance": 1
   },
   "IconImage": "f13s2",
   "IconScale": 0.7,
@@ -66,7 +36,5 @@
   "ModelImage": "f13s2",
   "ModelScale": 1.6,
   "Name": "$f13_Cruiser",
-  "ShipRarity": 0,
-  "ShipType": 0,
   "SizeClass": 2
 }

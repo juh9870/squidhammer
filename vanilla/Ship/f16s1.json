@@ -2,50 +2,29 @@
   "Barrels": [
     {
       "AutoAimingArc": 80,
-      "Image": "",
-      "Offset": 0,
       "Position": {
-        "x": 0.9,
-        "y": 0
+        "x": 0.9
       },
-      "Rotation": 0,
-      "RotationSpeed": 0,
-      "Size": 0,
       "WeaponClass": "C"
     }
   ],
-  "CellsExpansions": 0,
-  "ColliderTolerance": 0.02,
-  "Description": "",
   "EngineColor": "#40FF00FF",
   "Engines": [
     {
       "Position": {
-        "x": -0.8,
-        "y": 0
+        "x": -0.8
       },
       "Size": 0.5
     }
   ],
   "Faction": 16,
   "Features": {
-    "ArmorBonus": 0,
     "BuiltinDevices": [
       18
     ],
-    "DroneAttackBonus": 0,
-    "DroneBuildSpeedBonus": 0,
-    "DroneDefenseBonus": 0,
-    "EnergyBonus": 0,
-    "EnergyResistance": 0,
-    "EquipmentWeightBonus": 0,
-    "HeatResistance": 0,
     "KineticResistance": 5,
     "Regeneration": true,
-    "ShieldBonus": 0,
-    "ShipWeightBonus": -0.5,
-    "TurnRateBonus": 0,
-    "VelocityBonus": 0
+    "ShipWeightBonus": -0.5
   },
   "IconImage": "slime",
   "IconScale": 1,
@@ -54,8 +33,5 @@
   "Layout": "0044400022222002222202222222222222233555330055500",
   "ModelImage": "slime",
   "ModelScale": 1,
-  "Name": "$f16_Scout",
-  "ShipRarity": 0,
-  "ShipType": 0,
-  "SizeClass": -1
+  "Name": "$f16_Scout"
 }

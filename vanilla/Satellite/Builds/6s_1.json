@@ -1,49 +1,33 @@
 {
   "Components": [
     {
-      "BarrelId": 0,
-      "Behaviour": 0,
       "ComponentId": 147,
       "KeyBinding": 3,
-      "Modification": null,
-      "Quality": 0,
-      "X": 1,
-      "Y": 0
+      "X": 1
     },
     {
       "BarrelId": -1,
-      "Behaviour": 0,
       "ComponentId": 67,
       "KeyBinding": -1,
-      "Modification": null,
-      "Quality": 0,
       "X": 1,
       "Y": 2
     },
     {
       "BarrelId": -1,
-      "Behaviour": 0,
       "ComponentId": 78,
       "KeyBinding": -1,
-      "Modification": null,
-      "Quality": 0,
       "X": 2,
       "Y": 2
     },
     {
       "BarrelId": -1,
-      "Behaviour": 0,
       "ComponentId": 78,
       "KeyBinding": -1,
-      "Modification": null,
-      "Quality": 0,
-      "X": 0,
       "Y": 2
     }
   ],
   "DifficultyClass": 1,
   "Id": 25,
   "ItemType": 9,
-  "NotAvailableInGame": false,
   "SatelliteId": 18
 }

@@ -3,7 +3,6 @@
   "ItemType": 16,
   "Loot": {
     "Factions": {
-      "List": [],
       "Type": 3
     },
     "MaxAmount": 4,

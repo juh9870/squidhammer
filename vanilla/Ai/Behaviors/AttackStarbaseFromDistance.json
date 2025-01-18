@@ -4,41 +4,23 @@
   "RootNode": {
     "Nodes": [
       {
-        "Requirement": {
-          "Type": 0
-        },
-        "Type": 103,
-        "WeaponType": 0
+        "Type": 103
       },
       {
         "Nodes": [
           {
-            "Requirement": {
-              "Type": 0
-            },
             "Type": 129
           },
           {
-            "InRange": false,
-            "MaxValue": 5,
             "MinValue": 0.5,
             "NoDrones": true,
-            "Requirement": {
-              "Type": 0
-            },
             "Type": 100
           }
         ],
-        "Requirement": {
-          "Type": 0
-        },
         "Type": 2
       },
       {
         "ItemId": 136,
-        "Requirement": {
-          "Type": 0
-        },
         "Type": 1
       }
     ],

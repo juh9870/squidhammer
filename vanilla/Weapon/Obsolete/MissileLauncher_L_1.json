@@ -1,15 +1,9 @@
 {
   "ActivationType": 1,
-  "ChargeSound": "",
   "ControlButtonIcon": "controls_missile",
-  "EffectSize": 0,
   "FireRate": 1,
   "Id": 37,
   "ItemType": 3,
-  "Magazine": 0,
   "ShotEffectPrefab": "OrbAdditive",
-  "ShotSound": "",
-  "Spread": 20,
-  "VisualEffect": null,
-  "WeaponClass": 0
+  "Spread": 20
 }

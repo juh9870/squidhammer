@@ -1,25 +1,11 @@
 {
   "Elements": [
     {
-      "Color": "#00000000",
-      "ColorMode": 0,
       "GrowthRate": 0.5,
       "Image": "CloudWhite",
-      "Inverse": false,
-      "Lifetime": 1,
-      "Loop": false,
-      "Offset": {
-        "x": 0,
-        "y": 0
-      },
-      "ParticleSize": 1,
       "Quantity": 3,
-      "Rotation": 0,
-      "Size": 1,
-      "StartTime": 0,
       "TurnRate": 30,
-      "Type": 3,
-      "UseRealTime": false
+      "Type": 3
     }
   ],
   "Id": 6,

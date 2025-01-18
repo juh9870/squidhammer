@@ -1,34 +1,19 @@
 {
-  "AmmunitionId": null,
-  "Availability": 0,
   "CellType": "2",
   "Color": "#00FF21",
   "ComponentStatsId": 3,
-  "Description": "",
   "DeviceId": 17,
   "DisplayCategory": 6,
-  "DroneBayId": null,
-  "DroneId": null,
   "Faction": 4,
   "Icon": "teleporter1",
   "Id": 25,
   "ItemType": 1,
   "Layout": "010111010",
-  "Level": 0,
   "Name": "$Teleporter_Boss",
   "PossibleModifications": [
     2,
     7,
     1,
     6
-  ],
-  "Restrictions": {
-    "ComponentGroupTag": null,
-    "MaxComponentAmount": 0,
-    "NotForMechanicShips": false,
-    "NotForOrganicShips": false,
-    "ShipSizes": []
-  },
-  "WeaponId": null,
-  "WeaponSlotType": ""
+  ]
 }

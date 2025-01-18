@@ -1,59 +1,32 @@
 {
   "Barrels": [
     {
-      "AutoAimingArc": 0,
-      "Image": "",
-      "Offset": 0,
       "Position": {
         "x": 0.4,
         "y": 0.43
       },
-      "Rotation": 0,
-      "RotationSpeed": 0,
-      "Size": 0,
       "WeaponClass": "LC"
     },
     {
-      "AutoAimingArc": 0,
-      "Image": "",
-      "Offset": 0,
       "Position": {
         "x": 0.4,
         "y": -0.43
       },
-      "Rotation": 0,
-      "RotationSpeed": 0,
-      "Size": 0,
       "WeaponClass": "LC"
     }
   ],
-  "CellsExpansions": 0,
-  "ColliderTolerance": 0.02,
-  "Description": "",
   "EngineColor": "#40CCECFE",
   "Engines": [
     {
       "Position": {
-        "x": -0.9,
-        "y": 0
+        "x": -0.9
       },
       "Size": 0.3
     }
   ],
   "Faction": 1,
   "Features": {
-    "ArmorBonus": 0,
-    "BuiltinDevices": [],
-    "DroneAttackBonus": 0,
-    "DroneBuildSpeedBonus": 0,
-    "DroneDefenseBonus": 0,
     "EnergyBonus": 1,
-    "EnergyResistance": 0,
-    "EquipmentWeightBonus": 0,
-    "HeatResistance": 0,
-    "KineticResistance": 0,
-    "Regeneration": false,
-    "ShieldBonus": 0,
     "ShipWeightBonus": -0.3,
     "TurnRateBonus": 0.3,
     "VelocityBonus": 0.3
@@ -67,6 +40,5 @@
   "ModelScale": 3,
   "Name": "$ship_13",
   "ShipRarity": 1,
-  "ShipType": 0,
   "SizeClass": 3
 }

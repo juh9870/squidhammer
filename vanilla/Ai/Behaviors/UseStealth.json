@@ -5,9 +5,6 @@
     "Nodes": [
       {
         "DeviceClass": 9,
-        "Requirement": {
-          "Type": 0
-        },
         "Type": 114
       }
     ],

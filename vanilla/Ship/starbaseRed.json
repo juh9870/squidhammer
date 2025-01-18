@@ -3,78 +3,48 @@
     {
       "AutoAimingArc": 360,
       "Image": "turret_red",
-      "Offset": 0,
       "Position": {
         "x": 0.74,
         "y": 0.74
       },
       "Rotation": 45,
-      "RotationSpeed": 0,
-      "Size": 0.16,
-      "WeaponClass": ""
+      "Size": 0.16
     },
     {
       "AutoAimingArc": 360,
       "Image": "turret_red",
-      "Offset": 0,
       "Position": {
         "x": 0.74,
         "y": -0.74
       },
       "Rotation": 315,
-      "RotationSpeed": 0,
-      "Size": 0.16,
-      "WeaponClass": ""
+      "Size": 0.16
     },
     {
       "AutoAimingArc": 360,
       "Image": "turret_red",
-      "Offset": 0,
       "Position": {
         "x": -0.74,
         "y": 0.74
       },
       "Rotation": 135,
-      "RotationSpeed": 0,
-      "Size": 0.16,
-      "WeaponClass": ""
+      "Size": 0.16
     },
     {
       "AutoAimingArc": 360,
       "Image": "turret_red",
-      "Offset": 0,
       "Position": {
         "x": -0.74,
         "y": -0.74
       },
       "Rotation": 225,
-      "RotationSpeed": 0,
-      "Size": 0.16,
-      "WeaponClass": ""
+      "Size": 0.16
     }
   ],
-  "CellsExpansions": 0,
-  "ColliderTolerance": 0.02,
-  "Description": "",
   "EngineColor": "#40FF2000",
-  "Engines": [],
   "Faction": 19,
   "Features": {
-    "ArmorBonus": 2.5,
-    "BuiltinDevices": [],
-    "DroneAttackBonus": 0,
-    "DroneBuildSpeedBonus": 0,
-    "DroneDefenseBonus": 0,
-    "EnergyBonus": 0,
-    "EnergyResistance": 0,
-    "EquipmentWeightBonus": 0,
-    "HeatResistance": 0,
-    "KineticResistance": 0,
-    "Regeneration": false,
-    "ShieldBonus": 0,
-    "ShipWeightBonus": 0,
-    "TurnRateBonus": 0,
-    "VelocityBonus": 0
+    "ArmorBonus": 2.5
   },
   "IconImage": "starbase_red",
   "IconScale": 1,
@@ -84,7 +54,6 @@
   "ModelImage": "starbase_red",
   "ModelScale": 25,
   "Name": "$StarbaseRed",
-  "ShipRarity": 0,
   "ShipType": 2,
   "SizeClass": 5
 }

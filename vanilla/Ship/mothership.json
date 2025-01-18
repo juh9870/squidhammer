@@ -1,36 +1,14 @@
 {
-  "Barrels": [],
-  "CellsExpansions": 0,
-  "ColliderTolerance": 0.02,
-  "Description": "",
   "EngineColor": "#40FFF096",
   "Engines": [
     {
       "Position": {
-        "x": -0.95,
-        "y": 0
+        "x": -0.95
       },
       "Size": 0.4
     }
   ],
   "Faction": 1,
-  "Features": {
-    "ArmorBonus": 0,
-    "BuiltinDevices": [],
-    "DroneAttackBonus": 0,
-    "DroneBuildSpeedBonus": 0,
-    "DroneDefenseBonus": 0,
-    "EnergyBonus": 0,
-    "EnergyResistance": 0,
-    "EquipmentWeightBonus": 0,
-    "HeatResistance": 0,
-    "KineticResistance": 0,
-    "Regeneration": false,
-    "ShieldBonus": 0,
-    "ShipWeightBonus": 0,
-    "TurnRateBonus": 0,
-    "VelocityBonus": 0
-  },
   "IconImage": "mothership",
   "IconScale": 1,
   "Id": 83,
@@ -39,7 +17,5 @@
   "ModelImage": "mothership",
   "ModelScale": 5,
   "Name": "$Mothership",
-  "ShipRarity": 0,
-  "ShipType": 3,
-  "SizeClass": -1
+  "ShipType": 3
 }

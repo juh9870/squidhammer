@@ -1,63 +1,32 @@
 {
   "Barrels": [
     {
-      "AutoAimingArc": 0,
-      "Image": "",
-      "Offset": 0,
       "Position": {
         "x": 0.35,
         "y": 0.52
       },
       "Rotation": 4,
-      "RotationSpeed": 0,
-      "Size": 0,
       "WeaponClass": "M"
     },
     {
-      "AutoAimingArc": 0,
-      "Image": "",
-      "Offset": 0,
       "Position": {
         "x": 0.35,
         "y": -0.52
       },
       "Rotation": -4,
-      "RotationSpeed": 0,
-      "Size": 0,
       "WeaponClass": "M"
     }
   ],
-  "CellsExpansions": 0,
-  "ColliderTolerance": 0.02,
-  "Description": "",
   "EngineColor": "#40F0D2B4",
   "Engines": [
     {
       "Position": {
-        "x": -0.75,
-        "y": 0
+        "x": -0.75
       },
       "Size": 0.3
     }
   ],
   "Faction": 11,
-  "Features": {
-    "ArmorBonus": 0,
-    "BuiltinDevices": [],
-    "DroneAttackBonus": 0,
-    "DroneBuildSpeedBonus": 0,
-    "DroneDefenseBonus": 0,
-    "EnergyBonus": 0,
-    "EnergyResistance": 0,
-    "EquipmentWeightBonus": 0,
-    "HeatResistance": 0,
-    "KineticResistance": 0,
-    "Regeneration": false,
-    "ShieldBonus": 0,
-    "ShipWeightBonus": 0,
-    "TurnRateBonus": 0,
-    "VelocityBonus": 0
-  },
   "IconImage": "f9s3",
   "IconScale": 0.9,
   "Id": 61,
@@ -66,7 +35,5 @@
   "ModelImage": "f9s3",
   "ModelScale": 2,
   "Name": "$f9_Cruiser",
-  "ShipRarity": 0,
-  "ShipType": 0,
   "SizeClass": 2
 }

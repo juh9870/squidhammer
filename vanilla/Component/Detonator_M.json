@@ -1,14 +1,10 @@
 {
-  "AmmunitionId": null,
   "Availability": 1,
   "CellType": "2",
   "Color": "#FFC840",
   "ComponentStatsId": 3,
-  "Description": "",
   "DeviceId": 5,
   "DisplayCategory": 6,
-  "DroneBayId": null,
-  "DroneId": null,
   "Faction": -1,
   "Icon": "detonator1",
   "Id": 31,
@@ -20,14 +16,5 @@
     2,
     7,
     1
-  ],
-  "Restrictions": {
-    "ComponentGroupTag": null,
-    "MaxComponentAmount": 0,
-    "NotForMechanicShips": false,
-    "NotForOrganicShips": false,
-    "ShipSizes": []
-  },
-  "WeaponId": null,
-  "WeaponSlotType": ""
+  ]
 }

@@ -1,68 +1,46 @@
 {
   "Id": 1,
   "ItemType": 15,
-  "Level": 0,
   "Name": "$Quest_Tutorial",
   "Nodes": [
     {
       "Actions": [
         {
           "ButtonText": "$ACTION_Continue",
-          "Requirement": {
-            "Type": 0
-          },
           "TargetNode": 2
         }
       ],
       "Character": 3,
-      "Enemy": null,
       "Id": 1,
-      "Loot": null,
       "Message": "$TUTORIAL_Start",
-      "RequiredView": 0,
       "Type": 10
     },
     {
       "Actions": [
         {
           "ButtonText": "$ACTION_Continue",
-          "Requirement": {
-            "Type": 0
-          },
           "TargetNode": 3
         }
       ],
       "Character": 3,
-      "Enemy": null,
       "Id": 2,
-      "Loot": null,
       "Message": "$TUTORIAL_Info1",
-      "RequiredView": 0,
       "Type": 10
     },
     {
       "Actions": [
         {
           "ButtonText": "$TUTORIAL_ACTION_Training",
-          "Requirement": {
-            "Type": 0
-          },
           "TargetNode": 4
         },
         {
           "ButtonText": "$TUTORIAL_ACTION_Skip",
-          "Requirement": {
-            "Type": 0
-          },
           "TargetNode": 5
         }
       ],
       "Character": 3,
-      "Enemy": null,
       "Id": 3,
-      "Loot": null,
       "Message": "$TUTORIAL_Training",
-      "RequiredView": 0,
       "Type": 10
     },
     {
@@ -70,25 +48,18 @@
       "Enemy": 1,
       "FailureTransition": 3,
       "Id": 4,
-      "Loot": null,
       "Type": 20
     },
     {
       "Actions": [
         {
           "ButtonText": "$ACTION_Continue",
-          "Requirement": {
-            "Type": 0
-          },
           "TargetNode": 6
         }
       ],
       "Character": 3,
-      "Enemy": null,
       "Id": 5,
-      "Loot": null,
       "Message": "$TUTORIAL_End",
-      "RequiredView": 0,
       "Type": 10
     },
     {
@@ -96,22 +67,6 @@
       "Type": 40
     }
   ],
-  "Origin": {
-    "Factions": {
-      "List": [],
-      "Type": 0
-    },
-    "MaxDistance": 0,
-    "MaxRelations": 0,
-    "MinDistance": 0,
-    "MinRelations": 0,
-    "Type": 0
-  },
   "QuestType": 2,
-  "Requirement": {
-    "Type": 0
-  },
-  "StartCondition": 4,
-  "UseRandomSeed": false,
-  "Weight": 0
+  "StartCondition": 4
 }

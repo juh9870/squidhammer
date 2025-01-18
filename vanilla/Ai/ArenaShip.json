@@ -34,7 +34,6 @@
                   "Value": 8
                 },
                 {
-                  "DeviceClass": 0,
                   "Type": 10
                 }
               ],
@@ -79,15 +78,9 @@
       },
       {
         "ItemId": 14,
-        "Requirement": {
-          "Type": 0
-        },
         "Type": 1
       }
     ],
-    "Requirement": {
-      "Type": 0
-    },
     "Type": 2
   }
 }

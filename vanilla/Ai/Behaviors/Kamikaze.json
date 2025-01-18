@@ -5,33 +5,18 @@
     "Nodes": [
       {
         "MinValue": 0.25,
-        "Requirement": {
-          "Type": 0
-        },
         "Type": 51
       },
       {
-        "InRange": false,
-        "MaxValue": 5,
         "MinValue": 0.5,
         "NoDrones": true,
-        "Requirement": {
-          "Type": 0
-        },
         "Type": 100
       },
       {
         "Cooldown": 20,
-        "ExecutionMode": 0,
         "Node": {
           "ItemId": 109,
-          "Requirement": {
-            "Type": 0
-          },
           "Type": 1
-        },
-        "Requirement": {
-          "Type": 0
         },
         "Result": true,
         "Type": 7
@@ -40,22 +25,13 @@
         "Nodes": [
           {
             "InRange": true,
-            "Requirement": {
-              "Type": 0
-            },
             "Type": 106
           },
           {
-            "Requirement": {
-              "Type": 0
-            },
             "Type": 105,
             "UseSystems": true
           }
         ],
-        "Requirement": {
-          "Type": 0
-        },
         "Type": 2
       }
     ],

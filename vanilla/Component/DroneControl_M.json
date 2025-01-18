@@ -2,13 +2,8 @@
   "AmmunitionId": 12,
   "Availability": 1,
   "CellType": "4",
-  "Color": "#00000000",
   "ComponentStatsId": 1,
-  "Description": "",
-  "DeviceId": null,
   "DisplayCategory": 1,
-  "DroneBayId": null,
-  "DroneId": null,
   "Faction": 5,
   "Icon": "torpedo1",
   "Id": 97,
@@ -24,13 +19,5 @@
     7,
     1
   ],
-  "Restrictions": {
-    "ComponentGroupTag": null,
-    "MaxComponentAmount": 0,
-    "NotForMechanicShips": false,
-    "NotForOrganicShips": false,
-    "ShipSizes": []
-  },
-  "WeaponId": 12,
-  "WeaponSlotType": ""
+  "WeaponId": 12
 }

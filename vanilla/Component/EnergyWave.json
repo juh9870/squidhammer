@@ -4,11 +4,7 @@
   "CellType": "4",
   "Color": "#FFFFE0",
   "ComponentStatsId": 1,
-  "Description": "",
-  "DeviceId": null,
   "DisplayCategory": 1,
-  "DroneBayId": null,
-  "DroneId": null,
   "Faction": 17,
   "Icon": "energy_wave",
   "Id": 194,
@@ -25,13 +21,6 @@
     1,
     14
   ],
-  "Restrictions": {
-    "ComponentGroupTag": null,
-    "MaxComponentAmount": 0,
-    "NotForMechanicShips": false,
-    "NotForOrganicShips": false,
-    "ShipSizes": []
-  },
   "WeaponId": 107,
   "WeaponSlotType": "L"
 }

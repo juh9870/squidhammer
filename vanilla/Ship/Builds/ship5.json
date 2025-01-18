@@ -1,131 +1,71 @@
 {
-  "AvailableForEnemy": true,
-  "AvailableForPlayer": true,
-  "BuildFaction": null,
   "Components": [
     {
-      "BarrelId": 0,
-      "Behaviour": 0,
       "ComponentId": 193,
-      "KeyBinding": 0,
-      "Modification": null,
-      "Quality": 0,
       "X": 6,
       "Y": 3
     },
     {
-      "BarrelId": 0,
-      "Behaviour": 0,
       "ComponentId": 56,
       "KeyBinding": 1,
-      "Modification": null,
-      "Quality": 0,
       "X": 11,
       "Y": 11
     },
     {
-      "BarrelId": 0,
-      "Behaviour": 0,
       "ComponentId": 56,
       "KeyBinding": 1,
-      "Modification": null,
-      "Quality": 0,
       "X": 3,
       "Y": 11
     },
     {
-      "BarrelId": 0,
-      "Behaviour": 0,
       "ComponentId": 59,
       "KeyBinding": 1,
-      "Modification": null,
-      "Quality": 0,
       "X": 6,
       "Y": 13
     },
     {
-      "BarrelId": 0,
-      "Behaviour": 0,
       "ComponentId": 57,
       "KeyBinding": 1,
-      "Modification": null,
-      "Quality": 0,
       "X": 8,
       "Y": 13
     },
     {
-      "BarrelId": 0,
-      "Behaviour": 0,
       "ComponentId": 57,
       "KeyBinding": 1,
-      "Modification": null,
-      "Quality": 0,
       "X": 7,
       "Y": 12
     },
     {
-      "BarrelId": 0,
-      "Behaviour": 0,
       "ComponentId": 57,
       "KeyBinding": 1,
-      "Modification": null,
-      "Quality": 0,
       "X": 7,
       "Y": 14
     },
     {
-      "BarrelId": 0,
-      "Behaviour": 0,
       "ComponentId": 76,
       "KeyBinding": 1,
-      "Modification": null,
-      "Quality": 0,
       "X": 6,
       "Y": 8
     },
     {
-      "BarrelId": 0,
-      "Behaviour": 0,
       "ComponentId": 66,
       "KeyBinding": 1,
-      "Modification": null,
-      "Quality": 0,
       "X": 5,
       "Y": 6
     },
     {
-      "BarrelId": 0,
-      "Behaviour": 0,
       "ComponentId": 66,
       "KeyBinding": 1,
-      "Modification": null,
-      "Quality": 0,
       "X": 8,
       "Y": 6
     },
     {
-      "BarrelId": 0,
-      "Behaviour": 0,
       "ComponentId": 10,
       "KeyBinding": 1,
-      "Modification": null,
-      "Quality": 0,
-      "X": 6,
-      "Y": 0
+      "X": 6
     }
   ],
-  "CustomAI": null,
-  "DifficultyClass": 0,
-  "ExtendedLayout": false,
   "Id": 296,
   "ItemType": 8,
-  "LeftSatelliteBuild": null,
-  "Perks": {
-    "Perk1": 0,
-    "Perk2": 0,
-    "Perk3": 0
-  },
-  "RandomColor": false,
-  "RightSatelliteBuild": null,
   "ShipId": 133
 }

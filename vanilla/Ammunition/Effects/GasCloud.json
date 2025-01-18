@@ -3,44 +3,18 @@
     {
       "Color": "#80808080",
       "ColorMode": 1,
-      "GrowthRate": 0,
       "Image": "CloudWhite",
-      "Inverse": false,
-      "Lifetime": 1,
-      "Loop": false,
-      "Offset": {
-        "x": 0,
-        "y": 0
-      },
-      "ParticleSize": 1,
       "Quantity": 3,
-      "Rotation": 0,
       "Size": 1.8,
-      "StartTime": 0,
-      "TurnRate": 0,
-      "Type": 3,
-      "UseRealTime": false
+      "Type": 3
     },
     {
       "Color": "#40FFFFFF",
       "ColorMode": 3,
-      "GrowthRate": 0,
       "Image": "CloudWhite",
-      "Inverse": false,
-      "Lifetime": 1,
-      "Loop": false,
-      "Offset": {
-        "x": 0,
-        "y": 0
-      },
-      "ParticleSize": 1,
       "Quantity": 3,
-      "Rotation": 0,
       "Size": 1.5,
-      "StartTime": 0,
-      "TurnRate": 0,
-      "Type": 4,
-      "UseRealTime": false
+      "Type": 4
     }
   ],
   "Id": 5,

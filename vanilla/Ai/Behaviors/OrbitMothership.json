@@ -6,15 +6,9 @@
       {
         "MaxValue": 4,
         "MinValue": 2,
-        "Requirement": {
-          "Type": 0
-        },
         "Type": 202
       }
     ],
-    "Requirement": {
-      "Type": 0
-    },
     "Type": 3
   }
 }

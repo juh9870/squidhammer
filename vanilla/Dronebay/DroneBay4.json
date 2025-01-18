@@ -1,18 +1,14 @@
 {
   "ActivationType": 2,
-  "BuildExtraCycles": 0,
   "Capacity": 2,
   "ControlButtonIcon": "controls_drone",
   "DamageMultiplier": 1,
   "DefenseMultiplier": 1,
-  "DefensiveDroneAI": null,
   "EnergyConsumption": 5,
   "Id": 4,
-  "ImprovedAi": false,
   "ItemType": 5,
   "LaunchEffectPrefab": "OrbAdditive",
   "LaunchSound": "launch_08",
-  "OffensiveDroneAI": null,
   "PassiveEnergyConsumption": 6,
   "Range": 40,
   "SpeedMultiplier": 1

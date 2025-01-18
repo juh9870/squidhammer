@@ -1,88 +1,47 @@
 {
   "Barrels": [
     {
-      "AutoAimingArc": 0,
-      "Image": "",
-      "Offset": 0,
       "Position": {
         "x": 1,
         "y": 0.55
       },
       "Rotation": -15,
-      "RotationSpeed": 0,
-      "Size": 0,
       "WeaponClass": "SL"
     },
     {
-      "AutoAimingArc": 0,
-      "Image": "",
-      "Offset": 0,
       "Position": {
         "x": 1,
         "y": -0.55
       },
       "Rotation": 15,
-      "RotationSpeed": 0,
-      "Size": 0,
       "WeaponClass": "SL"
     },
     {
       "AutoAimingArc": 80,
-      "Image": "",
-      "Offset": 0,
       "Position": {
-        "x": 0.6,
-        "y": 0
+        "x": 0.6
       },
-      "Rotation": 0,
-      "RotationSpeed": 0,
-      "Size": 0,
       "WeaponClass": "SL"
     },
     {
-      "AutoAimingArc": 0,
-      "Image": "",
-      "Offset": 0,
       "Position": {
-        "x": 0.8,
-        "y": 0
+        "x": 0.8
       },
-      "Rotation": 0,
-      "RotationSpeed": 0,
-      "Size": 0,
       "WeaponClass": "S"
     }
   ],
-  "CellsExpansions": 0,
-  "ColliderTolerance": 0.02,
-  "Description": "",
   "EngineColor": "#40FFF096",
   "Engines": [
     {
       "Position": {
-        "x": -0.63,
-        "y": 0
+        "x": -0.63
       },
       "Size": 0.5
     }
   ],
   "Faction": 4,
   "Features": {
-    "ArmorBonus": 0,
-    "BuiltinDevices": [],
-    "DroneAttackBonus": 0,
-    "DroneBuildSpeedBonus": 0,
-    "DroneDefenseBonus": 0,
-    "EnergyBonus": 0,
-    "EnergyResistance": 0,
-    "EquipmentWeightBonus": 0,
-    "HeatResistance": 0,
-    "KineticResistance": 0,
-    "Regeneration": true,
-    "ShieldBonus": 0,
-    "ShipWeightBonus": 0,
-    "TurnRateBonus": 0,
-    "VelocityBonus": 0
+    "Regeneration": true
   },
   "IconImage": "flagship4",
   "IconScale": 1.2,
@@ -92,7 +51,6 @@
   "ModelImage": "flagship4",
   "ModelScale": 5,
   "Name": "$f4_Flagship",
-  "ShipRarity": 0,
   "ShipType": 4,
   "SizeClass": 4
 }

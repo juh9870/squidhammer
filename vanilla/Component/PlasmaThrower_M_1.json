@@ -4,11 +4,7 @@
   "CellType": "4",
   "Color": "#FFFFB4",
   "ComponentStatsId": 1,
-  "Description": "",
-  "DeviceId": null,
   "DisplayCategory": 1,
-  "DroneBayId": null,
-  "DroneId": null,
   "Faction": 2,
   "Icon": "flamethrower1",
   "Id": 136,
@@ -27,13 +23,6 @@
     7,
     1
   ],
-  "Restrictions": {
-    "ComponentGroupTag": null,
-    "MaxComponentAmount": 0,
-    "NotForMechanicShips": false,
-    "NotForOrganicShips": false,
-    "ShipSizes": []
-  },
   "WeaponId": 50,
   "WeaponSlotType": "S"
 }

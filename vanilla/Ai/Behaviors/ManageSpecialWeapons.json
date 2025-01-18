@@ -4,33 +4,18 @@
   "RootNode": {
     "Nodes": [
       {
-        "Requirement": {
-          "Type": 0
-        },
         "Type": 117
       },
       {
-        "Requirement": {
-          "Type": 0
-        },
         "Type": 123
       },
       {
-        "Requirement": {
-          "Type": 0
-        },
         "Type": 132
       },
       {
-        "Requirement": {
-          "Type": 0
-        },
         "Type": 116
       }
     ],
-    "Requirement": {
-      "Type": 0
-    },
     "Type": 4
   }
 }

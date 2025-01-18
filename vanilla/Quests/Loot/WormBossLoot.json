@@ -8,21 +8,18 @@
           "MaxAmount": 5,
           "MinAmount": 1,
           "Type": 4
-        },
-        "Weight": 0
+        }
       },
       {
         "Loot": {
           "Factions": {
-            "List": [],
             "Type": 3
           },
           "MaxAmount": 4,
           "MinAmount": 2,
           "Type": 10,
           "ValueRatio": 2
-        },
-        "Weight": 0
+        }
       }
     ],
     "Type": 21

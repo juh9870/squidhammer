@@ -5,21 +5,10 @@
   "Cooldown": 300,
   "DeviceClass": 17,
   "EffectPrefab": "Wave",
-  "EnergyConsumption": 0,
   "Id": 29,
   "ItemType": 2,
   "Lifetime": 2,
-  "ObjectPrefab": "",
-  "Offset": {
-    "x": 0,
-    "y": 0
-  },
   "PassiveEnergyConsumption": 4,
-  "Power": 0,
-  "Prefab": null,
-  "Range": 0,
-  "ScaleEnergyWithShipSize": true,
   "Size": 2,
-  "Sound": "hit_07",
-  "VisualEffect": null
+  "Sound": "hit_07"
 }

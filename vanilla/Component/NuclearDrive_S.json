@@ -1,33 +1,18 @@
 {
-  "AmmunitionId": null,
   "Availability": 1,
   "CellType": "5",
   "Color": "#FFDCC0",
   "ComponentStatsId": 60,
-  "Description": "",
-  "DeviceId": null,
   "DisplayCategory": 4,
-  "DroneBayId": null,
-  "DroneId": null,
   "Faction": -1,
   "Icon": "engine1",
   "Id": 60,
   "ItemType": 1,
   "Layout": "1",
-  "Level": 0,
   "Name": "$NuclearDrive_S",
   "PossibleModifications": [
     2,
     11,
     1
-  ],
-  "Restrictions": {
-    "ComponentGroupTag": null,
-    "MaxComponentAmount": 0,
-    "NotForMechanicShips": false,
-    "NotForOrganicShips": false,
-    "ShipSizes": []
-  },
-  "WeaponId": null,
-  "WeaponSlotType": ""
+  ]
 }

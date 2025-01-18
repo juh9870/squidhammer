@@ -2,49 +2,20 @@
   "Barrels": [
     {
       "AutoAimingArc": 360,
-      "Image": "",
       "Offset": 0.6,
-      "Position": {
-        "x": 0,
-        "y": 0
-      },
-      "Rotation": 0,
-      "RotationSpeed": 0,
-      "Size": 0,
       "WeaponClass": "C"
     }
   ],
-  "CellsExpansions": 0,
-  "ColliderTolerance": 0.02,
-  "Description": "",
   "EngineColor": "#40FFCC6F",
   "Engines": [
     {
       "Position": {
-        "x": -0.9,
-        "y": 0
+        "x": -0.9
       },
       "Size": 0.2
     }
   ],
   "Faction": 5,
-  "Features": {
-    "ArmorBonus": 0,
-    "BuiltinDevices": [],
-    "DroneAttackBonus": 0,
-    "DroneBuildSpeedBonus": 0,
-    "DroneDefenseBonus": 0,
-    "EnergyBonus": 0,
-    "EnergyResistance": 0,
-    "EquipmentWeightBonus": 0,
-    "HeatResistance": 0,
-    "KineticResistance": 0,
-    "Regeneration": false,
-    "ShieldBonus": 0,
-    "ShipWeightBonus": 0,
-    "TurnRateBonus": 0,
-    "VelocityBonus": 0
-  },
   "IconImage": "f5s4",
   "IconScale": 1,
   "Id": 43,
@@ -53,7 +24,5 @@
   "ModelImage": "f5s4",
   "ModelScale": 2,
   "Name": "$f5_Battleship",
-  "ShipRarity": 0,
-  "ShipType": 0,
   "SizeClass": 3
 }

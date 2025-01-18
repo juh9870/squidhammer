@@ -4,12 +4,7 @@
   "CellType": "4",
   "Color": "#84BFFF",
   "ComponentStatsId": 1,
-  "Description": "",
-  "DeviceId": null,
   "DisplayCategory": 1,
-  "DroneBayId": null,
-  "DroneId": null,
-  "Faction": null,
   "Icon": "rocket2x4",
   "Id": 273,
   "ItemType": 1,
@@ -27,13 +22,6 @@
     7,
     1
   ],
-  "Restrictions": {
-    "ComponentGroupTag": null,
-    "MaxComponentAmount": 0,
-    "NotForMechanicShips": false,
-    "NotForOrganicShips": false,
-    "ShipSizes": []
-  },
   "WeaponId": 125,
   "WeaponSlotType": "M"
 }

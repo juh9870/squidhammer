@@ -1,32 +1,21 @@
 {
   "Id": 7,
   "ItemType": 15,
-  "Level": 0,
-  "Name": "",
   "Nodes": [
     {
       "Actions": [
         {
           "ButtonText": "$WORM_ACTION_Attack",
-          "Requirement": {
-            "Type": 0
-          },
           "TargetNode": 2
         },
         {
           "ButtonText": "$WORM_ACTION_Ignore",
-          "Requirement": {
-            "Type": 0
-          },
           "TargetNode": 5
         }
       ],
-      "Character": null,
       "Enemy": 4,
       "Id": 1,
-      "Loot": null,
       "Message": "$WORM_Message",
-      "RequiredView": 0,
       "Type": 10
     },
     {
@@ -34,25 +23,18 @@
       "Enemy": 4,
       "FailureTransition": 6,
       "Id": 2,
-      "Loot": null,
       "Type": 20
     },
     {
       "Actions": [
         {
           "ButtonText": "$ACTION_Continue",
-          "Requirement": {
-            "Type": 0
-          },
           "TargetNode": 4
         }
       ],
-      "Character": null,
-      "Enemy": null,
       "Id": 3,
       "Loot": 7,
       "Message": "$MessageCombatReward",
-      "RequiredView": 0,
       "Type": 10
     },
     {
@@ -70,22 +52,6 @@
       "Type": 41
     }
   ],
-  "Origin": {
-    "Factions": {
-      "List": [],
-      "Type": 0
-    },
-    "MaxDistance": 0,
-    "MaxRelations": 0,
-    "MinDistance": 0,
-    "MinRelations": 0,
-    "Type": 0
-  },
-  "QuestType": 0,
-  "Requirement": {
-    "Type": 0
-  },
   "StartCondition": 1,
-  "UseRandomSeed": false,
   "Weight": 0.2
 }

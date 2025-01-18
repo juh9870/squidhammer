@@ -8,15 +8,12 @@
   "DamageType": 2,
   "EnergyCost": 10,
   "FireSound": "shot_01",
-  "HitEffectPrefab": "",
   "HitPoints": 1,
   "HitSound": "hit_09",
   "Id": 91,
-  "IgnoresShipVelocity": false,
   "Impulse": 0.05,
   "InitialPosition": {
-    "x": 0.5,
-    "y": 0
+    "x": 0.5
   },
   "ItemType": 4,
   "LifeTime": 5,

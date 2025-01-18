@@ -3,11 +3,6 @@
   "Id": 18,
   "Image": "saw256",
   "ItemType": 27,
-  "MainColor": "#00000000",
-  "MainColorMode": 0,
-  "Margins": 0,
-  "SecondColor": "#00000000",
-  "SecondColorMode": 0,
   "Shape": 10,
   "Size": 1
 }

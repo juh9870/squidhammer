@@ -1,25 +1,13 @@
 {
-  "ActivationType": 0,
   "Color": "#FF0000",
   "ControlButtonIcon": "controls_gear",
   "Cooldown": 20,
   "DeviceClass": 10,
   "EffectPrefab": "FlashAdditive",
-  "EnergyConsumption": 0,
   "Id": 19,
   "ItemType": 2,
-  "Lifetime": 0,
-  "ObjectPrefab": "",
-  "Offset": {
-    "x": 0,
-    "y": 0
-  },
-  "PassiveEnergyConsumption": 0,
   "Power": 1,
-  "Prefab": null,
   "Range": 100,
-  "ScaleEnergyWithShipSize": true,
   "Size": 4,
-  "Sound": "launch_06",
-  "VisualEffect": null
+  "Sound": "launch_06"
 }

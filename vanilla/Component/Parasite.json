@@ -4,11 +4,7 @@
   "CellType": "4",
   "Color": "#C0FFC0",
   "ComponentStatsId": 1,
-  "Description": "",
-  "DeviceId": null,
   "DisplayCategory": 1,
-  "DroneBayId": null,
-  "DroneId": null,
   "Faction": 12,
   "Icon": "biogun",
   "Id": 269,
@@ -28,11 +24,7 @@
     1
   ],
   "Restrictions": {
-    "ComponentGroupTag": null,
-    "MaxComponentAmount": 0,
-    "NotForMechanicShips": true,
-    "NotForOrganicShips": false,
-    "ShipSizes": []
+    "NotForMechanicShips": true
   },
   "WeaponId": 110,
   "WeaponSlotType": "S"

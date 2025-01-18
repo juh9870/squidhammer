@@ -2,13 +2,8 @@
   "AmmunitionId": 119,
   "Availability": 5,
   "CellType": "4",
-  "Color": "#00000000",
   "ComponentStatsId": 1,
-  "Description": "",
-  "DeviceId": null,
   "DisplayCategory": 1,
-  "DroneBayId": null,
-  "DroneId": null,
   "Faction": 17,
   "Icon": "energy_wave2",
   "Id": 199,
@@ -25,13 +20,6 @@
     1,
     14
   ],
-  "Restrictions": {
-    "ComponentGroupTag": null,
-    "MaxComponentAmount": 0,
-    "NotForMechanicShips": false,
-    "NotForOrganicShips": false,
-    "ShipSizes": []
-  },
   "WeaponId": 108,
   "WeaponSlotType": "L"
 }

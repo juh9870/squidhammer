@@ -1,29 +1,8 @@
 {
-  "Barrels": [],
-  "CellsExpansions": 0,
-  "ColliderTolerance": 0.02,
-  "Description": "",
-  "EngineColor": "#00000000",
-  "Engines": [],
-  "Faction": null,
   "Features": {
-    "ArmorBonus": 0,
     "BuiltinDevices": [
       24
-    ],
-    "DroneAttackBonus": 0,
-    "DroneBuildSpeedBonus": 0,
-    "DroneDefenseBonus": 0,
-    "EnergyBonus": 0,
-    "EnergyResistance": 0,
-    "EquipmentWeightBonus": 0,
-    "HeatResistance": 0,
-    "KineticResistance": 0,
-    "Regeneration": false,
-    "ShieldBonus": 0,
-    "ShipWeightBonus": 0,
-    "TurnRateBonus": 0,
-    "VelocityBonus": 0
+    ]
   },
   "IconImage": "ecm_drone",
   "IconScale": 0.5,
@@ -33,7 +12,5 @@
   "ModelImage": "ecm_drone",
   "ModelScale": 0.75,
   "Name": "Drone",
-  "ShipRarity": 0,
-  "ShipType": 3,
-  "SizeClass": -1
+  "ShipType": 3
 }

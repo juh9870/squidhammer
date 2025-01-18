@@ -1,41 +1,27 @@
 {
   "Id": 102,
   "ItemType": 15,
-  "Level": 0,
-  "Name": "",
   "Nodes": [
     {
       "Actions": [
         {
           "ButtonText": "$Continue",
-          "Requirement": {
-            "Type": 0
-          },
           "TargetNode": 2
         }
       ],
       "Character": 2,
-      "Enemy": null,
       "Id": 1,
-      "Loot": null,
       "Message": "$JanSalo_3_Message1",
-      "RequiredView": 0,
       "Type": 10
     },
     {
       "Actions": [
         {
           "ButtonText": "$Action_GiveMoney",
-          "Requirement": {
-            "Type": 0
-          },
           "TargetNode": 4
         },
         {
           "ButtonText": "$Action_Attack",
-          "Requirement": {
-            "Type": 0
-          },
           "TargetNode": 3
         }
       ],
@@ -44,7 +30,6 @@
       "Id": 2,
       "Loot": 10,
       "Message": "$JanSalo_3_Attack",
-      "RequiredView": 0,
       "Type": 10
     },
     {
@@ -52,43 +37,31 @@
       "Enemy": 3,
       "FailureTransition": 7,
       "Id": 3,
-      "Loot": null,
       "Type": 20
     },
     {
       "Actions": [
         {
           "ButtonText": "$Continue",
-          "Requirement": {
-            "Type": 0
-          },
           "TargetNode": 4
         }
       ],
       "Character": 4,
-      "Enemy": null,
       "Id": 7,
       "Loot": 10,
       "Message": "$JanSalo_3_Failure",
-      "RequiredView": 0,
       "Type": 10
     },
     {
       "Actions": [
         {
           "ButtonText": "$Continue",
-          "Requirement": {
-            "Type": 0
-          },
           "TargetNode": 5
         }
       ],
       "Character": 2,
-      "Enemy": null,
       "Id": 8,
-      "Loot": null,
       "Message": "$JanSalo_3_Message2",
-      "RequiredView": 0,
       "Type": 10
     },
     {
@@ -109,18 +82,6 @@
       "Type": 40
     }
   ],
-  "Origin": {
-    "Factions": {
-      "List": [],
-      "Type": 0
-    },
-    "MaxDistance": 0,
-    "MaxRelations": 0,
-    "MinDistance": 0,
-    "MinRelations": 0,
-    "Type": 0
-  },
-  "QuestType": 0,
   "Requirement": {
     "Requirements": [
       {
@@ -135,6 +96,5 @@
     "Type": 2
   },
   "StartCondition": 6,
-  "UseRandomSeed": false,
   "Weight": 0.05
 }

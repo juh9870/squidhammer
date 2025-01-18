@@ -5,22 +5,13 @@
     "Nodes": [
       {
         "Cooldown": 2,
-        "Requirement": {
-          "Type": 0
-        },
         "Type": 52
       },
       {
         "ItemId": 24,
-        "Requirement": {
-          "Type": 0
-        },
         "Type": 1
       }
     ],
-    "Requirement": {
-      "Type": 0
-    },
     "Type": 3
   }
 }

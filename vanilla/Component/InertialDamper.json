@@ -1,14 +1,8 @@
 {
-  "AmmunitionId": null,
   "Availability": 1,
   "CellType": "2",
-  "Color": "#00000000",
   "ComponentStatsId": 69,
-  "Description": "",
-  "DeviceId": null,
   "DisplayCategory": 6,
-  "DroneBayId": null,
-  "DroneId": null,
   "Faction": -1,
   "Icon": "intertial_damper1",
   "Id": 69,
@@ -18,14 +12,5 @@
   "Name": "$InertialDamper",
   "PossibleModifications": [
     2
-  ],
-  "Restrictions": {
-    "ComponentGroupTag": null,
-    "MaxComponentAmount": 0,
-    "NotForMechanicShips": false,
-    "NotForOrganicShips": false,
-    "ShipSizes": []
-  },
-  "WeaponId": null,
-  "WeaponSlotType": ""
+  ]
 }

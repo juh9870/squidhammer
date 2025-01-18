@@ -4,11 +4,7 @@
   "CellType": "4",
   "Color": "#FF4040",
   "ComponentStatsId": 1,
-  "Description": "",
-  "DeviceId": null,
   "DisplayCategory": 1,
-  "DroneBayId": null,
-  "DroneId": null,
   "Faction": -1,
   "Icon": "rocket1",
   "Id": 175,
@@ -28,13 +24,6 @@
     7,
     1
   ],
-  "Restrictions": {
-    "ComponentGroupTag": null,
-    "MaxComponentAmount": 0,
-    "NotForMechanicShips": false,
-    "NotForOrganicShips": false,
-    "ShipSizes": []
-  },
   "WeaponId": 40,
   "WeaponSlotType": "M"
 }

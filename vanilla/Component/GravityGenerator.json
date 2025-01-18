@@ -1,32 +1,17 @@
 {
-  "AmmunitionId": null,
-  "Availability": 0,
   "CellType": "2",
   "Color": "#5665FF",
   "ComponentStatsId": 3,
-  "Description": "",
   "DeviceId": 9,
   "DisplayCategory": 6,
-  "DroneBayId": null,
-  "DroneId": null,
   "Faction": 7,
   "Icon": "reactor2",
   "Id": 68,
   "ItemType": 1,
   "Layout": "111111111",
-  "Level": 0,
   "Name": "$GravityGenerator",
   "PossibleModifications": [
     2,
     1
-  ],
-  "Restrictions": {
-    "ComponentGroupTag": null,
-    "MaxComponentAmount": 0,
-    "NotForMechanicShips": false,
-    "NotForOrganicShips": false,
-    "ShipSizes": []
-  },
-  "WeaponId": null,
-  "WeaponSlotType": ""
+  ]
 }

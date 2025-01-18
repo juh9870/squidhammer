@@ -1,58 +1,31 @@
 {
   "Barrels": [
     {
-      "AutoAimingArc": 0,
-      "Image": "",
-      "Offset": 0,
       "Position": {
         "x": 0.81,
         "y": 0.34
       },
-      "Rotation": -10,
-      "RotationSpeed": 0,
-      "Size": 0,
-      "WeaponClass": ""
+      "Rotation": -10
     },
     {
-      "AutoAimingArc": 0,
-      "Image": "",
-      "Offset": 0,
       "Position": {
         "x": 0.81,
         "y": -0.34
       },
       "Rotation": 10,
-      "RotationSpeed": 0,
-      "Size": 0,
       "WeaponClass": "M"
     }
   ],
-  "CellsExpansions": 0,
-  "ColliderTolerance": 0.02,
-  "Description": "",
   "EngineColor": "#80FFD400",
   "Engines": [
     {
       "Position": {
-        "x": -0.6,
-        "y": 0
+        "x": -0.6
       },
       "Size": 0.4
     }
   ],
-  "Faction": null,
   "Features": {
-    "ArmorBonus": 0,
-    "BuiltinDevices": [],
-    "DroneAttackBonus": 0,
-    "DroneBuildSpeedBonus": 0,
-    "DroneDefenseBonus": 0,
-    "EnergyBonus": 0,
-    "EnergyResistance": 0,
-    "EquipmentWeightBonus": 0,
-    "HeatResistance": 0,
-    "KineticResistance": 0,
-    "Regeneration": false,
     "ShieldBonus": 2,
     "ShipWeightBonus": -0.3,
     "TurnRateBonus": 0.5,
@@ -66,7 +39,6 @@
   "ModelImage": "f14s1",
   "ModelScale": 3,
   "Name": "$f14_Battleship",
-  "ShipRarity": 0,
   "ShipType": 4,
   "SizeClass": 3
 }

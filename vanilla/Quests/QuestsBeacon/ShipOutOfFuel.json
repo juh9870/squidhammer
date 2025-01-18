@@ -1,8 +1,6 @@
 {
   "Id": 8,
   "ItemType": 15,
-  "Level": 0,
-  "Name": "",
   "Nodes": [
     {
       "Actions": [
@@ -32,25 +30,17 @@
         },
         {
           "ButtonText": "$SOS_OUTOFFUEL_ACTION_Attack",
-          "Requirement": {
-            "Type": 0
-          },
           "TargetNode": 2
         },
         {
           "ButtonText": "$SOS_OUTOFFUEL_ACTION_Decline",
-          "Requirement": {
-            "Type": 0
-          },
           "TargetNode": 3
         }
       ],
       "Character": 6,
       "Enemy": 5,
       "Id": 1,
-      "Loot": null,
       "Message": "$SOS_OUTOFFUEL_Message",
-      "RequiredView": 0,
       "Type": 10
     },
     {
@@ -58,7 +48,6 @@
       "Enemy": 5,
       "FailureTransition": 3,
       "Id": 2,
-      "Loot": null,
       "Type": 20
     },
     {
@@ -75,18 +64,13 @@
       "Actions": [
         {
           "ButtonText": "$Continue",
-          "Requirement": {
-            "Type": 0
-          },
           "TargetNode": 6
         }
       ],
       "Character": 6,
-      "Enemy": null,
       "Id": 5,
       "Loot": 11,
       "Message": "$SOS_OUTOFFUEL_Reward",
-      "RequiredView": 0,
       "Type": 10
     },
     {
@@ -105,18 +89,13 @@
       "Actions": [
         {
           "ButtonText": "$Continue",
-          "Requirement": {
-            "Type": 0
-          },
           "TargetNode": 9
         }
       ],
       "Character": 6,
-      "Enemy": null,
       "Id": 8,
       "Loot": 17,
       "Message": "$SOS_OUTOFFUEL_Reward",
-      "RequiredView": 0,
       "Type": 10
     },
     {
@@ -126,22 +105,6 @@
       "Type": 35
     }
   ],
-  "Origin": {
-    "Factions": {
-      "List": [],
-      "Type": 0
-    },
-    "MaxDistance": 0,
-    "MaxRelations": 0,
-    "MinDistance": 0,
-    "MinRelations": 0,
-    "Type": 0
-  },
-  "QuestType": 0,
-  "Requirement": {
-    "Type": 0
-  },
   "StartCondition": 1,
-  "UseRandomSeed": false,
   "Weight": 0.9
 }

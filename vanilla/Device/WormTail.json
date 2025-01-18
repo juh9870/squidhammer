@@ -1,15 +1,9 @@
 {
-  "ActivationType": 0,
-  "Color": "#00000000",
   "ControlButtonIcon": "controls_gear",
   "Cooldown": 5,
   "DeviceClass": 22,
-  "EffectPrefab": "",
-  "EnergyConsumption": 0,
   "Id": 20,
   "ItemType": 2,
-  "Lifetime": 0,
-  "ObjectPrefab": "",
   "Offset": {
     "x": 0.45,
     "y": 0.35
@@ -17,9 +11,5 @@
   "PassiveEnergyConsumption": 5,
   "Power": 0.3,
   "Prefab": 1,
-  "Range": 0,
-  "ScaleEnergyWithShipSize": true,
-  "Size": 10,
-  "Sound": "",
-  "VisualEffect": null
+  "Size": 10
 }

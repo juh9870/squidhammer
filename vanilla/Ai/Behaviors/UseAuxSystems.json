@@ -5,9 +5,6 @@
     "Nodes": [
       {
         "ItemId": 120,
-        "Requirement": {
-          "Type": 0
-        },
         "Type": 1
       },
       {
@@ -36,15 +33,9 @@
       },
       {
         "ItemId": 113,
-        "Requirement": {
-          "Type": 0
-        },
         "Type": 1
       }
     ],
-    "Requirement": {
-      "Type": 0
-    },
     "Type": 4
   }
 }

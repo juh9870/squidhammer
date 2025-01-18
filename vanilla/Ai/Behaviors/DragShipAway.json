@@ -5,47 +5,26 @@
     "Node": {
       "Nodes": [
         {
-          "Requirement": {
-            "Type": 0
-          },
           "Type": 132
         },
         {
           "Nodes": [
             {
-              "Requirement": {
-                "Type": 0
-              },
               "Type": 128
             },
             {
-              "Requirement": {
-                "Type": 0
-              },
               "Type": 129
             }
           ],
-          "Requirement": {
-            "Type": 0
-          },
           "Type": 2
         },
         {
           "MaxValue": 250,
           "MinValue": 150,
-          "Requirement": {
-            "Type": 0
-          },
           "Type": 124
         }
       ],
-      "Requirement": {
-        "Type": 0
-      },
       "Type": 3
-    },
-    "Requirement": {
-      "Type": 0
     },
     "Type": 11
   }

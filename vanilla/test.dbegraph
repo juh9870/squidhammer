@@ -443,13 +443,7 @@
           "input": 17,
           "node": 2
         },
-        {
-          "ComponentGroupTag": null,
-          "MaxComponentAmount": 0,
-          "NotForMechanicShips": false,
-          "NotForOrganicShips": false,
-          "ShipSizes": []
-        }
+        {}
       ],
       [
         {

@@ -7,34 +7,19 @@
         "Nodes": [
           {
             "ItemId": 137,
-            "Requirement": {
-              "Type": 0
-            },
             "Type": 1
           },
           {
             "MaxValue": 0.1,
-            "Requirement": {
-              "Type": 0
-            },
             "Type": 113
           }
         ],
-        "Requirement": {
-          "Type": 0
-        },
         "Type": 10
       },
       {
-        "Requirement": {
-          "Type": 0
-        },
         "Type": 118
       }
     ],
-    "Requirement": {
-      "Type": 0
-    },
     "Type": 2
   }
 }

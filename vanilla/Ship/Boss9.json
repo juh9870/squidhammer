@@ -2,99 +2,66 @@
   "Barrels": [
     {
       "AutoAimingArc": 20,
-      "Image": "",
-      "Offset": 0,
       "Position": {
-        "x": 1,
-        "y": 0
+        "x": 1
       },
-      "Rotation": 0,
-      "RotationSpeed": 0,
-      "Size": 0,
       "WeaponClass": "C"
     },
     {
       "AutoAimingArc": 20,
-      "Image": "",
-      "Offset": 0,
       "Position": {
         "x": 0.05,
         "y": 0.5
       },
       "Rotation": 70,
-      "RotationSpeed": 0,
-      "Size": 0,
       "WeaponClass": "C"
     },
     {
       "AutoAimingArc": 20,
-      "Image": "",
-      "Offset": 0,
       "Position": {
         "x": 0.05,
         "y": -0.5
       },
       "Rotation": -70,
-      "RotationSpeed": 0,
-      "Size": 0,
       "WeaponClass": "C"
     },
     {
       "AutoAimingArc": 20,
-      "Image": "",
-      "Offset": 0,
       "Position": {
         "x": -0.05,
         "y": 0.5
       },
       "Rotation": 90,
-      "RotationSpeed": 0,
-      "Size": 0,
       "WeaponClass": "C"
     },
     {
       "AutoAimingArc": 20,
-      "Image": "",
-      "Offset": 0,
       "Position": {
         "x": -0.05,
         "y": -0.5
       },
       "Rotation": -90,
-      "RotationSpeed": 0,
-      "Size": 0,
       "WeaponClass": "C"
     },
     {
       "AutoAimingArc": 20,
-      "Image": "",
-      "Offset": 0,
       "Position": {
         "x": -0.15,
         "y": 0.5
       },
       "Rotation": 110,
-      "RotationSpeed": 0,
-      "Size": 0,
       "WeaponClass": "C"
     },
     {
       "AutoAimingArc": 20,
-      "Image": "",
-      "Offset": 0,
       "Position": {
         "x": -0.15,
         "y": -0.5
       },
       "Rotation": -110,
-      "RotationSpeed": 0,
-      "Size": 0,
       "WeaponClass": "C"
     }
   ],
-  "CellsExpansions": 0,
-  "ColliderTolerance": 0.02,
-  "Description": "",
   "EngineColor": "#40F0D2B4",
   "Engines": [
     {
@@ -114,21 +81,7 @@
   ],
   "Faction": 11,
   "Features": {
-    "ArmorBonus": 0,
-    "BuiltinDevices": [],
-    "DroneAttackBonus": 0,
-    "DroneBuildSpeedBonus": 0,
-    "DroneDefenseBonus": 0,
-    "EnergyBonus": 0,
-    "EnergyResistance": 0,
-    "EquipmentWeightBonus": 0,
-    "HeatResistance": 0,
-    "KineticResistance": 0,
-    "Regeneration": false,
-    "ShieldBonus": 0.5,
-    "ShipWeightBonus": 0,
-    "TurnRateBonus": 0,
-    "VelocityBonus": 0
+    "ShieldBonus": 0.5
   },
   "IconImage": "flagship9",
   "IconScale": 1.2,
@@ -138,7 +91,6 @@
   "ModelImage": "flagship9",
   "ModelScale": 7,
   "Name": "$f9_Flagship",
-  "ShipRarity": 0,
   "ShipType": 4,
   "SizeClass": 4
 }

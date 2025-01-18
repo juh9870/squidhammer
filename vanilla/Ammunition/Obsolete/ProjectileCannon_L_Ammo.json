@@ -1,25 +1,17 @@
 {
-  "AmmunitionClass": 0,
-  "AreaOfEffect": 0,
   "BulletPrefab": "Energy1",
   "Color": "#C09494",
-  "CoupledAmmunitionId": null,
   "Damage": 3,
-  "DamageType": 0,
   "EnergyCost": 20,
   "FireSound": "shot_07",
   "HitEffectPrefab": "FlashAdditive",
-  "HitPoints": 0,
   "HitSound": "hit_01",
   "Id": 82,
-  "IgnoresShipVelocity": false,
   "Impulse": 0.2,
   "InitialPosition": {
-    "x": 0.5,
-    "y": 0
+    "x": 0.5
   },
   "ItemType": 4,
-  "LifeTime": 0,
   "Range": 25,
   "Recoil": 0.2,
   "Size": 0.5,

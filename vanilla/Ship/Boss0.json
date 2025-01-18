@@ -2,139 +2,79 @@
   "Barrels": [
     {
       "AutoAimingArc": 20,
-      "Image": "",
-      "Offset": 0,
       "Position": {
         "x": 0.9,
         "y": 0.35
       },
-      "Rotation": 0,
-      "RotationSpeed": 0,
-      "Size": 0,
       "WeaponClass": "C"
     },
     {
-      "AutoAimingArc": 0,
-      "Image": "",
-      "Offset": 0,
       "Position": {
         "x": 0.86,
         "y": -0.31
       },
-      "Rotation": 0,
-      "RotationSpeed": 0,
-      "Size": 0,
       "WeaponClass": "C"
     },
     {
       "AutoAimingArc": 20,
-      "Image": "",
-      "Offset": 0,
       "Position": {
         "x": 0.84,
         "y": 0.46
       },
-      "Rotation": 0,
-      "RotationSpeed": 0,
-      "Size": 0,
       "WeaponClass": "C"
     },
     {
       "AutoAimingArc": 20,
-      "Image": "",
-      "Offset": 0,
       "Position": {
         "x": 0.72,
         "y": -0.44
       },
-      "Rotation": 0,
-      "RotationSpeed": 0,
-      "Size": 0,
       "WeaponClass": "C"
     },
     {
       "AutoAimingArc": 20,
-      "Image": "",
-      "Offset": 0,
       "Position": {
         "x": 0.82,
         "y": 0.57
       },
-      "Rotation": 0,
-      "RotationSpeed": 0,
-      "Size": 0,
       "WeaponClass": "C"
     },
     {
-      "AutoAimingArc": 0,
-      "Image": "",
-      "Offset": 0,
       "Position": {
         "x": 0.2,
         "y": -0.8
       },
-      "Rotation": 0,
-      "RotationSpeed": 0,
-      "Size": 0,
       "WeaponClass": "M"
     },
     {
-      "AutoAimingArc": 0,
-      "Image": "",
-      "Offset": 0,
       "Position": {
         "x": 0.2,
         "y": 0.93
       },
-      "Rotation": 0,
-      "RotationSpeed": 0,
-      "Size": 0,
       "WeaponClass": "M"
     },
     {
-      "AutoAimingArc": 0,
-      "Image": "",
-      "Offset": 0,
       "Position": {
         "x": 0.2,
         "y": -0.9
       },
-      "Rotation": 0,
-      "RotationSpeed": 0,
-      "Size": 0,
       "WeaponClass": "M"
     }
   ],
-  "CellsExpansions": 0,
-  "ColliderTolerance": 0.02,
-  "Description": "",
   "EngineColor": "#20FFFFFF",
   "Engines": [
     {
       "Position": {
-        "x": -0.88,
-        "y": 0
+        "x": -0.88
       },
       "Size": 0.3
     }
   ],
   "Faction": 7,
   "Features": {
-    "ArmorBonus": 0,
-    "BuiltinDevices": [],
-    "DroneAttackBonus": 0,
-    "DroneBuildSpeedBonus": 0,
-    "DroneDefenseBonus": 0,
-    "EnergyBonus": 0,
     "EnergyResistance": 0.5,
-    "EquipmentWeightBonus": 0,
     "HeatResistance": 0.5,
-    "KineticResistance": 1,
-    "Regeneration": false,
-    "ShieldBonus": 0,
-    "ShipWeightBonus": 0,
-    "TurnRateBonus": 0,
-    "VelocityBonus": 0
+    "KineticResistance": 1
   },
   "IconImage": "flagship0",
   "IconScale": 1.2,
@@ -144,7 +84,6 @@
   "ModelImage": "flagship0",
   "ModelScale": 5,
   "Name": "$f0_Flagship",
-  "ShipRarity": 0,
   "ShipType": 4,
   "SizeClass": 4
 }

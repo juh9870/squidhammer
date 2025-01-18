@@ -21,15 +21,9 @@
       },
       {
         "ItemId": 117,
-        "Requirement": {
-          "Type": 0
-        },
         "Type": 1
       }
     ],
-    "Requirement": {
-      "Type": 0
-    },
     "Type": 4
   }
 }
