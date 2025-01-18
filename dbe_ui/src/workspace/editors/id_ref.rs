@@ -13,6 +13,7 @@ use dbe_backend::validation::ids::numeric::NumericIDRegistry;
 use dbe_backend::value::{ENumber, EValue};
 use egui::{Frame, Ui, Widget};
 use egui_hooks::UseHookExt;
+use itertools::Itertools;
 use miette::bail;
 use std::collections::BTreeSet;
 
@@ -89,7 +90,8 @@ impl Editor for IdRefEditor {
                                         id,
                                         name_of(locations, true, props.show_field_path),
                                     )
-                                }),
+                                })
+                                .sorted_unstable_by_key(|x| *x.num),
                                 field_name,
                                 edited,
                                 |ui, id, name| {
@@ -102,6 +104,7 @@ impl Editor for IdRefEditor {
                                     res
                                 },
                             )
+                            .select_on_focus(true)
                             .ui(ui);
 
                             // res.request_focus();
