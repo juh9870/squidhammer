@@ -308,7 +308,7 @@ impl Graph {
     pub fn snarl_and_context<'a>(
         &'a mut self,
         registry: &'a ETypesRegistry,
-    ) -> (&mut Snarl<SnarlNode>, NodeContext<'a>) {
+    ) -> (&'a mut Snarl<SnarlNode>, NodeContext<'a>) {
         (
             &mut self.snarl,
             NodeContext {
