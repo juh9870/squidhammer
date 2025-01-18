@@ -1,4 +1,4 @@
-struct title="LootContentQuestItem" {
+struct title="LootContentQuestItem" graph_inline=true {
 	object "ItemId" "sys:ids/numeric_ref" alias="QuestItem" typeid="eh:objects/quests/quest_item" {
 		const "Id" "eh:objects/quests/quest_item"
 	}

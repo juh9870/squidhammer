@@ -1,4 +1,4 @@
-struct title="RequirementFactionStarbasePower" {
+struct title="RequirementFactionStarbasePower" graph_inline=true {
 	number "MinValue" description="Percentage value" min=0 max=100000 type="int"
 	number "MaxValue" description="Percentage value" min=0 max=100000 type="int"
 }

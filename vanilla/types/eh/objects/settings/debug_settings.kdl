@@ -1,6 +1,6 @@
-struct title="DebugSettings" {
-	object "Id" "sys:ids/numeric" {
-		const "Id" "eh:objects/settings/debug_settings"
+struct title="DebugSettings" singleton=true graph_inline=false {
+	list "Codes" {
+		object "Item" "eh:objects/settings/debug_code"
 	}
-	object "Data" "eh:objects/settings/debug_settings_data" inline=true
+	boolean "EnableDebugConsole"
 }

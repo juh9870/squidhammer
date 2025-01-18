@@ -1,4 +1,4 @@
-struct title="SatelliteData" {
+struct title="SatelliteData" graph_inline=false {
 	string "Name"
 	string "ModelImage" editor="eh:image"
 	number "ModelScale" min=0.1 max=100

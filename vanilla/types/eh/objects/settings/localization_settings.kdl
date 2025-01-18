@@ -1,6 +1,4 @@
-struct title="LocalizationSettings" {
-	object "Id" "sys:ids/numeric" {
-		const "Id" "eh:objects/settings/localization_settings"
-	}
-	object "Data" "eh:objects/settings/localization_settings_data" inline=true
+struct title="LocalizationSettings" singleton=true graph_inline=false {
+	string "CorrosiveDamageText" default="$WeaponDamage"
+	string "CorrosiveDpsText" default="$WeaponDPS"
 }

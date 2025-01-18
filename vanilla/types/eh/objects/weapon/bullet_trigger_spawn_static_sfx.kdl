@@ -1,4 +1,4 @@
-struct title="BulletTriggerSpawnStaticSfx" {
+struct title="BulletTriggerSpawnStaticSfx" graph_inline=true {
 	object "Condition" "eh:enums/weapon/bullet_trigger_condition"
 	object "VisualEffect" "sys:optional" {
 		object "Item" "sys:ids/numeric_ref" {

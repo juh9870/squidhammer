@@ -1,4 +1,4 @@
-struct title="DroneBayData" {
+struct title="DroneBayData" graph_inline=false {
 	number "EnergyConsumption" min=0 max=1000000000
 	number "PassiveEnergyConsumption" min=0 max=1000000000
 	number "Range" min=1 max=1000

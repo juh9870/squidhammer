@@ -1,4 +1,4 @@
-struct title="NodeShowDialog" {
+struct title="NodeShowDialog" graph_inline=true {
 	number "Id" min=1 max=999999 type="int"
 	object "RequiredView" "eh:enums/quests/required_view_mode"
 	string "Message"

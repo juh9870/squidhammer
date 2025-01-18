@@ -1,4 +1,4 @@
-struct title="AmmunitionData" {
+struct title="AmmunitionData" graph_inline=false {
 	object "Body" "eh:objects/weapon/bullet_body"
 	object "Controller" "eh:objects/weapon/bullet_controller"
 	list "Triggers" {

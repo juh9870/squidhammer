@@ -100,17 +100,21 @@ impl Ctx {
 
         if let Some(_ty) = &data.typeid {
             let name = data.name.clone();
-            let data_path = Utf8PathBuf::from(path.to_string() + "Data");
-            let data_id = self.consume_struct_raw(data_path.clone(), data, true);
-            self.output(
-                id(&path),
-                format!(
-                    "struct title=\"{}\" {{\n\tobject \"Id\" \"sys:ids/numeric\" {{\n\t\tconst \"Id\" \"{}\"\n\t}}\n\tobject \"Data\" \"{}\" inline=true\n}}",
-                    &name,
+            if data.ty != SchemaDataType::Settings {
+                let data_path = Utf8PathBuf::from(path.to_string() + "Data");
+                let data_id = self.consume_struct_raw(data_path.clone(), data, true);
+                self.output(
                     id(&path),
-                    data_id,
-                ),
-            );
+                    format!(
+                        "struct title=\"{}\" {{\n\tobject \"Id\" \"sys:ids/numeric\" {{\n\t\tconst \"Id\" \"{}\"\n\t}}\n\tobject \"Data\" \"{}\" inline=true\n}}",
+                        &name,
+                        id(&path),
+                        data_id,
+                    ),
+                );
+            } else {
+                self.consume_struct_raw(path, data, false);
+            }
         } else {
             self.consume_struct_raw(path, data, false);
         }
@@ -179,6 +183,7 @@ impl Ctx {
                         .cloned()
                         .collect_vec(),
                     false,
+                    data.ty != SchemaDataType::Object && data.ty != SchemaDataType::Settings,
                 )
             }
             self.enums.insert(edata.name.clone(), edata);
@@ -195,6 +200,7 @@ impl Ctx {
                 &name,
                 members,
                 data.ty == SchemaDataType::Settings,
+                data.ty != SchemaDataType::Object && data.ty != SchemaDataType::Settings,
             );
             id
         }
@@ -206,12 +212,19 @@ impl Ctx {
         title: &str,
         members: Vec<SchemaStructMember>,
         singleton: bool,
+        graph_inline: bool,
     ) {
         let _guard = error_span!("Struct", id = &id).entered();
         let mut code = if singleton {
-            format!("struct title=\"{}\" singleton=true {{", title)
+            format!(
+                "struct title=\"{}\" singleton=true graph_inline={} {{",
+                title, graph_inline
+            )
         } else {
-            format!("struct title=\"{}\" {{", title)
+            format!(
+                "struct title=\"{}\" graph_inline={} {{",
+                title, graph_inline
+            )
         };
 
         let typeid_fmt = |id: String| format!("\"{}\"", typeid(&self.typeids, id,));

@@ -1,4 +1,4 @@
-struct title="ShipData" {
+struct title="ShipData" graph_inline=false {
 	object "ShipType" "eh:enums/ship_type"
 	object "ShipRarity" "eh:enums/ship_rarity"
 	object "SizeClass" "eh:enums/size_class"

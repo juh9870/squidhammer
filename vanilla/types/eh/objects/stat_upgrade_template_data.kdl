@@ -1,4 +1,4 @@
-struct title="StatUpgradeTemplateData" {
+struct title="StatUpgradeTemplateData" graph_inline=false {
 	number "MaxLevel" default=20 min=0 type="int"
 	string "Stars" arguments="level" editor="eh:expression"
 	string "Credits" arguments="level" editor="eh:expression"

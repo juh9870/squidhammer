@@ -1,4 +1,4 @@
-struct title="VisualEffectData" {
+struct title="VisualEffectData" graph_inline=false {
 	list "Elements" {
 		object "Item" "eh:objects/weapon/visual_effect_element"
 	}

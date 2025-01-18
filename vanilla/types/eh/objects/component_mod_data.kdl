@@ -1,4 +1,4 @@
-struct title="ComponentModData" {
+struct title="ComponentModData" graph_inline=false {
 	string "Description"
 	list "Modifications" {
 		object "Item" "eh:objects/stat_modification"

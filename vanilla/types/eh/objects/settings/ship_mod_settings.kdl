@@ -1,6 +1,16 @@
-struct title="ShipModSettings" {
-	object "Id" "sys:ids/numeric" {
-		const "Id" "eh:objects/settings/ship_mod_settings"
-	}
-	object "Data" "eh:objects/settings/ship_mod_settings_data" inline=true
+struct title="ShipModSettings" singleton=true graph_inline=false {
+	boolean "RemoveWeaponSlotMod"
+	boolean "RemoveUnlimitedRespawnMod"
+	boolean "RemoveEnergyRechargeCdMod"
+	boolean "RemoveShieldRechargeCdMod"
+	boolean "RemoveBiggerSatellitesMod"
+	number "HeatDefenseValue" default=0.5 min=0 max=10
+	number "KineticDefenseValue" default=0.5 min=0 max=10
+	number "EnergyDefenseValue" default=0.5 min=0 max=10
+	number "RegenerationValue" default=0.01 min=0 max=1
+	number "RegenerationArmor" default=0.85 min=0 max=1
+	number "WeightReduction" default=0.8 min=0 max=1
+	number "AttackReduction" default=0.2 min=0 max=1
+	number "EnergyReduction" default=0.5 min=0 max=1
+	number "ShieldReduction" default=0.5 min=0 max=1
 }

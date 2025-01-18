@@ -1,3 +1,3 @@
-struct title="SoundTrack" {
+struct title="SoundTrack" graph_inline=true {
 	string "Audio" editor="eh:audioclip"
 }

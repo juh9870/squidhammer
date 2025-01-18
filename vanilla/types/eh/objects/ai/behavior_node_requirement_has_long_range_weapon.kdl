@@ -1,3 +1,3 @@
-struct title="BehaviorNodeRequirementHasLongRangeWeapon" {
+struct title="BehaviorNodeRequirementHasLongRangeWeapon" graph_inline=true {
 	number "Value" alias="Range" min=0
 }

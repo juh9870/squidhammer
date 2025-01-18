@@ -1,2 +1,2 @@
-struct title="BehaviorNodeRequirementHasAnyWeapon" {
+struct title="BehaviorNodeRequirementHasAnyWeapon" graph_inline=true {
 }

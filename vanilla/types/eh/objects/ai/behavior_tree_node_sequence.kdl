@@ -1,4 +1,4 @@
-struct title="BehaviorTreeNodeSequence" {
+struct title="BehaviorTreeNodeSequence" graph_inline=true {
 	object "Requirement" "eh:objects/ai/behavior_node_requirement" description="The node will not execute and will return FAILURE if the requirement is not met"
 	list "Nodes" {
 		object "Item" "eh:objects/ai/behavior_tree_node"

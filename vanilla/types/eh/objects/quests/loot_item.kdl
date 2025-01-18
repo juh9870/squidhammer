@@ -1,4 +1,4 @@
-struct title="LootItem" {
+struct title="LootItem" graph_inline=true {
 	number "Weight"
 	object "Loot" "eh:objects/quests/loot_content"
 }

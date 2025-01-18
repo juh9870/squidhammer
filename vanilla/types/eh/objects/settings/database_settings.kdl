@@ -1,6 +1,8 @@
-struct title="DatabaseSettings" {
-	object "Id" "sys:ids/numeric" {
-		const "Id" "eh:objects/settings/database_settings"
-	}
-	object "Data" "eh:objects/settings/database_settings_data" inline=true
+struct title="DatabaseSettings" singleton=true graph_inline=false {
+	number "DatabaseVersion" min=1 type="int"
+	number "DatabaseVersionMinor" min=0 type="int"
+	string "ModName"
+	string "ModId"
+	number "ModVersion" type="int"
+	boolean "UnloadOriginalDatabase"
 }

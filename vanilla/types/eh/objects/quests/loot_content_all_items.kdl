@@ -1,4 +1,4 @@
-struct title="LootContentAllItems" {
+struct title="LootContentAllItems" graph_inline=true {
 	list "Items" {
 		object "Item" "eh:objects/quests/loot_item"
 	}

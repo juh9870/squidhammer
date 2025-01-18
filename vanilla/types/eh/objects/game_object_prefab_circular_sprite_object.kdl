@@ -1,4 +1,4 @@
-struct title="GameObjectPrefabDataCircularSpriteObject" {
+struct title="GameObjectPrefabDataCircularSpriteObject" graph_inline=false {
 	string "Image1" alias="Image" editor="eh:image"
 	number "ImageScale" default=1 min=0 max=10
 }

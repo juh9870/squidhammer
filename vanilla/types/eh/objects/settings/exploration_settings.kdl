@@ -1,6 +1,23 @@
-struct title="ExplorationSettings" {
-	object "Id" "sys:ids/numeric" {
-		const "Id" "eh:objects/settings/exploration_settings"
+struct title="ExplorationSettings" singleton=true graph_inline=false {
+	object "OutpostShip" "sys:optional" {
+		object "Item" "sys:ids/numeric_ref" {
+			const "Id" "eh:objects/ship"
+		}
 	}
-	object "Data" "eh:objects/settings/exploration_settings_data" inline=true
+	object "TurretShip" "sys:optional" {
+		object "Item" "sys:ids/numeric_ref" {
+			const "Id" "eh:objects/ship"
+		}
+	}
+	object "InfectedPlanetFaction" "sys:optional" {
+		object "Item" "sys:ids/numeric_ref" {
+			const "Id" "eh:objects/faction"
+		}
+	}
+	object "HiveShipBuild" "sys:optional" {
+		object "Item" "sys:ids/numeric_ref" {
+			const "Id" "eh:objects/ship_build"
+		}
+	}
+	string "GasCloudDPS" default="MIN(level*2,500)" arguments="level" min=1 editor="eh:expression"
 }

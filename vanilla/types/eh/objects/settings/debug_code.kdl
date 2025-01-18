@@ -1,4 +1,4 @@
-struct title="DebugCode" {
+struct title="DebugCode" graph_inline=true {
 	number "Code" min=0 max=999999 type="int"
 	object "Loot" "eh:objects/quests/loot_content"
 }
