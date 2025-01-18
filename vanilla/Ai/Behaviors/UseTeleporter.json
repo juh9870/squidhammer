@@ -4,16 +4,10 @@
   "RootNode": {
     "Nodes": [
       {
-        "Requirement": {
-          "Type": 0
-        },
         "Type": 9
       },
       {
         "DeviceClass": 21,
-        "Requirement": {
-          "Type": 0
-        },
         "Type": 114
       }
     ],

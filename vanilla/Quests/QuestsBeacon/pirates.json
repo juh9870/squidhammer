@@ -1,25 +1,17 @@
 {
   "Id": 3,
   "ItemType": 15,
-  "Level": 0,
-  "Name": "",
   "Nodes": [
     {
       "Actions": [
         {
           "ButtonText": "$ACTION_Continue",
-          "Requirement": {
-            "Type": 0
-          },
           "TargetNode": 2
         }
       ],
-      "Character": null,
       "Enemy": 3,
       "Id": 1,
-      "Loot": null,
       "Message": "$SOS_TRAP_Message",
-      "RequiredView": 0,
       "Type": 10
     },
     {
@@ -39,22 +31,6 @@
       "Type": 41
     }
   ],
-  "Origin": {
-    "Factions": {
-      "List": [],
-      "Type": 0
-    },
-    "MaxDistance": 0,
-    "MaxRelations": 0,
-    "MinDistance": 0,
-    "MinRelations": 0,
-    "Type": 0
-  },
-  "QuestType": 0,
-  "Requirement": {
-    "Type": 0
-  },
   "StartCondition": 1,
-  "UseRandomSeed": false,
   "Weight": 1
 }

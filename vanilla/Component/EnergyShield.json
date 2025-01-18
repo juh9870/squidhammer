@@ -1,14 +1,10 @@
 {
-  "AmmunitionId": null,
   "Availability": 1,
   "CellType": "2",
   "Color": "#C0FFC0",
   "ComponentStatsId": 3,
-  "Description": "",
   "DeviceId": 6,
   "DisplayCategory": 2,
-  "DroneBayId": null,
-  "DroneId": null,
   "Faction": 7,
   "Icon": "shield2",
   "Id": 83,
@@ -20,14 +16,5 @@
     15,
     1,
     2
-  ],
-  "Restrictions": {
-    "ComponentGroupTag": null,
-    "MaxComponentAmount": 0,
-    "NotForMechanicShips": false,
-    "NotForOrganicShips": false,
-    "ShipSizes": []
-  },
-  "WeaponId": null,
-  "WeaponSlotType": ""
+  ]
 }

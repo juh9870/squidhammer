@@ -3,12 +3,6 @@
     {
       "AutoAimingArc": 360,
       "Image": "ironball",
-      "Offset": 0,
-      "Position": {
-        "x": 0,
-        "y": 0
-      },
-      "Rotation": 0,
       "RotationSpeed": 90,
       "Size": 1,
       "WeaponClass": "L"

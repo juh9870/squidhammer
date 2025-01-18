@@ -4,11 +4,7 @@
   "CellType": "4",
   "Color": "#FDB5FF",
   "ComponentStatsId": 1,
-  "Description": "",
-  "DeviceId": null,
   "DisplayCategory": 1,
-  "DroneBayId": null,
-  "DroneId": null,
   "Faction": -1,
   "Icon": "firework",
   "Id": 96,
@@ -28,13 +24,5 @@
     7,
     1
   ],
-  "Restrictions": {
-    "ComponentGroupTag": null,
-    "MaxComponentAmount": 0,
-    "NotForMechanicShips": false,
-    "NotForOrganicShips": false,
-    "ShipSizes": []
-  },
-  "WeaponId": 91,
-  "WeaponSlotType": ""
+  "WeaponId": 91
 }

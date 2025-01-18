@@ -5,25 +5,13 @@
     "Node": {
       "Nodes": [
         {
-          "Requirement": {
-            "Type": 0
-          },
           "Type": 128
         },
         {
-          "Requirement": {
-            "Type": 0
-          },
           "Type": 207
         }
       ],
-      "Requirement": {
-        "Type": 0
-      },
       "Type": 3
-    },
-    "Requirement": {
-      "Type": 0
     },
     "Type": 11
   }

@@ -2,52 +2,33 @@
   "Id": 108,
   "ItemType": 28,
   "RootNode": {
-    "Cooldown": 0,
     "Nodes": [
       {
         "Color": "#C0C0FF80",
-        "Requirement": {
-          "Type": 0
-        },
         "Text": "$Whining1",
         "Type": 300
       },
       {
         "Color": "#C0C0FF80",
-        "Requirement": {
-          "Type": 0
-        },
         "Text": "$Whining2",
         "Type": 300
       },
       {
         "Color": "#C0C0FF80",
-        "Requirement": {
-          "Type": 0
-        },
         "Text": "$Whining3",
         "Type": 300
       },
       {
         "Color": "#C0C0FF80",
-        "Requirement": {
-          "Type": 0
-        },
         "Text": "$Whining4",
         "Type": 300
       },
       {
         "Color": "#C0C0FF80",
-        "Requirement": {
-          "Type": 0
-        },
         "Text": "$Whining5",
         "Type": 300
       }
     ],
-    "Requirement": {
-      "Type": 0
-    },
     "Type": 5
   }
 }

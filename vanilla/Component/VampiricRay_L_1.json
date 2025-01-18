@@ -4,17 +4,12 @@
   "CellType": "4",
   "Color": "#FF8000",
   "ComponentStatsId": 1,
-  "Description": "",
-  "DeviceId": null,
   "DisplayCategory": 1,
-  "DroneBayId": null,
-  "DroneId": null,
   "Faction": -1,
   "Icon": "reactor3",
   "Id": 102,
   "ItemType": 1,
   "Layout": "010111010",
-  "Level": 0,
   "Name": "$VampiricRay_L_1",
   "PossibleModifications": [
     5,
@@ -22,13 +17,6 @@
     7,
     1
   ],
-  "Restrictions": {
-    "ComponentGroupTag": null,
-    "MaxComponentAmount": 0,
-    "NotForMechanicShips": false,
-    "NotForOrganicShips": false,
-    "ShipSizes": []
-  },
   "WeaponId": 87,
   "WeaponSlotType": "L"
 }

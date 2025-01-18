@@ -5,29 +5,17 @@
     "Nodes": [
       {
         "ItemId": 129,
-        "Requirement": {
-          "Type": 0
-        },
         "Type": 1
       },
       {
         "ItemId": 17,
-        "Requirement": {
-          "Type": 0
-        },
         "Type": 1
       },
       {
         "ItemId": 101,
-        "Requirement": {
-          "Type": 0
-        },
         "Type": 1
       }
     ],
-    "Requirement": {
-      "Type": 0
-    },
     "Type": 2
   }
 }

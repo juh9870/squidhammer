@@ -4,32 +4,18 @@
   "RootNode": {
     "Nodes": [
       {
-        "InRange": false,
         "MaxValue": 10,
         "MinValue": 1,
-        "NoDrones": false,
-        "Requirement": {
-          "Type": 0
-        },
         "Type": 100
       },
       {
         "MaxValue": 0.1,
-        "Requirement": {
-          "Type": 0
-        },
         "Type": 120
       },
       {
-        "Requirement": {
-          "Type": 0
-        },
         "Type": 110
       }
     ],
-    "Requirement": {
-      "Type": 0
-    },
     "Type": 3
   }
 }

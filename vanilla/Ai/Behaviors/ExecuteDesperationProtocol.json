@@ -5,59 +5,35 @@
     "Nodes": [
       {
         "MinValue": 0.25,
-        "Requirement": {
-          "Type": 0
-        },
         "Type": 51
       },
       {
         "Nodes": [
           {
             "ItemId": 102,
-            "Requirement": {
-              "Type": 0
-            },
             "Type": 1
           },
           {
             "ItemId": 125,
-            "Requirement": {
-              "Type": 0
-            },
             "Type": 1
           },
           {
             "Nodes": [
               {
-                "Requirement": {
-                  "Type": 0
-                },
                 "Text": "wait_for_help",
                 "Type": 303
               },
               {
                 "ItemId": 123,
-                "Requirement": {
-                  "Type": 0
-                },
                 "Type": 1
               }
             ],
-            "Requirement": {
-              "Type": 0
-            },
             "Type": 3
           }
         ],
-        "Requirement": {
-          "Type": 0
-        },
         "Type": 2
       }
     ],
-    "Requirement": {
-      "Type": 0
-    },
     "Type": 3
   }
 }

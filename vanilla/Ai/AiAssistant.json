@@ -7,34 +7,19 @@
         "Nodes": [
           {
             "MinValue": 0.5,
-            "Requirement": {
-              "Type": 0
-            },
             "Type": 51
           },
           {
             "ItemId": 125,
-            "Requirement": {
-              "Type": 0
-            },
             "Type": 1
           },
           {
-            "Requirement": {
-              "Type": 0
-            },
             "Type": 9
           }
         ],
-        "Requirement": {
-          "Type": 0
-        },
         "Type": 3
       }
     ],
-    "Requirement": {
-      "Type": 0
-    },
     "Type": 2
   }
 }

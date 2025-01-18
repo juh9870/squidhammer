@@ -1,25 +1,11 @@
 {
-  "ActivationType": 0,
   "Color": "#80BE945D",
   "ControlButtonIcon": "controls_gear",
-  "Cooldown": 0,
   "DeviceClass": 14,
-  "EffectPrefab": "",
-  "EnergyConsumption": 0,
   "Id": 18,
   "ItemType": 2,
   "Lifetime": 4,
   "ObjectPrefab": "CloudEffect",
-  "Offset": {
-    "x": 0,
-    "y": 0
-  },
-  "PassiveEnergyConsumption": 0,
   "Power": 5,
-  "Prefab": null,
-  "Range": 0,
-  "ScaleEnergyWithShipSize": true,
-  "Size": 1,
-  "Sound": "",
-  "VisualEffect": null
+  "Size": 1
 }

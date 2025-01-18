@@ -2,50 +2,29 @@
   "Barrels": [
     {
       "AutoAimingArc": 80,
-      "Image": "",
-      "Offset": 0,
       "Position": {
-        "x": 0.9,
-        "y": 0
+        "x": 0.9
       },
-      "Rotation": 0,
-      "RotationSpeed": 0,
-      "Size": 0,
       "WeaponClass": "C"
     }
   ],
-  "CellsExpansions": 0,
-  "ColliderTolerance": 0.02,
-  "Description": "",
   "EngineColor": "#40FF4D00",
   "Engines": [
     {
       "Position": {
-        "x": -0.8,
-        "y": 0
+        "x": -0.8
       },
       "Size": 0.5
     }
   ],
   "Faction": 16,
   "Features": {
-    "ArmorBonus": 0,
     "BuiltinDevices": [
       18
     ],
-    "DroneAttackBonus": 0,
-    "DroneBuildSpeedBonus": 0,
-    "DroneDefenseBonus": 0,
-    "EnergyBonus": 0,
-    "EnergyResistance": 0,
-    "EquipmentWeightBonus": 0,
-    "HeatResistance": 0,
     "KineticResistance": 5,
     "Regeneration": true,
-    "ShieldBonus": 0,
-    "ShipWeightBonus": -0.5,
-    "TurnRateBonus": 0,
-    "VelocityBonus": 0
+    "ShipWeightBonus": -0.5
   },
   "IconImage": "slime2",
   "IconScale": 1,
@@ -55,7 +34,5 @@
   "ModelImage": "slime2",
   "ModelScale": 2,
   "Name": "$f16_Cruiser",
-  "ShipRarity": 0,
-  "ShipType": 0,
   "SizeClass": 2
 }

@@ -1,20 +1,13 @@
 {
   "AmmunitionId": 85,
-  "Availability": 0,
   "CellType": "4",
-  "Color": "#00000000",
   "ComponentStatsId": 1,
-  "Description": "",
-  "DeviceId": null,
   "DisplayCategory": 1,
-  "DroneBayId": null,
-  "DroneId": null,
   "Faction": -1,
   "Icon": "missile3",
   "Id": 88,
   "ItemType": 1,
   "Layout": "1",
-  "Level": 0,
   "Name": "TutorialMissile",
   "PossibleModifications": [
     14,
@@ -28,13 +21,6 @@
     7,
     1
   ],
-  "Restrictions": {
-    "ComponentGroupTag": null,
-    "MaxComponentAmount": 0,
-    "NotForMechanicShips": false,
-    "NotForOrganicShips": false,
-    "ShipSizes": []
-  },
   "WeaponId": 85,
   "WeaponSlotType": "M"
 }

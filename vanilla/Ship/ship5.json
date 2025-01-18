@@ -3,20 +3,13 @@
     {
       "AutoAimingArc": 360,
       "Image": "turret",
-      "Offset": 0,
       "Position": {
-        "x": 0.35,
-        "y": 0
+        "x": 0.35
       },
-      "Rotation": 0,
-      "RotationSpeed": 0,
       "Size": 0.4,
       "WeaponClass": "C"
     }
   ],
-  "CellsExpansions": 0,
-  "ColliderTolerance": 0.02,
-  "Description": "",
   "EngineColor": "#4000FBFF",
   "Engines": [
     {
@@ -35,30 +28,12 @@
     },
     {
       "Position": {
-        "x": -0.95,
-        "y": 0
+        "x": -0.95
       },
       "Size": 0.2
     }
   ],
   "Faction": 18,
-  "Features": {
-    "ArmorBonus": 0,
-    "BuiltinDevices": [],
-    "DroneAttackBonus": 0,
-    "DroneBuildSpeedBonus": 0,
-    "DroneDefenseBonus": 0,
-    "EnergyBonus": 0,
-    "EnergyResistance": 0,
-    "EquipmentWeightBonus": 0,
-    "HeatResistance": 0,
-    "KineticResistance": 0,
-    "Regeneration": false,
-    "ShieldBonus": 0,
-    "ShipWeightBonus": 0,
-    "TurnRateBonus": 0,
-    "VelocityBonus": 0
-  },
   "IconImage": "ship5",
   "IconScale": 1,
   "Id": 133,
@@ -67,7 +42,5 @@
   "ModelImage": "ship5",
   "ModelScale": 2.5,
   "Name": "$ship_5",
-  "ShipRarity": 0,
-  "ShipType": 0,
   "SizeClass": 3
 }

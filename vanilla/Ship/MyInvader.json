@@ -2,74 +2,39 @@
   "Barrels": [
     {
       "AutoAimingArc": 20,
-      "Image": "",
-      "Offset": 0,
       "Position": {
         "x": 0.4,
         "y": 0.9
-      },
-      "Rotation": 0,
-      "RotationSpeed": 0,
-      "Size": 0,
-      "WeaponClass": ""
+      }
     },
     {
       "AutoAimingArc": 20,
-      "Image": "",
-      "Offset": 0,
       "Position": {
         "x": 0.4,
         "y": -0.9
-      },
-      "Rotation": 0,
-      "RotationSpeed": 0,
-      "Size": 0,
-      "WeaponClass": ""
+      }
     },
     {
       "AutoAimingArc": 20,
-      "Image": "",
-      "Offset": 0,
       "Position": {
-        "x": 0.2,
-        "y": 0
-      },
-      "Rotation": 0,
-      "RotationSpeed": 0,
-      "Size": 0,
-      "WeaponClass": ""
+        "x": 0.2
+      }
     }
   ],
-  "CellsExpansions": 0,
-  "ColliderTolerance": 0.02,
-  "Description": "",
   "EngineColor": "#40FFFFFF",
   "Engines": [
     {
       "Position": {
-        "x": -0.4,
-        "y": 0
+        "x": -0.4
       },
       "Size": 0.3
     }
   ],
-  "Faction": null,
   "Features": {
-    "ArmorBonus": 0,
-    "BuiltinDevices": [],
-    "DroneAttackBonus": 0,
-    "DroneBuildSpeedBonus": 0,
-    "DroneDefenseBonus": 0,
-    "EnergyBonus": 0,
     "EnergyResistance": 1,
-    "EquipmentWeightBonus": 0,
     "HeatResistance": 1,
     "KineticResistance": 1,
-    "Regeneration": true,
-    "ShieldBonus": 0,
-    "ShipWeightBonus": 0,
-    "TurnRateBonus": 0,
-    "VelocityBonus": 0
+    "Regeneration": true
   },
   "IconImage": "unknown_ship",
   "IconScale": 0.5,
@@ -79,7 +44,6 @@
   "ModelImage": "space_invader",
   "ModelScale": 3,
   "Name": "Space Invader",
-  "ShipRarity": 0,
   "ShipType": 3,
   "SizeClass": 3
 }

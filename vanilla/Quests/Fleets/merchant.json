@@ -1,12 +1,8 @@
 {
-  "CombatRules": null,
   "Factions": {
-    "List": [],
     "Type": 3
   },
   "Id": 2,
   "ItemType": 18,
-  "LevelBonus": 20,
-  "NoRandomShips": false,
-  "SpecificShips": []
+  "LevelBonus": 20
 }

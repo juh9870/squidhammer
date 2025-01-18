@@ -7,50 +7,27 @@
         "Nodes": [
           {
             "MinValue": 0.95,
-            "Requirement": {
-              "Type": 0
-            },
             "Type": 209
           },
           {
             "MinValue": 0.33,
-            "Requirement": {
-              "Type": 0
-            },
             "Type": 208
           }
         ],
-        "Requirement": {
-          "Type": 0
-        },
         "Type": 2
       },
       {
-        "MaxValue": 0.9,
-        "MinValue": 0.1,
-        "Requirement": {
-          "Type": 0
-        },
         "Type": 115
       },
       {
-        "Requirement": {
-          "Type": 0
-        },
         "Type": 204
       },
       {
-        "Requirement": {
-          "Type": 0
-        },
         "Type": 103,
         "WeaponType": 4
       },
       {
         "ItemId": 104,
-        "Requirement": {
-          "Type": 0
-        },
         "Type": 1
       }
     ],

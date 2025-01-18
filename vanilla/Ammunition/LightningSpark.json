@@ -1,48 +1,24 @@
 {
   "Body": {
-    "AiBulletBehavior": 0,
-    "AttachedToParent": false,
     "BulletPrefab": 7,
-    "CanBeDisarmed": false,
     "Color": "#00C7FF",
-    "EnergyCost": 0,
-    "FriendlyFire": false,
-    "HitPoints": 0,
-    "Length": 0,
-    "Lifetime": 0,
-    "ParentVelocityEffect": 1,
     "Range": 6,
     "Size": 0.5,
-    "Velocity": 20,
-    "Weight": 0
-  },
-  "Controller": {
-    "Type": 0
+    "Velocity": 20
   },
   "Effects": [
     {
       "DamageType": 1,
-      "Factor": 0,
-      "Power": 3,
-      "Type": 0
+      "Power": 3
     }
   ],
   "Id": 106,
-  "ImpactType": 0,
   "ItemType": 25,
   "Triggers": [
     {
       "AudioClip": "hit_05",
-      "Color": "#00000000",
-      "ColorMode": 0,
       "Condition": 3,
-      "Cooldown": 0,
       "EffectType": 1,
-      "Lifetime": 0,
-      "OncePerCollision": false,
-      "Size": 0,
-      "SyncLifetimeWithBullet": false,
-      "UseBulletPosition": false,
       "VisualEffect": 1
     }
   ]

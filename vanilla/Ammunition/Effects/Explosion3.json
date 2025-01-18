@@ -1,109 +1,36 @@
 {
   "Elements": [
     {
-      "Color": "#00000000",
       "ColorMode": 2,
-      "GrowthRate": 0,
       "Image": "wave",
-      "Inverse": false,
-      "Lifetime": 1,
-      "Loop": false,
-      "Offset": {
-        "x": 0,
-        "y": 0
-      },
-      "ParticleSize": 1,
-      "Quantity": 1,
-      "Rotation": 0,
       "Size": 6,
-      "StartTime": 0,
-      "TurnRate": 0,
-      "Type": 2,
-      "UseRealTime": false
+      "Type": 2
     },
     {
-      "Color": "#00000000",
       "ColorMode": 2,
-      "GrowthRate": 0,
       "Image": "star",
-      "Inverse": false,
-      "Lifetime": 1,
-      "Loop": false,
-      "Offset": {
-        "x": 0,
-        "y": 0
-      },
-      "ParticleSize": 1,
-      "Quantity": 1,
-      "Rotation": 0,
       "Size": 4,
-      "StartTime": 0,
-      "TurnRate": 0,
-      "Type": 1,
-      "UseRealTime": false
+      "Type": 1
     },
     {
-      "Color": "#00000000",
       "ColorMode": 2,
-      "GrowthRate": 0,
       "Image": "CloudWhite",
-      "Inverse": false,
-      "Lifetime": 1,
-      "Loop": false,
-      "Offset": {
-        "x": 0,
-        "y": 0
-      },
-      "ParticleSize": 1,
       "Quantity": 3,
-      "Rotation": 0,
       "Size": 1.5,
-      "StartTime": 0,
-      "TurnRate": 0,
-      "Type": 4,
-      "UseRealTime": false
+      "Type": 4
     },
     {
       "Color": "#80202020",
       "ColorMode": 1,
-      "GrowthRate": 0,
       "Image": "CloudWhite",
-      "Inverse": false,
       "Lifetime": 3,
-      "Loop": false,
-      "Offset": {
-        "x": 0,
-        "y": 0
-      },
-      "ParticleSize": 1,
       "Quantity": 3,
-      "Rotation": 0,
       "Size": 2,
-      "StartTime": 0,
-      "TurnRate": 0,
-      "Type": 3,
-      "UseRealTime": false
+      "Type": 3
     },
     {
-      "Color": "#00000000",
-      "ColorMode": 0,
-      "GrowthRate": 0,
-      "Image": "",
-      "Inverse": false,
-      "Lifetime": 1,
-      "Loop": false,
-      "Offset": {
-        "x": 0,
-        "y": 0
-      },
-      "ParticleSize": 1,
-      "Quantity": 1,
-      "Rotation": 0,
       "Size": 4,
-      "StartTime": 0,
-      "TurnRate": 0,
-      "Type": 5,
-      "UseRealTime": false
+      "Type": 5
     }
   ],
   "Id": 4,

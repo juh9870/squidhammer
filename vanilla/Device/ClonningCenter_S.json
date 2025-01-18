@@ -5,21 +5,9 @@
   "Cooldown": 30,
   "DeviceClass": 16,
   "EffectPrefab": "OrbAdditive",
-  "EnergyConsumption": 0,
   "Id": 22,
   "ItemType": 2,
-  "Lifetime": 0,
-  "ObjectPrefab": "",
-  "Offset": {
-    "x": 0,
-    "y": 0
-  },
   "PassiveEnergyConsumption": 2,
-  "Power": 0,
-  "Prefab": null,
-  "Range": 0,
-  "ScaleEnergyWithShipSize": true,
   "Size": 2,
-  "Sound": "launch_08",
-  "VisualEffect": null
+  "Sound": "launch_08"
 }

@@ -3,25 +3,19 @@
   "AreaOfEffect": 8,
   "BulletPrefab": "SatelliteRocket",
   "Color": "#C0FFC0",
-  "CoupledAmmunitionId": null,
   "Damage": 50,
   "DamageType": 2,
   "EnergyCost": 20,
   "FireSound": "shot_01",
-  "HitEffectPrefab": "",
   "HitPoints": 3,
   "HitSound": "explosion_02",
   "Id": 38,
-  "IgnoresShipVelocity": false,
   "Impulse": 0.2,
   "InitialPosition": {
-    "x": 0.5,
-    "y": 0
+    "x": 0.5
   },
   "ItemType": 4,
-  "LifeTime": 0,
   "Range": 100,
-  "Recoil": 0,
   "Size": 0.6,
   "Velocity": 12
 }

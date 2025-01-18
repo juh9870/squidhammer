@@ -1,39 +1,26 @@
 {
   "Id": 6,
   "ItemType": 15,
-  "Level": 0,
-  "Name": "",
   "Nodes": [
     {
       "Actions": [
         {
           "ButtonText": "$MERCHANT_ACTION_Trade",
-          "Requirement": {
-            "Type": 0
-          },
           "TargetNode": 2
         },
         {
           "ButtonText": "$MERCHANT_ACTION_Attack",
-          "Requirement": {
-            "Type": 0
-          },
           "TargetNode": 3
         },
         {
           "ButtonText": "$MERCHANT_ACTION_Ignore",
-          "Requirement": {
-            "Type": 0
-          },
           "TargetNode": 6
         }
       ],
       "Character": 1,
       "Enemy": 2,
       "Id": 1,
-      "Loot": null,
       "Message": "$MERCHANT_Message",
-      "RequiredView": 0,
       "Type": 10
     },
     {
@@ -47,25 +34,18 @@
       "Enemy": 2,
       "FailureTransition": 7,
       "Id": 3,
-      "Loot": null,
       "Type": 20
     },
     {
       "Actions": [
         {
           "ButtonText": "$ACTION_Continue",
-          "Requirement": {
-            "Type": 0
-          },
           "TargetNode": 5
         }
       ],
-      "Character": null,
-      "Enemy": null,
       "Id": 4,
       "Loot": 5,
       "Message": "$Beacon_Merchant_Loot",
-      "RequiredView": 0,
       "Type": 10
     },
     {
@@ -83,22 +63,6 @@
       "Type": 41
     }
   ],
-  "Origin": {
-    "Factions": {
-      "List": [],
-      "Type": 0
-    },
-    "MaxDistance": 0,
-    "MaxRelations": 0,
-    "MinDistance": 0,
-    "MinRelations": 0,
-    "Type": 0
-  },
-  "QuestType": 0,
-  "Requirement": {
-    "Type": 0
-  },
   "StartCondition": 1,
-  "UseRandomSeed": false,
   "Weight": 0.7
 }

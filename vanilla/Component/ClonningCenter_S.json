@@ -1,14 +1,9 @@
 {
-  "AmmunitionId": null,
   "Availability": 2,
   "CellType": "2",
-  "Color": "#00000000",
   "ComponentStatsId": 3,
-  "Description": "",
   "DeviceId": 22,
   "DisplayCategory": 6,
-  "DroneBayId": null,
-  "DroneId": null,
   "Faction": 16,
   "Icon": "zygote1",
   "Id": 255,
@@ -22,14 +17,9 @@
     6
   ],
   "Restrictions": {
-    "ComponentGroupTag": null,
-    "MaxComponentAmount": 0,
     "NotForMechanicShips": true,
-    "NotForOrganicShips": false,
     "ShipSizes": [
       0
     ]
-  },
-  "WeaponId": null,
-  "WeaponSlotType": ""
+  }
 }

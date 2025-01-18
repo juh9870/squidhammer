@@ -4,11 +4,7 @@
   "CellType": "4",
   "Color": "#68EFC0",
   "ComponentStatsId": 1,
-  "Description": "",
-  "DeviceId": null,
   "DisplayCategory": 1,
-  "DroneBayId": null,
-  "DroneId": null,
   "Faction": 6,
   "Icon": "missile3",
   "Id": 174,
@@ -28,13 +24,6 @@
     7,
     1
   ],
-  "Restrictions": {
-    "ComponentGroupTag": null,
-    "MaxComponentAmount": 0,
-    "NotForMechanicShips": false,
-    "NotForOrganicShips": false,
-    "ShipSizes": []
-  },
   "WeaponId": 2,
   "WeaponSlotType": "S"
 }

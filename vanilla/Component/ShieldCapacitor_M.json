@@ -1,14 +1,8 @@
 {
-  "AmmunitionId": null,
   "Availability": 1,
   "CellType": "1",
-  "Color": "#00000000",
   "ComponentStatsId": 180,
-  "Description": "",
-  "DeviceId": null,
   "DisplayCategory": 2,
-  "DroneBayId": null,
-  "DroneId": null,
   "Faction": -1,
   "Icon": "shield_capacitor2",
   "Id": 180,
@@ -19,14 +13,5 @@
   "PossibleModifications": [
     1,
     3
-  ],
-  "Restrictions": {
-    "ComponentGroupTag": null,
-    "MaxComponentAmount": 0,
-    "NotForMechanicShips": false,
-    "NotForOrganicShips": false,
-    "ShipSizes": []
-  },
-  "WeaponId": null,
-  "WeaponSlotType": ""
+  ]
 }

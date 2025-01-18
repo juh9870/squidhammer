@@ -4,15 +4,11 @@
   "RootNode": {
     "ExecutionMode": 3,
     "Node": {
-      "Requirement": {
-        "Type": 0
-      },
       "Type": 104
     },
     "Requirement": {
       "Type": 12
     },
-    "Result": false,
     "Type": 8
   }
 }

@@ -96,21 +96,14 @@
           "node": 3
         },
         {
-          "AiBulletBehavior": 0,
-          "AttachedToParent": false,
           "BulletPrefab": 5,
           "CanBeDisarmed": true,
           "Color": "#FFFFFF",
           "EnergyCost": 30,
-          "FriendlyFire": false,
-          "HitPoints": 0,
-          "Length": 0,
           "Lifetime": 10,
-          "ParentVelocityEffect": 1,
           "Range": 300,
           "Size": 1,
-          "Velocity": 30,
-          "Weight": 0
+          "Velocity": 30
         }
       ],
       [
@@ -163,18 +156,10 @@
           "node": 7
         },
         {
-          "Ammunition": null,
-          "AudioClip": "",
-          "Color": "#00000000",
-          "ColorMode": 0,
           "Condition": 8,
-          "Cooldown": 0,
-          "MaxNestingLevel": 0,
           "OffsetX": "0",
-          "OffsetY": "0",
           "PowerMultiplier": 1,
           "Quantity": 1,
-          "RandomFactor": 0,
           "Rotation": "0",
           "Size": 1
         }

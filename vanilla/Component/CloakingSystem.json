@@ -1,14 +1,10 @@
 {
-  "AmmunitionId": null,
   "Availability": 1,
   "CellType": "2",
   "Color": "#C0FFC0",
   "ComponentStatsId": 3,
-  "Description": "",
   "DeviceId": 3,
   "DisplayCategory": 2,
-  "DroneBayId": null,
-  "DroneId": null,
   "Faction": 1,
   "Icon": "doom1",
   "Id": 28,
@@ -20,14 +16,5 @@
     2,
     1,
     6
-  ],
-  "Restrictions": {
-    "ComponentGroupTag": null,
-    "MaxComponentAmount": 0,
-    "NotForMechanicShips": false,
-    "NotForOrganicShips": false,
-    "ShipSizes": []
-  },
-  "WeaponId": null,
-  "WeaponSlotType": ""
+  ]
 }

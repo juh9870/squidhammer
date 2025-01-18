@@ -8,8 +8,7 @@
           "MaxAmount": 500,
           "MinAmount": 50,
           "Type": 2
-        },
-        "Weight": 0
+        }
       },
       {
         "Loot": {
@@ -24,8 +23,7 @@
           "MinAmount": 5,
           "Type": 10,
           "ValueRatio": 1
-        },
-        "Weight": 0
+        }
       },
       {
         "Loot": {
@@ -53,8 +51,7 @@
             }
           ],
           "Type": 22
-        },
-        "Weight": 0
+        }
       },
       {
         "Loot": {
@@ -106,8 +103,7 @@
             }
           ],
           "Type": 22
-        },
-        "Weight": 0
+        }
       }
     ],
     "Type": 21

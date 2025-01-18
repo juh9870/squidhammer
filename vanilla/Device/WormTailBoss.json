@@ -1,14 +1,9 @@
 {
-  "ActivationType": 0,
-  "Color": "#00000000",
   "ControlButtonIcon": "controls_gear",
   "Cooldown": 7,
   "DeviceClass": 22,
-  "EffectPrefab": "",
-  "EnergyConsumption": 0,
   "Id": 21,
   "ItemType": 2,
-  "Lifetime": 0,
   "ObjectPrefab": "WormSegment2",
   "Offset": {
     "x": 0.45,
@@ -16,10 +11,5 @@
   },
   "PassiveEnergyConsumption": 5,
   "Power": 0.3,
-  "Prefab": null,
-  "Range": 0,
-  "ScaleEnergyWithShipSize": true,
-  "Size": 15,
-  "Sound": "",
-  "VisualEffect": null
+  "Size": 15
 }

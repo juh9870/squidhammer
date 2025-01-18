@@ -1,11 +1,8 @@
 {
-  "AmmunitionId": null,
   "Availability": 2,
   "CellType": "1",
   "Color": "#CBDFFF",
   "ComponentStatsId": 2,
-  "Description": "",
-  "DeviceId": null,
   "DisplayCategory": 5,
   "DroneBayId": 6,
   "DroneId": 299,
@@ -23,14 +20,5 @@
     20,
     1,
     2
-  ],
-  "Restrictions": {
-    "ComponentGroupTag": null,
-    "MaxComponentAmount": 0,
-    "NotForMechanicShips": false,
-    "NotForOrganicShips": false,
-    "ShipSizes": []
-  },
-  "WeaponId": null,
-  "WeaponSlotType": ""
+  ]
 }

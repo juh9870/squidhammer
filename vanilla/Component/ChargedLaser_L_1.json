@@ -4,11 +4,7 @@
   "CellType": "4",
   "Color": "#FF7F7F",
   "ComponentStatsId": 1,
-  "Description": "",
-  "DeviceId": null,
   "DisplayCategory": 1,
-  "DroneBayId": null,
-  "DroneId": null,
   "Faction": 10,
   "Icon": "laser1",
   "Id": 117,
@@ -24,13 +20,6 @@
     7,
     1
   ],
-  "Restrictions": {
-    "ComponentGroupTag": null,
-    "MaxComponentAmount": 0,
-    "NotForMechanicShips": false,
-    "NotForOrganicShips": false,
-    "ShipSizes": []
-  },
   "WeaponId": 7,
   "WeaponSlotType": "L"
 }

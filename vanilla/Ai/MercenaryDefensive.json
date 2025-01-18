@@ -5,51 +5,30 @@
     "Nodes": [
       {
         "ItemId": 129,
-        "Requirement": {
-          "Type": 0
-        },
         "Type": 1
       },
       {
         "Nodes": [
           {
             "ItemId": 105,
-            "Requirement": {
-              "Type": 0
-            },
             "Type": 1
           },
           {
             "ItemId": 145,
-            "Requirement": {
-              "Type": 0
-            },
             "Type": 1
           }
         ],
-        "Requirement": {
-          "Type": 0
-        },
         "Type": 4
       },
       {
         "ItemId": 17,
-        "Requirement": {
-          "Type": 0
-        },
         "Type": 1
       },
       {
         "ItemId": 115,
-        "Requirement": {
-          "Type": 0
-        },
         "Type": 1
       }
     ],
-    "Requirement": {
-      "Type": 0
-    },
     "Type": 2
   }
 }

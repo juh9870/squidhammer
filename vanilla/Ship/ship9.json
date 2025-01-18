@@ -1,50 +1,21 @@
 {
   "Barrels": [
     {
-      "AutoAimingArc": 0,
-      "Image": "",
-      "Offset": 0,
       "Position": {
-        "x": 0.85,
-        "y": 0
-      },
-      "Rotation": 0,
-      "RotationSpeed": 0,
-      "Size": 0,
-      "WeaponClass": ""
+        "x": 0.85
+      }
     }
   ],
-  "CellsExpansions": 0,
-  "ColliderTolerance": 0.02,
-  "Description": "",
   "EngineColor": "#40FF0E00",
   "Engines": [
     {
       "Position": {
-        "x": -0.55,
-        "y": 0
+        "x": -0.55
       },
       "Size": 0.2
     }
   ],
   "Faction": 18,
-  "Features": {
-    "ArmorBonus": 0,
-    "BuiltinDevices": [],
-    "DroneAttackBonus": 0,
-    "DroneBuildSpeedBonus": 0,
-    "DroneDefenseBonus": 0,
-    "EnergyBonus": 0,
-    "EnergyResistance": 0,
-    "EquipmentWeightBonus": 0,
-    "HeatResistance": 0,
-    "KineticResistance": 0,
-    "Regeneration": false,
-    "ShieldBonus": 0,
-    "ShipWeightBonus": 0,
-    "TurnRateBonus": 0,
-    "VelocityBonus": 0
-  },
   "IconImage": "ship9",
   "IconScale": 1,
   "Id": 137,
@@ -52,8 +23,5 @@
   "Layout": "0004400000044000000440000022220001222210115225111050050100000000",
   "ModelImage": "ship9",
   "ModelScale": 1,
-  "Name": "$ship_9",
-  "ShipRarity": 0,
-  "ShipType": 0,
-  "SizeClass": -1
+  "Name": "$ship_9"
 }

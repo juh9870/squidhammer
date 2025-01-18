@@ -4,22 +4,10 @@
   "ControlButtonIcon": "controls_shield",
   "Cooldown": 5,
   "DeviceClass": 2,
-  "EffectPrefab": "",
   "EnergyConsumption": 5,
   "Id": 31,
   "ItemType": 2,
-  "Lifetime": 0,
-  "ObjectPrefab": "",
-  "Offset": {
-    "x": 0,
-    "y": 0
-  },
-  "PassiveEnergyConsumption": 0,
   "Power": 1,
   "Prefab": 3,
-  "Range": 0,
-  "ScaleEnergyWithShipSize": true,
-  "Size": 1.05,
-  "Sound": "",
-  "VisualEffect": null
+  "Size": 1.05
 }

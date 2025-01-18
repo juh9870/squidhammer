@@ -1,14 +1,9 @@
 {
-  "AmmunitionId": null,
   "Availability": 1,
   "CellType": "2",
-  "Color": "#00000000",
   "ComponentStatsId": 3,
-  "Description": "",
   "DeviceId": 32,
   "DisplayCategory": 6,
-  "DroneBayId": null,
-  "DroneId": null,
   "Faction": 4,
   "Icon": "teleporter",
   "Id": 92,
@@ -21,14 +16,5 @@
     7,
     1,
     6
-  ],
-  "Restrictions": {
-    "ComponentGroupTag": null,
-    "MaxComponentAmount": 0,
-    "NotForMechanicShips": false,
-    "NotForOrganicShips": false,
-    "ShipSizes": []
-  },
-  "WeaponId": null,
-  "WeaponSlotType": ""
+  ]
 }

@@ -5,71 +5,38 @@
       "Image": "scavenger_arm",
       "Offset": 0.6,
       "Position": {
-        "x": 0.5,
-        "y": 0
+        "x": 0.5
       },
-      "Rotation": 0,
-      "RotationSpeed": 0,
       "Size": 0.6,
       "WeaponClass": "L"
     },
     {
-      "AutoAimingArc": 0,
-      "Image": "",
-      "Offset": 0,
       "Position": {
         "x": 0.25,
         "y": 0.5
       },
-      "Rotation": 0,
-      "RotationSpeed": 0,
-      "Size": 0,
       "WeaponClass": "M"
     },
     {
-      "AutoAimingArc": 0,
-      "Image": "",
-      "Offset": 0,
       "Position": {
         "x": 0.25,
         "y": -0.5
       },
-      "Rotation": 0,
-      "RotationSpeed": 0,
-      "Size": 0,
       "WeaponClass": "M"
     }
   ],
-  "CellsExpansions": 0,
-  "ColliderTolerance": 0.02,
-  "Description": "",
   "EngineColor": "#40FF7F00",
   "Engines": [
     {
       "Position": {
-        "x": -0.85,
-        "y": 0
+        "x": -0.85
       },
       "Size": 0.3
     }
   ],
   "Faction": 15,
   "Features": {
-    "ArmorBonus": 0.5,
-    "BuiltinDevices": [],
-    "DroneAttackBonus": 0,
-    "DroneBuildSpeedBonus": 0,
-    "DroneDefenseBonus": 0,
-    "EnergyBonus": 0,
-    "EnergyResistance": 0,
-    "EquipmentWeightBonus": 0,
-    "HeatResistance": 0,
-    "KineticResistance": 0,
-    "Regeneration": false,
-    "ShieldBonus": 0,
-    "ShipWeightBonus": 0,
-    "TurnRateBonus": 0,
-    "VelocityBonus": 0
+    "ArmorBonus": 0.5
   },
   "IconImage": "fs3",
   "IconScale": 1,
@@ -79,7 +46,5 @@
   "ModelImage": "fs3",
   "ModelScale": 2.4,
   "Name": "$f15_Battleship",
-  "ShipRarity": 0,
-  "ShipType": 0,
   "SizeClass": 3
 }

@@ -4,22 +4,10 @@
   "ControlButtonIcon": "controls_ghost",
   "Cooldown": 3,
   "DeviceClass": 12,
-  "EffectPrefab": "",
   "EnergyConsumption": 5,
   "Id": 14,
   "ItemType": 2,
-  "Lifetime": 0,
-  "ObjectPrefab": "",
-  "Offset": {
-    "x": 0,
-    "y": 0
-  },
   "PassiveEnergyConsumption": 2,
   "Power": 1,
-  "Prefab": null,
-  "Range": 0,
-  "ScaleEnergyWithShipSize": true,
-  "Size": 1,
-  "Sound": "",
-  "VisualEffect": null
+  "Size": 1
 }

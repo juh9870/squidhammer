@@ -1,50 +1,30 @@
 {
   "Body": {
-    "AiBulletBehavior": 0,
-    "AttachedToParent": false,
     "BulletPrefab": 6,
-    "CanBeDisarmed": false,
     "Color": "#FF1010",
     "EnergyCost": 6,
-    "FriendlyFire": false,
-    "HitPoints": 0,
     "Length": 10,
-    "Lifetime": 0,
-    "ParentVelocityEffect": 1,
     "Range": 45,
     "Size": 1,
     "Velocity": 100,
     "Weight": 0.1
   },
-  "Controller": {
-    "Type": 0
-  },
   "Effects": [
     {
-      "DamageType": 0,
-      "Factor": 0,
-      "Power": 10,
-      "Type": 0
+      "Power": 10
     }
   ],
   "Id": 138,
-  "ImpactType": 0,
   "ItemType": 25,
   "Triggers": [
     {
       "Ammunition": 101,
       "AudioClip": "hit_01",
-      "Color": "#00000000",
-      "ColorMode": 0,
       "Condition": 3,
-      "Cooldown": 0,
       "EffectType": 2,
-      "MaxNestingLevel": 0,
       "OffsetX": "0",
-      "OffsetY": "0",
       "PowerMultiplier": 20,
       "Quantity": 1,
-      "RandomFactor": 0,
       "Rotation": "0",
       "Size": 4
     }

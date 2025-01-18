@@ -4,65 +4,38 @@
   "RootNode": {
     "Nodes": [
       {
-        "Requirement": {
-          "Type": 0
-        },
         "Type": 130
       },
       {
         "ItemId": 133,
-        "Requirement": {
-          "Type": 0
-        },
         "Type": 1
       },
       {
         "ItemId": 124,
-        "Requirement": {
-          "Type": 0
-        },
         "Type": 1
       },
       {
         "Nodes": [
           {
             "ItemId": 122,
-            "Requirement": {
-              "Type": 0
-            },
             "Type": 1
           },
           {
             "ItemId": 128,
-            "Requirement": {
-              "Type": 0
-            },
             "Type": 1
           }
         ],
-        "Requirement": {
-          "Type": 0
-        },
         "Type": 4
       },
       {
         "ItemId": 132,
-        "Requirement": {
-          "Type": 0
-        },
         "Type": 1
       },
       {
         "ItemId": 123,
-        "Requirement": {
-          "Type": 0
-        },
         "Type": 1
       }
     ],
-    "Requirement": {
-      "Type": 0
-    },
     "Type": 4
   }
 }

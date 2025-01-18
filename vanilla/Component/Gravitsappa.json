@@ -1,14 +1,9 @@
 {
-  "AmmunitionId": null,
   "Availability": 2,
   "CellType": "5",
   "Color": "#80C080",
   "ComponentStatsId": 277,
-  "Description": "",
-  "DeviceId": null,
   "DisplayCategory": 4,
-  "DroneBayId": null,
-  "DroneId": null,
   "Faction": 19,
   "Icon": "intertial_damper2",
   "Id": 277,
@@ -19,14 +14,5 @@
   "PossibleModifications": [
     11,
     1
-  ],
-  "Restrictions": {
-    "ComponentGroupTag": null,
-    "MaxComponentAmount": 0,
-    "NotForMechanicShips": false,
-    "NotForOrganicShips": false,
-    "ShipSizes": []
-  },
-  "WeaponId": null,
-  "WeaponSlotType": ""
+  ]
 }

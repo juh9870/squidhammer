@@ -4,11 +4,7 @@
   "CellType": "4",
   "Color": "#15FF00",
   "ComponentStatsId": 1,
-  "Description": "",
-  "DeviceId": null,
   "DisplayCategory": 1,
-  "DroneBayId": null,
-  "DroneId": null,
   "Faction": 16,
   "Icon": "shock1",
   "Id": 258,
@@ -24,13 +20,6 @@
     7,
     1
   ],
-  "Restrictions": {
-    "ComponentGroupTag": null,
-    "MaxComponentAmount": 0,
-    "NotForMechanicShips": false,
-    "NotForOrganicShips": false,
-    "ShipSizes": []
-  },
   "WeaponId": 105,
   "WeaponSlotType": "L"
 }

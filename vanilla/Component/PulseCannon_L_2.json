@@ -4,11 +4,7 @@
   "CellType": "4",
   "Color": "#FFDCC0",
   "ComponentStatsId": 1,
-  "Description": "",
-  "DeviceId": null,
   "DisplayCategory": 1,
-  "DroneBayId": null,
-  "DroneId": null,
   "Faction": 1,
   "Icon": "cannon_1x6",
   "Id": 111,
@@ -27,13 +23,6 @@
     7,
     1
   ],
-  "Restrictions": {
-    "ComponentGroupTag": null,
-    "MaxComponentAmount": 0,
-    "NotForMechanicShips": false,
-    "NotForOrganicShips": false,
-    "ShipSizes": []
-  },
   "WeaponId": 62,
   "WeaponSlotType": "C"
 }

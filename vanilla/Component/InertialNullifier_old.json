@@ -1,14 +1,8 @@
 {
-  "AmmunitionId": null,
-  "Availability": 0,
   "CellType": "2",
   "Color": "#80C0FF",
   "ComponentStatsId": 70,
-  "Description": "",
-  "DeviceId": null,
   "DisplayCategory": 6,
-  "DroneBayId": null,
-  "DroneId": null,
   "Faction": 6,
   "Icon": "inertial2",
   "Id": 70,
@@ -18,14 +12,5 @@
   "Name": "Inertial_Nullifier",
   "PossibleModifications": [
     2
-  ],
-  "Restrictions": {
-    "ComponentGroupTag": null,
-    "MaxComponentAmount": 0,
-    "NotForMechanicShips": false,
-    "NotForOrganicShips": false,
-    "ShipSizes": []
-  },
-  "WeaponId": null,
-  "WeaponSlotType": ""
+  ]
 }

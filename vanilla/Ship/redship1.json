@@ -1,41 +1,27 @@
 {
   "Barrels": [
     {
-      "AutoAimingArc": 0,
-      "Image": "",
-      "Offset": 0,
       "Position": {
         "x": 0.085,
         "y": 0.68
       },
       "Rotation": -5,
-      "RotationSpeed": 0,
-      "Size": 0,
       "WeaponClass": "SCM"
     },
     {
-      "AutoAimingArc": 0,
-      "Image": "",
-      "Offset": 0,
       "Position": {
         "x": 0.085,
         "y": -0.68
       },
       "Rotation": 5,
-      "RotationSpeed": 0,
-      "Size": 0,
       "WeaponClass": "CTL"
     }
   ],
-  "CellsExpansions": 0,
-  "ColliderTolerance": 0.02,
-  "Description": "",
   "EngineColor": "#40FF1010",
   "Engines": [
     {
       "Position": {
-        "x": -0.97,
-        "y": 0
+        "x": -0.97
       },
       "Size": 1
     },
@@ -57,20 +43,9 @@
   "Faction": 19,
   "Features": {
     "ArmorBonus": 1,
-    "BuiltinDevices": [],
-    "DroneAttackBonus": 0,
-    "DroneBuildSpeedBonus": 0,
-    "DroneDefenseBonus": 0,
-    "EnergyBonus": 0,
-    "EnergyResistance": 0,
     "EquipmentWeightBonus": 0.3,
-    "HeatResistance": 0,
     "KineticResistance": 1,
-    "Regeneration": false,
-    "ShieldBonus": 0,
-    "ShipWeightBonus": 0.3,
-    "TurnRateBonus": 0,
-    "VelocityBonus": 0
+    "ShipWeightBonus": 0.3
   },
   "IconImage": "red_ship1",
   "IconScale": 1,
@@ -80,7 +55,6 @@
   "ModelImage": "red_ship1",
   "ModelScale": 10,
   "Name": "$redship1",
-  "ShipRarity": 0,
   "ShipType": 4,
   "SizeClass": 4
 }

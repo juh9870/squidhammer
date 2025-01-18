@@ -1,59 +1,41 @@
 {
   "Id": 105,
   "ItemType": 15,
-  "Level": 0,
-  "Name": "",
   "Nodes": [
     {
       "Actions": [
         {
           "ButtonText": "$Continue",
-          "Requirement": {
-            "Type": 0
-          },
           "TargetNode": 2
         }
       ],
-      "Character": null,
-      "Enemy": null,
       "Id": 1,
-      "Loot": null,
       "Message": "$Scavengers_1_Intro",
-      "RequiredView": 0,
       "Type": 10
     },
     {
       "Actions": [
         {
           "ButtonText": "$Action_Attack",
-          "Requirement": {
-            "Type": 0
-          },
           "TargetNode": 3
         },
         {
           "ButtonText": "$Action_UseArtifact",
           "Requirement": {
             "ItemId": 30,
-            "MinValue": 0,
             "Type": 25
           },
           "TargetNode": 5
         },
         {
           "ButtonText": "$Action_Ignore",
-          "Requirement": {
-            "Type": 0
-          },
           "TargetNode": 4
         }
       ],
       "Character": 5,
       "Enemy": 10,
       "Id": 2,
-      "Loot": null,
       "Message": "$Scavengers_1_Message",
-      "RequiredView": 0,
       "Type": 10
     },
     {
@@ -61,7 +43,6 @@
       "Enemy": 10,
       "FailureTransition": 4,
       "Id": 3,
-      "Loot": null,
       "Type": 20
     },
     {
@@ -72,25 +53,17 @@
       "Actions": [
         {
           "ButtonText": "$Action_Trade",
-          "Requirement": {
-            "Type": 0
-          },
           "TargetNode": 6
         },
         {
           "ButtonText": "$Action_Ignore",
-          "Requirement": {
-            "Type": 0
-          },
           "TargetNode": 4
         }
       ],
       "Character": 5,
       "Enemy": 10,
       "Id": 5,
-      "Loot": null,
       "Message": "$Scavengers_1_Message2",
-      "RequiredView": 0,
       "Type": 10
     },
     {
@@ -100,25 +73,10 @@
       "Type": 37
     }
   ],
-  "Origin": {
-    "Factions": {
-      "List": [],
-      "Type": 0
-    },
-    "MaxDistance": 0,
-    "MaxRelations": 0,
-    "MinDistance": 0,
-    "MinRelations": 0,
-    "Type": 0
-  },
-  "QuestType": 0,
   "Requirement": {
-    "BoolValue": false,
-    "MaxValue": 0,
     "MinValue": 10,
     "Type": 6
   },
   "StartCondition": 6,
-  "UseRandomSeed": false,
   "Weight": 0.02
 }

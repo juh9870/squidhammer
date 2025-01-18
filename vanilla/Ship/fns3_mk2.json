@@ -1,49 +1,22 @@
 {
   "Barrels": [
     {
-      "AutoAimingArc": 0,
-      "Image": "",
-      "Offset": 0,
       "Position": {
-        "x": 1,
-        "y": 0
-      },
-      "Rotation": 0,
-      "RotationSpeed": 0,
-      "Size": 0,
-      "WeaponClass": ""
+        "x": 1
+      }
     }
   ],
-  "CellsExpansions": 0,
-  "ColliderTolerance": 0.02,
-  "Description": "",
   "EngineColor": "#40E0E0FF",
   "Engines": [
     {
       "Position": {
-        "x": -0.9,
-        "y": 0
+        "x": -0.9
       },
       "Size": 0.2
     }
   ],
-  "Faction": null,
   "Features": {
-    "ArmorBonus": 0,
-    "BuiltinDevices": [],
-    "DroneAttackBonus": 0,
-    "DroneBuildSpeedBonus": 0,
-    "DroneDefenseBonus": 0,
-    "EnergyBonus": 0,
-    "EnergyResistance": 0,
-    "EquipmentWeightBonus": 0,
-    "HeatResistance": 0,
-    "KineticResistance": 9,
-    "Regeneration": false,
-    "ShieldBonus": 0,
-    "ShipWeightBonus": 0,
-    "TurnRateBonus": 0,
-    "VelocityBonus": 0
+    "KineticResistance": 9
   },
   "IconImage": "fns1",
   "IconScale": 0.5,
@@ -53,7 +26,5 @@
   "ModelImage": "fns1_2",
   "ModelScale": 1.1,
   "Name": "$fn_Scout2",
-  "ShipRarity": 2,
-  "ShipType": 0,
-  "SizeClass": -1
+  "ShipRarity": 2
 }

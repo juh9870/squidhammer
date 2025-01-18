@@ -1,47 +1,33 @@
 {
   "Id": 4,
   "ItemType": 15,
-  "Level": 0,
   "Name": "$Beacon_EscapePod",
   "Nodes": [
     {
       "Actions": [
         {
           "ButtonText": "$Action_Accept",
-          "Requirement": {
-            "Type": 0
-          },
           "TargetNode": 2
         },
         {
           "ButtonText": "$Action_Decline",
-          "Requirement": {
-            "Type": 0
-          },
           "TargetNode": 6
         }
       ],
-      "Character": null,
-      "Enemy": null,
       "Id": 1,
-      "Loot": null,
       "Message": "$Beacon_EscapePod_Intro",
-      "RequiredView": 0,
       "Type": 10
     },
     {
       "Id": 2,
-      "Message": "",
       "Transitions": [
         {
           "Requirement": {
-            "BoolValue": false,
             "MaxValue": 5,
             "MinValue": 3,
             "Type": 7
           },
-          "TargetNode": 3,
-          "Weight": 0
+          "TargetNode": 3
         }
       ],
       "Type": 17
@@ -50,18 +36,12 @@
       "Actions": [
         {
           "ButtonText": "$ACTION_Continue",
-          "Requirement": {
-            "Type": 0
-          },
           "TargetNode": 4
         }
       ],
-      "Character": null,
-      "Enemy": null,
       "Id": 3,
       "Loot": 1,
       "Message": "$Beacon_EscapePod_Completed",
-      "RequiredView": 0,
       "Type": 10
     },
     {
@@ -79,22 +59,6 @@
       "Type": 41
     }
   ],
-  "Origin": {
-    "Factions": {
-      "List": [],
-      "Type": 0
-    },
-    "MaxDistance": 0,
-    "MaxRelations": 0,
-    "MinDistance": 0,
-    "MinRelations": 0,
-    "Type": 0
-  },
-  "QuestType": 0,
-  "Requirement": {
-    "Type": 0
-  },
   "StartCondition": 1,
-  "UseRandomSeed": false,
   "Weight": 0.5
 }

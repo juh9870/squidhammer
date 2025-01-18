@@ -6,68 +6,37 @@
       {
         "Nodes": [
           {
-            "Requirement": {
-              "Type": 0
-            },
             "Type": 200
           },
           {
-            "Requirement": {
-              "Type": 0
-            },
             "Type": 107
           }
         ],
-        "Requirement": {
-          "Type": 0
-        },
         "Type": 3
       },
       {
         "Nodes": [
           {
-            "Requirement": {
-              "Type": 0
-            },
             "Type": 201
           },
           {
-            "Requirement": {
-              "Type": 0
-            },
             "Type": 203
           }
         ],
-        "Requirement": {
-          "Type": 0
-        },
         "Type": 3
       },
       {
         "Nodes": [
           {
-            "MaxValue": 0,
-            "Requirement": {
-              "Type": 0
-            },
             "Type": 206
           },
           {
-            "Requirement": {
-              "Type": 0
-            },
             "Type": 204
           },
           {
-            "Requirement": {
-              "Type": 0
-            },
             "Type": 118
           }
         ],
-        "Requirement": {
-          "Type": 0
-        },
         "Type": 3
       }
     ],

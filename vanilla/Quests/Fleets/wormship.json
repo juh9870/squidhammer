@@ -1,9 +1,4 @@
 {
-  "CombatRules": null,
-  "Factions": {
-    "List": [],
-    "Type": 0
-  },
   "Id": 4,
   "ItemType": 18,
   "LevelBonus": 10,

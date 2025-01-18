@@ -4,64 +4,37 @@
   "RootNode": {
     "Nodes": [
       {
-        "Requirement": {
-          "Type": 0
-        },
-        "Type": 103,
-        "WeaponType": 0
+        "Type": 103
       },
       {
         "Nodes": [
           {
-            "InRange": false,
-            "MaxValue": 5,
             "MinValue": 0.5,
             "NoDrones": true,
-            "Requirement": {
-              "Type": 0
-            },
             "Type": 100
           },
           {
             "Cooldown": 0.1,
-            "Requirement": {
-              "Type": 0
-            },
             "Type": 111
           }
         ],
-        "Requirement": {
-          "Type": 0
-        },
         "Type": 4
       },
       {
         "Nodes": [
           {
             "MinValue": 1.2,
-            "Requirement": {
-              "Type": 0
-            },
             "Type": 55
           },
           {
             "ItemId": 138,
-            "Requirement": {
-              "Type": 0
-            },
             "Type": 1
           },
           {
             "ItemId": 136,
-            "Requirement": {
-              "Type": 0
-            },
             "Type": 1
           }
         ],
-        "Requirement": {
-          "Type": 0
-        },
         "Type": 12
       }
     ],

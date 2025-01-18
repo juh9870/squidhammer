@@ -2,52 +2,33 @@
   "Id": 109,
   "ItemType": 28,
   "RootNode": {
-    "Cooldown": 0,
     "Nodes": [
       {
         "Color": "#E0FF8040",
-        "Requirement": {
-          "Type": 0
-        },
         "Text": "$Battlecry1",
         "Type": 300
       },
       {
         "Color": "#E0FF8040",
-        "Requirement": {
-          "Type": 0
-        },
         "Text": "$Battlecry2",
         "Type": 300
       },
       {
         "Color": "#E0FF8040",
-        "Requirement": {
-          "Type": 0
-        },
         "Text": "$Battlecry3",
         "Type": 300
       },
       {
         "Color": "#E0FF8040",
-        "Requirement": {
-          "Type": 0
-        },
         "Text": "$Battlecry4",
         "Type": 300
       },
       {
         "Color": "#E0FF8040",
-        "Requirement": {
-          "Type": 0
-        },
         "Text": "$Battlecry5",
         "Type": 300
       }
     ],
-    "Requirement": {
-      "Type": 0
-    },
     "Type": 5
   }
 }

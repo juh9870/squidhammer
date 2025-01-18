@@ -1,101 +1,58 @@
 {
   "Barrels": [
     {
-      "AutoAimingArc": 0,
-      "Image": "",
-      "Offset": 0,
       "Position": {
-        "x": 0.9,
-        "y": 0
+        "x": 0.9
       },
-      "Rotation": 0,
-      "RotationSpeed": 0,
-      "Size": 0,
       "WeaponClass": "L"
     },
     {
-      "AutoAimingArc": 0,
-      "Image": "",
-      "Offset": 0,
       "Position": {
         "x": -0.5,
         "y": 0.7
       },
       "Rotation": 30,
-      "RotationSpeed": 0,
-      "Size": 0,
       "WeaponClass": "CT"
     },
     {
-      "AutoAimingArc": 0,
-      "Image": "",
-      "Offset": 0,
       "Position": {
         "x": -0.5,
         "y": -0.7
       },
       "Rotation": -30,
-      "RotationSpeed": 0,
-      "Size": 0,
       "WeaponClass": "CT"
     },
     {
       "AutoAimingArc": 360,
-      "Image": "",
       "Offset": 0.25,
       "Position": {
         "x": -0.65,
         "y": 0.65
       },
-      "Rotation": 0,
-      "RotationSpeed": 0,
-      "Size": 0,
       "WeaponClass": "C"
     },
     {
       "AutoAimingArc": 360,
-      "Image": "",
       "Offset": 0.25,
       "Position": {
         "x": -0.65,
         "y": -0.65
       },
-      "Rotation": 0,
-      "RotationSpeed": 0,
-      "Size": 0,
       "WeaponClass": "C"
     }
   ],
-  "CellsExpansions": 0,
-  "ColliderTolerance": 0.02,
-  "Description": "",
   "EngineColor": "#40FFBABA",
   "Engines": [
     {
       "Position": {
-        "x": -0.95,
-        "y": 0
+        "x": -0.95
       },
       "Size": 0.5
     }
   ],
   "Faction": 6,
   "Features": {
-    "ArmorBonus": 0,
-    "BuiltinDevices": [],
-    "DroneAttackBonus": 0,
-    "DroneBuildSpeedBonus": 0,
-    "DroneDefenseBonus": 0,
-    "EnergyBonus": 0,
-    "EnergyResistance": 0,
-    "EquipmentWeightBonus": 0,
-    "HeatResistance": 0,
-    "KineticResistance": 0,
-    "Regeneration": true,
-    "ShieldBonus": 0,
-    "ShipWeightBonus": 0,
-    "TurnRateBonus": 0,
-    "VelocityBonus": 0
+    "Regeneration": true
   },
   "IconImage": "flagship6",
   "IconScale": 1.2,
@@ -105,7 +62,6 @@
   "ModelImage": "flagship6",
   "ModelScale": 5,
   "Name": "$f6_Flagship",
-  "ShipRarity": 0,
   "ShipType": 4,
   "SizeClass": 4
 }

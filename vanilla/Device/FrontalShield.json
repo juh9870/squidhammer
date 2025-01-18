@@ -2,24 +2,15 @@
   "ActivationType": 1,
   "Color": "#FF6D5A",
   "ControlButtonIcon": "controls_shield",
-  "Cooldown": 0,
   "DeviceClass": 5,
-  "EffectPrefab": "",
   "EnergyConsumption": 1,
   "Id": 8,
   "ItemType": 2,
-  "Lifetime": 0,
   "ObjectPrefab": "Shield",
   "Offset": {
-    "x": 0.4,
-    "y": 0
+    "x": 0.4
   },
   "PassiveEnergyConsumption": 2,
   "Power": 10,
-  "Prefab": null,
-  "Range": 0,
-  "ScaleEnergyWithShipSize": true,
-  "Size": 1.5,
-  "Sound": "",
-  "VisualEffect": null
+  "Size": 1.5
 }

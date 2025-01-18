@@ -6,29 +6,17 @@
       {
         "MaxValue": 0.8,
         "MinValue": 0,
-        "Requirement": {
-          "Type": 0
-        },
         "Type": 101
       },
       {
         "ItemId": 137,
-        "Requirement": {
-          "Type": 0
-        },
         "Type": 1
       },
       {
         "MaxValue": 0.1,
-        "Requirement": {
-          "Type": 0
-        },
         "Type": 113
       }
     ],
-    "Requirement": {
-      "Type": 0
-    },
     "Type": 10
   }
 }

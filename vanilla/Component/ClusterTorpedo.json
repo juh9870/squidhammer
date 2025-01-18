@@ -4,11 +4,7 @@
   "CellType": "4",
   "Color": "#FF5151",
   "ComponentStatsId": 1,
-  "Description": "",
-  "DeviceId": null,
   "DisplayCategory": 1,
-  "DroneBayId": null,
-  "DroneId": null,
   "Faction": 15,
   "Icon": "torpedo4",
   "Id": 251,
@@ -25,13 +21,6 @@
     1,
     14
   ],
-  "Restrictions": {
-    "ComponentGroupTag": null,
-    "MaxComponentAmount": 0,
-    "NotForMechanicShips": false,
-    "NotForOrganicShips": false,
-    "ShipSizes": []
-  },
   "WeaponId": 101,
   "WeaponSlotType": "T"
 }

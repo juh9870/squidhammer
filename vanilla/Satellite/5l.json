@@ -1,16 +1,9 @@
 {
   "Barrels": [
     {
-      "AutoAimingArc": 0,
-      "Image": "",
-      "Offset": 0,
       "Position": {
-        "x": 0.5,
-        "y": 0
+        "x": 0.5
       },
-      "Rotation": 0,
-      "RotationSpeed": 0,
-      "Size": 0,
       "WeaponClass": "M"
     }
   ],
@@ -19,6 +12,5 @@
   "Layout": "0000014441244422444200000",
   "ModelImage": "satellite5",
   "ModelScale": 0.8,
-  "Name": "$Companion_5l",
-  "SizeClass": -1
+  "Name": "$Companion_5l"
 }

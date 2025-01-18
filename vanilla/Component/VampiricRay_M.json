@@ -1,20 +1,14 @@
 {
   "AmmunitionId": 88,
-  "Availability": 0,
   "CellType": "4",
   "Color": "#FF0000",
   "ComponentStatsId": 1,
-  "Description": "",
-  "DeviceId": null,
   "DisplayCategory": 1,
-  "DroneBayId": null,
-  "DroneId": null,
   "Faction": -1,
   "Icon": "energybeam2",
   "Id": 103,
   "ItemType": 1,
   "Layout": "010010010",
-  "Level": 0,
   "Name": "$VampiricRay_M",
   "PossibleModifications": [
     5,
@@ -22,13 +16,6 @@
     7,
     1
   ],
-  "Restrictions": {
-    "ComponentGroupTag": null,
-    "MaxComponentAmount": 0,
-    "NotForMechanicShips": false,
-    "NotForOrganicShips": false,
-    "ShipSizes": []
-  },
   "WeaponId": 88,
   "WeaponSlotType": "L"
 }

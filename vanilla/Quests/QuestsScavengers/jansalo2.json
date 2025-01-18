@@ -1,82 +1,56 @@
 {
   "Id": 101,
   "ItemType": 15,
-  "Level": 0,
-  "Name": "",
   "Nodes": [
     {
       "Actions": [
         {
           "ButtonText": "$Action_Accept",
-          "Requirement": {
-            "Type": 0
-          },
           "TargetNode": 4
         },
         {
           "ButtonText": "$Action_Decline",
-          "Requirement": {
-            "Type": 0
-          },
           "TargetNode": 2
         }
       ],
       "Character": 2,
-      "Enemy": null,
       "Id": 1,
       "Loot": 2,
       "Message": "$JanSalo_2_Intro",
-      "RequiredView": 0,
       "Type": 10
     },
     {
       "Actions": [
         {
           "ButtonText": "$Action_Accept",
-          "Requirement": {
-            "Type": 0
-          },
           "TargetNode": 4
         },
         {
           "ButtonText": "$Action_Decline",
-          "Requirement": {
-            "Type": 0
-          },
           "TargetNode": 3
         }
       ],
       "Character": 2,
-      "Enemy": null,
       "Id": 2,
       "Loot": 2,
       "Message": "$JanSalo_2_Message1",
-      "RequiredView": 0,
       "Type": 10
     },
     {
       "Actions": [
         {
           "ButtonText": "$Action_Accept",
-          "Requirement": {
-            "Type": 0
-          },
           "TargetNode": 4
         },
         {
           "ButtonText": "$Action_Decline",
-          "Requirement": {
-            "Type": 0
-          },
           "TargetNode": 2
         }
       ],
       "Character": 2,
-      "Enemy": null,
       "Id": 3,
       "Loot": 2,
       "Message": "$JanSalo_2_Message2",
-      "RequiredView": 0,
       "Type": 10
     },
     {
@@ -97,18 +71,6 @@
       "Type": 40
     }
   ],
-  "Origin": {
-    "Factions": {
-      "List": [],
-      "Type": 0
-    },
-    "MaxDistance": 0,
-    "MaxRelations": 0,
-    "MinDistance": 0,
-    "MinRelations": 0,
-    "Type": 0
-  },
-  "QuestType": 0,
   "Requirement": {
     "Requirements": [
       {
@@ -127,6 +89,5 @@
     "Type": 2
   },
   "StartCondition": 6,
-  "UseRandomSeed": false,
   "Weight": 0.05
 }

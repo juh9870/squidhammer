@@ -3,11 +3,7 @@
   "Id": 14,
   "Image": "wave",
   "ItemType": 27,
-  "MainColor": "#00000000",
-  "MainColorMode": 0,
   "Margins": 0.3,
-  "SecondColor": "#00000000",
-  "SecondColorMode": 0,
   "Shape": 7,
   "Size": 1
 }

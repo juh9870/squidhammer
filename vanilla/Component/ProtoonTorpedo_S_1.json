@@ -4,17 +4,12 @@
   "CellType": "4",
   "Color": "#C0FFC0",
   "ComponentStatsId": 1,
-  "Description": "",
-  "DeviceId": null,
   "DisplayCategory": 1,
-  "DroneBayId": null,
-  "DroneId": null,
   "Faction": 3,
   "Icon": "torpedo4",
   "Id": 154,
   "ItemType": 1,
   "Layout": "1010",
-  "Level": 0,
   "Name": "$ProtoonTorpedo_S_1",
   "PossibleModifications": [
     14,
@@ -28,13 +23,5 @@
     7,
     1
   ],
-  "Restrictions": {
-    "ComponentGroupTag": null,
-    "MaxComponentAmount": 0,
-    "NotForMechanicShips": false,
-    "NotForOrganicShips": false,
-    "ShipSizes": []
-  },
-  "WeaponId": 58,
-  "WeaponSlotType": ""
+  "WeaponId": 58
 }

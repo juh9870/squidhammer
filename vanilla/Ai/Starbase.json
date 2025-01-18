@@ -4,131 +4,74 @@
   "RootNode": {
     "Nodes": [
       {
-        "Requirement": {
-          "Type": 0
-        },
         "Type": 123
       },
       {
-        "Requirement": {
-          "Type": 0
-        },
         "Type": 117
       },
       {
         "Nodes": [
           {
             "MaxValue": 0.5,
-            "MinValue": 0.1,
-            "Requirement": {
-              "Type": 0
-            },
             "Type": 115
           },
           {
-            "Requirement": {
-              "Type": 0
-            },
             "Type": 104
           }
         ],
-        "Requirement": {
-          "Type": 0
-        },
         "Type": 3
       },
       {
         "Nodes": [
           {
             "MaxValue": 0.5,
-            "MinValue": 0.1,
-            "Requirement": {
-              "Type": 0
-            },
             "Type": 115
           },
           {
-            "Requirement": {
-              "Type": 0
-            },
             "Type": 131
           }
         ],
-        "Requirement": {
-          "Type": 0
-        },
         "Type": 3
       },
       {
         "Nodes": [
           {
             "MinValue": 0.5,
-            "Requirement": {
-              "Type": 0
-            },
             "Type": 51
           },
           {
             "ItemId": 125,
-            "Requirement": {
-              "Type": 0
-            },
             "Type": 1
           }
         ],
-        "Requirement": {
-          "Type": 0
-        },
         "Type": 3
       },
       {
         "Nodes": [
           {
             "MaxValue": 0.5,
-            "MinValue": 0.1,
-            "Requirement": {
-              "Type": 0
-            },
             "Type": 115
           },
           {
             "Cooldown": 0.1,
-            "Requirement": {
-              "Type": 0
-            },
             "Type": 111
           },
           {
             "InRange": true,
-            "Requirement": {
-              "Type": 0
-            },
             "Type": 127
           }
         ],
-        "Requirement": {
-          "Type": 0
-        },
         "Type": 3
       },
       {
         "ItemId": 113,
-        "Requirement": {
-          "Type": 0
-        },
         "Type": 1
       },
       {
         "DeviceClass": 2,
-        "Requirement": {
-          "Type": 0
-        },
         "Type": 114
       }
     ],
-    "Requirement": {
-      "Type": 0
-    },
     "Type": 4
   }
 }

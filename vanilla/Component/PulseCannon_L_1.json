@@ -1,20 +1,14 @@
 {
   "AmmunitionId": 61,
-  "Availability": 0,
   "CellType": "4",
   "Color": "#C0C0C0",
   "ComponentStatsId": 1,
-  "Description": "",
-  "DeviceId": null,
   "DisplayCategory": 1,
-  "DroneBayId": null,
-  "DroneId": null,
   "Faction": 1,
   "Icon": "cannon_1x6",
   "Id": 22,
   "ItemType": 1,
   "Layout": "0010000100001000010000100",
-  "Level": 0,
   "Name": "PulseCannon_L_1",
   "PossibleModifications": [
     13,
@@ -27,13 +21,5 @@
     7,
     1
   ],
-  "Restrictions": {
-    "ComponentGroupTag": null,
-    "MaxComponentAmount": 0,
-    "NotForMechanicShips": false,
-    "NotForOrganicShips": false,
-    "ShipSizes": []
-  },
-  "WeaponId": 61,
-  "WeaponSlotType": ""
+  "WeaponId": 61
 }

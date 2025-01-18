@@ -1,9 +1,6 @@
 {
-  "Color": "#00000000",
-  "Description": "",
   "Icon": "artifact",
   "Id": 30,
   "ItemType": 20,
-  "Name": "$AncientArtifact",
-  "Price": 0
+  "Name": "$AncientArtifact"
 }

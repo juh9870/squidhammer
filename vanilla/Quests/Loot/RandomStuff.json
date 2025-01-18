@@ -23,7 +23,6 @@
       {
         "Loot": {
           "Factions": {
-            "List": [],
             "Type": 3
           },
           "MaxAmount": 3,
@@ -43,9 +42,6 @@
         "Weight": 0.1
       },
       {
-        "Loot": {
-          "Type": 0
-        },
         "Weight": 0.3
       }
     ],

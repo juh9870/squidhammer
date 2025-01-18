@@ -5,21 +5,10 @@
   "Cooldown": 15,
   "DeviceClass": 10,
   "EffectPrefab": "FlashAdditive",
-  "EnergyConsumption": 0,
   "Id": 16,
   "ItemType": 2,
-  "Lifetime": 0,
-  "ObjectPrefab": "",
-  "Offset": {
-    "x": 0,
-    "y": 0
-  },
-  "PassiveEnergyConsumption": 0,
   "Power": 1,
-  "Prefab": null,
   "Range": 20,
-  "ScaleEnergyWithShipSize": true,
   "Size": 4,
-  "Sound": "launch_06",
-  "VisualEffect": null
+  "Sound": "launch_06"
 }

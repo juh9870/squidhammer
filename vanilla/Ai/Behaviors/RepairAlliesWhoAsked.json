@@ -5,50 +5,29 @@
     "Nodes": [
       {
         "ItemId": 126,
-        "Requirement": {
-          "Type": 0
-        },
         "Type": 1
       },
       {
         "Nodes": [
           {
-            "Requirement": {
-              "Type": 0
-            },
             "Text": "need_repair",
             "Type": 305
           },
           {
-            "Requirement": {
-              "Type": 0
-            },
             "Type": 306
           }
         ],
-        "Requirement": {
-          "Type": 0
-        },
         "Type": 3
       },
       {
         "Nodes": [
           {
-            "Requirement": {
-              "Type": 0
-            },
             "Type": 57
           },
           {
-            "Requirement": {
-              "Type": 0
-            },
             "Type": 125
           }
         ],
-        "Requirement": {
-          "Type": 0
-        },
         "Type": 3
       }
     ],

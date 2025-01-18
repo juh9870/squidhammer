@@ -8,18 +8,8 @@
   "EnergyConsumption": 3,
   "Id": 17,
   "ItemType": 2,
-  "Lifetime": 0,
-  "ObjectPrefab": "",
-  "Offset": {
-    "x": 0,
-    "y": 0
-  },
-  "PassiveEnergyConsumption": 0,
   "Power": 1,
-  "Prefab": null,
   "Range": 20,
-  "ScaleEnergyWithShipSize": true,
   "Size": 3,
-  "Sound": "hit_01",
-  "VisualEffect": null
+  "Sound": "hit_01"
 }

@@ -1,10 +1,6 @@
 {
   "AvatarIcon": "M_07",
-  "Faction": null,
-  "Fleet": null,
   "Id": 2,
-  "Inventory": null,
-  "IsUnique": false,
   "ItemType": 19,
   "Name": "$FalconCaptainName",
   "Relations": 10

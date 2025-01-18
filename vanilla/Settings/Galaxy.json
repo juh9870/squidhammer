@@ -4,13 +4,9 @@
   "CaptureStarbaseQuest": 9,
   "ChallengeCombatRules": 7,
   "DefaultStarbaseBuild": 192,
-  "EnemyLevel": "MIN(3*distance/5 - 5, MaxEnemyShipsLevel)",
   "FlagshipCombatRules": 5,
-  "Id": 0,
   "ItemType": 101,
-  "MaxEnemyShipsLevel": 300,
   "QuickCombatRules": 2,
-  "ShipMinSpawnDistance": "IF(size == Destroyer, 5, size == Cruiser, 15, size == Battleship, 50, size == Titan, 100, 0)",
   "StarbaseCombatRules": 4,
   "StartingInventory": 12,
   "StartingShipBuilds": [

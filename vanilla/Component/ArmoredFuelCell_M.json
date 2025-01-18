@@ -1,14 +1,8 @@
 {
-  "AmmunitionId": null,
   "Availability": 1,
   "CellType": "1",
-  "Color": "#00000000",
   "ComponentStatsId": 63,
-  "Description": "",
-  "DeviceId": null,
   "DisplayCategory": 3,
-  "DroneBayId": null,
-  "DroneId": null,
   "Faction": 1,
   "Icon": "fueltank22",
   "Id": 63,
@@ -20,14 +14,5 @@
     9,
     3,
     1
-  ],
-  "Restrictions": {
-    "ComponentGroupTag": null,
-    "MaxComponentAmount": 0,
-    "NotForMechanicShips": false,
-    "NotForOrganicShips": false,
-    "ShipSizes": []
-  },
-  "WeaponId": null,
-  "WeaponSlotType": ""
+  ]
 }

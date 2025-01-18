@@ -1,20 +1,14 @@
 {
   "AmmunitionId": 17,
-  "Availability": 0,
   "CellType": "4",
   "Color": "#FFC0FF",
   "ComponentStatsId": 1,
-  "Description": "",
-  "DeviceId": null,
   "DisplayCategory": 1,
-  "DroneBayId": null,
-  "DroneId": null,
   "Faction": -1,
   "Icon": "energybeam1",
   "Id": 100,
   "ItemType": 1,
   "Layout": "1010",
-  "Level": 0,
   "Name": "$EnergySiphon_S",
   "PossibleModifications": [
     5,
@@ -22,13 +16,6 @@
     7,
     1
   ],
-  "Restrictions": {
-    "ComponentGroupTag": null,
-    "MaxComponentAmount": 0,
-    "NotForMechanicShips": false,
-    "NotForOrganicShips": false,
-    "ShipSizes": []
-  },
   "WeaponId": 17,
   "WeaponSlotType": "L"
 }

@@ -5,18 +5,11 @@
     "Nodes": [
       {
         "ItemId": 126,
-        "Requirement": {
-          "Type": 0
-        },
         "Type": 1
       },
       {
         "InRange": true,
-        "MaxValue": 5,
         "MinValue": 0.5,
-        "Requirement": {
-          "Type": 0
-        },
         "Type": 133
       }
     ],

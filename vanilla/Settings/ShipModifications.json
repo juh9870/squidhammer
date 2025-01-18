@@ -1,18 +1,3 @@
 {
-  "AttackReduction": 0.2,
-  "EnergyDefenseValue": 0.5,
-  "EnergyReduction": 0.5,
-  "HeatDefenseValue": 0.5,
-  "Id": 0,
-  "ItemType": 105,
-  "KineticDefenseValue": 0.5,
-  "RegenerationArmor": 0.85,
-  "RegenerationValue": 0.01,
-  "RemoveBiggerSatellitesMod": false,
-  "RemoveEnergyRechargeCdMod": false,
-  "RemoveShieldRechargeCdMod": false,
-  "RemoveUnlimitedRespawnMod": false,
-  "RemoveWeaponSlotMod": false,
-  "ShieldReduction": 0.5,
-  "WeightReduction": 0.8
+  "ItemType": 105
 }

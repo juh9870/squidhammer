@@ -1,33 +1,18 @@
 {
-  "AmmunitionId": null,
-  "Availability": 0,
   "CellType": "2",
   "Color": "#C10000",
   "ComponentStatsId": 3,
-  "Description": "",
   "DeviceId": 14,
   "DisplayCategory": 6,
-  "DroneBayId": null,
-  "DroneId": null,
   "Faction": 10,
   "Icon": "jammer",
   "Id": 30,
   "ItemType": 1,
   "Layout": "1100",
-  "Level": 0,
   "Name": "$SuperStealth",
   "PossibleModifications": [
     2,
     1,
     6
-  ],
-  "Restrictions": {
-    "ComponentGroupTag": null,
-    "MaxComponentAmount": 0,
-    "NotForMechanicShips": false,
-    "NotForOrganicShips": false,
-    "ShipSizes": []
-  },
-  "WeaponId": null,
-  "WeaponSlotType": ""
+  ]
 }

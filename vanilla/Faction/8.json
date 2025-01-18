@@ -1,17 +1,7 @@
 {
   "Color": "#FFD494",
-  "Hidden": false,
-  "HideFromMerchants": false,
-  "HideResearchTree": false,
   "HomeStarDistance": 30,
-  "HomeStarDistanceMax": 0,
-  "Hostile": false,
   "Id": 8,
   "ItemType": 14,
-  "Name": "$Faction8",
-  "NoMissions": false,
-  "NoTerritories": false,
-  "NoWanderingShips": false,
-  "WanderingShipsDistance": 0,
-  "WanderingShipsDistanceMax": 0
+  "Name": "$Faction8"
 }

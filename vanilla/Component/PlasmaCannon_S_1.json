@@ -4,17 +4,12 @@
   "CellType": "4",
   "Color": "#FFFFB4",
   "ComponentStatsId": 1,
-  "Description": "",
-  "DeviceId": null,
   "DisplayCategory": 1,
-  "DroneBayId": null,
-  "DroneId": null,
   "Faction": 3,
   "Icon": "gun1",
   "Id": 110,
   "ItemType": 1,
   "Layout": "1",
-  "Level": 0,
   "Name": "$PlasmaCannon_S_1",
   "PossibleModifications": [
     13,
@@ -27,13 +22,5 @@
     7,
     1
   ],
-  "Restrictions": {
-    "ComponentGroupTag": null,
-    "MaxComponentAmount": 0,
-    "NotForMechanicShips": false,
-    "NotForOrganicShips": false,
-    "ShipSizes": []
-  },
-  "WeaponId": 48,
-  "WeaponSlotType": ""
+  "WeaponId": 48
 }

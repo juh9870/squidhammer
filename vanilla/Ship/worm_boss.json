@@ -2,42 +2,18 @@
   "Barrels": [
     {
       "AutoAimingArc": 80,
-      "Image": "",
-      "Offset": 0,
       "Position": {
-        "x": 0.4,
-        "y": 0
+        "x": 0.4
       },
-      "Rotation": 0,
-      "RotationSpeed": 0,
-      "Size": 0,
       "WeaponClass": "LS"
     }
   ],
-  "CellsExpansions": 0,
-  "ColliderTolerance": 0.02,
-  "Description": "",
-  "EngineColor": "#00000000",
-  "Engines": [],
   "Faction": 12,
   "Features": {
-    "ArmorBonus": 0,
     "BuiltinDevices": [
       21
     ],
-    "DroneAttackBonus": 0,
-    "DroneBuildSpeedBonus": 0,
-    "DroneDefenseBonus": 0,
-    "EnergyBonus": 0,
-    "EnergyResistance": 0,
-    "EquipmentWeightBonus": 0,
-    "HeatResistance": 0,
-    "KineticResistance": 0,
-    "Regeneration": true,
-    "ShieldBonus": 0,
-    "ShipWeightBonus": 0,
-    "TurnRateBonus": 0,
-    "VelocityBonus": 0
+    "Regeneration": true
   },
   "IconImage": "worm_head2",
   "IconScale": 1.4,
@@ -47,7 +23,6 @@
   "ModelImage": "worm_head2",
   "ModelScale": 3,
   "Name": "$f12_Flagship",
-  "ShipRarity": 0,
   "ShipType": 4,
   "SizeClass": 4
 }

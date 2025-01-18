@@ -8,41 +8,29 @@
       "Actions": [
         {
           "ButtonText": "$ACTION_Continue",
-          "Requirement": {
-            "Type": 0
-          },
           "TargetNode": 2
         }
       ],
       "Character": 3,
-      "Enemy": null,
       "Id": 1,
-      "Loot": null,
       "Message": "$Covidr_Message1",
-      "RequiredView": 0,
       "Type": 10
     },
     {
-      "DefaultTransition": 0,
       "Id": 2,
-      "Message": "",
       "Transitions": [
         {
           "Requirement": {
-            "BoolValue": false,
             "Type": 30
           },
-          "TargetNode": 3,
-          "Weight": 0
+          "TargetNode": 3
         },
         {
           "Requirement": {
             "MaxValue": 3,
-            "MinValue": 0,
             "Type": 40
           },
-          "TargetNode": 10,
-          "Weight": 0
+          "TargetNode": 10
         }
       ],
       "Type": 15
@@ -51,18 +39,12 @@
       "Actions": [
         {
           "ButtonText": "$ACTION_Continue",
-          "Requirement": {
-            "Type": 0
-          },
           "TargetNode": 5
         }
       ],
-      "Character": null,
       "Enemy": 15,
       "Id": 3,
-      "Loot": null,
       "Message": "$Covidr_Message2",
-      "RequiredView": 0,
       "Type": 10
     },
     {
@@ -70,7 +52,6 @@
       "Enemy": 15,
       "FailureTransition": 10,
       "Id": 5,
-      "Loot": null,
       "Type": 20
     },
     {
@@ -100,18 +81,13 @@
       "Actions": [
         {
           "ButtonText": "$ACTION_Continue",
-          "Requirement": {
-            "Type": 0
-          },
           "TargetNode": 15
         }
       ],
       "Character": 3,
-      "Enemy": null,
       "Id": 14,
       "Loot": 21,
       "Message": "$Covidr_Message3",
-      "RequiredView": 0,
       "Type": 10
     },
     {
@@ -132,20 +108,13 @@
         12,
         4,
         6
-      ],
-      "Type": 0
+      ]
     },
     "MaxDistance": 40,
-    "MaxRelations": 0,
     "MinDistance": 10,
-    "MinRelations": 0,
     "Type": 2
   },
   "QuestType": 4,
-  "Requirement": {
-    "Type": 0
-  },
   "StartCondition": 7,
-  "UseRandomSeed": false,
   "Weight": 0.3
 }

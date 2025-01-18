@@ -1,13 +1,10 @@
 {
   "Id": 9,
   "ItemType": 15,
-  "Level": 0,
-  "Name": "",
   "Nodes": [
     {
       "DefaultTransition": 2,
       "Id": 1,
-      "Message": "",
       "Transitions": [
         {
           "Requirement": {
@@ -17,14 +14,12 @@
               },
               {
                 "MaxValue": -100,
-                "MinValue": 0,
                 "Type": 16
               }
             ],
             "Type": 1
           },
-          "TargetNode": 10,
-          "Weight": 0
+          "TargetNode": 10
         }
       ],
       "Type": 15
@@ -33,23 +28,14 @@
       "Actions": [
         {
           "ButtonText": "$Attack",
-          "Requirement": {
-            "Type": 0
-          },
           "TargetNode": 10
         },
         {
           "ButtonText": "$Cancel",
-          "Requirement": {
-            "Type": 0
-          },
           "TargetNode": 50
         }
       ],
-      "Character": null,
-      "Enemy": null,
       "Id": 2,
-      "Loot": null,
       "Message": "$AttackStarbase_Message",
       "RequiredView": 1,
       "Type": 10
@@ -80,22 +66,6 @@
       "Type": 41
     }
   ],
-  "Origin": {
-    "Factions": {
-      "List": [],
-      "Type": 0
-    },
-    "MaxDistance": 0,
-    "MaxRelations": 0,
-    "MinDistance": 0,
-    "MinRelations": 0,
-    "Type": 0
-  },
   "QuestType": 3,
-  "Requirement": {
-    "Type": 0
-  },
-  "StartCondition": 0,
-  "UseRandomSeed": false,
   "Weight": 1
 }

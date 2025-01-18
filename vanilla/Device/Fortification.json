@@ -4,22 +4,9 @@
   "ControlButtonIcon": "controls_laser",
   "Cooldown": 4,
   "DeviceClass": 13,
-  "EffectPrefab": "",
   "EnergyConsumption": 1,
   "Id": 7,
   "ItemType": 2,
-  "Lifetime": 0,
-  "ObjectPrefab": "",
-  "Offset": {
-    "x": 0,
-    "y": 0
-  },
   "PassiveEnergyConsumption": 2,
-  "Power": 0,
-  "Prefab": null,
-  "Range": 0,
-  "ScaleEnergyWithShipSize": true,
-  "Size": 0,
-  "Sound": "hit_04",
-  "VisualEffect": null
+  "Sound": "hit_04"
 }

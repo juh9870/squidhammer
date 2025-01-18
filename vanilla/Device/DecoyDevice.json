@@ -4,22 +4,14 @@
   "ControlButtonIcon": "controls_gear",
   "Cooldown": 20,
   "DeviceClass": 1,
-  "EffectPrefab": "",
   "EnergyConsumption": 10,
   "Id": 4,
   "ItemType": 2,
   "Lifetime": 15,
   "ObjectPrefab": "Decoy",
-  "Offset": {
-    "x": 0,
-    "y": 0
-  },
   "PassiveEnergyConsumption": 1,
   "Power": 4,
-  "Prefab": null,
   "Range": 4,
-  "ScaleEnergyWithShipSize": true,
   "Size": 0.5,
-  "Sound": "launch_05",
-  "VisualEffect": null
+  "Sound": "launch_05"
 }

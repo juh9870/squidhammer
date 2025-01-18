@@ -9,17 +9,8 @@
   "Id": 3,
   "ItemType": 2,
   "Lifetime": 60,
-  "ObjectPrefab": "",
-  "Offset": {
-    "x": 0,
-    "y": 0
-  },
   "PassiveEnergyConsumption": 2,
   "Power": 1,
-  "Prefab": null,
-  "Range": 0,
-  "ScaleEnergyWithShipSize": true,
   "Size": 3,
-  "Sound": "shot_12",
-  "VisualEffect": null
+  "Sound": "shot_12"
 }

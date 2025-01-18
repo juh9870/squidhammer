@@ -1,29 +1,11 @@
 {
-  "Barrels": [],
-  "CellsExpansions": 0,
-  "ColliderTolerance": 0.02,
-  "Description": "",
   "EngineColor": "#407F7FFF",
-  "Engines": [],
   "Faction": 1,
   "Features": {
-    "ArmorBonus": 0,
     "BuiltinDevices": [
       18
     ],
-    "DroneAttackBonus": 0,
-    "DroneBuildSpeedBonus": 0,
-    "DroneDefenseBonus": 0,
-    "EnergyBonus": 0,
-    "EnergyResistance": 0,
-    "EquipmentWeightBonus": 0,
-    "HeatResistance": 0,
-    "KineticResistance": 0,
-    "Regeneration": true,
-    "ShieldBonus": 0,
-    "ShipWeightBonus": 0,
-    "TurnRateBonus": 0,
-    "VelocityBonus": 0
+    "Regeneration": true
   },
   "IconImage": "hive",
   "IconScale": 1,
@@ -33,7 +15,6 @@
   "ModelImage": "hive",
   "ModelScale": 12,
   "Name": "hive",
-  "ShipRarity": 0,
   "ShipType": 3,
   "SizeClass": 2
 }

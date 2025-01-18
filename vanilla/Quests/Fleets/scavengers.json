@@ -1,5 +1,4 @@
 {
-  "CombatRules": null,
   "Factions": {
     "List": [
       15
@@ -9,7 +8,6 @@
   "Id": 10,
   "ItemType": 18,
   "LevelBonus": 50,
-  "NoRandomShips": false,
   "SpecificShips": [
     271
   ]

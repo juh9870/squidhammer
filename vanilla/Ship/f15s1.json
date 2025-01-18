@@ -3,47 +3,27 @@
     {
       "AutoAimingArc": 80,
       "Image": "scavenger_arm",
-      "Offset": 0,
       "Position": {
         "x": 0.45,
         "y": -0.5
       },
       "Rotation": -60,
-      "RotationSpeed": 0,
       "Size": 1.5,
       "WeaponClass": "L"
     }
   ],
-  "CellsExpansions": 0,
-  "ColliderTolerance": 0.02,
-  "Description": "",
   "EngineColor": "#40FF7F00",
   "Engines": [
     {
       "Position": {
-        "x": -0.9,
-        "y": 0
+        "x": -0.9
       },
       "Size": 0.2
     }
   ],
   "Faction": 15,
   "Features": {
-    "ArmorBonus": 0.5,
-    "BuiltinDevices": [],
-    "DroneAttackBonus": 0,
-    "DroneBuildSpeedBonus": 0,
-    "DroneDefenseBonus": 0,
-    "EnergyBonus": 0,
-    "EnergyResistance": 0,
-    "EquipmentWeightBonus": 0,
-    "HeatResistance": 0,
-    "KineticResistance": 0,
-    "Regeneration": false,
-    "ShieldBonus": 0,
-    "ShipWeightBonus": 0,
-    "TurnRateBonus": 0,
-    "VelocityBonus": 0
+    "ArmorBonus": 0.5
   },
   "IconImage": "fs1",
   "IconScale": 0.7,
@@ -53,7 +33,5 @@
   "ModelImage": "fs1",
   "ModelScale": 1.2,
   "Name": "$f15_Destroyer",
-  "ShipRarity": 0,
-  "ShipType": 0,
   "SizeClass": 1
 }

@@ -1,11 +1,7 @@
 {
-  "AmmunitionId": null,
-  "Availability": 0,
   "CellType": "1",
   "Color": "#C0C0C0",
   "ComponentStatsId": 2,
-  "Description": "",
-  "DeviceId": null,
   "DisplayCategory": 5,
   "DroneBayId": 4,
   "DroneId": 185,
@@ -14,7 +10,6 @@
   "Id": 15,
   "ItemType": 1,
   "Layout": "1110111011101110",
-  "Level": 0,
   "Name": "DroneBay_L_3",
   "PossibleModifications": [
     17,
@@ -23,14 +18,5 @@
     20,
     1,
     2
-  ],
-  "Restrictions": {
-    "ComponentGroupTag": null,
-    "MaxComponentAmount": 0,
-    "NotForMechanicShips": false,
-    "NotForOrganicShips": false,
-    "ShipSizes": []
-  },
-  "WeaponId": null,
-  "WeaponSlotType": ""
+  ]
 }
