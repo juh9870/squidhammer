@@ -17,17 +17,30 @@ pub fn history_tab(ui: &mut Ui, app: &mut DbeApp) {
 
     enum Entry<'a> {
         Past(&'a FileSnapshot),
-        Present,
+        UndoneHistory(&'a FileSnapshot),
         Future(&'a FileSnapshot),
     }
 
     fn text_for_snapshot(snapshot: &FileSnapshot) -> String {
         match snapshot.kind {
             SnapshotKind::Change => {
-                format!("Changed: {} ({})", snapshot.path, snapshot.state)
+                format!(
+                    "{}: Changed: {} ({})",
+                    snapshot.id, snapshot.path, snapshot.state
+                )
             }
-            SnapshotKind::Undo => {
-                format!("Undid change to: {} ({})", snapshot.path, snapshot.state)
+            SnapshotKind::Undo(target) => {
+                if target == snapshot.id {
+                    format!(
+                        "Undid change #{} to: {} ({})",
+                        snapshot.id, snapshot.path, snapshot.state
+                    )
+                } else {
+                    format!(
+                        "{} Undid change #{} to: {} ({})",
+                        snapshot.id, target, snapshot.path, snapshot.state
+                    )
+                }
             }
         }
     }
@@ -51,9 +64,13 @@ pub fn history_tab(ui: &mut Ui, app: &mut DbeApp) {
     });
 
     let history = project.history.history();
+    let undone = project.history.undone_history();
     let future = project.history.future();
-    let count = history.len() + future.len();
-    let items = history.map(Entry::Past).chain(future.map(Entry::Future));
+    let count = history.len() + undone.len() + future.len();
+    let items = history
+        .map(Entry::Past)
+        .chain(undone.map(Entry::UndoneHistory))
+        .chain(future.map(Entry::Future));
 
     egui::ScrollArea::vertical().show_rows(ui, height, count, |ui, x| {
         ui.style_mut().wrap_mode = Some(egui::TextWrapMode::Extend);
@@ -62,8 +79,10 @@ pub fn history_tab(ui: &mut Ui, app: &mut DbeApp) {
                 Entry::Past(snapshot) => {
                     ui.add_enabled(false, Button::new(text_for_snapshot(snapshot)));
                 }
-                Entry::Present => {
-                    ui.add_enabled(false, Button::new("Current State"));
+                Entry::UndoneHistory(snapshot) => {
+                    ui.indent(&snapshot.path, |ui| {
+                        ui.add_enabled(false, Button::new(text_for_snapshot(snapshot)));
+                    });
                 }
                 Entry::Future(snapshot) => {
                     ui.indent(&snapshot.path, |ui| {

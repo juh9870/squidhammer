@@ -15,10 +15,15 @@ use uuid::Uuid;
 pub struct UndoHistory {
     settings: UndoSettings,
     cur_time: f64,
+    change_index: usize,
     last_known_state: HashMap<Utf8PathBuf, u64>,
     last_snapshot: HashMap<Utf8PathBuf, ItemSnapshot>,
-    pub history: RingStack<FileSnapshot>,
-    pub redo: Vec<FileSnapshot>,
+    /// Past history
+    history: RingStack<FileSnapshot>,
+    /// Part of history that was undone. In reverse order.
+    undone_history: Vec<FileSnapshot>,
+    /// Actions that need to be performed to redo the undone history
+    redo_snapshots: Vec<FileSnapshot>,
     flux: Option<Flux>,
 }
 
@@ -48,9 +53,11 @@ impl UndoHistory {
             history: RingStack::new(settings.history_length),
             settings,
             cur_time: 0.0,
+            change_index: 0,
             last_known_state: Default::default(),
             flux: Default::default(),
-            redo: Default::default(),
+            undone_history: Default::default(),
+            redo_snapshots: Default::default(),
             last_snapshot: Default::default(),
         }
     }
@@ -150,7 +157,7 @@ impl UndoHistory {
             .expect("Snapshot existence was ensured earlier");
 
         let snapshot = FileSnapshot {
-            id: Uuid::new_v4(),
+            id: self.next_change_index(),
             kind: SnapshotKind::Change,
             path: path.to_path_buf(),
             state: hash_of(&snapshot),
@@ -183,18 +190,22 @@ impl UndoHistory {
             .value
             .restore(&last_snapshot.path, files, graphs)?;
 
-        self.redo.push(FileSnapshot {
+        let path = last_snapshot.path.clone();
+
+        self.redo_snapshots.push(FileSnapshot {
             id: last_snapshot.id,
-            kind: last_snapshot.kind,
-            path: last_snapshot.path.clone(),
+            kind: SnapshotKind::Undo(last_snapshot.id),
+            path: path.clone(),
             state: hash_of(&redo_snapshot),
             value: redo_snapshot,
         });
 
-        self.update_last_known_state(last_snapshot.path.clone(), files, graphs)
+        self.undone_history.push(last_snapshot);
+
+        self.update_last_known_state(path.clone(), files, graphs)
             .context("Failed to recalculate last known file state")?;
 
-        Ok(last_snapshot.path)
+        Ok(path)
     }
 
     /// Redo the last undone change.
@@ -204,17 +215,24 @@ impl UndoHistory {
         graphs: &mut ProjectGraphs,
     ) -> miette::Result<Utf8PathBuf> {
         self.interrupt_flux(files, graphs)?;
-        let Some(redo_snapshot) = self.redo.pop() else {
+        let Some(redo_snapshot) = self.redo_snapshots.pop() else {
             bail!("Nothing to redo");
         };
+
+        let undone = self
+            .undone_history
+            .pop()
+            .expect("Redo snapshot without undone history");
+
+        debug_assert_eq!(undone.path, redo_snapshot.path);
 
         let last_snapshot = redo_snapshot
             .value
             .restore(&redo_snapshot.path, files, graphs)?;
 
         self.history.push(FileSnapshot {
-            id: redo_snapshot.id,
-            kind: redo_snapshot.kind,
+            id: undone.id,
+            kind: undone.kind,
             path: redo_snapshot.path.clone(),
             state: hash_of(&last_snapshot),
             value: last_snapshot,
@@ -253,9 +271,14 @@ impl UndoHistory {
         self.history.iter()
     }
 
+    /// Iterator over the undone changes. From oldest to newest.
+    pub fn undone_history(&self) -> impl ExactSizeIterator<Item = &FileSnapshot> {
+        self.undone_history.iter().rev()
+    }
+
     /// Iterator of the undone changes. From oldest to newest.
     pub fn future(&self) -> impl DoubleEndedIterator<Item = &FileSnapshot> + ExactSizeIterator {
-        self.redo.iter().rev()
+        self.redo_snapshots.iter()
     }
 
     pub fn can_undo(&self) -> bool {
@@ -263,7 +286,7 @@ impl UndoHistory {
     }
 
     pub fn can_redo(&self) -> bool {
-        !self.redo.is_empty()
+        !self.redo_snapshots.is_empty()
     }
 }
 
@@ -289,11 +312,21 @@ impl UndoHistory {
     }
 
     fn push_snapshot(&mut self, snapshot: FileSnapshot) {
-        for mut x in self.redo.drain(..) {
-            x.kind = SnapshotKind::Undo;
+        for x in self.undone_history.drain(..).rev() {
+            self.history.push(x);
+        }
+        for mut x in self.redo_snapshots.drain(..) {
+            x.id = self.change_index;
+            self.change_index += 1;
             self.history.push(x);
         }
         self.history.push(snapshot);
+    }
+
+    fn next_change_index(&mut self) -> usize {
+        let index = self.change_index;
+        self.change_index += 1;
+        index
     }
 }
 
@@ -316,7 +349,7 @@ impl Flux {
 
 #[derive(Debug)]
 pub struct FileSnapshot {
-    pub id: Uuid,
+    pub id: usize,
     pub kind: SnapshotKind,
     pub path: Utf8PathBuf,
     pub state: u64,
@@ -328,7 +361,7 @@ pub enum SnapshotKind {
     /// A user-made file change
     Change,
     /// An undo hat turned into history snapshot by a new change
-    Undo,
+    Undo(usize),
 }
 
 fn state_of(file: &ProjectFile, graphs: &ProjectGraphs) -> miette::Result<u64> {
@@ -378,17 +411,19 @@ impl ItemSnapshot {
     /// Restores the snapshot to the given path, returning the snapshot of the
     /// file that was replaced.
     fn restore(
-        self,
+        &self,
         path: &Utf8PathBuf,
         files: &mut BTreeMap<Utf8PathBuf, ProjectFile>,
         graphs: &mut ProjectGraphs,
     ) -> miette::Result<Self> {
         let mut old_graph = None;
-        let value = match self {
-            ItemSnapshot::Value(value) => files.insert(path.clone(), ProjectFile::Value(value)),
+        let value = match &self {
+            ItemSnapshot::Value(value) => {
+                files.insert(path.clone(), ProjectFile::Value(value.clone()))
+            }
             ItemSnapshot::Graph(id, graph) => {
-                old_graph = graphs.graphs.insert(id, graph);
-                files.insert(path.clone(), ProjectFile::Graph(id))
+                old_graph = graphs.graphs.insert(*id, graph.clone());
+                files.insert(path.clone(), ProjectFile::Graph(*id))
             }
         };
 
