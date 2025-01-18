@@ -1,7 +1,9 @@
 use crate::etype::econst::ETypeConst;
 use crate::etype::eitem::EItemInfo;
 use crate::etype::eobject::EObject;
-use crate::etype::property::default_properties::{PROP_FIELD_DEFAULT, PROP_FIELD_INLINE};
+use crate::etype::property::default_properties::{
+    PROP_FIELD_DEFAULT, PROP_FIELD_INLINE, PROP_OBJECT_SAVE_DEFAULT_VALUES,
+};
 use crate::etype::property::ObjectPropertyId;
 use crate::etype::title::ObjectTitle;
 use crate::json_utils::repr::{JsonRepr, Repr};
@@ -13,6 +15,7 @@ use crate::value::EValue;
 use itertools::Itertools;
 use miette::{bail, miette, Context};
 use std::collections::BTreeMap;
+use std::ops::Deref;
 use tracing::warn;
 use ustr::{Ustr, UstrMap};
 use utils::map::HashMap;
@@ -220,14 +223,27 @@ impl EStructData {
             miette!("multiple occurrences of field `{}` are present", name)
         }
 
+        // always save default values if the object has a repr
+        let save_default = self.repr.is_some()
+            || PROP_OBJECT_SAVE_DEFAULT_VALUES.get(&self.extra_properties, false);
+
         // TODO: throw an error if provided fields map contains unknown fields
         for field in &self.fields {
             m_try(|| {
+                let default_value = field.ty.default_value(registry);
+
                 let json_value = if let Some(value) = fields.get(&field.name) {
+                    if !save_default && value == default_value.deref() {
+                        return Ok(());
+                    }
                     value.write_json(registry)?
                 } else {
-                    field.ty.default_value(registry).write_json(registry)?
+                    if !save_default {
+                        return Ok(());
+                    }
+                    default_value.write_json(registry)?
                 };
+
                 if field.is_inline() {
                     if let JsonValue::Object(obj) = json_value {
                         for (k, v) in obj {

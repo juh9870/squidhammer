@@ -8,6 +8,9 @@ extra_properties! {
     pub prop<field> default: ETypeConst;
     pub prop<field> inline: bool;
 
+    /// Whether to save default values for fields in this strict
+    pub prop<object> save_default_values: bool;
+
     /// Whether to automatically convert incoming connections to enum variants
     pub prop<object> graph_autoconvert: bool;
 
