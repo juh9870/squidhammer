@@ -337,18 +337,18 @@ impl SnarlViewer<SnarlNode> for GraphViewer<'_> {
                     .take(10)
                 {
                     if ui.button(name).clicked() {
-                        let node = match node {
-                            NodeCombo::Factory(id) => {
-                                self.ctx
+                        let node =
+                            match node {
+                                NodeCombo::Factory(id) => self.ctx.as_full(snarl).create_node(
+                                    *id,
+                                    pos,
+                                    &mut self.commands,
+                                ),
+                                NodeCombo::Object(id) => self
+                                    .ctx
                                     .as_full(snarl)
-                                    .create_node(*id, pos, &mut self.commands)
-                            }
-                            NodeCombo::Object(id) => self.ctx.as_full(snarl).create_object_node(
-                                *id,
-                                pos,
-                                &mut self.commands,
-                            ),
-                        };
+                                    .create_object_node(*id, pos, None, &mut self.commands),
+                            };
                         if let Err(err) = node {
                             report_error(err);
                         }
@@ -450,9 +450,11 @@ impl SnarlViewer<SnarlNode> for GraphViewer<'_> {
                         match data.ty.ty() {
                             EDataType::Object { ident } => {
                                 if ui.button(ident.as_raw().unwrap()).clicked() {
+                                    let inline_value = self.ctx.inline_values.remove(pin);
                                     let nodes = self.ctx.as_full(snarl).create_object_node(
                                         ident,
                                         pos,
+                                        inline_value,
                                         &mut self.commands,
                                     )?;
                                     if let Some(node) = nodes.last() {

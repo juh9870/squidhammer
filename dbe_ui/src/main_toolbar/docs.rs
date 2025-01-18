@@ -297,87 +297,89 @@ pub fn docs_hover(
     registry: &ETypesRegistry,
     docs_ref: DocsRef,
 ) {
-    if docs_ref.is_none() {
-        if cfg!(debug_assertions) {
-            res.on_hover_text("DocsRef is None");
+    ui.push_id(id_salt, |ui| {
+        if docs_ref.is_none() {
+            if cfg!(debug_assertions) {
+                res.on_hover_text("DocsRef is None");
+            }
+            return;
         }
-        return;
-    }
 
-    let docs_window_ref = docs_ref.as_window_ref();
+        let docs_window_ref = docs_ref.as_window_ref();
 
-    let mut show_window = ui.use_state(|| false, docs_window_ref).into_var();
+        let mut show_window = ui.use_state(|| false, docs_window_ref).into_var();
 
-    res.on_hover_ui(|ui| {
-        match &docs_ref {
-            DocsRef::Custom(text) => {
-                ui.label(text.as_str());
-            }
-            DocsRef::None => {
-                unreachable!()
-            }
-            _ if docs_ref.has_field_structure() => {
-                let description = if let Some(desc) = docs_ref.get_description(docs) {
-                    if desc.is_empty() {
-                        NO_DOCS
+        res.on_hover_ui(|ui| {
+            match &docs_ref {
+                DocsRef::Custom(text) => {
+                    ui.label(text.as_str());
+                }
+                DocsRef::None => {
+                    unreachable!()
+                }
+                _ if docs_ref.has_field_structure() => {
+                    let description = if let Some(desc) = docs_ref.get_description(docs) {
+                        if desc.is_empty() {
+                            NO_DOCS
+                        } else {
+                            desc
+                        }
                     } else {
-                        desc
-                    }
-                } else {
-                    NO_DOCS
-                };
-                let parent_title = docs_ref.get_parent_title(docs, registry);
-                let field_title = docs_ref.get_field_title(docs);
-                let label = match docs_ref {
-                    DocsRef::NodeInput(_, _) => {
-                        format!("{} <- {}", parent_title, field_title)
-                    }
-                    DocsRef::NodeOutput(_, _) => {
-                        format!("{} -> {}", parent_title, field_title)
-                    }
-                    DocsRef::NodeState(_, _) => {
-                        format!("{} - {}", parent_title, field_title)
-                    }
-                    DocsRef::TypeField(_, _) => {
-                        format!("{}.{}", parent_title, field_title)
-                    }
-                    DocsRef::EnumVariant(_, _) => {
-                        format!("{}::{}", parent_title, field_title)
-                    }
-                    DocsRef::Custom(_) | DocsRef::None => {
-                        unreachable!()
-                    }
-                };
+                        NO_DOCS
+                    };
+                    let parent_title = docs_ref.get_parent_title(docs, registry);
+                    let field_title = docs_ref.get_field_title(docs);
+                    let label = match docs_ref {
+                        DocsRef::NodeInput(_, _) => {
+                            format!("{} <- {}", parent_title, field_title)
+                        }
+                        DocsRef::NodeOutput(_, _) => {
+                            format!("{} -> {}", parent_title, field_title)
+                        }
+                        DocsRef::NodeState(_, _) => {
+                            format!("{} - {}", parent_title, field_title)
+                        }
+                        DocsRef::TypeField(_, _) => {
+                            format!("{}.{}", parent_title, field_title)
+                        }
+                        DocsRef::EnumVariant(_, _) => {
+                            format!("{}::{}", parent_title, field_title)
+                        }
+                        DocsRef::Custom(_) | DocsRef::None => {
+                            unreachable!()
+                        }
+                    };
 
-                ui.label(label);
-                ui.separator();
-                ui.label(description);
+                    ui.label(label);
+                    ui.separator();
+                    ui.label(description);
+                }
+                _ => {
+                    unimplemented!()
+                }
             }
-            _ => {
-                unimplemented!()
-            }
-        }
 
-        if docs_window_ref.is_some_and(|r| r.has_docs(docs))
-            && ui.button("View full docs").clicked()
-        {
-            *show_window = true;
+            if docs_window_ref.is_some_and(|r| r.has_docs(docs))
+                && ui.button("View full docs").clicked()
+            {
+                *show_window = true;
+            }
+        });
+
+        if *show_window {
+            if let Some(docs_window_ref) = docs_window_ref {
+                docs_window(
+                    ui,
+                    docs_window_ref.title(docs, registry).as_str(),
+                    "window",
+                    &mut show_window,
+                    |ui| {
+                        show_window_ref(ui, docs, registry, &docs_window_ref);
+                    },
+                );
+            }
         }
     });
-
-    if *show_window {
-        if let Some(docs_window_ref) = docs_window_ref {
-            docs_window(
-                ui,
-                docs_window_ref.title(docs, registry).as_str(),
-                id_salt,
-                &mut show_window,
-                |ui| {
-                    show_window_ref(ui, docs, registry, &docs_window_ref);
-                },
-            );
-        }
-    }
 }
 
 pub fn docs_hover_type(

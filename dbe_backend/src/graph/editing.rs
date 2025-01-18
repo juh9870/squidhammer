@@ -241,19 +241,44 @@ impl GraphEditingContext<'_, '_> {
         &mut self,
         object: ETypeId,
         pos: Pos2,
+        apply_value: Option<EValue>,
         _commands: &mut SnarlCommands,
     ) -> miette::Result<SmallVec<[NodeId; 2]>> {
-        let node: Box<dyn Node> = match self
+        let info = self
             .registry
             .get_object(&object)
-            .expect("object id should be valid")
-        {
-            EObjectType::Struct(_) => Box::new(StructNode::new(object)),
-            EObjectType::Enum(data) => Box::new(EnumNode::new(data.variant_ids()[0])),
+            .expect("object id should be valid");
+        let node: Box<dyn Node> = match (info, &apply_value) {
+            (EObjectType::Struct(_), None) => Box::new(StructNode::new(object)),
+            (EObjectType::Struct(_), Some(value)) => Box::new(StructNode::from_value(value)?),
+            (EObjectType::Enum(data), None) => Box::new(EnumNode::new(data.variant_ids()[0])),
+            (EObjectType::Enum(_), Some(value)) => Box::new(EnumNode::from_value(value)?),
         };
 
         let id = self.snarl.insert_node(pos, SnarlNode::new(node));
         self.inline_values.retain(|in_pin, _| in_pin.node != id);
+
+        if let Some(value) = apply_value {
+            match (info, value) {
+                (EObjectType::Struct(_), EValue::Struct { fields, .. }) => {
+                    for (idx, (_, value)) in fields.into_iter().enumerate() {
+                        self.inline_values.insert(
+                            InPinId {
+                                node: id,
+                                input: idx,
+                            },
+                            value,
+                        );
+                    }
+                }
+                (EObjectType::Enum(_), EValue::Enum { data, .. }) => {
+                    self.inline_values
+                        .insert(InPinId { node: id, input: 0 }, *data);
+                }
+                _ => unreachable!(),
+            }
+        }
+
         self.mark_dirty();
 
         Ok(smallvec![id])

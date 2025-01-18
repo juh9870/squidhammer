@@ -51,6 +51,17 @@ impl StructNode {
             fields: vec![],
         }
     }
+
+    pub fn from_value(value: &EValue) -> miette::Result<Self> {
+        let EValue::Struct { fields, ident } = value else {
+            bail!("Expected struct value");
+        };
+
+        Ok(Self {
+            id: Some(*ident),
+            fields: fields.keys().cloned().collect(),
+        })
+    }
 }
 
 impl Node for StructNode {
