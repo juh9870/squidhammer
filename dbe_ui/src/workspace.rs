@@ -139,6 +139,11 @@ impl<Io> TabViewer for WorkspaceTabViewer<'_, Io> {
     }
 
     fn ui(&mut self, ui: &mut Ui, tab: &mut Self::Tab) {
+        // self.0
+        //     .history
+        //     .ensure_file_state(&self.0.files, &self.0.graphs, &tab)
+        //     .unwrap_or_else(report_error);
+
         let Some(data) = self.0.files.get_mut(tab) else {
             ui.centered_and_justified(|ui| {
                 ui.label(format!("!!INTERNAL ERROR!! the file {} is missing", tab));
@@ -147,6 +152,8 @@ impl<Io> TabViewer for WorkspaceTabViewer<'_, Io> {
         };
 
         let mut diagnostics = self.0.diagnostics.enter(tab.as_str());
+        let mut changed = true;
+        let force_snapshot = false;
 
         match data {
             ProjectFile::Value(value) => {
@@ -167,6 +174,7 @@ impl<Io> TabViewer for WorkspaceTabViewer<'_, Io> {
                     {
                         report_error(err);
                     }
+                    changed = true;
                 }
 
                 ui.add_space(ui.ctx().screen_rect().height() * 0.5);
@@ -205,6 +213,10 @@ impl<Io> TabViewer for WorkspaceTabViewer<'_, Io> {
                     });
                     return;
                 };
+
+                // graph is always considered changed. Undo history should
+                // figure out when it's actually changed based on hash
+                changed = true;
 
                 graph.graph_mut().ensure_region_graph_ready();
 
@@ -289,5 +301,10 @@ impl<Io> TabViewer for WorkspaceTabViewer<'_, Io> {
         }
 
         drop(diagnostics);
+        if changed {
+            self.0
+                .file_changed(tab, force_snapshot)
+                .unwrap_or_else(report_error);
+        }
     }
 }
