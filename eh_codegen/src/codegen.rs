@@ -17,6 +17,10 @@ static SPECIAL_FIELDS: LazyLock<HashMap<&str, &str>> = LazyLock::new(|| {
             "object \"AmmunitionId\" \"sys:optional\" alias=\"Ammunition\" {\n\t\tobject \"Item\" \"sys:ids/numeric_ref\" {\n\t\t\tconst \"Id\" \"eh:ids/any_ammunition\"\n\t\t}\n\t}",
         ),
         ("eh:objects/component_data::AmmunitionId$1", ""),
+        ("eh:objects/weapon/bullet_trigger_spawn_bullet::Color$0", "object \"Color\" default=\"#00000000\" \"color:argb\""),
+        ("eh:objects/weapon/bullet_trigger_play_sfx::Color$0", "object \"Color\" default=\"#00000000\" \"color:argb\""),
+        ("eh:objects/weapon/bullet_trigger_spawn_static_sfx::Color$0", "object \"Color\" default=\"#00000000\" \"color:argb\""),
+        ("eh:objects/weapon/visual_effect_element::Color$0", "object \"Color\" default=\"#00000000\" \"color:argb\""),
     ];
 
     entries.iter().copied().collect()
