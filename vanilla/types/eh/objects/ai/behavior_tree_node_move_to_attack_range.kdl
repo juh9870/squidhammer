@@ -1,4 +1,4 @@
-struct title="BehaviorTreeNodeMoveToAttackRange" {
+struct title="BehaviorTreeNodeMoveToAttackRange" graph_inline=true {
 	object "Requirement" "eh:objects/ai/behavior_node_requirement" description="The node will not execute and will return FAILURE if the requirement is not met"
 	number "MinValue" alias="MinMaxLerp" default=1 description="Linear interpolation between shortest and longest weapon ranges" min=0 max=1
 	number "MaxValue" alias="Multiplier" default=1 min=0 max=1

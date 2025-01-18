@@ -1,4 +1,4 @@
-struct title="TechnologyDataComponent" {
+struct title="TechnologyDataComponent" graph_inline=false {
 	object "ItemId" "sys:ids/numeric_ref" alias="Component" typeid="eh:objects/component" {
 		const "Id" "eh:objects/component"
 	}

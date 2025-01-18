@@ -1,4 +1,4 @@
-struct title="LootContentMoney" {
+struct title="LootContentMoney" graph_inline=true {
 	number "MinAmount" min=0 max=1000000000 type="int"
 	number "MaxAmount" min=0 max=1000000000 type="int"
 }

@@ -1,4 +1,4 @@
-struct title="BulletControllerParametric" {
+struct title="BulletControllerParametric" graph_inline=true {
 	string "X" default="0" arguments="t" editor="eh:expression"
 	string "Y" default="0" arguments="t" editor="eh:expression"
 	string "Rotation" default="0" arguments="t" editor="eh:expression"

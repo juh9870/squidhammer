@@ -1,4 +1,4 @@
-struct title="ComponentRestrictions" {
+struct title="ComponentRestrictions" graph_inline=true {
 	list "ShipSizes" editor="enum_flags" {
 		object "Item" "eh:enums/size_class"
 	}

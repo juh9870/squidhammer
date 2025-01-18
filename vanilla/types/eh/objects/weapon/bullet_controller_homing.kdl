@@ -1,4 +1,4 @@
-struct title="BulletControllerHoming" {
+struct title="BulletControllerHoming" graph_inline=true {
 	number "StartingVelocityModifier" default=1 min=0 max=1000
 	boolean "IgnoreRotation"
 	boolean "SmartAim"

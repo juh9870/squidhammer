@@ -1,4 +1,4 @@
-struct title="ComponentStatsData" {
+struct title="ComponentStatsData" graph_inline=false {
 	object "Type" "eh:enums/component_stats_type"
 	number "ArmorPoints" min=-1000000 max=1000000
 	number "ArmorRepairRate" min=-1000000 max=1000000

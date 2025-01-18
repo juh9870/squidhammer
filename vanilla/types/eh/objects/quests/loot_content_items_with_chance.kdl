@@ -1,4 +1,4 @@
-struct title="LootContentItemsWithChance" {
+struct title="LootContentItemsWithChance" graph_inline=true {
 	list "Items" {
 		object "Item" "eh:objects/quests/loot_item"
 	}

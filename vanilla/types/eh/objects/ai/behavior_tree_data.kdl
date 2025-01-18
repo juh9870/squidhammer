@@ -1,3 +1,3 @@
-struct title="BehaviorTreeData" {
+struct title="BehaviorTreeData" graph_inline=false {
 	object "RootNode" "eh:objects/ai/behavior_tree_node"
 }

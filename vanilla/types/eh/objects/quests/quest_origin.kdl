@@ -1,4 +1,4 @@
-struct title="QuestOrigin" {
+struct title="QuestOrigin" graph_inline=true {
 	object "Type" "eh:enums/quests/quest_origin_type"
 	object "Factions" "eh:objects/quests/faction_filter"
 	number "MinDistance" min=0 max=9999 type="int"

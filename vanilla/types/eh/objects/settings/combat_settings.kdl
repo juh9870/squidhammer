@@ -1,6 +1,37 @@
-struct title="CombatSettings" {
-	object "Id" "sys:ids/numeric" {
-		const "Id" "eh:objects/settings/combat_settings"
+struct title="CombatSettings" singleton=true graph_inline=false {
+	object "EnemyAI" "sys:optional" {
+		object "Item" "sys:ids/numeric_ref" {
+			const "Id" "eh:objects/ai/behavior_tree"
+		}
 	}
-	object "Data" "eh:objects/settings/combat_settings_data" inline=true
+	object "AutopilotAI" "sys:optional" {
+		object "Item" "sys:ids/numeric_ref" {
+			const "Id" "eh:objects/ai/behavior_tree"
+		}
+	}
+	object "CloneAI" "sys:optional" {
+		object "Item" "sys:ids/numeric_ref" {
+			const "Id" "eh:objects/ai/behavior_tree"
+		}
+	}
+	object "DefensiveDroneAI" "sys:optional" {
+		object "Item" "sys:ids/numeric_ref" {
+			const "Id" "eh:objects/ai/behavior_tree"
+		}
+	}
+	object "OffensiveDroneAI" "sys:optional" {
+		object "Item" "sys:ids/numeric_ref" {
+			const "Id" "eh:objects/ai/behavior_tree"
+		}
+	}
+	object "StarbaseAI" "sys:optional" {
+		object "Item" "sys:ids/numeric_ref" {
+			const "Id" "eh:objects/ai/behavior_tree"
+		}
+	}
+	object "DefaultCombatRules" "sys:optional" {
+		object "Item" "sys:ids/numeric_ref" {
+			const "Id" "eh:objects/quests/combat_rules"
+		}
+	}
 }

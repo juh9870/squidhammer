@@ -1,4 +1,4 @@
-struct title="BulletTriggerSpawnBullet" {
+struct title="BulletTriggerSpawnBullet" graph_inline=true {
 	object "Condition" "eh:enums/weapon/bullet_trigger_condition"
 	string "AudioClip" editor="eh:audioclip"
 	object "Ammunition" "sys:optional" {

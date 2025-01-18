@@ -1,11 +1,6 @@
-struct title="TechnologyDataShip" {
+struct title="TechnologyDataShip" graph_inline=false {
 	object "ItemId" "sys:ids/numeric_ref" alias="Ship" typeid="eh:objects/ship" {
 		const "Id" "eh:objects/ship"
-	}
-	object "Faction" "sys:optional" {
-		object "Item" "sys:ids/numeric_ref" {
-			const "Id" "eh:objects/faction"
-		}
 	}
 	number "Price" min=0 max=10000 type="int"
 	boolean "Hidden"

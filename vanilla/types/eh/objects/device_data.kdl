@@ -1,4 +1,4 @@
-struct title="DeviceData" {
+struct title="DeviceData" graph_inline=false {
 	object "DeviceClass" "eh:enums/device_class"
 	number "EnergyConsumption" min=0 max=1000000000
 	number "PassiveEnergyConsumption" min=0 max=1000000000

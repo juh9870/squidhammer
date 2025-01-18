@@ -1,4 +1,4 @@
-struct title="ShipToValue" {
+struct title="ShipToValue" graph_inline=true {
 	object "Ship" "sys:optional" {
 		object "Item" "sys:ids/numeric_ref" {
 			const "Id" "eh:objects/ship"

@@ -1,6 +1,14 @@
-struct title="MusicPlaylist" {
-	object "Id" "sys:ids/numeric" {
-		const "Id" "eh:objects/settings/music_playlist"
+struct title="MusicPlaylist" singleton=true graph_inline=false {
+	list "MainMenuMusic" {
+		object "Item" "eh:objects/settings/sound_track"
 	}
-	object "Data" "eh:objects/settings/music_playlist_data" inline=true
+	list "GalaxyMapMusic" {
+		object "Item" "eh:objects/settings/sound_track"
+	}
+	list "CombatMusic" {
+		object "Item" "eh:objects/settings/sound_track"
+	}
+	list "ExplorationMusic" {
+		object "Item" "eh:objects/settings/sound_track"
+	}
 }

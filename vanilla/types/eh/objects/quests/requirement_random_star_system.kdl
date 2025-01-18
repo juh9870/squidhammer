@@ -1,4 +1,4 @@
-struct title="RequirementRandomStarSystem" {
+struct title="RequirementRandomStarSystem" graph_inline=true {
 	number "MinValue" min=0 max=10000 type="int"
 	number "MaxValue" min=0 max=10000 type="int"
 	boolean "BoolValue" alias="AllowUnsafeStars"

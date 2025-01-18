@@ -1,4 +1,4 @@
-struct title="AmmunitionObsoleteData" {
+struct title="AmmunitionObsoleteData" graph_inline=false {
 	object "AmmunitionClass" "eh:enums/ammunition_class_obsolete"
 	object "DamageType" "eh:enums/weapon/damage_type"
 	number "Impulse" min=0 max=10

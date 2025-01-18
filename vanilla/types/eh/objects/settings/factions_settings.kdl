@@ -1,6 +1,5 @@
-struct title="FactionsSettings" {
-	object "Id" "sys:ids/numeric" {
-		const "Id" "eh:objects/settings/factions_settings"
-	}
-	object "Data" "eh:objects/settings/factions_settings_data" inline=true
+struct title="FactionsSettings" singleton=true graph_inline=false {
+	string "StarbaseInitialDefense" default="MIN(1000, 300 + 5*distance)" arguments="distance" min=1 max=100000 editor="eh:expression"
+	number "StarbaseMinDefense" default=50 min=1 type="int"
+	number "DefenseLossPerEnemyDefeated" default=10 min=0 type="int"
 }

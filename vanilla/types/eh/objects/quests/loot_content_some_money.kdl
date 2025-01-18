@@ -1,3 +1,3 @@
-struct title="LootContentSomeMoney" {
+struct title="LootContentSomeMoney" graph_inline=true {
 	number "ValueRatio" min=0.001 max=1000
 }

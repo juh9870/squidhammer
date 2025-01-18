@@ -1,4 +1,4 @@
-struct title="BehaviorNodeRequirementNone" {
+struct title="BehaviorNodeRequirementNone" graph_inline=true {
 	list "Requirements" {
 		object "Item" "eh:objects/ai/behavior_node_requirement"
 	}

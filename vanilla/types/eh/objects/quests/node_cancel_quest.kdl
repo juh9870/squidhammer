@@ -1,3 +1,3 @@
-struct title="NodeCancelQuest" {
+struct title="NodeCancelQuest" graph_inline=true {
 	number "Id" min=1 max=999999 type="int"
 }

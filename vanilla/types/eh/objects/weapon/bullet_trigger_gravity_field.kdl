@@ -1,4 +1,4 @@
-struct title="BulletTriggerGravityField" {
+struct title="BulletTriggerGravityField" graph_inline=true {
 	object "Condition" "eh:enums/weapon/bullet_trigger_condition"
 	number "Size" min=0 max=100
 	number "Cooldown" min=0 max=1000
