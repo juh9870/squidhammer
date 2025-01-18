@@ -5,6 +5,7 @@ use crate::workspace::editors::{
     cast_props, editor_for_item, DynProps, Editor, EditorContext, EditorProps, EditorResponse,
 };
 use dbe_backend::diagnostic::context::DiagnosticContextRef;
+use dbe_backend::etype::econst::ETypeConst;
 use dbe_backend::etype::eitem::EItemInfo;
 use dbe_backend::etype::property::default_properties::PROP_FIELD_INLINE;
 use dbe_backend::project::docs::DocsRef;
@@ -13,12 +14,18 @@ use dbe_backend::value::EValue;
 use egui::Ui;
 use itertools::Itertools;
 use miette::miette;
+use utils::map::HashMap;
 
 #[derive(Debug)]
 pub struct StructEditor;
 
 impl Editor for StructEditor {
-    fn props(&self, _reg: &ETypesRegistry, item: Option<&EItemInfo>) -> miette::Result<DynProps> {
+    fn props(
+        &self,
+        _reg: &ETypesRegistry,
+        item: Option<&EItemInfo>,
+        _object_props: DynProps,
+    ) -> miette::Result<DynProps> {
         if item
             .map(|i| i.extra_properties())
             .and_then(|p| PROP_FIELD_INLINE.try_get(p))

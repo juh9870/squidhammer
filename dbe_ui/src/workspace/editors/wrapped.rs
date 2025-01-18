@@ -1,12 +1,14 @@
 use crate::workspace::editors::utils::{unsupported, EditorSize};
 use crate::workspace::editors::{DynProps, Editor, EditorContext, EditorResponse};
 use dbe_backend::diagnostic::context::DiagnosticContextRef;
+use dbe_backend::etype::econst::ETypeConst;
 use dbe_backend::etype::eitem::EItemInfo;
 use dbe_backend::etype::EDataType;
 use dbe_backend::registry::ETypesRegistry;
 use dbe_backend::value::EValue;
 use egui::Ui;
 use ustr::Ustr;
+use utils::map::HashMap;
 
 /// Editor that wraps another editor for editing a single-field struct.
 #[derive(Debug)]
@@ -22,9 +24,14 @@ impl<T: Editor> WrappedEditor<T> {
 }
 
 impl<T: Editor> Editor for WrappedEditor<T> {
-    fn props(&self, reg: &ETypesRegistry, item: Option<&EItemInfo>) -> miette::Result<DynProps> {
+    fn props(
+        &self,
+        reg: &ETypesRegistry,
+        item: Option<&EItemInfo>,
+        object_props: DynProps,
+    ) -> miette::Result<DynProps> {
         let Some(item) = item else {
-            return self.editor.props(reg, item);
+            return self.editor.props(reg, item, object_props);
         };
 
         let EDataType::Object { ident } = item.ty() else {
@@ -44,7 +51,7 @@ impl<T: Editor> Editor for WrappedEditor<T> {
             return Ok(None);
         }
 
-        self.editor.props(reg, Some(&field.ty))
+        self.editor.props(reg, Some(&field.ty), object_props)
     }
 
     fn size(&self, props: &DynProps) -> EditorSize {

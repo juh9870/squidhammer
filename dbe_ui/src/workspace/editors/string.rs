@@ -4,15 +4,22 @@ use crate::workspace::editors::{
     cast_props, DynProps, Editor, EditorContext, EditorProps, EditorResponse,
 };
 use dbe_backend::diagnostic::context::DiagnosticContextRef;
+use dbe_backend::etype::econst::ETypeConst;
 use dbe_backend::etype::eitem::EItemInfo;
 use dbe_backend::registry::ETypesRegistry;
 use dbe_backend::value::EValue;
 use egui::{TextEdit, Ui};
+use utils::map::HashMap;
 
 #[derive(Debug, Clone)]
 pub struct StringEditor;
 impl Editor for StringEditor {
-    fn props(&self, _reg: &ETypesRegistry, item: Option<&EItemInfo>) -> miette::Result<DynProps> {
+    fn props(
+        &self,
+        _reg: &ETypesRegistry,
+        item: Option<&EItemInfo>,
+        _object_props: DynProps,
+    ) -> miette::Result<DynProps> {
         let props = item.map(|i| i.extra_properties());
         let multiline = props
             .and_then(|p| PROP_FIELD_MULTILINE.try_get(p))

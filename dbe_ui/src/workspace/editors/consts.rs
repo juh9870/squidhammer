@@ -10,12 +10,18 @@ use dbe_backend::registry::ETypesRegistry;
 use dbe_backend::value::EValue;
 use egui::Ui;
 use miette::{bail, miette};
+use utils::map::HashMap;
 
 #[derive(Debug)]
 pub struct ConstEditor;
 
 impl Editor for ConstEditor {
-    fn props(&self, _reg: &ETypesRegistry, item: Option<&EItemInfo>) -> miette::Result<DynProps> {
+    fn props(
+        &self,
+        _reg: &ETypesRegistry,
+        item: Option<&EItemInfo>,
+        _object_props: DynProps,
+    ) -> miette::Result<DynProps> {
         if let Some(ty) = item.map(|i| i.ty()) {
             let EDataType::Const { value } = ty else {
                 bail!("unsupported item. Expected const")
