@@ -16,6 +16,7 @@ use egui_hooks::UseHookExt;
 use itertools::Itertools;
 use miette::bail;
 use std::collections::BTreeSet;
+use std::str::FromStr;
 
 #[derive(Debug)]
 pub struct IdRefEditor;
@@ -114,6 +115,12 @@ impl Editor for IdRefEditor {
                         .or_draw_error(ui)
                     {
                         if done {
+                            if !changed {
+                                if let Ok(num) = <i32 as FromStr>::from_str(edited) {
+                                    *value = (num as f64).into();
+                                    changed = true;
+                                }
+                            }
                             *edited_text = None;
                         }
                     };
