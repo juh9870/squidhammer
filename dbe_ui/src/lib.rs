@@ -13,7 +13,6 @@ use egui_dock::DockState;
 use egui_file::FileDialog;
 use egui_toast::{Toast, ToastKind, ToastOptions, Toasts};
 use egui_tracing::EventCollector;
-use inline_tweak::tweak;
 use itertools::Itertools;
 use miette::{miette, IntoDiagnostic, WrapErr};
 use serde::{Deserialize, Serialize};
@@ -154,7 +153,7 @@ impl DbeApp {
     pub fn update(&mut self, ctx: &Context) {
         #[cfg(debug_assertions)]
         {
-            ctx.set_debug_on_hover(tweak!(false));
+            ctx.set_debug_on_hover(inline_tweak::tweak!(false));
         }
 
         static INIT: OnceLock<()> = OnceLock::new();

@@ -70,7 +70,6 @@ impl JsonRepr for Id {
                 .into());
         }
 
-        #[cfg(debug_assertions)]
         if other
             .repr(registry)
             .is_none_or(|r| r.id() != "ids/numeric_ref")
