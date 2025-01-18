@@ -6,7 +6,7 @@ struct title="BulletTriggerSpawnBullet" graph_inline=true {
 			const "Id" "eh:objects/weapon/ammunition"
 		}
 	}
-	object "Color" "color:argb"
+	object "Color" default="#FFFFFFFF" "color:argb"
 	object "ColorMode" "eh:enums/weapon/color_mode"
 	number "Quantity" min=0 max=1000 type="int"
 	number "Size" min=0 max=100

@@ -1,6 +1,6 @@
 struct title="FactionData" graph_inline=false {
 	string "Name"
-	object "Color" "color:argb"
+	object "Color" default="#FFFFFFFF" "color:argb"
 	boolean "NoTerritories"
 	number "HomeStarDistance" min=0 max=5000 type="int"
 	number "HomeStarDistanceMax" min=0 max=5000 type="int"
