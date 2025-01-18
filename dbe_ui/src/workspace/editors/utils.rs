@@ -44,14 +44,14 @@ impl EditorSize {
 
 pub trait PropLike<T> {
     type Storage<'a>;
-    fn try_get<'a>(&self, props: Self::Storage<'a>) -> Option<T>;
+    fn try_get(&self, props: Self::Storage<'_>) -> Option<T>;
     fn info(&self) -> &PropertyInfo;
 }
 
 impl<T: From<ETypeConst>> PropLike<T> for ObjectProperty<T> {
     type Storage<'a> = ObjectProps<'a>;
 
-    fn try_get<'a>(&self, props: Self::Storage<'a>) -> Option<T> {
+    fn try_get(&self, props: Self::Storage<'_>) -> Option<T> {
         self.try_get(props)
     }
 
@@ -63,7 +63,7 @@ impl<T: From<ETypeConst>> PropLike<T> for ObjectProperty<T> {
 impl<T: From<ETypeConst>> PropLike<T> for FieldProperty<T> {
     type Storage<'a> = Props<'a>;
 
-    fn try_get<'a>(&self, props: Self::Storage<'a>) -> Option<T> {
+    fn try_get(&self, props: Self::Storage<'_>) -> Option<T> {
         self.try_get(props)
     }
 

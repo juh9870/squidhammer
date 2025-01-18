@@ -10,7 +10,6 @@ use dbe_backend::registry::ETypesRegistry;
 use dbe_backend::value::EValue;
 use egui::Ui;
 use miette::{bail, miette};
-use utils::map::HashMap;
 
 #[derive(Debug)]
 pub struct ConstEditor;
