@@ -29,6 +29,7 @@ enum title="EH Item" tag="ItemType" {
     object "StatUpgradeTemplate" "eh:objects/stat_upgrade_template" tag=32
 //    object "FrontierLevel" "eh:objects/frontier_level" tag=33
 //    object "FrontierCommonLevel" "eh:objects/frontier_common_level" tag=34
+    object "ComponentGroupTag" "eh:objects/component_group_tag" tag=35
     object "ShipSettings" "eh:objects/settings/ship_settings" tag=100
     object "GalaxySettings" "eh:objects/settings/galaxy_settings" tag=101
     object "DatabaseSettings" "eh:objects/settings/database_settings" tag=102
