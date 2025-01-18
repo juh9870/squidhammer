@@ -12,7 +12,9 @@ use dbe_backend::graph::editing::PartialGraphEditingContext;
 use dbe_backend::graph::node::SnarlNode;
 use dbe_backend::project::docs::DocsRef;
 use dbe_backend::project::side_effects::SideEffectsContext;
-use dbe_backend::project::{Project, ProjectFile};
+use dbe_backend::project::{
+    Project, ProjectFile, EXTENSION_GRAPH, EXTENSION_ITEM, EXTENSION_VALUE,
+};
 use dbe_backend::validation::validate;
 use egui::{Color32, Context, Frame, Margin, RichText, Ui, WidgetText};
 use egui_dock::{DockArea, TabViewer};
@@ -20,6 +22,7 @@ use egui_hooks::UseHookExt;
 use egui_modal::Modal;
 use egui_snarl::ui::SnarlStyle;
 use egui_snarl::{NodeId, Snarl};
+use egui_toast::{Toast, ToastKind, ToastOptions};
 use inline_tweak::tweak;
 use miette::miette;
 use std::ops::DerefMut;
@@ -48,8 +51,33 @@ impl DbeApp {
     }
 
     pub fn new_file(&mut self, ctx: &Context, folder: Utf8PathBuf) {
-        self.show_new_file_modal(ctx, folder, |app, ctx, folder, filename| {
-            let filename = format!("{}.json", filename);
+        self.show_new_file_modal(ctx, folder, |app, ctx, folder, mut filename| {
+            let segments: Vec<&str> = filename.split('.').collect();
+            if segments.len() > 1 {
+                let ext = segments.last().unwrap().to_lowercase();
+                match ext.as_str() {
+                    EXTENSION_VALUE | EXTENSION_GRAPH => {
+                        app.toasts.push(Toast {
+                            kind: ToastKind::Error,
+                            text: "Invalid value extension".into(),
+                            options: ToastOptions::default()
+                                .duration_in_seconds(3.0)
+                                .show_progress(true),
+                            style: Default::default(),
+                        });
+                        return;
+                    }
+                    EXTENSION_ITEM => {
+                        filename = filename.to_string();
+                    }
+                    _ => {
+                        filename = format!("{}.{}", filename, EXTENSION_ITEM);
+                    }
+                }
+            } else {
+                filename = format!("{}.{}", filename, EXTENSION_ITEM);
+            }
+
             let path = folder.join(filename);
             let Some(project) = app.project.as_mut() else {
                 report_error(miette!("No project is open"));
@@ -72,8 +100,33 @@ impl DbeApp {
     }
 
     pub fn new_graph(&mut self, ctx: &Context, folder: Utf8PathBuf) {
-        self.show_new_file_modal(ctx, folder, |app, ctx, folder, filename| {
-            let filename = format!("{}.dbegraph", filename);
+        self.show_new_file_modal(ctx, folder, |app, ctx, folder, mut filename| {
+            let split: Vec<&str> = filename.split('.').collect();
+            if split.len() > 1 {
+                let ext = split.last().unwrap().to_lowercase();
+                match ext.as_str() {
+                    EXTENSION_VALUE | EXTENSION_ITEM => {
+                        app.toasts.push(Toast {
+                            kind: ToastKind::Error,
+                            text: "Invalid graph file extension".into(),
+                            options: ToastOptions::default()
+                                .duration_in_seconds(3.0)
+                                .show_progress(true),
+                            style: Default::default(),
+                        });
+                        return;
+                    }
+                    EXTENSION_GRAPH => {
+                        filename = filename.to_string();
+                    }
+                    _ => {
+                        filename = format!("{}.{}", filename, EXTENSION_GRAPH);
+                    }
+                }
+            } else {
+                filename = format!("{}.{}", filename, EXTENSION_GRAPH);
+            }
+
             let path = folder.join(filename);
             let Some(project) = app.project.as_mut() else {
                 report_error(miette!("No project is open"));
@@ -107,7 +160,8 @@ impl DbeApp {
                     modal.frame(ui, |ui| {
                         ui.horizontal(|ui| {
                             ui.label("File name ");
-                            ui.text_edit_singleline(file_name.deref_mut());
+                            let editor = ui.text_edit_singleline(file_name.deref_mut());
+                            editor.request_focus();
                         });
                     });
                     let sanitized = sanitise_file_name::sanitise(file_name.trim());
