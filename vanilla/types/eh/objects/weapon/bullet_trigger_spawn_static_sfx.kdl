@@ -6,7 +6,7 @@ struct title="BulletTriggerSpawnStaticSfx" graph_inline=true {
 		}
 	}
 	string "AudioClip" editor="eh:audioclip"
-	object "Color" default="#FFFFFFFF" "color:argb"
+	object "Color" default="#00000000" "color:argb"
 	object "ColorMode" "eh:enums/weapon/color_mode"
 	number "Size" min=0 max=100
 	number "Lifetime" min=0 max=1000
