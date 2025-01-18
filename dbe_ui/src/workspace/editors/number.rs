@@ -4,14 +4,12 @@ use crate::workspace::editors::{
     cast_props, DynProps, Editor, EditorContext, EditorProps, EditorResponse,
 };
 use dbe_backend::diagnostic::context::DiagnosticContextRef;
-use dbe_backend::etype::econst::ETypeConst;
 use dbe_backend::etype::eitem::EItemInfo;
 use dbe_backend::registry::ETypesRegistry;
 use dbe_backend::value::{ENumber, EValue};
 use egui::{DragValue, Slider, Ui};
 use num_traits::Float;
 use std::ops::RangeInclusive;
-use utils::map::HashMap;
 
 #[derive(Debug)]
 pub struct NumberEditor {

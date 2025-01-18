@@ -1,14 +1,12 @@
 use crate::workspace::editors::utils::{unsupported, EditorSize};
 use crate::workspace::editors::{DynProps, Editor, EditorContext, EditorResponse};
 use dbe_backend::diagnostic::context::DiagnosticContextRef;
-use dbe_backend::etype::econst::ETypeConst;
 use dbe_backend::etype::eitem::EItemInfo;
 use dbe_backend::etype::EDataType;
 use dbe_backend::registry::ETypesRegistry;
 use dbe_backend::value::EValue;
 use egui::Ui;
 use ustr::Ustr;
-use utils::map::HashMap;
 
 /// Editor that wraps another editor for editing a single-field struct.
 #[derive(Debug)]
