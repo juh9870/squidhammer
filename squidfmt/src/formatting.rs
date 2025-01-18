@@ -62,7 +62,7 @@ pub struct FmtDisplay<'fmt, 'keys, Keys: FormatKeys> {
     pub(crate) err: OnceCell<FormatError>,
 }
 
-impl<'fmt, 'keys, Keys: FormatKeys> FmtDisplay<'fmt, 'keys, Keys> {
+impl<Keys: FormatKeys> FmtDisplay<'_, '_, Keys> {
     pub fn result(self) -> Result<(), FormatError> {
         match self.err.into_inner() {
             None => Ok(()),
@@ -71,7 +71,7 @@ impl<'fmt, 'keys, Keys: FormatKeys> FmtDisplay<'fmt, 'keys, Keys> {
     }
 }
 
-impl<'fmt, 'keys, Keys: FormatKeys> Display for FmtDisplay<'fmt, 'keys, Keys> {
+impl<Keys: FormatKeys> Display for FmtDisplay<'_, '_, Keys> {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         match self.fmt.format(self.keys, f) {
             Ok(_) => Ok(()),

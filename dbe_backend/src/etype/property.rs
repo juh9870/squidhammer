@@ -283,10 +283,7 @@ impl<T: TryFrom<ETypeConst, Error: Debug>> Property<T> {
     }
 
     fn try_get(&self, prop: Option<&ETypeConst>) -> Option<T> {
-        let prop = match prop {
-            Some(prop) => prop,
-            None => return None,
-        };
+        let prop = prop?;
 
         match T::try_from(*prop) {
             Ok(value) => Some(value),

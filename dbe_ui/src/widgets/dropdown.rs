@@ -78,8 +78,8 @@ impl<'a, F: FnMut(&mut Ui, &V, &str) -> Response, V: AsRef<str>, I: Iterator<Ite
     }
 }
 
-impl<'a, F: FnMut(&mut Ui, &V, &str) -> Response, V: AsRef<str>, I: Iterator<Item = V>> Widget
-    for DropDownBox<'a, F, V, I>
+impl<F: FnMut(&mut Ui, &V, &str) -> Response, V: AsRef<str>, I: Iterator<Item = V>> Widget
+    for DropDownBox<'_, F, V, I>
 {
     fn ui(self, ui: &mut Ui) -> Response {
         let Self {

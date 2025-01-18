@@ -86,13 +86,13 @@ xflags = "0.3"
 xshell = "0.2"
 
 # Workspace crates
+collection_traits = { path = "collection_traits" }
 dbe_backend = { path = "dbe_backend" }
 dbe_ui = { path = "dbe_ui" }
-utils = { path = "utils" }
-list_edit = { path = "list_edit" }
 diagnostic = { path = "diagnostic" }
+list_edit = { path = "list_edit" }
 squidfmt = { path = "squidfmt" }
-collection_traits = { path = "collection_traits" }
+utils = { path = "utils" }
 #[patch.'https://github.com/TheLostLambda/miette']
 #miette = { git = "https://github.com/zkat/miette", rev = "bf5aa3742fd664be3c93160b9c28c145b1ed8bc9" }
 #

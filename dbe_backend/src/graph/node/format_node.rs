@@ -194,7 +194,7 @@ struct FmtFields<'a> {
     variables: &'a [Ustr],
 }
 
-impl<'a> FormatKeys for FmtFields<'a> {
+impl FormatKeys for FmtFields<'_> {
     fn fmt(&self, key: &str, f: &mut Formatter<'_>) -> Result<(), FormatKeyError> {
         let Some(idx) = self.variables.iter().position(|i| i.as_str() == key) else {
             return Err(FormatKeyError::UnknownKey);

@@ -43,9 +43,9 @@ impl JsonRepr for Id {
             return true;
         }
 
-        if !other
+        if other
             .repr(registry)
-            .is_some_and(|r| r.id() == "ids/numeric_ref")
+            .is_none_or(|r| r.id() != "ids/numeric_ref")
         {
             return false;
         };
@@ -71,9 +71,9 @@ impl JsonRepr for Id {
         }
 
         #[cfg(debug_assertions)]
-        if !other
+        if other
             .repr(registry)
-            .is_some_and(|r| r.id() == "ids/numeric_ref")
+            .is_none_or(|r| r.id() != "ids/numeric_ref")
         {
             panic!("ids/numeric can only be converted to number or ids/numeric_ref");
         };
@@ -108,10 +108,7 @@ impl JsonRepr for Ref {
     ) -> bool {
         // ids/numeric_ref can be converted from ids/numeric
 
-        if !other
-            .repr(registry)
-            .is_some_and(|r| r.id() == "ids/numeric")
-        {
+        if other.repr(registry).is_none_or(|r| r.id() != "ids/numeric") {
             return false;
         };
 

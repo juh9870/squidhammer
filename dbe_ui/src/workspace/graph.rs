@@ -60,7 +60,7 @@ impl<'a> GraphViewer<'a> {
     }
 }
 
-impl<'a> SnarlViewer<SnarlNode> for GraphViewer<'a> {
+impl SnarlViewer<SnarlNode> for GraphViewer<'_> {
     fn title(&mut self, _node: &SnarlNode) -> String {
         unreachable!("Custom header doesn't call SnarlViewer::title")
     }

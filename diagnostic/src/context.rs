@@ -58,7 +58,7 @@ impl DiagnosticContext {
     }
 }
 
-impl<'a> DiagnosticContextMut<'a> {
+impl DiagnosticContextMut<'_> {
     pub fn emit(&mut self, info: miette::Report, level: DiagnosticLevel) {
         self.diagnostics
             .entry(self.path.clone())
@@ -202,7 +202,7 @@ pub trait ContextLike: sealed::Sealed {
     fn as_btreemap(&self) -> &BTreeMap<DiagnosticPath, SmallVec<[Diagnostic; 1]>>;
 }
 
-impl<'a> ContextLike for &'a BTreeMap<DiagnosticPath, SmallVec<[Diagnostic; 1]>> {
+impl ContextLike for &BTreeMap<DiagnosticPath, SmallVec<[Diagnostic; 1]>> {
     fn make_ref(&mut self) -> Self::Target<'_> {
         self
     }
@@ -212,7 +212,7 @@ impl<'a> ContextLike for &'a BTreeMap<DiagnosticPath, SmallVec<[Diagnostic; 1]>>
     }
 }
 
-impl<'a> ContextLike for &'a mut BTreeMap<DiagnosticPath, SmallVec<[Diagnostic; 1]>> {
+impl ContextLike for &mut BTreeMap<DiagnosticPath, SmallVec<[Diagnostic; 1]>> {
     fn make_ref(&mut self) -> Self::Target<'_> {
         self
     }
@@ -232,11 +232,11 @@ mod sealed {
         type Target<'b>;
     }
 
-    impl<'a> Sealed for &'a BTreeMap<DiagnosticPath, SmallVec<[Diagnostic; 1]>> {
+    impl Sealed for &BTreeMap<DiagnosticPath, SmallVec<[Diagnostic; 1]>> {
         type Target<'b> = &'b BTreeMap<DiagnosticPath, SmallVec<[Diagnostic; 1]>>;
     }
 
-    impl<'a> Sealed for &'a mut BTreeMap<DiagnosticPath, SmallVec<[Diagnostic; 1]>> {
+    impl Sealed for &mut BTreeMap<DiagnosticPath, SmallVec<[Diagnostic; 1]>> {
         type Target<'b> = &'b mut BTreeMap<DiagnosticPath, SmallVec<[Diagnostic; 1]>>;
     }
 }

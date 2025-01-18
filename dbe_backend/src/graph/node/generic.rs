@@ -46,7 +46,7 @@ pub enum GenericNodeFieldMut<'a> {
     Fixed(EDataType),
 }
 
-impl<'a> GenericNodeFieldMut<'a> {
+impl GenericNodeFieldMut<'_> {
     pub fn as_ref(&self) -> GenericNodeField {
         match self {
             GenericNodeFieldMut::List(ty) => GenericNodeField::List(ty),
@@ -129,7 +129,7 @@ impl<'a> GenericNodeFieldMut<'a> {
     }
 }
 
-impl<'a> GenericNodeField<'a> {
+impl GenericNodeField<'_> {
     pub fn is_specific(&self) -> bool {
         match self {
             GenericNodeField::List(ty) => ty.is_some(),
