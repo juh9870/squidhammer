@@ -167,21 +167,17 @@ impl DiagnosticPath {
     }
 
     pub fn last_is_index(&self, field: &str) -> bool {
-        self.0
-            .last()
-            .map_or(false, |segment| segment.is_field(field))
+        self.0.last().is_some_and(|segment| segment.is_field(field))
     }
 
     pub fn last_is_field(&self, field: &str) -> bool {
-        self.0
-            .last()
-            .map_or(false, |segment| segment.is_field(field))
+        self.0.last().is_some_and(|segment| segment.is_field(field))
     }
 
     pub fn last_is_variant(&self, variant: &str) -> bool {
         self.0
             .last()
-            .map_or(false, |segment| segment.is_variant(variant))
+            .is_some_and(|segment| segment.is_variant(variant))
     }
 
     pub fn extend(&mut self, mut path: DiagnosticPath) {

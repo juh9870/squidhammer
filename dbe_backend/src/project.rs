@@ -32,6 +32,7 @@ pub mod undo;
 
 pub const EXTENSION_GRAPH: &str = "dbegraph";
 pub const EXTENSION_VALUE: &str = "dbevalue";
+pub const EXTENSION_ITEM: &str = "json";
 pub const EXTENSION_DOCS: &str = "docs.toml";
 
 #[derive(Debug)]

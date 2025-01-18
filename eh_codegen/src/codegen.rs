@@ -4,10 +4,11 @@ use codegen_schema::schema::{
 };
 use convert_case::{Case, Casing};
 use itertools::Itertools;
-use std::collections::{BTreeMap, HashMap, HashSet};
+use std::collections::BTreeMap;
 use std::path::Path;
 use std::sync::LazyLock;
 use tracing::error_span;
+use utils::map::{HashMap, HashSet};
 
 static SPECIAL_FIELDS: LazyLock<HashMap<&str, &str>> = LazyLock::new(|| {
     let entries = [
@@ -215,7 +216,7 @@ impl Ctx {
 
         let typeid_fmt = |id: String| format!("\"{}\"", typeid(&self.typeids, id,));
 
-        let mut encountered = HashMap::new();
+        let mut encountered = HashMap::default();
 
         for member in members {
             let _guard = error_span!("Member", name = member.name).entered();
