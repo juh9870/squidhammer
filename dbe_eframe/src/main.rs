@@ -7,6 +7,9 @@ use eframe::icon_data::from_png_bytes;
 use eframe::{egui, App, CreationContext, Frame, Storage};
 use egui_tracing::tracing::collector::AllowedTargets;
 use egui_tracing::EventCollector;
+use std::fs::File;
+use std::io::Write;
+use std::{fs, panic};
 use tracing_subscriber::filter::LevelFilter;
 use tracing_subscriber::layer::SubscriberExt;
 use tracing_subscriber::EnvFilter;
@@ -23,22 +26,57 @@ fn main() -> eframe::Result<()> {
         backtrace_on_stack_overflow::enable();
     }
 
-    BacktracePrinter::new()
-        .add_frame_filter(Box::new(|frame| {
-            frame.retain(|frame| {
-                if frame.name.as_ref().is_some_and(|name| {
-                    name.starts_with("core::ops::function::FnOnce::call_once")
-                        || name.starts_with("core::panicking::panic_display")
-                        || name.starts_with("core::option::expect_failed")
-                        || name.starts_with("core::panicking::assert_failed_inner")
-                        || name.starts_with("core::panicking::assert_failed")
-                }) {
-                    return false;
-                }
-                true
-            })
-        }))
-        .install(default_output_stream());
+    if fs::exists("dbe.log").expect("Failed to check if log file exists") {
+        fs::rename("dbe.log", "dbe.previous.log").expect("Failed to rename log file");
+    }
+
+    let log = File::create("dbe.log").expect("Failed to create log file");
+
+    let handler = BacktracePrinter::new().add_frame_filter(Box::new(|frame| {
+        frame.retain(|frame| {
+            if frame.name.as_ref().is_some_and(|name| {
+                name.starts_with("core::ops::function::FnOnce::call_once")
+                    || name.starts_with("core::panicking::panic_display")
+                    || name.starts_with("core::option::expect_failed")
+                    || name.starts_with("core::panicking::assert_failed_inner")
+                    || name.starts_with("core::panicking::assert_failed")
+            }) {
+                return false;
+            }
+            true
+        })
+    }));
+
+    panic::set_hook(Box::new(move |info| {
+        let err_file = File::create("crash.log").expect("Failed to create crash log file");
+        let mut writer = termcolor::NoColor::new(err_file);
+        writer.write(
+            format!(
+                "Something gone extremely wrong.\n\n\
+                {} had a problem and crashed.\n\n\
+                If you'd like, you can help us diagnose the problem! Please feel free to send us this file.\n\n\
+                - Open an issue on GitHub: https://github.com/juh9870/dbe/issues\n\
+                - Join support server: https://discord.gg/55dYrPq5Q3\n\
+                We take privacy very seriously - we don't perform any automated error collection. In order to improve the software, we rely on users like you to submit reports.\n\n\
+                ========================================\n\n\
+                Application version: {}\n\
+                Operating System: {}\n\
+                Architecture: {}\n\n\
+                ========================================\n\n\
+                ",
+                env!("CARGO_PKG_NAME"),
+                env!("CARGO_PKG_VERSION"),
+                std::env::consts::OS,
+                std::env::consts::ARCH,
+            )
+            .as_bytes(),
+        ).unwrap();
+        handler.print_panic_info(info, &mut writer).unwrap();
+
+        let stream = default_output_stream();
+        let mut lock = stream.lock();
+        handler.print_panic_info(info, &mut lock).unwrap()
+    }));
 
     let collector = EventCollector::default()
         .allowed_targets(AllowedTargets::Selected(vec!["dbe".to_string()]));
@@ -46,6 +84,11 @@ fn main() -> eframe::Result<()> {
     let subscriber = tracing_subscriber::Registry::default()
         .with(collector.clone())
         .with(tracing_subscriber::fmt::Layer::default().pretty())
+        .with(
+            tracing_subscriber::fmt::layer()
+                .with_ansi(false)
+                .with_writer(log),
+        )
         .with(
             EnvFilter::builder()
                 .with_default_directive(LevelFilter::INFO.into())
