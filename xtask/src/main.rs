@@ -1,5 +1,5 @@
-use std::collections::HashSet;
 use std::process;
+use utils::map::HashSet;
 use xshell::{cmd, Shell};
 
 use crate::flags::XtaskCmd;

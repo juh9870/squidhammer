@@ -1,10 +1,11 @@
 use crate::formatting::{FormatKeyError, FormatKeys};
 use std::borrow::Borrow;
-use std::collections::{BTreeMap, HashMap};
+use std::collections::BTreeMap;
 use std::fmt::{Display, Formatter};
 use std::hash::{BuildHasher, Hash};
 
-impl<K, V, S> FormatKeys for HashMap<K, V, S>
+#[allow(clippy::disallowed_types)]
+impl<K, V, S> FormatKeys for std::collections::HashMap<K, V, S>
 where
     K: Borrow<str> + Eq + Hash,
     V: Display,

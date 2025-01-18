@@ -1542,6 +1542,7 @@ dependencies = [
  "tracing",
  "tracing-panic",
  "tracing-subscriber",
+ "utils",
 ]
 
 [[package]]
@@ -5418,6 +5419,7 @@ dependencies = [
  "fs-err 3.0.0",
  "serde_json",
  "toml",
+ "utils",
  "xflags",
  "xshell",
 ]

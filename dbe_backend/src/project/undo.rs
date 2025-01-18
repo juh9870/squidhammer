@@ -377,6 +377,7 @@ fn state_of(file: &ProjectFile, graphs: &ProjectGraphs) -> miette::Result<u64> {
     }
 }
 
+#[allow(clippy::large_enum_variant)]
 #[derive(Debug, Clone)]
 enum ItemSnapshot {
     Value(EValue),

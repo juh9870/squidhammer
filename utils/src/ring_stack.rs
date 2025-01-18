@@ -51,13 +51,17 @@ impl<T> RingStack<T> {
     pub fn iter_mut(&mut self) -> std::collections::vec_deque::IterMut<T> {
         self.stack.iter_mut()
     }
-
-    pub fn into_iter(self) -> std::collections::vec_deque::IntoIter<T> {
-        self.stack.into_iter()
-    }
-
     pub fn drain(&mut self) -> std::collections::vec_deque::Drain<T> {
         self.stack.drain(..)
+    }
+}
+
+impl<T> IntoIterator for RingStack<T> {
+    type Item = T;
+    type IntoIter = std::collections::vec_deque::IntoIter<T>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.stack.into_iter()
     }
 }
 

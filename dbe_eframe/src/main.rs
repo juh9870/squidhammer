@@ -50,7 +50,7 @@ fn main() -> eframe::Result<()> {
     panic::set_hook(Box::new(move |info| {
         let err_file = File::create("crash.log").expect("Failed to create crash log file");
         let mut writer = termcolor::NoColor::new(err_file);
-        writer.write(
+        writer.write_all(
             format!(
                 "Something gone extremely wrong.\n\n\
                 {} had a problem and crashed.\n\n\
