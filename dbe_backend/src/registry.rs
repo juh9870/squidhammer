@@ -138,6 +138,13 @@ impl EObject for EObjectType {
         }
     }
 
+    fn generic_parent_id(&self) -> Option<ETypeId> {
+        match self {
+            EObjectType::Struct(s) => s.generic_parent_id(),
+            EObjectType::Enum(e) => e.generic_parent_id(),
+        }
+    }
+
     fn title(&self, registry: &ETypesRegistry) -> String {
         match self {
             EObjectType::Struct(s) => s.title(registry),

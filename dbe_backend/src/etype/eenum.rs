@@ -23,6 +23,7 @@ pub mod variant;
 pub struct EEnumData {
     pub generic_arguments: Vec<Ustr>,
     pub generic_arguments_values: Vec<EItemInfo>,
+    pub generic_parent_id: Option<ETypeId>,
     pub ident: ETypeId,
     pub repr: Option<Repr>,
     pub extra_properties: HashMap<ObjectPropertyId, ETypeConst>,
@@ -43,6 +44,7 @@ impl EEnumData {
         Self {
             generic_arguments,
             generic_arguments_values: vec![],
+            generic_parent_id: None,
             ident,
             repr,
             extra_properties,
@@ -70,6 +72,7 @@ impl EEnumData {
         new_id: ETypeId,
         get_object: &mut impl FnMut(&ETypeId) -> miette::Result<WhateverRef<'a, EObjectType>>,
     ) -> miette::Result<Self> {
+        self.generic_parent_id = Some(self.ident);
         self.ident = new_id;
         for variant in &mut self.variants {
             if let EItemInfo::Generic(g) = &variant.data {
@@ -310,6 +313,10 @@ impl EObject for EEnumData {
 
     fn generic_arguments_values(&self) -> &[EItemInfo] {
         &self.generic_arguments_values
+    }
+
+    fn generic_parent_id(&self) -> Option<ETypeId> {
+        self.generic_parent_id
     }
 
     fn title(&self, registry: &ETypesRegistry) -> String {

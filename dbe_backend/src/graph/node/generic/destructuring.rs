@@ -77,7 +77,7 @@ impl Node for DestructuringNode {
         if input != 0 {
             bail!("Destructuring only has one input")
         }
-        Ok(GenericNodeField::Struct(&self.id).as_input_ty(context, "input".into()))
+        Ok(GenericNodeField::Object(&self.id).as_input_ty(context, "input".into()))
     }
 
     fn outputs_count(&self, context: NodeContext) -> usize {
@@ -119,7 +119,7 @@ impl Node for DestructuringNode {
             from,
             to,
             incoming_type,
-            &mut [GenericNodeFieldMut::Struct(&mut self.id)],
+            &mut [GenericNodeFieldMut::Object(&mut self.id)],
         )? {
             ControlFlow::Continue(changed) => changed,
             ControlFlow::Break(b) => return Ok(b),

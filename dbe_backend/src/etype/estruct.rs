@@ -24,6 +24,7 @@ use utils::map::HashMap;
 pub struct EStructData {
     pub generic_arguments: Vec<Ustr>,
     pub generic_arguments_values: Vec<EItemInfo>,
+    pub generic_parent_id: Option<ETypeId>,
     pub ident: ETypeId,
     pub fields: Vec<EStructField>,
     // pub id_field: Option<usize>,
@@ -60,6 +61,7 @@ impl EStructData {
             repr,
             extra_properties,
             title: Default::default(),
+            generic_parent_id: None,
         }
     }
 
@@ -83,6 +85,7 @@ impl EStructData {
         arguments: &UstrMap<EItemInfo>,
         new_id: ETypeId,
     ) -> miette::Result<Self> {
+        self.generic_parent_id = Some(self.ident);
         self.ident = new_id;
         for x in &mut self.fields {
             if let EItemInfo::Generic(g) = &x.ty {
@@ -300,6 +303,10 @@ impl EObject for EStructData {
 
     fn generic_arguments_values(&self) -> &[EItemInfo] {
         &self.generic_arguments_values
+    }
+
+    fn generic_parent_id(&self) -> Option<ETypeId> {
+        self.generic_parent_id
     }
 
     fn title(&self, registry: &ETypesRegistry) -> String {

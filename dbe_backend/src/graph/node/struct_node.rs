@@ -140,7 +140,7 @@ impl Node for StructNode {
         if output != 0 {
             bail!("Destructuring only has one output")
         }
-        Ok(GenericNodeField::Struct(&self.id).as_output_ty(context, "output".into()))
+        Ok(GenericNodeField::Object(&self.id).as_output_ty(context, "output".into()))
     }
 
     fn can_output_to(
@@ -155,7 +155,7 @@ impl Node for StructNode {
             from,
             to,
             target_type,
-            &[GenericNodeField::Struct(&self.id)],
+            &[GenericNodeField::Object(&self.id)],
         )
     }
 
@@ -173,7 +173,7 @@ impl Node for StructNode {
             from,
             to,
             incoming_type,
-            &mut [GenericNodeFieldMut::Struct(&mut self.id)],
+            &mut [GenericNodeFieldMut::Object(&mut self.id)],
         )?;
 
         if changed {
