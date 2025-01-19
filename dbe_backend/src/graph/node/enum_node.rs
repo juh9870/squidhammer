@@ -17,6 +17,7 @@ use miette::bail;
 use serde::{Deserialize, Serialize};
 use smallvec::smallvec;
 use ustr::{ustr, Ustr};
+use utils::whatever_ref::{WhateverRef, WhateverRefMap};
 
 #[derive(Debug, Clone, Hash, Serialize, Deserialize)]
 pub struct EnumNode {
@@ -43,7 +44,10 @@ impl EnumNode {
     fn get_data<'a>(
         &self,
         registry: &'a ETypesRegistry,
-    ) -> Option<(&'a EEnumData, &'a EEnumVariant)> {
+    ) -> Option<(
+        WhateverRef<'a, EEnumData>,
+        WhateverRefMap<'a, EEnumData, EEnumVariant>,
+    )> {
         let variant = self.variant.as_ref()?;
 
         variant.enum_variant(registry)

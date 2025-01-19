@@ -119,7 +119,7 @@ pub fn docs_tab(ui: &mut Ui, app: &mut DbeApp) {
             if let (Some(docs), Some(ty)) =
                 (project.docs.get_type(ty), project.registry.get_object(ty))
             {
-                type_docs(ui, &project.registry, ty, docs);
+                type_docs(ui, &project.registry, ty.deref(), docs);
             } else {
                 *selection = SelectedDocs::None;
             }
@@ -244,7 +244,7 @@ fn show_window_ref(
         }
         DocsWindowRef::Type(ty) => {
             if let (Some(docs), Some(ty)) = (docs.get_type(ty), registry.get_object(ty)) {
-                type_docs(ui, registry, ty, docs);
+                type_docs(ui, registry, ty.deref(), docs);
                 shown = true;
             }
         }

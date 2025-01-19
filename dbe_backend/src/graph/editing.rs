@@ -248,6 +248,7 @@ impl GraphEditingContext<'_, '_> {
             .registry
             .get_object(&object)
             .expect("object id should be valid");
+        let info = info.deref();
         let node: Box<dyn Node> = match (info, &apply_value) {
             (EObjectType::Struct(_), None) => Box::new(StructNode::new(object)),
             (EObjectType::Struct(_), Some(value)) => Box::new(StructNode::from_value(value)?),
