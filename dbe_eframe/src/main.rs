@@ -17,6 +17,10 @@ use tracing_subscriber::EnvFilter;
 const ICON: &[u8] = include_bytes!("../../assets/favicon.png");
 
 fn main() -> eframe::Result<()> {
+    if std::env::var("RUST_BACKTRACE").is_err() {
+        std::env::set_var("RUST_BACKTRACE", "1");
+    }
+
     #[cfg(all(
         debug_assertions,
         target_os = "linux",
