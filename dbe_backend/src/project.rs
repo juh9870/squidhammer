@@ -383,6 +383,7 @@ impl<IO: ProjectIO> Project<IO> {
 
     /// Clean and validate the project, evaluating all graphs and running side effects
     pub fn clean_validate(&mut self) -> miette::Result<()> {
+        self.diagnostics.diagnostics.clear();
         self.evaluate_graphs()?;
         clear_validation_cache(&self.registry);
         // Double validate to ensure that validation cache is populated
