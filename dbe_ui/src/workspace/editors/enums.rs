@@ -24,6 +24,7 @@ use miette::{bail, miette};
 use std::ops::Deref;
 use tracing::error;
 use utils::map::HashMap;
+use utils::whatever_ref::{WhateverRef, WhateverRefMap};
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
 enum EnumEditorType {
@@ -197,8 +198,8 @@ struct EnumEditorData<'a> {
     editor: EditorData,
 
     skip_draw_body: bool,
-    enum_data: &'a EEnumData,
-    selected_variant: &'a EEnumVariant,
+    enum_data: WhateverRef<'a, EEnumData>,
+    selected_variant: WhateverRefMap<'a, EEnumData, EEnumVariant>,
 }
 
 impl<'a> EnumEditorData<'a> {

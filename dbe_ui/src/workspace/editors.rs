@@ -266,6 +266,7 @@ fn editor_for_raw(
                 let data = reg
                     .get_object(ident)
                     .ok_or_else(|| miette!("Unknown object ID `{}`", ident))?;
+                let data = data.deref();
                 let name = if let Some(prop) = PROP_OBJECT_EDITOR.try_get(data.extra_properties()) {
                     prop
                 } else {

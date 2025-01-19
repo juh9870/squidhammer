@@ -14,6 +14,7 @@ use miette::{bail, Context};
 use serde::{Deserialize, Serialize};
 use std::fmt::{Display, Formatter};
 use ustr::Ustr;
+use utils::whatever_ref::{WhateverRef, WhateverRefMap};
 
 #[derive(Debug, Clone)]
 pub struct EEnumVariant {
@@ -103,13 +104,23 @@ impl EEnumVariantId {
     pub fn enum_variant<'a>(
         &self,
         registry: &'a ETypesRegistry,
-    ) -> Option<(&'a EEnumData, &'a EEnumVariant)> {
+    ) -> Option<(
+        WhateverRef<'a, EEnumData>,
+        WhateverRefMap<'a, EEnumData, EEnumVariant>,
+    )> {
         let eenum = registry.get_enum(&self.ident)?;
-        let variant = eenum.variants.iter().find(|v| self.variant == v.name)?;
+        let variant = WhateverRef::try_map(eenum.clone(), |e| {
+            e.variants.iter().find(|v| self.variant == v.name).ok_or(())
+        })
+        .ok()?;
+
         Some((eenum, variant))
     }
 
-    pub fn variant<'a>(&self, registry: &'a ETypesRegistry) -> Option<&'a EEnumVariant> {
+    pub fn variant<'a>(
+        &self,
+        registry: &'a ETypesRegistry,
+    ) -> Option<WhateverRefMap<'a, EEnumData, EEnumVariant>> {
         self.enum_variant(registry).map(|e| e.1)
     }
 

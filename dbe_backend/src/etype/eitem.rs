@@ -9,11 +9,13 @@ use crate::registry::ETypesRegistry;
 use crate::validation::Validator;
 use crate::value::EValue;
 use atomic_refcell::AtomicRefCell;
+use std::ops::Deref;
 use std::sync::{Arc, LazyLock};
 use strum::EnumIs;
 use tracing::error;
 use ustr::Ustr;
 use utils::map::HashMap;
+use utils::whatever_ref::WhateverRef;
 
 #[derive(Debug, Clone)]
 pub struct EItemInfoSpecific {
@@ -66,12 +68,12 @@ impl EItemInfo {
     }
 
     /// Returns the repr for this type, if it exists
-    pub fn repr<'a>(&self, registry: &'a ETypesRegistry) -> Option<&'a Repr> {
+    pub fn repr<'a>(&self, registry: &'a ETypesRegistry) -> Option<impl Deref<Target = Repr> + 'a> {
         let source_ty = self.ty();
         if let EDataType::Object { ident } = source_ty {
             let obj = registry.get_object(&ident).expect("object should exist");
-            if let Some(repr) = obj.repr() {
-                return Some(repr);
+            if obj.repr().is_some() {
+                return Some(WhateverRef::map(obj, |obj| obj.repr().unwrap()));
             }
         }
 

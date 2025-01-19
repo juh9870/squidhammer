@@ -4,18 +4,20 @@ use crate::etype::eitem::EItemInfo;
 use crate::etype::eobject::EObject;
 use crate::json_utils::{json_expected, json_kind, JsonValue};
 use crate::m_try;
-use crate::registry::ETypesRegistry;
+use crate::registry::{EObjectType, ETypesRegistry};
 use crate::value::id::{EListId, EMapId, ETypeId};
 use crate::value::EValue;
 use miette::{bail, miette, Context};
 use ordered_float::OrderedFloat;
 use serde::{Deserialize, Serialize};
+use smallvec::{smallvec, SmallVec};
 use std::borrow::Cow;
 use std::collections::BTreeMap;
 use std::ops::Deref;
 use std::sync::LazyLock;
 use strum::EnumIs;
 use ustr::Ustr;
+use utils::whatever_ref::{WhateverRef, WhateverRefMap};
 
 pub mod conversion;
 pub mod default;
@@ -119,24 +121,41 @@ impl EDataType {
     }
 
     /// Returns the generic arguments names for this type
-    pub fn generic_arguments_names<'a>(&self, registry: &'a ETypesRegistry) -> Cow<'a, [Ustr]> {
+    pub fn generic_arguments_names<'a>(
+        &self,
+        registry: &'a ETypesRegistry,
+    ) -> impl Deref<Target = [Ustr]> + 'a {
+        enum Names<'a> {
+            Ref(&'a [Ustr]),
+            Map(WhateverRefMap<'a, EObjectType, [Ustr]>),
+        }
+
+        impl Deref for Names<'_> {
+            type Target = [Ustr];
+            fn deref(&self) -> &Self::Target {
+                match self {
+                    Names::Ref(r) => r,
+                    Names::Map(r) => r.deref(),
+                }
+            }
+        }
         match self {
             EDataType::Boolean
             | EDataType::Number
             | EDataType::String
-            | EDataType::Const { .. } => Cow::Borrowed(&[]),
+            | EDataType::Const { .. } => Names::Ref(&[]),
             EDataType::Object { ident } => {
                 let obj = registry.get_object(ident).expect("object should exist");
-                obj.generic_arguments_names().into()
+                Names::Map(WhateverRef::map(obj, |obj| obj.generic_arguments_names()))
             }
             EDataType::List { .. } => {
                 static NAMES: LazyLock<[Ustr; 1]> = LazyLock::new(|| [Ustr::from("Item")]);
-                Cow::Borrowed(NAMES.deref())
+                Names::Ref(NAMES.deref())
             }
             EDataType::Map { .. } => {
                 static NAMES: LazyLock<[Ustr; 2]> =
                     LazyLock::new(|| [Ustr::from("Key"), Ustr::from("Item")]);
-                Cow::Borrowed(NAMES.deref())
+                Names::Ref(NAMES.deref())
             }
         }
     }
@@ -145,23 +164,40 @@ impl EDataType {
     pub fn generic_arguments_values<'a>(
         &self,
         registry: &'a ETypesRegistry,
-    ) -> Cow<'a, [EItemInfo]> {
+    ) -> impl Deref<Target = [EItemInfo]> + 'a {
+        enum Names<'a> {
+            Nil,
+            Vec(SmallVec<[EItemInfo; 2]>),
+            Ref(WhateverRefMap<'a, EObjectType, [EItemInfo]>),
+        }
+
+        impl Deref for Names<'_> {
+            type Target = [EItemInfo];
+            fn deref(&self) -> &Self::Target {
+                match self {
+                    Names::Nil => &[],
+                    Names::Vec(v) => v.as_slice(),
+                    Names::Ref(r) => r.deref(),
+                }
+            }
+        }
+
         match self {
             EDataType::Boolean
             | EDataType::Number
             | EDataType::String
-            | EDataType::Const { .. } => Cow::Borrowed(&[]),
+            | EDataType::Const { .. } => Names::Nil,
             EDataType::Object { ident } => {
                 let obj = registry.get_object(ident).expect("object should exist");
-                obj.generic_arguments_values().into()
+                Names::Ref(WhateverRef::map(obj, |obj| obj.generic_arguments_values()))
             }
             EDataType::List { id } => {
                 let list = registry.get_list(id).expect("list should exist");
-                Cow::Owned(vec![EItemInfo::simple_type(list.value_type)])
+                Names::Vec(smallvec![EItemInfo::simple_type(list.value_type)])
             }
             EDataType::Map { id } => {
                 let map = registry.get_map(id).expect("map should exist");
-                Cow::Owned(vec![
+                Names::Vec(smallvec![
                     EItemInfo::simple_type(map.key_type),
                     EItemInfo::simple_type(map.value_type),
                 ])

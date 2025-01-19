@@ -27,6 +27,7 @@ use std::fmt::Debug;
 use std::sync::{Arc, LazyLock};
 use ustr::{Ustr, UstrMap};
 use utils::map::HashMap;
+use utils::whatever_ref::WhateverRef;
 
 pub mod config;
 
@@ -242,14 +243,25 @@ impl ETypesRegistry {
         })
     }
 
-    pub fn get_object(&self, id: &ETypeId) -> Option<&EObjectType> {
-        self.types.get(id).map(RegistryItem::expect_ready)
+    pub fn get_object(&self, id: &ETypeId) -> Option<WhateverRef<EObjectType>> {
+        self.types
+            .get(id)
+            .map(RegistryItem::expect_ready)
+            .map(WhateverRef::from)
     }
 
-    pub fn get_struct(&self, id: &ETypeId) -> Option<&EStructData> {
+    pub fn get_struct(&self, id: &ETypeId) -> Option<WhateverRef<EStructData>> {
         self.types
             .get(id)
             .and_then(|e| e.expect_ready().as_struct())
+            .map(WhateverRef::from)
+    }
+
+    pub fn get_enum(&self, id: &ETypeId) -> Option<WhateverRef<EEnumData>> {
+        self.types
+            .get(id)
+            .and_then(|e| e.expect_ready().as_enum())
+            .map(WhateverRef::from)
     }
 
     pub fn get_list(&self, id: &EListId) -> Option<ListData> {
@@ -258,10 +270,6 @@ impl ETypesRegistry {
 
     pub fn get_map(&self, id: &EMapId) -> Option<MapData> {
         self.maps.read().get(id).copied()
-    }
-
-    pub fn get_enum(&self, id: &ETypeId) -> Option<&EEnumData> {
-        self.types.get(id).and_then(|e| e.expect_ready().as_enum())
     }
 
     pub fn register_struct(&mut self, id: ETypeId, data: EStructData) -> EDataType {
