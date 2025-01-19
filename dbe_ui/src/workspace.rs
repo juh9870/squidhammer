@@ -206,12 +206,16 @@ impl<Io> TabViewer for WorkspaceTabViewer<'_, Io> {
         };
 
         let mut diagnostics = self.0.diagnostics.enter(tab.as_str());
-        let mut changed = true;
+        let mut changed = false;
         let force_snapshot = false;
 
         match data {
             ProjectFile::Value(value) => {
                 let editor = editor_for_value(&self.0.registry, value);
+
+                // value is always considered changed. Undo history should
+                // figure out when it's actually changed based on hash
+                changed = true;
 
                 let res = editor.show(
                     ui,
@@ -228,7 +232,6 @@ impl<Io> TabViewer for WorkspaceTabViewer<'_, Io> {
                     {
                         report_error(err);
                     }
-                    changed = true;
                 }
 
                 ui.add_space(ui.ctx().screen_rect().height() * 0.5);
