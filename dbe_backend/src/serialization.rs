@@ -19,6 +19,7 @@ use knus::{DecodeScalar, Error};
 use miette::{bail, miette, Context, IntoDiagnostic};
 use ustr::Ustr;
 use utils::map::HashMap;
+use utils::whatever_ref::WhateverRef;
 
 mod item;
 
@@ -138,7 +139,17 @@ impl ThingEnum {
         );
         for e in self.variants {
             let (name, item) = e.into_item(registry, &data.generic_arguments)?;
-            data.add_variant(EEnumVariant::from_eitem(item, name, registry, repr, name)?);
+            data.add_variant(EEnumVariant::from_eitem(
+                item,
+                name,
+                &mut |id| {
+                    registry
+                        .fetch_or_deserialize(*id)
+                        .map(|x| WhateverRef::from_arc(x.clone()))
+                },
+                repr,
+                name,
+            )?);
         }
         Ok(data)
     }

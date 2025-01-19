@@ -82,7 +82,6 @@ impl EStructData {
         mut self,
         arguments: &UstrMap<EItemInfo>,
         new_id: ETypeId,
-        _registry: &mut ETypesRegistry,
     ) -> miette::Result<Self> {
         self.ident = new_id;
         for x in &mut self.fields {

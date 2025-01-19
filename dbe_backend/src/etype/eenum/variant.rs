@@ -7,7 +7,7 @@ use crate::etype::eobject::EObject;
 use crate::etype::property::default_properties::PROP_FIELD_TAG;
 use crate::etype::EDataType;
 use crate::json_utils::repr::JsonRepr;
-use crate::registry::ETypesRegistry;
+use crate::registry::{EObjectType, ETypesRegistry};
 use crate::value::id::ETypeId;
 use crate::value::EValue;
 use miette::{bail, Context};
@@ -40,10 +40,10 @@ impl EEnumVariant {
         PROP_FIELD_TAG.get(self.data.extra_properties(), ETypeConst::String(self.name))
     }
 
-    pub(crate) fn from_eitem(
+    pub(crate) fn from_eitem<'a>(
         item: EItemInfo,
         name: Ustr,
-        registry: &mut ETypesRegistry,
+        get_object: &mut impl FnMut(&ETypeId) -> miette::Result<WhateverRef<'a, EObjectType>>,
         tagged_repr: Option<Tagged>,
         variant_name: Ustr,
     ) -> miette::Result<EEnumVariant> {
@@ -67,8 +67,7 @@ impl EEnumVariant {
                 EDataType::List { .. } => EnumPattern::List,
                 EDataType::Map { .. } => EnumPattern::Map,
                 EDataType::Object { ident } => {
-                    let data = registry
-                        .fetch_or_deserialize(*ident).context("This error might potentially be caused by the circular reference in types. Try specifying enum pattern manually")?;
+                    let data = get_object(ident).context("This error might potentially be caused by the circular reference in types. Try specifying enum pattern manually")?;
                     // .ok_or_else(|| miette!("!!INTERNAL ERROR!! unknown object `{}` while deserializing enum pattern", ident))?;
 
                     if let Some(pat) = data.repr().and_then(|repr| repr.enum_pat()) {

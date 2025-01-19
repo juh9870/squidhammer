@@ -3,21 +3,21 @@ use crate::etype::property::default_properties::PROP_OBJECT_TITLE;
 use crate::registry::ETypesRegistry;
 use itertools::Itertools;
 use squidfmt::formatting::{FormatKeyError, FormatKeys};
-use std::cell::OnceCell;
 use std::fmt::Formatter;
 use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::OnceLock;
 
 /// Cached human-readable title of the object
 #[derive(Debug, Default)]
 pub struct ObjectTitle {
-    pub(crate) value: OnceCell<String>,
+    pub(crate) value: OnceLock<String>,
     pub(crate) currently_initializing: AtomicBool,
 }
 
 impl Clone for ObjectTitle {
     fn clone(&self) -> Self {
         Self {
-            value: OnceCell::new(),
+            value: OnceLock::new(),
             currently_initializing: AtomicBool::new(false),
         }
     }

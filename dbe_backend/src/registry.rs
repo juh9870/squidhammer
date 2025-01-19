@@ -24,6 +24,7 @@ use std::any::{Any, TypeId};
 use std::collections::btree_map::Entry;
 use std::collections::BTreeMap;
 use std::fmt::Debug;
+use std::ops::Deref;
 use std::sync::{Arc, LazyLock};
 use ustr::{Ustr, UstrMap};
 use utils::map::HashMap;
@@ -31,6 +32,8 @@ use utils::whatever_ref::WhateverRef;
 
 pub mod config;
 
+pub static OPTIONAL_ID: LazyLock<ETypeId> =
+    LazyLock::new(|| ETypeId::from_raw("sys:optional".into()));
 pub static OPTIONAL_STRING_ID: LazyLock<ETypeId> =
     LazyLock::new(|| ETypeId::from_raw("sys:optional<Item=string>".into()));
 pub static OPTIONAL_BOOLEAN_ID: LazyLock<ETypeId> =
@@ -77,14 +80,12 @@ impl EObjectType {
         inline: bool,
     ) -> miette::Result<EValue> {
         let mut data_holder: Option<JsonValue> = None;
+        let repr = match self {
+            EObjectType::Struct(s) => &s.repr,
+            EObjectType::Enum(e) => &e.repr,
+        };
 
-        let data = if let EObjectType::Struct(EStructData {
-            repr: Some(repr), ..
-        })
-        | EObjectType::Enum(EEnumData {
-            repr: Some(repr), ..
-        }) = self
-        {
+        let data = if let Some(repr) = repr {
             data_holder.insert(repr.from_repr(registry, data, inline)?)
         } else {
             data
@@ -151,12 +152,12 @@ impl EObject for EObjectType {
 enum RegistryItem {
     Raw(String),
     DeserializationInProgress,
-    Ready(EObjectType),
+    Ready(Arc<EObjectType>),
 }
 
 impl RegistryItem {
     #[inline(always)]
-    pub fn expect_ready(&self) -> &EObjectType {
+    pub fn expect_ready(&self) -> &Arc<EObjectType> {
         match self {
             RegistryItem::Ready(item) => item,
             _ => panic!("Registry item is not ready when expected"),
@@ -168,6 +169,11 @@ impl RegistryItem {
 pub struct ETypesRegistry {
     /// Main storage for types in the system
     types: BTreeMap<ETypeId, RegistryItem>,
+    /// Secondary types storage. Used for creation of generic types at runtime.
+    ///
+    /// Less efficient than `types` because it requires locking and cloning
+    /// the Arc
+    pending_types: AtomicRefCell<HashMap<ETypeId, RegistryItem>>,
     /// Storage for lists
     lists: RwLock<BTreeMap<EListId, ListData>>,
     /// Storage for maps
@@ -182,6 +188,8 @@ pub struct ETypesRegistry {
     cache: RwLock<HashMap<String, Arc<dyn Any + Send + Sync>>>,
     /// Read-only configuration used by various editors, validators, etc
     extra_config: BTreeMap<String, SmallVec<[(Utf8PathBuf, JsonValue); 1]>>,
+    /// Whenever all types are deserialized and ready
+    ready: bool,
 }
 
 impl ETypesRegistry {
@@ -202,6 +210,7 @@ impl ETypesRegistry {
 
         let reg = Self {
             types,
+            pending_types: Default::default(),
             lists: Default::default(),
             maps: Default::default(),
             default_objects_cache: Default::default(),
@@ -209,9 +218,10 @@ impl ETypesRegistry {
             extra_data: Default::default(),
             cache: Default::default(),
             extra_config: Default::default(),
+            ready: false,
         };
 
-        let reg = reg
+        let mut reg = reg
             .deserialize_all()
             .context("failed to deserialize types")?
             .register_node_requirements()
@@ -219,49 +229,94 @@ impl ETypesRegistry {
             .register_optionals()
             .context("failed to register optional types")?;
 
+        reg.ready = true;
+
         Ok(reg)
     }
 
-    pub fn all_objects(&self) -> impl Iterator<Item = &EObjectType> {
-        self.types.values().map(|e| e.expect_ready())
+    /// Flushes all pending types into the main storage
+    pub fn apply_pending(&mut self) {
+        let mut pending = self.pending_types.borrow_mut();
+        for (id, item) in pending.drain() {
+            if let Some(old) = self.types.insert(id, item) {
+                panic!("Type `{}` is already defined as {:?}", id, old);
+            }
+        }
     }
 
-    pub fn all_objects_filtered(&self, search: &str) -> impl Iterator<Item = &EObjectType> {
-        let query = search.to_ascii_lowercase();
-        self.all_objects().filter(move |e| {
-            if query.is_empty() {
-                return true;
-            }
-            let id = match e {
-                EObjectType::Struct(s) => s.ident,
-                EObjectType::Enum(e) => e.ident,
-            };
-            if let Some(name) = id.as_raw() {
-                return name.contains(&query);
-            }
-            false
-        })
+    /// Iterator over all ready objects
+    ///
+    /// Does not include pending objects
+    pub fn all_ready_objects(&self) -> impl Iterator<Item = WhateverRef<EObjectType>> {
+        self.types
+            .values()
+            .map(RegistryItem::expect_ready)
+            .map(|x| WhateverRef::from_ref(x.deref()))
     }
 
     pub fn get_object(&self, id: &ETypeId) -> Option<WhateverRef<EObjectType>> {
         self.types
             .get(id)
             .map(RegistryItem::expect_ready)
-            .map(WhateverRef::from)
+            .map(|x| WhateverRef::from_ref(x.deref()))
+            .or_else(|| {
+                if !self.ready {
+                    return None;
+                }
+                self.pending_types
+                    .borrow()
+                    .get(id)
+                    .map(RegistryItem::expect_ready)
+                    .map(|x| WhateverRef::from_arc(x.clone()))
+            })
     }
 
     pub fn get_struct(&self, id: &ETypeId) -> Option<WhateverRef<EStructData>> {
         self.types
             .get(id)
             .and_then(|e| e.expect_ready().as_struct())
-            .map(WhateverRef::from)
+            .map(WhateverRef::from_ref)
+            .or_else(|| {
+                if !self.ready {
+                    return None;
+                }
+                self.pending_types
+                    .borrow()
+                    .get(id)
+                    .map(RegistryItem::expect_ready)
+                    .and_then(|e| {
+                        e.as_struct()?;
+                        Some(WhateverRef::call_map(
+                            WhateverRef::from_arc(e.clone()),
+                            |e| e.as_struct().expect("Was checked to be struct"),
+                        ))
+                    })
+                    .map(|e| e.into_dyn_ref())
+            })
     }
 
     pub fn get_enum(&self, id: &ETypeId) -> Option<WhateverRef<EEnumData>> {
         self.types
             .get(id)
             .and_then(|e| e.expect_ready().as_enum())
-            .map(WhateverRef::from)
+            .map(WhateverRef::from_ref)
+            .or_else(|| {
+                if !self.ready {
+                    return None;
+                }
+                self.pending_types
+                    .borrow()
+                    .get(id)
+                    .map(RegistryItem::expect_ready)
+                    .and_then(|e| {
+                        e.as_enum()?;
+                        Some(WhateverRef::call_map(
+                            WhateverRef::from_arc(e.clone()),
+                            |e| e.as_enum().expect("Was checked to be enum"),
+                        ))
+                    })
+                    .map(|e| e.into_dyn_ref())
+            })
     }
 
     pub fn get_list(&self, id: &EListId) -> Option<ListData> {
@@ -272,17 +327,17 @@ impl ETypesRegistry {
         self.maps.read().get(id).copied()
     }
 
-    pub fn register_struct(&mut self, id: ETypeId, data: EStructData) -> EDataType {
-        self.types
-            .insert(id, RegistryItem::Ready(EObjectType::Struct(data)));
-        EDataType::Object { ident: id }
-    }
-
-    pub fn register_enum(&mut self, id: ETypeId, data: EEnumData) -> EDataType {
-        self.types
-            .insert(id, RegistryItem::Ready(EObjectType::Enum(data)));
-        EDataType::Object { ident: id }
-    }
+    // pub fn register_struct(&mut self, id: ETypeId, data: EStructData) -> EDataType {
+    //     self.types
+    //         .insert(id, RegistryItem::Ready(EObjectType::Struct(data)));
+    //     EDataType::Object { ident: id }
+    // }
+    //
+    // pub fn register_enum(&mut self, id: ETypeId, data: EEnumData) -> EDataType {
+    //     self.types
+    //         .insert(id, RegistryItem::Ready(EObjectType::Enum(data)));
+    //     EDataType::Object { ident: id }
+    // }
 
     pub fn list_of(&self, value_type: EDataType) -> EDataType {
         EDataType::List {
@@ -316,28 +371,76 @@ impl ETypesRegistry {
         EDataType::Map { id }
     }
 
+    pub fn option_of(&self, value_type: EDataType) -> ETypeId {
+        static NAMES: LazyLock<Ustr> = LazyLock::new(|| Ustr::from("Item"));
+        let map: UstrMap<EItemInfo> = [(*NAMES, EItemInfo::simple_type(value_type))]
+            .into_iter()
+            .collect();
+        self.make_generic_pending(*OPTIONAL_ID, map)
+            .expect("Optional enum creation should not fail")
+    }
+
+    /// Creates a generic type with the specified arguments, or returns the existing one
     pub fn make_generic(
         &mut self,
         id: ETypeId,
         arguments: UstrMap<EItemInfo>,
     ) -> miette::Result<ETypeId> {
-        let long_id = {
-            let args = arguments
-                .iter()
-                .map(|e| format!("{}={}", e.0, e.1.ty().name()))
-                .sorted()
-                .join(",");
-            ETypeId::from_raw(format!("{id}<{args}>").into())
-        };
+        let long_id = generic_id(id, arguments.iter());
 
-        if self.types.contains_key(&long_id) {
+        if self.types.contains_key(&long_id)
+            || (self.ready && self.pending_types.borrow().contains_key(&long_id))
+        {
             return Ok(long_id);
         }
 
-        let obj = self
-            .fetch_or_deserialize(id)
-            .with_context(|| format!("failed to find object with id {}", id))?;
+        let obj = Self::make_type_generic(id, arguments, long_id, |id| {
+            self.fetch_or_deserialize(*id)
+                .map(|x| WhateverRef::from_arc(x.clone()))
+        })?;
 
+        self.types
+            .insert(long_id, RegistryItem::Ready(Arc::new(obj)));
+        Ok(long_id)
+    }
+
+    /// Same as [`ETypesRegistry::make_generic`], but uses the pending storage, allowing
+    /// performing this operation on the non-owned registry.
+    ///
+    /// Make sure to call [`ETypesRegistry::apply_pending`] once mutable
+    /// registry access is available
+    pub fn make_generic_pending(
+        &self,
+        id: ETypeId,
+        arguments: UstrMap<EItemInfo>,
+    ) -> miette::Result<ETypeId> {
+        if !self.ready {
+            bail!("Registry is not ready yet")
+        }
+
+        let long_id = generic_id(id, arguments.iter());
+
+        if self.types.contains_key(&long_id) || self.pending_types.borrow().contains_key(&long_id) {
+            return Ok(long_id);
+        }
+        let obj = Self::make_type_generic(id, arguments, long_id, |id| {
+            self.get_object(id)
+                .ok_or_else(|| miette!("Type `{}` is not defined", id))
+        })?;
+
+        self.pending_types
+            .borrow_mut()
+            .insert(long_id, RegistryItem::Ready(Arc::new(obj)));
+
+        Ok(long_id)
+    }
+
+    fn make_type_generic<'a>(
+        id: ETypeId,
+        arguments: UstrMap<EItemInfo>,
+        generic_id: ETypeId,
+        mut get_object: impl FnMut(&ETypeId) -> miette::Result<WhateverRef<'a, EObjectType>>,
+    ) -> miette::Result<EObjectType> {
         let check_generics = |args: &[Ustr]| {
             if args.len() != arguments.len() {
                 bail!(
@@ -350,18 +453,21 @@ impl ETypesRegistry {
             Ok(())
         };
 
-        match obj.clone() {
+        let obj =
+            get_object(&id).with_context(|| format!("failed to find object with id {}", id))?;
+
+        let obj: EObjectType = obj.deref().clone();
+
+        match obj {
             EObjectType::Struct(data) => {
                 check_generics(&data.generic_arguments)?;
-                let obj = data.apply_generics(&arguments, long_id, self)?;
-                self.register_struct(long_id, obj);
-                Ok(long_id)
+                let obj = data.apply_generics(&arguments, generic_id)?;
+                Ok(EObjectType::Struct(obj))
             }
             EObjectType::Enum(data) => {
                 check_generics(&data.generic_arguments)?;
-                let obj = data.apply_generics(&arguments, long_id, self)?;
-                self.register_enum(long_id, obj);
-                Ok(long_id)
+                let obj = data.apply_generics(&arguments, generic_id, &mut get_object)?;
+                Ok(EObjectType::Enum(obj))
             } // EObjectType::List(mut data) => {
               //     let args = if data.value_type.is_generic() {
               //         [Ustr::from("Item")].as_slice()
@@ -433,7 +539,7 @@ impl ETypesRegistry {
             cached.clone().into()
         } else {
             drop(borrow);
-            let data = match data.expect_ready() {
+            let data = match &**data.expect_ready() {
                 EObjectType::Struct(data) => data.default_value_inner(self),
                 EObjectType::Enum(data) => data.default_value_inner(self),
             };
@@ -493,7 +599,10 @@ impl ETypesRegistry {
     //     EDataType::Object { ident: id }
     // }
 
-    pub(crate) fn fetch_or_deserialize(&mut self, id: ETypeId) -> miette::Result<&EObjectType> {
+    pub(crate) fn fetch_or_deserialize(
+        &mut self,
+        id: ETypeId,
+    ) -> miette::Result<&Arc<EObjectType>> {
         let data = self
             .types
             .get_mut(&id)
@@ -518,7 +627,7 @@ impl ETypesRegistry {
         else {
             panic!("Item should be raw")
         };
-        let ready = RegistryItem::Ready(deserialize_etype(self, id, &old)?);
+        let ready = RegistryItem::Ready(Arc::new(deserialize_etype(self, id, &old)?));
         self.types.insert(id, ready);
         Ok(self
             .types
@@ -583,5 +692,28 @@ impl ETypesRegistry {
 
     pub fn project_config(&self) -> &ProjectConfig {
         &self.project_config
+    }
+}
+
+fn generic_id<'a>(
+    id: ETypeId,
+    arguments: impl Iterator<Item = (&'a Ustr, &'a EItemInfo)>,
+) -> ETypeId {
+    let args = arguments
+        .map(|e| format!("{}={}", e.0, e.1.ty().name()))
+        .sorted()
+        .join(",");
+    ETypeId::from_raw(format!("{id}<{args}>").into())
+}
+
+mod send_sync_check {
+    use crate::registry::ETypesRegistry;
+
+    fn expect_send_sync<T: Send + Sync>() {}
+
+    #[allow(dead_code)]
+    #[cfg_attr(test, test)]
+    fn test() {
+        expect_send_sync::<ETypesRegistry>();
     }
 }
