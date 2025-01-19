@@ -34,6 +34,10 @@ pub enum SideEffect {
 
 type SideEffectEmitter = (Utf8PathBuf, Vec<SideEffectPathItem>, usize);
 
+fn clean_up_path(path: &str) -> String {
+    path.replace(['\\'], "/")
+}
+
 impl SideEffect {
     pub fn execute<Io>(
         self,
@@ -53,7 +57,7 @@ impl SideEffect {
                 path,
                 is_dbevalue,
             } => {
-                let path = Utf8PathBuf::from(path + extension(is_dbevalue));
+                let path = Utf8PathBuf::from(clean_up_path(&path) + extension(is_dbevalue));
                 match project.files.get(&path) {
                     None => {}
                     Some(ProjectFile::GeneratedValue(..)) => {
