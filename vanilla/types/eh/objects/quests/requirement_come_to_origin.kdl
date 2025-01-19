@@ -1,3 +1,3 @@
-struct title="RequirementComeToOrigin" graph_inline=true {
+struct title="RequirementComeToOrigin" {
 	boolean "BoolValue" alias="AllowUnsafeStars"
 }

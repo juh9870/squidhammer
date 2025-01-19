@@ -1,4 +1,4 @@
-struct title="FactionData" graph_inline=false {
+struct title="FactionData" {
 	string "Name"
 	object "Color" default="#FFFFFFFF" "color:argb"
 	boolean "NoTerritories"

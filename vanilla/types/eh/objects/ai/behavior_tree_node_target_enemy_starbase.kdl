@@ -1,3 +1,3 @@
-struct title="BehaviorTreeNodeTargetEnemyStarbase" graph_inline=true {
+struct title="BehaviorTreeNodeTargetEnemyStarbase" {
 	object "Requirement" "eh:objects/ai/behavior_node_requirement" description="The node will not execute and will return FAILURE if the requirement is not met"
 }

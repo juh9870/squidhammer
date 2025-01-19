@@ -1,4 +1,4 @@
-struct title="TechnologyDataSatellite" graph_inline=false {
+struct title="TechnologyDataSatellite" {
 	object "ItemId" "sys:ids/numeric_ref" alias="Satellite" typeid="eh:objects/satellite" {
 		const "Id" "eh:objects/satellite"
 	}

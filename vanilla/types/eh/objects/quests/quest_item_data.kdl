@@ -1,4 +1,4 @@
-struct title="QuestItemData" graph_inline=false {
+struct title="QuestItemData" {
 	string "Name"
 	string "Description"
 	string "Icon" editor="eh:image"

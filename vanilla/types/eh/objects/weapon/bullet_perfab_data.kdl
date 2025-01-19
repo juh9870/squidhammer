@@ -1,4 +1,4 @@
-struct title="BulletPrefabData" graph_inline=false {
+struct title="BulletPrefabData" {
 	object "Shape" "eh:enums/weapon/bullet_shape"
 	string "Image" editor="eh:image"
 	number "Size" min=0.01 max=100

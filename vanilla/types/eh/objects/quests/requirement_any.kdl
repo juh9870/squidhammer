@@ -1,4 +1,4 @@
-struct title="RequirementAny" graph_inline=true {
+struct title="RequirementAny" {
 	list "Requirements" {
 		object "Item" "eh:objects/quests/requirement"
 	}

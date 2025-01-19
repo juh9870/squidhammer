@@ -1,4 +1,4 @@
-struct title="GalaxySettings" singleton=true graph_inline=false {
+struct title="GalaxySettings" singleton=true {
 	object "AbandonedStarbaseFaction" "sys:optional" {
 		object "Item" "sys:ids/numeric_ref" {
 			const "Id" "eh:objects/faction"

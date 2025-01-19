@@ -187,7 +187,6 @@ impl Ctx {
                         .cloned()
                         .collect_vec(),
                     false,
-                    data.ty != SchemaDataType::Object && data.ty != SchemaDataType::Settings,
                 )
             }
             self.enums.insert(edata.name.clone(), edata);
@@ -204,7 +203,6 @@ impl Ctx {
                 &name,
                 members,
                 data.ty == SchemaDataType::Settings,
-                data.ty != SchemaDataType::Object && data.ty != SchemaDataType::Settings,
             );
             id
         }
@@ -216,19 +214,12 @@ impl Ctx {
         title: &str,
         members: Vec<SchemaStructMember>,
         singleton: bool,
-        graph_inline: bool,
     ) {
         let _guard = error_span!("Struct", id = &id).entered();
         let mut code = if singleton {
-            format!(
-                "struct title=\"{}\" singleton=true graph_inline={} {{",
-                title, graph_inline
-            )
+            format!("struct title=\"{}\" singleton=true {{", title)
         } else {
-            format!(
-                "struct title=\"{}\" graph_inline={} {{",
-                title, graph_inline
-            )
+            format!("struct title=\"{}\" {{", title)
         };
 
         let typeid_fmt = |id: String| format!("\"{}\"", typeid(&self.typeids, id,));

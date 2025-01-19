@@ -1,4 +1,4 @@
-struct title="BulletTriggerNone" graph_inline=true {
+struct title="BulletTriggerNone" {
 	object "Condition" "eh:enums/weapon/bullet_trigger_condition"
 	number "Cooldown" min=0 max=1000
 }

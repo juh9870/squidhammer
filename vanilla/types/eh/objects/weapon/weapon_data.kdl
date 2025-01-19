@@ -1,4 +1,4 @@
-struct title="WeaponData" graph_inline=false {
+struct title="WeaponData" {
 	object "WeaponClass" "eh:enums/weapon/weapon_class"
 	number "FireRate" min=0 max=100
 	number "Spread" min=0 max=360

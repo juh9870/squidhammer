@@ -1,4 +1,4 @@
-struct title="LootContentRandomComponents" graph_inline=true {
+struct title="LootContentRandomComponents" {
 	number "MinAmount" min=0 max=1000000000 type="int"
 	number "MaxAmount" min=0 max=1000000000 type="int"
 	number "ValueRatio" min=0.001 max=1000

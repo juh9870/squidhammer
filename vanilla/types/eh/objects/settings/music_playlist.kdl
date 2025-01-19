@@ -1,4 +1,4 @@
-struct title="MusicPlaylist" singleton=true graph_inline=false {
+struct title="MusicPlaylist" singleton=true {
 	list "MainMenuMusic" {
 		object "Item" "eh:objects/settings/sound_track"
 	}

@@ -1,4 +1,4 @@
-struct title="BehaviorTreeNodeMothershipDistanceExceeded" graph_inline=true {
+struct title="BehaviorTreeNodeMothershipDistanceExceeded" {
 	object "Requirement" "eh:objects/ai/behavior_node_requirement" description="The node will not execute and will return FAILURE if the requirement is not met"
 	number "MaxValue" alias="MaxDistance" description="Max distance. If value is 0, prefefined value will be used (e.g. DroneBay range)" min=0
 }

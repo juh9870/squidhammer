@@ -1,4 +1,4 @@
-struct title="RequirementPlayerPosition" graph_inline=true {
+struct title="RequirementPlayerPosition" {
 	number "MinValue" min=0 max=10000 type="int"
 	number "MaxValue" min=0 max=10000 type="int"
 	boolean "BoolValue" alias="AllowUnsafeStars"

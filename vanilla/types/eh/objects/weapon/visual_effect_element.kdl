@@ -1,4 +1,4 @@
-struct title="VisualEffectElement" graph_inline=true {
+struct title="VisualEffectElement" {
 	object "Type" "eh:enums/weapon/visual_effect_type"
 	string "Image" editor="eh:image"
 	object "ColorMode" "eh:enums/weapon/color_mode"

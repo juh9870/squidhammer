@@ -1,4 +1,4 @@
-struct title="InstalledComponent" graph_inline=true {
+struct title="InstalledComponent" {
 	object "ComponentId" "sys:ids/numeric_ref" alias="Component" typeid="eh:objects/component" {
 		const "Id" "eh:objects/component"
 	}

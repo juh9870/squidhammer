@@ -1,4 +1,4 @@
-struct title="RequirementHaveQuestItem" graph_inline=true {
+struct title="RequirementHaveQuestItem" {
 	object "ItemId" "sys:optional" alias="QuestItem" {
 		object "Item" "sys:ids/numeric_ref" {
 			const "Id" "eh:objects/quests/quest_item"

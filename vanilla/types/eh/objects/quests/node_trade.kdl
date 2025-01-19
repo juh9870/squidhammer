@@ -1,4 +1,4 @@
-struct title="NodeTrade" graph_inline=true {
+struct title="NodeTrade" {
 	number "Id" min=1 max=999999 type="int"
 	number "DefaultTransition" alias="Transition" min=1 max=999999 type="int"
 	object "Loot" "sys:optional" {

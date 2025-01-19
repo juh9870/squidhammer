@@ -1,4 +1,4 @@
-struct title="FactionFilter" graph_inline=true {
+struct title="FactionFilter" {
 	object "Type" "eh:enums/quests/faction_filter_type"
 	list "List" {
 		object "Item" "sys:ids/numeric_ref" {

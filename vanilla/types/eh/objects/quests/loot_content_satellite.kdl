@@ -1,4 +1,4 @@
-struct title="LootContentSatellite" graph_inline=true {
+struct title="LootContentSatellite" {
 	object "ItemId" "sys:ids/numeric_ref" alias="Satellite" typeid="eh:objects/satellite" {
 		const "Id" "eh:objects/satellite"
 	}

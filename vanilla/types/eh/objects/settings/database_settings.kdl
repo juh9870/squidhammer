@@ -1,4 +1,4 @@
-struct title="DatabaseSettings" singleton=true graph_inline=false {
+struct title="DatabaseSettings" singleton=true {
 	number "DatabaseVersion" min=1 type="int"
 	number "DatabaseVersionMinor" min=0 type="int"
 	string "ModName"

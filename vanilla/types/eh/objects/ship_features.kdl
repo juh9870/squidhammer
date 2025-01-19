@@ -1,4 +1,4 @@
-struct title="ShipFeatures" graph_inline=true {
+struct title="ShipFeatures" {
 	number "EnergyResistance" min=-100 max=100
 	number "KineticResistance" min=-100 max=100
 	number "HeatResistance" min=-100 max=100

@@ -1,4 +1,4 @@
-struct title="DebugSettings" singleton=true graph_inline=false {
+struct title="DebugSettings" singleton=true {
 	list "Codes" {
 		object "Item" "eh:objects/settings/debug_code"
 	}

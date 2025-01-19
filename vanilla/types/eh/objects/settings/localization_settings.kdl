@@ -1,4 +1,4 @@
-struct title="LocalizationSettings" singleton=true graph_inline=false {
+struct title="LocalizationSettings" singleton=true {
 	string "CorrosiveDamageText" default="$WeaponDamage"
 	string "CorrosiveDpsText" default="$WeaponDPS"
 }

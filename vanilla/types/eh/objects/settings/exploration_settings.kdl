@@ -1,4 +1,4 @@
-struct title="ExplorationSettings" singleton=true graph_inline=false {
+struct title="ExplorationSettings" singleton=true {
 	object "OutpostShip" "sys:optional" {
 		object "Item" "sys:ids/numeric_ref" {
 			const "Id" "eh:objects/ship"

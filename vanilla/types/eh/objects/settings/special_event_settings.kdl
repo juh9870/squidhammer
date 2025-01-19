@@ -1,4 +1,4 @@
-struct title="SpecialEventSettings" singleton=true graph_inline=false {
+struct title="SpecialEventSettings" singleton=true {
 	boolean "EnableXmasEvent" default=true
 	number "XmasDaysBefore" default=24 min=0 max=30 type="int"
 	number "XmasDaysAfter" default=15 min=0 max=30 type="int"

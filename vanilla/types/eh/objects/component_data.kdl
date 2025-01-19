@@ -1,4 +1,4 @@
-struct title="ComponentData" graph_inline=false {
+struct title="ComponentData" {
 	string "Name"
 	string "Description"
 	object "DisplayCategory" "eh:enums/component_category"

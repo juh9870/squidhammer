@@ -1,4 +1,4 @@
-struct title="BehaviorTreeNodeSubTree" graph_inline=true {
+struct title="BehaviorTreeNodeSubTree" {
 	object "Requirement" "eh:objects/ai/behavior_node_requirement" description="The node will not execute and will return FAILURE if the requirement is not met"
 	object "ItemId" "sys:optional" alias="BehaviourTree" {
 		object "Item" "sys:ids/numeric_ref" {

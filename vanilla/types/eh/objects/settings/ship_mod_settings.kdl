@@ -1,4 +1,4 @@
-struct title="ShipModSettings" singleton=true graph_inline=false {
+struct title="ShipModSettings" singleton=true {
 	boolean "RemoveWeaponSlotMod"
 	boolean "RemoveUnlimitedRespawnMod"
 	boolean "RemoveEnergyRechargeCdMod"

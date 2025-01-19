@@ -1,4 +1,4 @@
-struct title="NodeRandom" graph_inline=true {
+struct title="NodeRandom" {
 	number "Id" min=1 max=999999 type="int"
 	string "Message"
 	number "DefaultTransition" min=0 max=999999 type="int"

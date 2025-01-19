@@ -1,4 +1,4 @@
-struct title="StatModification" graph_inline=true {
+struct title="StatModification" {
 	object "Type" "eh:enums/stat_modification_type"
 	number "Gray3"
 	number "Gray2"
