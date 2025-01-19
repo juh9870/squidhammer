@@ -4539,6 +4539,7 @@ version = "0.1.0"
 dependencies = [
  "ahash",
  "collection_traits",
+ "dyn-clone",
  "ecolor",
  "emath",
  "itertools",

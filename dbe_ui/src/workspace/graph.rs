@@ -315,7 +315,7 @@ impl SnarlViewer<SnarlNode> for GraphViewer<'_> {
                     let objects = self
                         .ctx
                         .registry
-                        .all_objects()
+                        .all_ready_objects()
                         .filter(|obj| {
                             !PROP_OBJECT_GRAPH_SEARCH_HIDE.get(obj.extra_properties(), false)
                         })

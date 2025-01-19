@@ -7,13 +7,14 @@ use crate::etype::property::ObjectPropertyId;
 use crate::etype::title::ObjectTitle;
 use crate::json_utils::repr::{JsonRepr, Repr};
 use crate::json_utils::{json_kind, JsonMap, JsonValue};
-use crate::registry::ETypesRegistry;
+use crate::registry::{EObjectType, ETypesRegistry};
 use crate::value::id::ETypeId;
 use crate::value::EValue;
 use itertools::Itertools;
 use miette::{bail, miette, Context};
 use ustr::{Ustr, UstrMap};
 use utils::map::HashMap;
+use utils::whatever_ref::WhateverRef;
 
 pub mod pattern;
 pub mod variant;
@@ -63,11 +64,11 @@ impl EEnumData {
         }
     }
 
-    pub fn apply_generics(
+    pub fn apply_generics<'a>(
         mut self,
         arguments: &UstrMap<EItemInfo>,
         new_id: ETypeId,
-        registry: &mut ETypesRegistry,
+        get_object: &mut impl FnMut(&ETypeId) -> miette::Result<WhateverRef<'a, EObjectType>>,
     ) -> miette::Result<Self> {
         self.ident = new_id;
         for variant in &mut self.variants {
@@ -78,7 +79,7 @@ impl EEnumData {
                 *variant = EEnumVariant::from_eitem(
                     item.clone(),
                     std::mem::take(&mut variant.name),
-                    registry,
+                    get_object,
                     self.tagged_repr,
                     variant.name,
                 )?;

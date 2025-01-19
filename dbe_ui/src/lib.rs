@@ -168,6 +168,8 @@ impl DbeApp {
         // self.colorix = Colorix::init(ctx, [ColorPreset::Red; 12]);
 
         if let Some(project) = &mut self.project {
+            project.registry.apply_pending();
+
             let time = ctx.input(|i| i.time);
             project
                 .history
