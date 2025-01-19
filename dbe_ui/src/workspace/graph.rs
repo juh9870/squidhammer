@@ -290,6 +290,7 @@ impl SnarlViewer<SnarlNode> for GraphViewer<'_> {
         _scale: f32,
         snarl: &mut Snarl<SnarlNode>,
     ) {
+        ui.style_mut().wrap_mode = Some(egui::TextWrapMode::Extend);
         ui.menu_button("Add node", |ui| {
             #[derive(Debug, Copy, Clone)]
             enum NodeCombo {
@@ -440,6 +441,7 @@ impl SnarlViewer<SnarlNode> for GraphViewer<'_> {
         src_pins: AnyPins,
         snarl: &mut Snarl<SnarlNode>,
     ) {
+        ui.style_mut().wrap_mode = Some(egui::TextWrapMode::Extend);
         match src_pins {
             AnyPins::Out(_) => ui.close_menu(),
             AnyPins::In(pins) => {
@@ -522,7 +524,6 @@ impl SnarlViewer<SnarlNode> for GraphViewer<'_> {
         snarl: &mut Snarl<SnarlNode>,
     ) {
         m_try(|| {
-            ui.label("Node menu");
             if ui.button("Remove").clicked() {
                 self.ctx
                     .as_full(snarl)
