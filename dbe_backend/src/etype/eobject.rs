@@ -18,6 +18,8 @@ pub trait EObject {
 
     fn generic_arguments_values(&self) -> &[EItemInfo];
 
+    fn generic_parent_id(&self) -> Option<ETypeId>;
+
     /// Human-readable title of the object
     fn title(&self, registry: &ETypesRegistry) -> String;
 }

@@ -139,6 +139,7 @@ impl EDataType {
                 }
             }
         }
+
         match self {
             EDataType::Boolean
             | EDataType::Number

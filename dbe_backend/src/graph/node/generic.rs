@@ -10,7 +10,7 @@ use crate::graph::node::{ExecutionResult, Node, NodeContext};
 use crate::json_utils::JsonValue;
 use crate::m_try;
 use crate::project::docs::{Docs, DocsWindowRef};
-use crate::registry::ETypesRegistry;
+use crate::registry::{ETypesRegistry, OPTIONAL_ID};
 use crate::value::id::ETypeId;
 use crate::value::EValue;
 use downcast_rs::Downcast;
@@ -32,8 +32,10 @@ pub enum GenericNodeField<'a> {
     List(&'a Option<EDataType>),
     /// A type is a specific type.
     Value(&'a Option<EDataType>),
+    /// An optional (nullable) type
+    Option(&'a Option<EDataType>),
     /// A type is a struct id.
-    Struct(&'a Option<ETypeId>),
+    Object(&'a Option<ETypeId>),
     /// A type is fixed.
     Fixed(EDataType),
 }
@@ -42,7 +44,8 @@ pub enum GenericNodeField<'a> {
 pub enum GenericNodeFieldMut<'a> {
     List(&'a mut Option<EDataType>),
     Value(&'a mut Option<EDataType>),
-    Struct(&'a mut Option<ETypeId>),
+    Option(&'a mut Option<EDataType>),
+    Object(&'a mut Option<ETypeId>),
     Fixed(EDataType),
 }
 
@@ -51,8 +54,9 @@ impl GenericNodeFieldMut<'_> {
         match self {
             GenericNodeFieldMut::List(ty) => GenericNodeField::List(ty),
             GenericNodeFieldMut::Value(ty) => GenericNodeField::Value(ty),
+            GenericNodeFieldMut::Option(ty) => GenericNodeField::Option(ty),
+            GenericNodeFieldMut::Object(id) => GenericNodeField::Object(id),
             GenericNodeFieldMut::Fixed(ty) => GenericNodeField::Fixed(*ty),
-            GenericNodeFieldMut::Struct(id) => GenericNodeField::Struct(id),
         }
     }
 
@@ -61,7 +65,7 @@ impl GenericNodeFieldMut<'_> {
         registry: &ETypesRegistry,
         incoming: &NodePortType,
     ) -> miette::Result<bool> {
-        if !self.as_ref().can_specify_from(incoming)? {
+        if !self.as_ref().can_specify_from(registry, incoming)? {
             return Ok(false);
         }
 
@@ -86,7 +90,7 @@ impl GenericNodeFieldMut<'_> {
                 }
                 **ty = Some(incoming.ty());
             }
-            GenericNodeFieldMut::Struct(id) => {
+            GenericNodeFieldMut::Object(id) => {
                 if id.is_some() {
                     bail!("Struct type already set");
                 }
@@ -96,6 +100,27 @@ impl GenericNodeFieldMut<'_> {
                 };
 
                 **id = Some(ident);
+            }
+            GenericNodeFieldMut::Option(id) => {
+                if id.is_some() {
+                    bail!("Option type already set");
+                }
+
+                let EDataType::Object { ident } = incoming.ty() else {
+                    return Ok(false);
+                };
+
+                let Some(data) = registry.get_enum(&ident) else {
+                    return Ok(false);
+                };
+
+                if data.generic_parent_id != Some(*OPTIONAL_ID) {
+                    return Ok(false);
+                }
+
+                let ty = data.generic_arguments_values[0].ty();
+
+                **id = Some(ty);
             }
             GenericNodeFieldMut::Fixed(_) => {
                 bail!("Fixed type cannot be changed");
@@ -113,7 +138,10 @@ impl GenericNodeFieldMut<'_> {
             GenericNodeFieldMut::Value(ty) => {
                 **ty = incoming;
             }
-            GenericNodeFieldMut::Struct(ident) => {
+            GenericNodeFieldMut::Option(ty) => {
+                **ty = incoming;
+            }
+            GenericNodeFieldMut::Object(ident) => {
                 let Some(incoming) = incoming else {
                     **ident = None;
                     return Ok(());
@@ -134,7 +162,8 @@ impl GenericNodeField<'_> {
         match self {
             GenericNodeField::List(ty) => ty.is_some(),
             GenericNodeField::Value(ty) => ty.is_some(),
-            GenericNodeField::Struct(ident) => ident.is_some(),
+            GenericNodeField::Option(ty) => ty.is_some(),
+            GenericNodeField::Object(ident) => ident.is_some(),
             GenericNodeField::Fixed(_) => true,
         }
     }
@@ -143,14 +172,21 @@ impl GenericNodeField<'_> {
         match self {
             GenericNodeField::List(ty) => registry.list_of(ty.unwrap_or_else(EDataType::null)),
             GenericNodeField::Value(ty) => ty.unwrap_or_else(EDataType::null),
-            GenericNodeField::Struct(ident) => ident
+            GenericNodeField::Option(ty) => EDataType::Object {
+                ident: registry.option_of(ty.unwrap_or_else(EDataType::null)),
+            },
+            GenericNodeField::Object(ident) => ident
                 .map(|ident| EDataType::Object { ident })
                 .unwrap_or_else(EDataType::null),
             GenericNodeField::Fixed(ty) => *ty,
         }
     }
 
-    pub fn can_specify_from(&self, incoming: &NodePortType) -> miette::Result<bool> {
+    pub fn can_specify_from(
+        &self,
+        registry: &ETypesRegistry,
+        incoming: &NodePortType,
+    ) -> miette::Result<bool> {
         match self {
             GenericNodeField::List(ty) => {
                 if ty.is_some() {
@@ -158,13 +194,28 @@ impl GenericNodeField<'_> {
                 }
                 Ok(incoming.ty().is_list())
             }
+            &GenericNodeField::Option(ty) => {
+                if ty.is_some() {
+                    bail!("Option type already set");
+                }
+
+                let EDataType::Object { ident } = incoming.ty() else {
+                    return Ok(false);
+                };
+
+                let Some(data) = registry.get_enum(&ident) else {
+                    return Ok(false);
+                };
+
+                Ok(data.generic_parent_id == Some(*OPTIONAL_ID))
+            }
             GenericNodeField::Value(ty) => {
                 if ty.is_some() {
                     bail!("Value type already set");
                 }
                 Ok(true)
             }
-            GenericNodeField::Struct(ident) => {
+            GenericNodeField::Object(ident) => {
                 if ident.is_some() {
                     bail!("Struct type already set");
                 }
@@ -202,8 +253,9 @@ impl GenericNodeField<'_> {
         match self {
             GenericNodeField::List(ty) => **ty,
             GenericNodeField::Value(ty) => **ty,
+            GenericNodeField::Option(ty) => **ty,
             GenericNodeField::Fixed(ty) => Some(*ty),
-            GenericNodeField::Struct(ident) => ident.map(|ident| EDataType::Object { ident }),
+            GenericNodeField::Object(ident) => ident.map(|ident| EDataType::Object { ident }),
         }
     }
 }
@@ -604,7 +656,7 @@ pub fn generic_try_connect(
 }
 
 pub fn generic_can_output_to(
-    _context: NodeContext,
+    context: NodeContext,
     from: &OutPin,
     _to: &InPin,
     target_type: &NodePortType,
@@ -614,7 +666,7 @@ pub fn generic_can_output_to(
         bail!("Invalid output index: {}", from.id.output);
     };
 
-    ty.can_specify_from(target_type)
+    ty.can_specify_from(context.registry, target_type)
 }
 
 /// Performs the generic part of the reverse connection logic.
