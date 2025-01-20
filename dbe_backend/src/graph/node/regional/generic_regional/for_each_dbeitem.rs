@@ -5,7 +5,7 @@ use crate::graph::node::editable_state::{EditableState, EditableStateValue};
 use crate::graph::node::generic::macros::generic_node_io;
 use crate::graph::node::generic::{GenericNodeField, GenericNodeFieldMut};
 use crate::graph::node::regional::generic_regional::GenericRegionalNode;
-use crate::graph::node::regional::{remember_variables, RegionIoKind};
+use crate::graph::node::regional::{remember_variables, NodeWithVariables, RegionIoKind};
 use crate::graph::node::variables::ExecutionExtras;
 use crate::graph::node::{ExecutionResult, NodeContext};
 use crate::graph::region::{get_region_execution_data, RegionExecutionData};
@@ -29,6 +29,8 @@ pub struct ForEachDbeItem {
     is_enum: bool,
     enum_variant: Option<(EDataType, EEnumVariantId)>,
 }
+
+impl NodeWithVariables for ForEachDbeItem {}
 
 impl GenericRegionalNode for ForEachDbeItem {
     fn id() -> Ustr {

@@ -67,6 +67,7 @@ pub mod regional;
 pub mod reroute;
 pub mod saving_node;
 pub mod serde_node;
+pub mod stateful;
 pub mod struct_node;
 pub mod variables;
 
