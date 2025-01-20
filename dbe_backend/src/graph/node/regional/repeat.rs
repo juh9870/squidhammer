@@ -1,10 +1,12 @@
 use crate::etype::eitem::EItemInfo;
 use crate::etype::EDataType;
 use crate::graph::node::ports::{InputData, OutputData};
-use crate::graph::node::regional::{remember_variables, RegionIoKind, RegionalNode};
+use crate::graph::node::regional::{remember_variables, NodeWithVariables, RegionIoKind};
+use crate::graph::node::stateful::StatefulNode;
 use crate::graph::node::variables::ExecutionExtras;
 use crate::graph::node::{ExecutionResult, NodeContext};
 use crate::graph::region::RegionExecutionData;
+use crate::json_utils::json_serde::JsonSerde;
 use crate::value::EValue;
 use miette::bail;
 use ustr::Ustr;
@@ -13,7 +15,15 @@ use uuid::Uuid;
 #[derive(Debug, Clone, Hash)]
 pub struct RepeatNode;
 
-impl RegionalNode for RepeatNode {
+impl NodeWithVariables for RepeatNode {}
+
+impl JsonSerde for RepeatNode {
+    type State<'a> = RegionIoKind;
+}
+
+impl StatefulNode for RepeatNode {
+    type State<'a> = RegionIoKind;
+
     fn id() -> Ustr {
         "repeat".into()
     }

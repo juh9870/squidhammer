@@ -1,7 +1,7 @@
 use crate::etype::EDataType;
 use crate::graph::node::generic::macros::generic_node_io;
 use crate::graph::node::regional::generic_regional::GenericRegionalNode;
-use crate::graph::node::regional::{remember_variables, RegionIoKind};
+use crate::graph::node::regional::{remember_variables, NodeWithVariables, RegionIoKind};
 use crate::graph::node::variables::ExecutionExtras;
 use crate::graph::node::{ExecutionResult, NodeContext};
 use crate::graph::region::{get_region_execution_data, RegionExecutionData};
@@ -13,6 +13,8 @@ use uuid::Uuid;
 pub struct ConstructListNode {
     output_ty: Option<EDataType>,
 }
+
+impl NodeWithVariables for ConstructListNode {}
 
 impl GenericRegionalNode for ConstructListNode {
     fn id() -> Ustr {

@@ -1,7 +1,7 @@
 use crate::etype::EDataType;
 use crate::graph::node::generic::{GenericNodeField, GenericNodeFieldMut};
 use crate::graph::node::regional::generic_regional::GenericRegionalNode;
-use crate::graph::node::regional::{RegionIoKind, RegionVariableSide};
+use crate::graph::node::regional::{NodeWithVariables, RegionIoKind, RegionVariableSide};
 use crate::graph::node::variables::ExecutionExtras;
 use crate::graph::node::{ExecutionResult, NodeContext};
 use crate::graph::region::{get_region_execution_data, RegionExecutionData};
@@ -43,15 +43,7 @@ impl ConditionalKind {
         }
     }
 }
-
-impl<const KIND: u8> GenericRegionalNode for ConditionalNode<KIND> {
-    fn id() -> Ustr {
-        match ConditionalKind::of(KIND) {
-            ConditionalKind::If => "conditional".into(),
-            ConditionalKind::Map => "option_map".into(),
-        }
-    }
-
+impl<const KIND: u8> NodeWithVariables for ConditionalNode<KIND> {
     fn allow_variables() -> RegionVariableSide {
         RegionVariableSide::END_IN | RegionVariableSide::END_OUT
     }
@@ -80,6 +72,15 @@ impl<const KIND: u8> GenericRegionalNode for ConditionalNode<KIND> {
         }
 
         GenericNodeFieldMut::Option(ty)
+    }
+}
+
+impl<const KIND: u8> GenericRegionalNode for ConditionalNode<KIND> {
+    fn id() -> Ustr {
+        match ConditionalKind::of(KIND) {
+            ConditionalKind::If => "conditional".into(),
+            ConditionalKind::Map => "option_map".into(),
+        }
     }
 
     fn should_execute(

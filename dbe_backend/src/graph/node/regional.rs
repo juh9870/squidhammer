@@ -9,9 +9,11 @@ use crate::graph::node::generic::{
 use crate::graph::node::groups::utils::{get_graph_io_field, sync_fields};
 use crate::graph::node::ports::fields::IoDirection;
 use crate::graph::node::ports::{InputData, NodePortType, OutputData};
+use crate::graph::node::stateful::StatefulNode;
 use crate::graph::node::variables::ExecutionExtras;
 use crate::graph::node::{ExecutionResult, Node, NodeContext, NodeFactory, SnarlNode};
 use crate::graph::region::RegionVariable;
+use crate::json_utils::json_serde::JsonSerde;
 use crate::json_utils::JsonValue;
 use crate::registry::ETypesRegistry;
 use crate::value::EValue;
@@ -516,9 +518,7 @@ impl<T: RegionalNode> NodeFactory for RegionalNodeFactory<T> {
     }
 }
 
-pub trait RegionalNode: 'static + Debug + Clone + Hash + Send + Sync {
-    fn id() -> Ustr;
-
+pub trait NodeWithVariables {
     /// Indicates at which sides the node can have variables
     fn allow_variables() -> RegionVariableSide {
         RegionVariableSide::all()
@@ -563,152 +563,21 @@ pub trait RegionalNode: 'static + Debug + Clone + Hash + Send + Sync {
         let _ = (context, kind);
         GenericNodeFieldMut::Value(ty)
     }
+}
 
-    /// Writes node state to json
-    fn write_json(
-        &self,
-        registry: &ETypesRegistry,
-        kind: RegionIoKind,
-    ) -> miette::Result<JsonValue> {
-        let _ = (registry, kind);
-        Ok(JsonValue::Null)
-    }
-    /// Loads node state from json
-    fn parse_json(
-        &mut self,
-        registry: &ETypesRegistry,
-        kind: RegionIoKind,
-        value: &mut JsonValue,
-    ) -> miette::Result<()> {
-        let _ = (registry, kind, value);
-        Ok(())
-    }
+pub trait RegionalNode:
+    for<'a> StatefulNode<State<'a> = RegionIoKind>
+    + for<'a> JsonSerde<State<'a> = RegionIoKind>
+    + NodeWithVariables
+{
+}
 
-    /// See [Node::has_editable_state]
-    fn has_editable_state(&self, kind: RegionIoKind) -> bool {
-        let _ = (kind,);
-        false
-    }
-
-    /// See [Node::editable_state]
-    fn editable_state(&self, kind: RegionIoKind) -> EditableState {
-        assert!(
-            self.has_editable_state(kind),
-            "editable_state should only be called if has_editable_state returns true"
-        );
-        unimplemented!()
-    }
-
-    /// See [Node::apply_editable_state]
-    fn apply_editable_state(
-        &mut self,
-        _context: NodeContext,
-        kind: RegionIoKind,
-        state: EditableState,
-        commands: &mut SnarlCommands,
-        node_id: NodeId,
-    ) -> miette::Result<()> {
-        let _ = (state, commands, node_id);
-        assert!(
-            self.has_editable_state(kind),
-            "apply_editable_state should only be called if has_editable_state returns true"
-        );
-        unimplemented!()
-    }
-
-    fn inputs_count(&self, context: NodeContext, kind: RegionIoKind) -> usize;
-    fn outputs_count(&self, context: NodeContext, kind: RegionIoKind) -> usize;
-
-    fn input_unchecked(
-        &self,
-        context: NodeContext,
-        kind: RegionIoKind,
-        input: usize,
-    ) -> miette::Result<InputData>;
-
-    fn output_unchecked(
-        &self,
-        context: NodeContext,
-        kind: RegionIoKind,
-        output: usize,
-    ) -> miette::Result<OutputData>;
-
-    #[allow(clippy::too_many_arguments)]
-    fn try_connect(
-        &mut self,
-        context: NodeContext,
-        kind: RegionIoKind,
-        region: Uuid,
-        commands: &mut SnarlCommands,
-        from: &OutPin,
-        to: &InPin,
-        incoming_type: &NodePortType,
-    ) -> miette::Result<ControlFlow<bool>> {
-        let _ = (context, kind, region, commands, from, to, incoming_type);
-        Ok(ControlFlow::Continue(()))
-    }
-
-    /// Custom logic for checking if the node can output to the given port
-    ///
-    /// Only called if the corresponding output has type [NodePortType::BasedOnTarget]
-    fn can_output_to(
-        &self,
-        context: NodeContext,
-        kind: RegionIoKind,
-        region: Uuid,
-        from: &OutPin,
-        to: &InPin,
-        target_type: &NodePortType,
-    ) -> miette::Result<bool> {
-        let _ = (context, kind, region, from, to, target_type);
-        unimplemented!("Node::can_output_to")
-    }
-
-    /// Custom logic to be run after the output is connected to some input
-    ///
-    /// Only called if the corresponding output has type [NodePortType::BasedOnTarget]
-    #[allow(clippy::too_many_arguments)]
-    fn connected_to_output(
-        &mut self,
-        context: NodeContext,
-        kind: RegionIoKind,
-        region: Uuid,
-        commands: &mut SnarlCommands,
-        from: &OutPin,
-        to: &InPin,
-        incoming_type: &NodePortType,
-    ) -> miette::Result<()> {
-        let _ = (context, kind, region, commands, from, to, incoming_type);
-        unimplemented!("Node::can_output_to")
-    }
-
-    /// Checks if the region should be executed at least once
-    ///
-    /// This is called for the endpoint node only. Start node is always executed
-    fn should_execute(
-        &self,
-        context: NodeContext,
-        region: Uuid,
-        variables: &mut ExecutionExtras,
-    ) -> miette::Result<bool>;
-
-    /// Executes the region io node
-    ///
-    /// If the region uses regional data, make sure to remove it once the
-    /// region execution is finished, to avoid issues with nested looping
-    /// regions
-    fn execute(
-        &self,
-        context: NodeContext,
-        kind: RegionIoKind,
-        region: Uuid,
-        inputs: &[EValue],
-        outputs: &mut Vec<EValue>,
-        variables: &mut ExecutionExtras,
-    ) -> miette::Result<ExecutionResult>;
-
-    fn categories() -> &'static [&'static str];
-    fn create() -> Self;
+impl<
+        T: for<'a> StatefulNode<State<'a> = RegionIoKind>
+            + for<'a> JsonSerde<State<'a> = RegionIoKind>
+            + NodeWithVariables,
+    > RegionalNode for T
+{
 }
 
 fn remember_variables(

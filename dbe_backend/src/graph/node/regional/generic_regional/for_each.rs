@@ -2,7 +2,9 @@ use crate::etype::EDataType;
 use crate::graph::node::commands::{SnarlCommand, SnarlCommands};
 use crate::graph::node::generic::{GenericNodeField, GenericNodeFieldMut};
 use crate::graph::node::regional::generic_regional::GenericRegionalNode;
-use crate::graph::node::regional::{remember_variables, RegionIONode, RegionIoKind};
+use crate::graph::node::regional::{
+    remember_variables, NodeWithVariables, RegionIONode, RegionIoKind,
+};
 use crate::graph::node::variables::ExecutionExtras;
 use crate::graph::node::{ExecutionResult, NodeContext};
 use crate::graph::region::{get_region_execution_data, RegionExecutionData};
@@ -80,6 +82,7 @@ impl PartialEq<ForEachKind> for u8 {
     }
 }
 
+impl<const KIND: u8> NodeWithVariables for ForEachLikeRegionalNode<KIND> {}
 impl<const KIND: u8> GenericRegionalNode for ForEachLikeRegionalNode<KIND> {
     fn id() -> Ustr {
         match ForEachKind::of(KIND) {
