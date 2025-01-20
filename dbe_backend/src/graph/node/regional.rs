@@ -1,8 +1,12 @@
+use crate::etype::EDataType;
+use crate::graph::inputs::GraphIoData;
 use crate::graph::node::commands::{SnarlCommand, SnarlCommands};
 use crate::graph::node::editable_state::EditableState;
-use crate::graph::node::groups::utils::{
-    get_graph_io_field, get_port_input, get_port_output, sync_fields,
+use crate::graph::node::generic::{
+    generic_can_output_to, generic_connected_to_output, generic_try_connect, GenericNodeField,
+    GenericNodeFieldMut,
 };
+use crate::graph::node::groups::utils::{get_graph_io_field, sync_fields};
 use crate::graph::node::ports::fields::IoDirection;
 use crate::graph::node::ports::{InputData, NodePortType, OutputData};
 use crate::graph::node::variables::ExecutionExtras;
@@ -11,6 +15,7 @@ use crate::graph::region::RegionVariable;
 use crate::json_utils::JsonValue;
 use crate::registry::ETypesRegistry;
 use crate::value::EValue;
+use bitflags::bitflags;
 use egui_snarl::{InPin, NodeId, OutPin, Snarl};
 use emath::{vec2, Pos2};
 use inline_tweak::tweak;
@@ -36,6 +41,15 @@ pub enum RegionIoKind {
     End,
 }
 
+bitflags! {
+    pub struct RegionVariableSide: u8 {
+        const START_IN  = 0b0001;
+        const START_OUT = 0b0010;
+        const END_IN    = 0b0100;
+        const END_OUT   = 0b1000;
+    }
+}
+
 #[derive(Debug, Clone, Hash)]
 pub struct RegionIONode<T: RegionalNode> {
     region: Uuid,
@@ -55,8 +69,30 @@ impl<T: RegionalNode> RegionIONode<T> {
         get_graph_io_field(&region.variables, &self.ids, index)
     }
 
-    fn variables_length(&self) -> usize {
-        if T::allow_variables() {
+    fn allow_input_variables(&self) -> bool {
+        match self.kind {
+            RegionIoKind::Start => T::allow_variables().contains(RegionVariableSide::START_IN),
+            RegionIoKind::End => T::allow_variables().contains(RegionVariableSide::END_IN),
+        }
+    }
+
+    fn allow_output_variables(&self) -> bool {
+        match self.kind {
+            RegionIoKind::Start => T::allow_variables().contains(RegionVariableSide::START_OUT),
+            RegionIoKind::End => T::allow_variables().contains(RegionVariableSide::END_OUT),
+        }
+    }
+
+    fn input_variables_length(&self) -> usize {
+        if self.allow_input_variables() {
+            self.ids.len()
+        } else {
+            0
+        }
+    }
+
+    fn output_variables_length(&self) -> usize {
+        if self.allow_output_variables() {
             self.ids.len()
         } else {
             0
@@ -76,7 +112,7 @@ impl<T: RegionalNode> Node for RegionIONode<T> {
     fn write_json(&self, registry: &ETypesRegistry) -> miette::Result<JsonValue> {
         let node = self.node.write_json(registry, self.kind)?;
 
-        Ok(json! ({
+        Ok(json!({
             "region": self.region,
             "kind": self.kind,
             "node": node,
@@ -110,7 +146,9 @@ impl<T: RegionalNode> Node for RegionIONode<T> {
         commands: &mut SnarlCommands,
         id: NodeId,
     ) -> miette::Result<()> {
-        if !T::allow_variables() {
+        let allow_in = self.allow_input_variables();
+        let allow_out = self.allow_output_variables();
+        if !allow_in && !allow_out {
             return Ok(());
         }
         let Some(region) = context.regions.get(&self.region) else {
@@ -123,9 +161,15 @@ impl<T: RegionalNode> Node for RegionIONode<T> {
             &mut self.ids,
             None,
             id,
-            IoDirection::Both {
-                input_offset: self.node.inputs_count(context, self.kind),
-                output_offset: self.node.outputs_count(context, self.kind),
+            if allow_in && allow_out {
+                IoDirection::Both {
+                    input_offset: self.node.inputs_count(context, self.kind),
+                    output_offset: self.node.outputs_count(context, self.kind),
+                }
+            } else if allow_in {
+                IoDirection::Input(self.node.inputs_count(context, self.kind))
+            } else {
+                IoDirection::Output(self.node.outputs_count(context, self.kind))
             },
         );
 
@@ -152,7 +196,7 @@ impl<T: RegionalNode> Node for RegionIONode<T> {
     }
 
     fn inputs_count(&self, context: NodeContext) -> usize {
-        self.variables_length() + self.node.inputs_count(context, self.kind) + 1
+        self.input_variables_length() + self.node.inputs_count(context, self.kind) + 1
     }
 
     fn input_unchecked(&self, context: NodeContext, input: usize) -> miette::Result<InputData> {
@@ -161,29 +205,31 @@ impl<T: RegionalNode> Node for RegionIONode<T> {
             return self.node.input_unchecked(context, self.kind, input);
         }
 
-        if !T::allow_variables() {
-            return Ok(InputData::new(
-                NodePortType::Invalid,
-                "!!unknown input!!".into(),
-            ));
+        if !self.allow_input_variables() {
+            return Ok(InputData::invalid("unknown input"));
         }
 
         let Some(region) = context.regions.get(&self.region) else {
-            return Ok(InputData::new(
-                NodePortType::Invalid,
-                "!!unknown region!!".into(),
-            ));
+            return Ok(InputData::invalid("unknown region"));
         };
         if input == self.ids.len() + native_in_count {
             // special "new" input
             Ok(InputData::new(NodePortType::BasedOnSource, "".into()))
         } else {
-            get_port_input(&region.variables, &self.ids, input - native_in_count)
+            let Some(field) =
+                get_graph_io_field(&region.variables, &self.ids, input - native_in_count)
+            else {
+                return Ok(InputData::invalid("unknown input"));
+            };
+            Ok(self
+                .node
+                .input_variable_type(context, self.kind, &field.ty)
+                .as_input_ty(context, field.name.clone()))
         }
     }
 
     fn outputs_count(&self, context: NodeContext) -> usize {
-        self.variables_length() + self.node.outputs_count(context, self.kind)
+        self.output_variables_length() + self.node.outputs_count(context, self.kind)
     }
 
     fn output_unchecked(&self, context: NodeContext, output: usize) -> miette::Result<OutputData> {
@@ -192,20 +238,22 @@ impl<T: RegionalNode> Node for RegionIONode<T> {
             return self.node.output_unchecked(context, self.kind, output);
         }
 
-        if !T::allow_variables() {
-            return Ok(OutputData::new(
-                NodePortType::Invalid,
-                "!!unknown input!!".into(),
-            ));
+        if !self.allow_output_variables() {
+            return Ok(OutputData::invalid("!!unknown input!!"));
         }
 
         let Some(region) = context.regions.get(&self.region) else {
-            return Ok(OutputData::new(
-                NodePortType::Invalid,
-                "!!unknown region!!".into(),
-            ));
+            return Ok(OutputData::invalid("!!unknown region!!"));
         };
-        get_port_output(&region.variables, &self.ids, output - native_out_count)
+        let Some(field) =
+            get_graph_io_field(&region.variables, &self.ids, output - native_out_count)
+        else {
+            return Ok(OutputData::invalid("unknown input"));
+        };
+        Ok(self
+            .node
+            .output_variable_type(context, self.kind, &field.ty)
+            .as_output_ty(context, field.name.clone()))
     }
 
     fn try_connect(
@@ -228,17 +276,33 @@ impl<T: RegionalNode> Node for RegionIONode<T> {
             )? {
                 return Ok(value);
             };
-        } else if T::allow_variables() {
+        } else if self.allow_input_variables() {
             if to.id.input == self.inputs_count(context) - 1 {
-                let new_pin_id = Uuid::new_v4();
-                commands.push(SnarlCommand::EditRegionVariables {
-                    region: self.region,
-                    operation: VecOperation::Push(RegionVariable {
-                        ty: Some(incoming_type.ty()),
-                        id: new_pin_id,
-                        name: "value".to_string(),
-                    }),
-                })
+                let mut ty = None;
+                let mut inputs = [self
+                    .node
+                    .input_variable_type_mut(context, self.kind, &mut ty)];
+                match generic_try_connect(context, 0, incoming_type, inputs.as_mut_slice())? {
+                    ControlFlow::Continue(changed) => {
+                        assert!(
+                            changed,
+                            "generic_try_connect should succeed with changing ty, \
+                            since incoming type is not specific"
+                        )
+                    }
+                    ControlFlow::Break(_) => return Ok(false),
+                };
+                if let Some(ty) = ty {
+                    let new_pin_id = Uuid::new_v4();
+                    commands.push(SnarlCommand::EditRegionVariables {
+                        region: self.region,
+                        operation: VecOperation::Push(RegionVariable {
+                            ty: Some(ty),
+                            id: new_pin_id,
+                            name: "value".to_string(),
+                        }),
+                    })
+                }
             } else {
                 let input = to.id.input - self.node.inputs_count(context, self.kind);
 
@@ -247,20 +311,38 @@ impl<T: RegionalNode> Node for RegionIONode<T> {
                     .ok_or_else(|| miette!("Variable {} is missing", input))?;
 
                 if field.ty.is_none() {
-                    if !incoming_type.is_specific() {
-                        return Ok(false);
+                    let mut ty = field.ty;
+                    let mut inputs = [self
+                        .node
+                        .input_variable_type_mut(context, self.kind, &mut ty)];
+                    let changed = match generic_try_connect(
+                        context,
+                        0,
+                        incoming_type,
+                        inputs.as_mut_slice(),
+                    )? {
+                        ControlFlow::Continue(changed) => changed,
+                        ControlFlow::Break(_) => return Ok(false),
+                    };
+
+                    if let Some(ty) = ty {
+                        commands.push(SnarlCommand::EditRegionVariables {
+                            region: self.region,
+                            operation: VecOperation::Replace(
+                                input,
+                                RegionVariable {
+                                    ty: Some(ty),
+                                    id: field.id,
+                                    name: field.name.clone(),
+                                },
+                            ),
+                        });
+                    } else {
+                        assert!(
+                            !changed,
+                            "ty should be Some if generic_try_connect returned true"
+                        );
                     }
-                    commands.push(SnarlCommand::EditRegionVariables {
-                        region: self.region,
-                        operation: VecOperation::Replace(
-                            input,
-                            RegionVariable {
-                                ty: Some(incoming_type.ty()),
-                                id: field.id,
-                                name: field.name.clone(),
-                            },
-                        ),
-                    });
                 }
             }
         }
@@ -275,14 +357,14 @@ impl<T: RegionalNode> Node for RegionIONode<T> {
         to: &InPin,
         target_type: &NodePortType,
     ) -> miette::Result<bool> {
-        if !T::allow_variables() {
-            return Ok(false);
-        }
-
         if from.id.output < self.node.outputs_count(context, self.kind) {
             return self
                 .node
                 .can_output_to(context, self.kind, self.region, from, to, target_type);
+        }
+
+        if !self.allow_output_variables() {
+            return Ok(false);
         }
 
         let Some(field) = self.get_variable(
@@ -291,9 +373,11 @@ impl<T: RegionalNode> Node for RegionIONode<T> {
         ) else {
             return Ok(false);
         };
-        // This method getting called means that connection is attempted to the
-        // `BasedOnInput` port, in which case we only allow it if the field has no type
-        Ok(field.ty.is_none())
+
+        let ty = field.ty();
+
+        let outputs = [self.node.output_variable_type(context, self.kind, &ty)];
+        generic_can_output_to(context, 0, target_type, &outputs)
     }
 
     fn connected_to_output(
@@ -324,23 +408,33 @@ impl<T: RegionalNode> Node for RegionIONode<T> {
             .get_variable(context, output)
             .expect("variable should exist, because `can_output_to` succeeded");
 
-        if field.ty.is_some() {
-            panic!("variable should not have a type, because `can_output_to` succeeded");
-        };
+        let mut ty = field.ty();
+        let mut outputs = [self
+            .node
+            .output_variable_type_mut(context, self.kind, &mut ty)];
+        let changed =
+            generic_connected_to_output(context, 0, incoming_type, outputs.as_mut_slice())?;
 
-        commands.push(SnarlCommand::EditRegionVariables {
-            region: self.region,
-            operation: VecOperation::Replace(
-                output,
-                RegionVariable {
-                    ty: Some(incoming_type.ty()),
-                    id: field.id,
-                    name: field.name.clone(),
-                },
-            ),
-        });
-
-        Ok(())
+        if let Some(ty) = ty {
+            commands.push(SnarlCommand::EditRegionVariables {
+                region: self.region,
+                operation: VecOperation::Replace(
+                    output,
+                    RegionVariable {
+                        ty: Some(ty),
+                        id: field.id,
+                        name: field.name.clone(),
+                    },
+                ),
+            });
+            Ok(())
+        } else {
+            assert!(
+                !changed,
+                "ty should be Some if generic_connected_to_output returned true"
+            );
+            Ok(())
+        }
     }
 
     fn region_source(&self) -> Option<Uuid> {
@@ -423,9 +517,49 @@ impl<T: RegionalNode> NodeFactory for RegionalNodeFactory<T> {
 pub trait RegionalNode: 'static + Debug + Clone + Hash + Send + Sync {
     fn id() -> Ustr;
 
-    /// Checks whether the region can have variables
-    fn allow_variables() -> bool {
-        true
+    /// Indicates at which sides the node can have variables
+    fn allow_variables() -> RegionVariableSide {
+        RegionVariableSide::all()
+    }
+
+    fn input_variable_type<'a>(
+        &self,
+        context: NodeContext,
+        kind: RegionIoKind,
+        ty: &'a Option<EDataType>,
+    ) -> GenericNodeField<'a> {
+        let _ = (context, kind);
+        GenericNodeField::Value(ty)
+    }
+
+    fn output_variable_type<'a>(
+        &self,
+        context: NodeContext,
+        kind: RegionIoKind,
+        ty: &'a Option<EDataType>,
+    ) -> GenericNodeField<'a> {
+        let _ = (context, kind);
+        GenericNodeField::Value(ty)
+    }
+
+    fn input_variable_type_mut<'a>(
+        &self,
+        context: NodeContext,
+        kind: RegionIoKind,
+        ty: &'a mut Option<EDataType>,
+    ) -> GenericNodeFieldMut<'a> {
+        let _ = (context, kind);
+        GenericNodeFieldMut::Value(ty)
+    }
+
+    fn output_variable_type_mut<'a>(
+        &self,
+        context: NodeContext,
+        kind: RegionIoKind,
+        ty: &'a mut Option<EDataType>,
+    ) -> GenericNodeFieldMut<'a> {
+        let _ = (context, kind);
+        GenericNodeFieldMut::Value(ty)
     }
 
     /// Writes node state to json

@@ -140,20 +140,19 @@ impl Node for StructNode {
         if output != 0 {
             bail!("Destructuring only has one output")
         }
-        Ok(GenericNodeField::Object(&self.id).as_output_ty(context, "output".into()))
+        Ok(GenericNodeField::Object(&self.id).as_output_ty(context, "output"))
     }
 
     fn can_output_to(
         &self,
         context: NodeContext,
         from: &OutPin,
-        to: &InPin,
+        _to: &InPin,
         target_type: &NodePortType,
     ) -> miette::Result<bool> {
         generic_can_output_to(
             context,
-            from,
-            to,
+            from.id.output,
             target_type,
             &[GenericNodeField::Object(&self.id)],
         )
@@ -164,14 +163,12 @@ impl Node for StructNode {
         context: NodeContext,
         commands: &mut SnarlCommands,
         from: &OutPin,
-        to: &InPin,
+        _to: &InPin,
         incoming_type: &NodePortType,
     ) -> miette::Result<()> {
         let changed = generic_connected_to_output(
             context,
-            commands,
-            from,
-            to,
+            from.id.output,
             incoming_type,
             &mut [GenericNodeFieldMut::Object(&mut self.id)],
         )?;

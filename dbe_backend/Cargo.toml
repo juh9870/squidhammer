@@ -8,6 +8,7 @@ publish = false
 
 [dependencies]
 atomic_refcell = { workspace = true }
+bitflags = { workspace = true }
 camino = { workspace = true, features = ["serde", "serde1"] }
 collection_traits = { workspace = true, features = ["smallvec"] }
 derive_more = { workspace = true, features = ["debug"] }

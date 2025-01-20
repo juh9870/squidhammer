@@ -39,6 +39,14 @@ impl InputData {
             ..self
         }
     }
+
+    pub fn invalid(reason: impl Into<Ustr>) -> Self {
+        Self {
+            ty: NodePortType::Invalid,
+            name: reason.into(),
+            custom_docs: None,
+        }
+    }
 }
 
 #[derive(Debug, Clone)]
@@ -61,6 +69,14 @@ impl OutputData {
         Self {
             custom_docs: Some(custom_docs),
             ..self
+        }
+    }
+
+    pub fn invalid(reason: impl Into<Ustr>) -> Self {
+        Self {
+            ty: NodePortType::Invalid,
+            name: reason.into(),
+            custom_docs: None,
         }
     }
 }

@@ -227,25 +227,25 @@ impl GenericNodeField<'_> {
         }
     }
 
-    pub fn as_input_ty(&self, context: NodeContext, name: Ustr) -> InputData {
+    pub fn as_input_ty(&self, context: NodeContext, name: impl Into<Ustr>) -> InputData {
         InputData::new(
             if self.is_specific() {
                 EItemInfo::simple_type(self.ty(context.registry)).into()
             } else {
                 NodePortType::BasedOnSource
             },
-            name,
+            name.into(),
         )
     }
 
-    pub fn as_output_ty(&self, context: NodeContext, name: Ustr) -> OutputData {
+    pub fn as_output_ty(&self, context: NodeContext, name: impl Into<Ustr>) -> OutputData {
         OutputData::new(
             if self.is_specific() {
                 EItemInfo::simple_type(self.ty(context.registry)).into()
             } else {
                 NodePortType::BasedOnTarget
             },
-            name,
+            name.into(),
         )
     }
 
@@ -522,7 +522,7 @@ impl<T: GenericNode> Node for T {
             bail!("Invalid input index: {}", input);
         };
 
-        Ok(ty.as_input_ty(context, self.input_names()[input].into()))
+        Ok(ty.as_input_ty(context, self.input_names()[input]))
     }
 
     fn outputs_count(&self, _context: NodeContext) -> usize {
@@ -535,7 +535,7 @@ impl<T: GenericNode> Node for T {
             bail!("Invalid output index: {}", output);
         };
 
-        Ok(ty.as_output_ty(context, self.output_names()[output].into()))
+        Ok(ty.as_output_ty(context, self.output_names()[output]))
     }
 
     fn try_connect(
@@ -548,13 +548,11 @@ impl<T: GenericNode> Node for T {
     ) -> miette::Result<bool> {
         let changed = match generic_try_connect(
             context,
-            commands,
-            from,
-            to,
+            to.id.input,
             incoming_type,
             self.inputs_mut().as_mut(),
         )? {
-            ControlFlow::Break(b) => return Ok(b),
+            ControlFlow::Break(_) => return Ok(false),
             ControlFlow::Continue(changed) => changed,
         };
 
@@ -569,10 +567,15 @@ impl<T: GenericNode> Node for T {
         &self,
         context: NodeContext,
         from: &OutPin,
-        to: &InPin,
+        _to: &InPin,
         target_type: &NodePortType,
     ) -> miette::Result<bool> {
-        generic_can_output_to(context, from, to, target_type, self.outputs().as_ref())
+        generic_can_output_to(
+            context,
+            from.id.output,
+            target_type,
+            self.outputs().as_ref(),
+        )
     }
 
     fn connected_to_output(
@@ -580,14 +583,12 @@ impl<T: GenericNode> Node for T {
         context: NodeContext,
         commands: &mut SnarlCommands,
         from: &OutPin,
-        to: &InPin,
+        _to: &InPin,
         incoming_type: &NodePortType,
     ) -> miette::Result<()> {
         if generic_connected_to_output(
             context,
-            commands,
-            from,
-            to,
+            from.id.output,
             incoming_type,
             self.outputs_mut().as_mut(),
         )? {
@@ -631,13 +632,10 @@ impl<T: GenericNode> Node for T {
 /// port type was changed.
 pub fn generic_try_connect(
     context: NodeContext,
-    _commands: &mut SnarlCommands,
-    _from: &OutPin,
-    to: &InPin,
+    input: usize,
     incoming_type: &NodePortType,
     inputs: &mut [GenericNodeFieldMut],
-) -> miette::Result<ControlFlow<bool, bool>> {
-    let input = to.id.input;
+) -> miette::Result<ControlFlow<(), bool>> {
     let Some(ty) = inputs.get_mut(input) else {
         bail!("Invalid input index: {}", input);
     };
@@ -650,20 +648,19 @@ pub fn generic_try_connect(
         .specify_from(context.registry, incoming_type)
         .context("Failed to process generic connection to output")?
     {
-        return Ok(ControlFlow::Break(false));
+        return Ok(ControlFlow::Break(()));
     }
     Ok(ControlFlow::Continue(true))
 }
 
 pub fn generic_can_output_to(
     context: NodeContext,
-    from: &OutPin,
-    _to: &InPin,
+    output: usize,
     target_type: &NodePortType,
     outputs: &[GenericNodeField],
 ) -> miette::Result<bool> {
-    let Some(ty) = outputs.as_ref().get(from.id.output) else {
-        bail!("Invalid output index: {}", from.id.output);
+    let Some(ty) = outputs.as_ref().get(output) else {
+        bail!("Invalid output index: {}", output);
     };
 
     ty.can_specify_from(context.registry, target_type)
@@ -674,15 +671,13 @@ pub fn generic_can_output_to(
 /// Returns [Ok(true)] if the port type was changed.
 pub fn generic_connected_to_output(
     context: NodeContext,
-    _commands: &mut SnarlCommands,
-    from: &OutPin,
-    _to: &InPin,
+    output: usize,
     incoming_type: &NodePortType,
     outputs: &mut [GenericNodeFieldMut],
 ) -> miette::Result<bool> {
     m_try(|| {
-        let Some(ty) = outputs.as_mut().get_mut(from.id.output) else {
-            bail!("Invalid output index: {}", from.id.output);
+        let Some(ty) = outputs.as_mut().get_mut(output) else {
+            bail!("Invalid output index: {}", output);
         };
 
         if !ty.specify_from(context.registry, incoming_type)? {

@@ -225,19 +225,17 @@ impl<T: GenericRegionalNode> RegionalNode for T {
         kind: RegionIoKind,
         region: Uuid,
         commands: &mut SnarlCommands,
-        from: &OutPin,
+        _from: &OutPin,
         to: &InPin,
         incoming_type: &NodePortType,
     ) -> miette::Result<ControlFlow<bool>> {
         let changed = match generic_try_connect(
             context,
-            commands,
-            from,
-            to,
+            to.id.input,
             incoming_type,
             self.inputs_mut(kind).as_mut(),
         )? {
-            ControlFlow::Break(b) => return Ok(ControlFlow::Break(b)),
+            ControlFlow::Break(_) => return Ok(ControlFlow::Break(false)),
             ControlFlow::Continue(changed) => changed,
         };
 
@@ -254,10 +252,15 @@ impl<T: GenericRegionalNode> RegionalNode for T {
         kind: RegionIoKind,
         _region: Uuid,
         from: &OutPin,
-        to: &InPin,
+        _to: &InPin,
         target_type: &NodePortType,
     ) -> miette::Result<bool> {
-        generic_can_output_to(context, from, to, target_type, self.outputs(kind).as_ref())
+        generic_can_output_to(
+            context,
+            from.id.output,
+            target_type,
+            self.outputs(kind).as_ref(),
+        )
     }
 
     fn connected_to_output(
@@ -267,14 +270,12 @@ impl<T: GenericRegionalNode> RegionalNode for T {
         region: Uuid,
         commands: &mut SnarlCommands,
         from: &OutPin,
-        to: &InPin,
+        _to: &InPin,
         incoming_type: &NodePortType,
     ) -> miette::Result<()> {
         if generic_connected_to_output(
             context,
-            commands,
-            from,
-            to,
+            from.id.output,
             incoming_type,
             self.outputs_mut(kind).as_mut(),
         )? {
