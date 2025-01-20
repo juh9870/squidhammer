@@ -31,6 +31,7 @@ use utils::map::HashMap;
 use utils::whatever_ref::WhateverRef;
 
 pub mod config;
+pub mod optional_helpers;
 
 pub static OPTIONAL_ID: LazyLock<ETypeId> =
     LazyLock::new(|| ETypeId::from_raw("sys:optional".into()));
@@ -378,7 +379,12 @@ impl ETypesRegistry {
         EDataType::Map { id }
     }
 
-    pub fn option_of(&self, value_type: EDataType) -> ETypeId {
+    pub fn option_data_of(&self, value_type: EDataType) -> WhateverRef<EEnumData> {
+        let id = self.option_id_of(value_type);
+        self.get_enum(&id).expect("Optional enum should be present")
+    }
+
+    pub fn option_id_of(&self, value_type: EDataType) -> ETypeId {
         static NAMES: LazyLock<Ustr> = LazyLock::new(|| Ustr::from("Item"));
         let map: UstrMap<EItemInfo> = [(*NAMES, EItemInfo::simple_type(value_type))]
             .into_iter()
@@ -421,15 +427,18 @@ impl ETypesRegistry {
         id: ETypeId,
         arguments: UstrMap<EItemInfo>,
     ) -> miette::Result<ETypeId> {
+        let long_id = generic_id(id, arguments.iter());
+
+        if self.types.contains_key(&long_id)
+            || (self.ready && self.pending_types.borrow().contains_key(&long_id))
+        {
+            return Ok(long_id);
+        }
+
         if !self.ready {
             bail!("Registry is not ready yet")
         }
 
-        let long_id = generic_id(id, arguments.iter());
-
-        if self.types.contains_key(&long_id) || self.pending_types.borrow().contains_key(&long_id) {
-            return Ok(long_id);
-        }
         let obj = Self::make_type_generic(id, arguments, long_id, |id| {
             self.get_object(id)
                 .ok_or_else(|| miette!("Type `{}` is not defined", id))

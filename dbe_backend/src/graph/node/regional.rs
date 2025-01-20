@@ -32,6 +32,7 @@ use ustr::Ustr;
 use utils::vec_utils::VecOperation;
 use uuid::Uuid;
 
+pub mod conditional;
 pub mod generic_regional;
 pub mod repeat;
 
@@ -196,7 +197,9 @@ impl<T: RegionalNode> Node for RegionIONode<T> {
     }
 
     fn inputs_count(&self, context: NodeContext) -> usize {
-        self.input_variables_length() + self.node.inputs_count(context, self.kind) + 1
+        self.input_variables_length()
+            + self.node.inputs_count(context, self.kind)
+            + if self.allow_input_variables() { 1 } else { 0 }
     }
 
     fn input_unchecked(&self, context: NodeContext, input: usize) -> miette::Result<InputData> {

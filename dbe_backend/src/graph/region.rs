@@ -111,7 +111,7 @@ pub fn get_region_execution_data<'a, T: RegionExecutionData>(
     variables: &'a mut ExecutionExtras,
 ) -> miette::Result<&'a mut T> {
     let Some(state) = variables.get_region_data::<T>(region) else {
-        bail!("End of repeat node without start")
+        bail!("End of regional node without start")
     };
     Ok(state)
 }
