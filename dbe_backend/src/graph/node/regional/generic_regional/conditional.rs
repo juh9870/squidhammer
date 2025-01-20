@@ -1,7 +1,7 @@
 use crate::etype::EDataType;
 use crate::graph::node::generic::{GenericNodeField, GenericNodeFieldMut};
-use crate::graph::node::regional::generic_regional::GenericRegionalNode;
 use crate::graph::node::regional::{NodeWithVariables, RegionIoKind, RegionVariableSide};
+use crate::graph::node::stateful::generic::GenericStatefulNode;
 use crate::graph::node::variables::ExecutionExtras;
 use crate::graph::node::{ExecutionResult, NodeContext};
 use crate::graph::region::{get_region_execution_data, RegionExecutionData};
@@ -51,7 +51,7 @@ impl<const KIND: u8> NodeWithVariables for ConditionalNode<KIND> {
     fn output_variable_type<'a>(
         &self,
         _context: NodeContext,
-        kind: RegionIoKind,
+        kind: &RegionIoKind,
         ty: &'a Option<EDataType>,
     ) -> GenericNodeField<'a> {
         if !kind.is_end() {
@@ -64,7 +64,7 @@ impl<const KIND: u8> NodeWithVariables for ConditionalNode<KIND> {
     fn output_variable_type_mut<'a>(
         &self,
         _context: NodeContext,
-        kind: RegionIoKind,
+        kind: &RegionIoKind,
         ty: &'a mut Option<EDataType>,
     ) -> GenericNodeFieldMut<'a> {
         if !kind.is_end() {
@@ -75,11 +75,78 @@ impl<const KIND: u8> NodeWithVariables for ConditionalNode<KIND> {
     }
 }
 
-impl<const KIND: u8> GenericRegionalNode for ConditionalNode<KIND> {
+impl<const KIND: u8> GenericStatefulNode for ConditionalNode<KIND> {
+    type State = RegionIoKind;
+
     fn id() -> Ustr {
         match ConditionalKind::of(KIND) {
             ConditionalKind::If => "conditional".into(),
             ConditionalKind::Map => "option_map".into(),
+        }
+    }
+
+    fn input_names(&self, kind: &RegionIoKind) -> &[&str] {
+        if !kind.is_start() {
+            panic!("Conditional node has no inputs on the end")
+        }
+
+        match self.kind() {
+            ConditionalKind::If => &["condition"],
+            ConditionalKind::Map => &["option"],
+        }
+    }
+
+    fn output_names(&self, kind: &RegionIoKind) -> &[&str] {
+        if !kind.is_start() {
+            panic!("Conditional node has no outputs on the end")
+        }
+        match self.kind() {
+            ConditionalKind::If => &[],
+            ConditionalKind::Map => &["value"],
+        }
+    }
+
+    fn inputs(&self, kind: &RegionIoKind) -> impl AsRef<[GenericNodeField]> {
+        match kind {
+            RegionIoKind::Start => match self.kind() {
+                ConditionalKind::If => smallvec_n![1;GenericNodeField::Fixed(EDataType::Boolean)],
+                ConditionalKind::Map => smallvec![GenericNodeField::Option(&self.input_ty)],
+            },
+            RegionIoKind::End => smallvec![],
+        }
+    }
+
+    fn outputs(&self, kind: &RegionIoKind) -> impl AsRef<[GenericNodeField]> {
+        match kind {
+            RegionIoKind::Start => match self.kind() {
+                ConditionalKind::If => smallvec![],
+                ConditionalKind::Map => smallvec_n![1;GenericNodeField::Value(&self.input_ty)],
+            },
+            RegionIoKind::End => smallvec![],
+        }
+    }
+
+    fn inputs_mut(&mut self, kind: &RegionIoKind) -> impl AsMut<[GenericNodeFieldMut]> {
+        match kind {
+            RegionIoKind::Start => match self.kind() {
+                ConditionalKind::If => {
+                    smallvec_n![1;GenericNodeFieldMut::Fixed(EDataType::Boolean)]
+                }
+                ConditionalKind::Map => smallvec![GenericNodeFieldMut::Option(&mut self.input_ty)],
+            },
+            RegionIoKind::End => smallvec![],
+        }
+    }
+
+    fn outputs_mut(&mut self, kind: &RegionIoKind) -> impl AsMut<[GenericNodeFieldMut]> {
+        match kind {
+            RegionIoKind::Start => match self.kind() {
+                ConditionalKind::If => smallvec![],
+                ConditionalKind::Map => {
+                    smallvec_n![1;GenericNodeFieldMut::Value(&mut self.input_ty)]
+                }
+            },
+            RegionIoKind::End => smallvec![],
         }
     }
 
@@ -97,7 +164,7 @@ impl<const KIND: u8> GenericRegionalNode for ConditionalNode<KIND> {
     fn execute(
         &self,
         context: NodeContext,
-        kind: RegionIoKind,
+        kind: &RegionIoKind,
         region: Uuid,
         inputs: &[EValue],
         outputs: &mut Vec<EValue>,
@@ -151,71 +218,6 @@ impl<const KIND: u8> GenericRegionalNode for ConditionalNode<KIND> {
 
     fn create() -> Self {
         Self { input_ty: None }
-    }
-
-    fn input_names(&self, kind: RegionIoKind) -> &[&str] {
-        if !kind.is_start() {
-            panic!("Conditional node has no inputs on the end")
-        }
-
-        match self.kind() {
-            ConditionalKind::If => &["condition"],
-            ConditionalKind::Map => &["option"],
-        }
-    }
-
-    fn output_names(&self, kind: RegionIoKind) -> &[&str] {
-        if !kind.is_start() {
-            panic!("Conditional node has no outputs on the end")
-        }
-        match self.kind() {
-            ConditionalKind::If => &[],
-            ConditionalKind::Map => &["value"],
-        }
-    }
-
-    fn inputs(&self, kind: RegionIoKind) -> impl AsRef<[GenericNodeField]> {
-        match kind {
-            RegionIoKind::Start => match self.kind() {
-                ConditionalKind::If => smallvec_n![1;GenericNodeField::Fixed(EDataType::Boolean)],
-                ConditionalKind::Map => smallvec![GenericNodeField::Option(&self.input_ty)],
-            },
-            RegionIoKind::End => smallvec![],
-        }
-    }
-
-    fn inputs_mut(&mut self, kind: RegionIoKind) -> impl AsMut<[GenericNodeFieldMut]> {
-        match kind {
-            RegionIoKind::Start => match self.kind() {
-                ConditionalKind::If => {
-                    smallvec_n![1;GenericNodeFieldMut::Fixed(EDataType::Boolean)]
-                }
-                ConditionalKind::Map => smallvec![GenericNodeFieldMut::Option(&mut self.input_ty)],
-            },
-            RegionIoKind::End => smallvec![],
-        }
-    }
-
-    fn outputs(&self, kind: RegionIoKind) -> impl AsRef<[GenericNodeField]> {
-        match kind {
-            RegionIoKind::Start => match self.kind() {
-                ConditionalKind::If => smallvec![],
-                ConditionalKind::Map => smallvec_n![1;GenericNodeField::Value(&self.input_ty)],
-            },
-            RegionIoKind::End => smallvec![],
-        }
-    }
-
-    fn outputs_mut(&mut self, kind: RegionIoKind) -> impl AsMut<[GenericNodeFieldMut]> {
-        match kind {
-            RegionIoKind::Start => match self.kind() {
-                ConditionalKind::If => smallvec![],
-                ConditionalKind::Map => {
-                    smallvec_n![1;GenericNodeFieldMut::Value(&mut self.input_ty)]
-                }
-            },
-            RegionIoKind::End => smallvec![],
-        }
     }
 }
 

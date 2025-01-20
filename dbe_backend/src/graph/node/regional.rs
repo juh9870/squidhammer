@@ -112,11 +112,11 @@ struct PackedRegionIoNode {
 
 impl<T: RegionalNode> Node for RegionIONode<T> {
     fn write_json(&self, registry: &ETypesRegistry) -> miette::Result<JsonValue> {
-        let node = self.node.write_json(registry, self.kind)?;
+        let node = self.node.write_json(registry, &self.kind)?;
 
         Ok(json!({
             "region": self.region,
-            "kind": self.kind,
+            "kind": &self.kind,
             "node": node,
             "ids": self.ids.clone(),
         }))
@@ -133,7 +133,7 @@ impl<T: RegionalNode> Node for RegionIONode<T> {
         self.kind = packed.kind;
         self.ids = packed.ids;
         self.node
-            .parse_json(registry, self.kind, &mut packed.node)?;
+            .parse_json(registry, &self.kind, &mut packed.node)?;
 
         Ok(())
     }
@@ -165,13 +165,13 @@ impl<T: RegionalNode> Node for RegionIONode<T> {
             id,
             if allow_in && allow_out {
                 IoDirection::Both {
-                    input_offset: self.node.inputs_count(context, self.kind),
-                    output_offset: self.node.outputs_count(context, self.kind),
+                    input_offset: self.node.inputs_count(context, &self.kind),
+                    output_offset: self.node.outputs_count(context, &self.kind),
                 }
             } else if allow_in {
-                IoDirection::Input(self.node.inputs_count(context, self.kind))
+                IoDirection::Input(self.node.inputs_count(context, &self.kind))
             } else {
-                IoDirection::Output(self.node.outputs_count(context, self.kind))
+                IoDirection::Output(self.node.outputs_count(context, &self.kind))
             },
         );
 
@@ -179,11 +179,11 @@ impl<T: RegionalNode> Node for RegionIONode<T> {
     }
 
     fn has_editable_state(&self) -> bool {
-        self.node.has_editable_state(self.kind)
+        self.node.has_editable_state(&self.kind)
     }
 
     fn editable_state(&self) -> EditableState {
-        self.node.editable_state(self.kind)
+        self.node.editable_state(&self.kind)
     }
 
     fn apply_editable_state(
@@ -194,19 +194,19 @@ impl<T: RegionalNode> Node for RegionIONode<T> {
         node_id: NodeId,
     ) -> miette::Result<()> {
         self.node
-            .apply_editable_state(context, self.kind, state, commands, node_id)
+            .apply_editable_state(context, &self.kind, state, commands, node_id)
     }
 
     fn inputs_count(&self, context: NodeContext) -> usize {
         self.input_variables_length()
-            + self.node.inputs_count(context, self.kind)
+            + self.node.inputs_count(context, &self.kind)
             + if self.allow_input_variables() { 1 } else { 0 }
     }
 
     fn input_unchecked(&self, context: NodeContext, input: usize) -> miette::Result<InputData> {
-        let native_in_count = self.node.inputs_count(context, self.kind);
-        if input < self.node.inputs_count(context, self.kind) {
-            return self.node.input_unchecked(context, self.kind, input);
+        let native_in_count = self.node.inputs_count(context, &self.kind);
+        if input < self.node.inputs_count(context, &self.kind) {
+            return self.node.input_unchecked(context, &self.kind, input);
         }
 
         if !self.allow_input_variables() {
@@ -227,19 +227,19 @@ impl<T: RegionalNode> Node for RegionIONode<T> {
             };
             Ok(self
                 .node
-                .input_variable_type(context, self.kind, &field.ty)
+                .input_variable_type(context, &self.kind, &field.ty)
                 .as_input_ty(context, field.name.clone()))
         }
     }
 
     fn outputs_count(&self, context: NodeContext) -> usize {
-        self.output_variables_length() + self.node.outputs_count(context, self.kind)
+        self.output_variables_length() + self.node.outputs_count(context, &self.kind)
     }
 
     fn output_unchecked(&self, context: NodeContext, output: usize) -> miette::Result<OutputData> {
-        let native_out_count = self.node.outputs_count(context, self.kind);
+        let native_out_count = self.node.outputs_count(context, &self.kind);
         if output < native_out_count {
-            return self.node.output_unchecked(context, self.kind, output);
+            return self.node.output_unchecked(context, &self.kind, output);
         }
 
         if !self.allow_output_variables() {
@@ -256,7 +256,7 @@ impl<T: RegionalNode> Node for RegionIONode<T> {
         };
         Ok(self
             .node
-            .output_variable_type(context, self.kind, &field.ty)
+            .output_variable_type(context, &self.kind, &field.ty)
             .as_output_ty(context, field.name.clone()))
     }
 
@@ -268,10 +268,10 @@ impl<T: RegionalNode> Node for RegionIONode<T> {
         to: &InPin,
         incoming_type: &NodePortType,
     ) -> miette::Result<bool> {
-        if to.id.input < self.node.inputs_count(context, self.kind) {
+        if to.id.input < self.node.inputs_count(context, &self.kind) {
             if let ControlFlow::Break(value) = self.node.try_connect(
                 context,
-                self.kind,
+                &self.kind,
                 self.region,
                 commands,
                 from,
@@ -285,7 +285,7 @@ impl<T: RegionalNode> Node for RegionIONode<T> {
                 let mut ty = None;
                 let mut inputs = [self
                     .node
-                    .input_variable_type_mut(context, self.kind, &mut ty)];
+                    .input_variable_type_mut(context, &self.kind, &mut ty)];
                 match generic_try_connect(context, 0, incoming_type, inputs.as_mut_slice())? {
                     ControlFlow::Continue(changed) => {
                         assert!(
@@ -308,7 +308,7 @@ impl<T: RegionalNode> Node for RegionIONode<T> {
                     })
                 }
             } else {
-                let input = to.id.input - self.node.inputs_count(context, self.kind);
+                let input = to.id.input - self.node.inputs_count(context, &self.kind);
 
                 let field = self
                     .get_variable(context, input)
@@ -318,7 +318,7 @@ impl<T: RegionalNode> Node for RegionIONode<T> {
                     let mut ty = field.ty;
                     let mut inputs = [self
                         .node
-                        .input_variable_type_mut(context, self.kind, &mut ty)];
+                        .input_variable_type_mut(context, &self.kind, &mut ty)];
                     let changed = match generic_try_connect(
                         context,
                         0,
@@ -361,10 +361,15 @@ impl<T: RegionalNode> Node for RegionIONode<T> {
         to: &InPin,
         target_type: &NodePortType,
     ) -> miette::Result<bool> {
-        if from.id.output < self.node.outputs_count(context, self.kind) {
-            return self
-                .node
-                .can_output_to(context, self.kind, self.region, from, to, target_type);
+        if from.id.output < self.node.outputs_count(context, &self.kind) {
+            return self.node.can_output_to(
+                context,
+                &self.kind,
+                self.region,
+                from,
+                to,
+                target_type,
+            );
         }
 
         if !self.allow_output_variables() {
@@ -373,14 +378,14 @@ impl<T: RegionalNode> Node for RegionIONode<T> {
 
         let Some(field) = self.get_variable(
             context,
-            from.id.output - self.node.outputs_count(context, self.kind),
+            from.id.output - self.node.outputs_count(context, &self.kind),
         ) else {
             return Ok(false);
         };
 
         let ty = field.ty();
 
-        let outputs = [self.node.output_variable_type(context, self.kind, &ty)];
+        let outputs = [self.node.output_variable_type(context, &self.kind, &ty)];
         generic_can_output_to(context, 0, target_type, &outputs)
     }
 
@@ -394,10 +399,10 @@ impl<T: RegionalNode> Node for RegionIONode<T> {
     ) -> miette::Result<()> {
         // do NOT sync fields in this method, rearrangement of the fields might cause issues with pending connection commands
 
-        if from.id.output < self.node.outputs_count(context, self.kind) {
+        if from.id.output < self.node.outputs_count(context, &self.kind) {
             return self.node.connected_to_output(
                 context,
-                self.kind,
+                &self.kind,
                 self.region,
                 commands,
                 from,
@@ -406,7 +411,7 @@ impl<T: RegionalNode> Node for RegionIONode<T> {
             );
         }
 
-        let output = from.id.output - self.node.outputs_count(context, self.kind);
+        let output = from.id.output - self.node.outputs_count(context, &self.kind);
 
         let field = self
             .get_variable(context, output)
@@ -415,7 +420,7 @@ impl<T: RegionalNode> Node for RegionIONode<T> {
         let mut ty = field.ty();
         let mut outputs = [self
             .node
-            .output_variable_type_mut(context, self.kind, &mut ty)];
+            .output_variable_type_mut(context, &self.kind, &mut ty)];
         let changed =
             generic_connected_to_output(context, 0, incoming_type, outputs.as_mut_slice())?;
 
@@ -469,7 +474,7 @@ impl<T: RegionalNode> Node for RegionIONode<T> {
         variables: &mut ExecutionExtras,
     ) -> miette::Result<ExecutionResult> {
         self.node
-            .execute(context, self.kind, self.region, inputs, outputs, variables)
+            .execute(context, &self.kind, self.region, inputs, outputs, variables)
     }
 }
 
@@ -527,7 +532,7 @@ pub trait NodeWithVariables {
     fn input_variable_type<'a>(
         &self,
         context: NodeContext,
-        kind: RegionIoKind,
+        kind: &RegionIoKind,
         ty: &'a Option<EDataType>,
     ) -> GenericNodeField<'a> {
         let _ = (context, kind);
@@ -537,7 +542,7 @@ pub trait NodeWithVariables {
     fn output_variable_type<'a>(
         &self,
         context: NodeContext,
-        kind: RegionIoKind,
+        kind: &RegionIoKind,
         ty: &'a Option<EDataType>,
     ) -> GenericNodeField<'a> {
         let _ = (context, kind);
@@ -547,7 +552,7 @@ pub trait NodeWithVariables {
     fn input_variable_type_mut<'a>(
         &self,
         context: NodeContext,
-        kind: RegionIoKind,
+        kind: &RegionIoKind,
         ty: &'a mut Option<EDataType>,
     ) -> GenericNodeFieldMut<'a> {
         let _ = (context, kind);
@@ -557,7 +562,7 @@ pub trait NodeWithVariables {
     fn output_variable_type_mut<'a>(
         &self,
         context: NodeContext,
-        kind: RegionIoKind,
+        kind: &RegionIoKind,
         ty: &'a mut Option<EDataType>,
     ) -> GenericNodeFieldMut<'a> {
         let _ = (context, kind);
@@ -566,16 +571,12 @@ pub trait NodeWithVariables {
 }
 
 pub trait RegionalNode:
-    for<'a> StatefulNode<State<'a> = RegionIoKind>
-    + for<'a> JsonSerde<State<'a> = RegionIoKind>
-    + NodeWithVariables
+    StatefulNode<State = RegionIoKind> + JsonSerde<State = RegionIoKind> + NodeWithVariables
 {
 }
 
 impl<
-        T: for<'a> StatefulNode<State<'a> = RegionIoKind>
-            + for<'a> JsonSerde<State<'a> = RegionIoKind>
-            + NodeWithVariables,
+        T: StatefulNode<State = RegionIoKind> + JsonSerde<State = RegionIoKind> + NodeWithVariables,
     > RegionalNode for T
 {
 }
