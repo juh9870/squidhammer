@@ -173,7 +173,7 @@ impl GenericNodeField<'_> {
             GenericNodeField::List(ty) => registry.list_of(ty.unwrap_or_else(EDataType::null)),
             GenericNodeField::Value(ty) => ty.unwrap_or_else(EDataType::null),
             GenericNodeField::Option(ty) => EDataType::Object {
-                ident: registry.option_of(ty.unwrap_or_else(EDataType::null)),
+                ident: registry.option_id_of(ty.unwrap_or_else(EDataType::null)),
             },
             GenericNodeField::Object(ident) => ident
                 .map(|ident| EDataType::Object { ident })
