@@ -1,4 +1,5 @@
 use crate::etype::eitem::EItemInfo;
+use crate::etype::EDataType;
 use crate::graph::node::commands::SnarlCommands;
 use crate::graph::node::editable_state::EditableState;
 use crate::graph::node::generic::{
@@ -6,7 +7,7 @@ use crate::graph::node::generic::{
     parse_generic_json_fields, write_generic_json_fields, GenericNodeField, GenericNodeFieldMut,
 };
 use crate::graph::node::ports::{InputData, NodePortType, OutputData};
-use crate::graph::node::regional::{RegionIoKind, RegionalNode};
+use crate::graph::node::regional::{RegionIoKind, RegionVariableSide, RegionalNode};
 use crate::graph::node::variables::ExecutionExtras;
 use crate::graph::node::{ExecutionResult, NodeContext};
 use crate::json_utils::JsonValue;
@@ -20,6 +21,7 @@ use std::ops::ControlFlow;
 use ustr::Ustr;
 use uuid::Uuid;
 
+pub mod conditional;
 pub mod construct;
 pub mod for_each;
 pub mod for_each_dbeitem;
@@ -33,6 +35,50 @@ pub trait GenericRegionalNode: 'static + Debug + Clone + Hash + Send + Sync {
     fn outputs(&self, kind: RegionIoKind) -> impl AsRef<[GenericNodeField]>;
     fn inputs_mut(&mut self, kind: RegionIoKind) -> impl AsMut<[GenericNodeFieldMut]>;
     fn outputs_mut(&mut self, kind: RegionIoKind) -> impl AsMut<[GenericNodeFieldMut]>;
+
+    fn allow_variables() -> RegionVariableSide {
+        RegionVariableSide::all()
+    }
+
+    fn input_variable_type<'a>(
+        &self,
+        context: NodeContext,
+        kind: RegionIoKind,
+        ty: &'a Option<EDataType>,
+    ) -> GenericNodeField<'a> {
+        let _ = (context, kind);
+        GenericNodeField::Value(ty)
+    }
+
+    fn output_variable_type<'a>(
+        &self,
+        context: NodeContext,
+        kind: RegionIoKind,
+        ty: &'a Option<EDataType>,
+    ) -> GenericNodeField<'a> {
+        let _ = (context, kind);
+        GenericNodeField::Value(ty)
+    }
+
+    fn input_variable_type_mut<'a>(
+        &self,
+        context: NodeContext,
+        kind: RegionIoKind,
+        ty: &'a mut Option<EDataType>,
+    ) -> GenericNodeFieldMut<'a> {
+        let _ = (context, kind);
+        GenericNodeFieldMut::Value(ty)
+    }
+
+    fn output_variable_type_mut<'a>(
+        &self,
+        context: NodeContext,
+        kind: RegionIoKind,
+        ty: &'a mut Option<EDataType>,
+    ) -> GenericNodeFieldMut<'a> {
+        let _ = (context, kind);
+        GenericNodeFieldMut::Value(ty)
+    }
 
     /// Writes node state to json
     fn write_json(
@@ -129,6 +175,46 @@ pub trait GenericRegionalNode: 'static + Debug + Clone + Hash + Send + Sync {
 impl<T: GenericRegionalNode> RegionalNode for T {
     fn id() -> Ustr {
         T::id()
+    }
+
+    fn allow_variables() -> RegionVariableSide {
+        T::allow_variables()
+    }
+
+    fn input_variable_type<'a>(
+        &self,
+        context: NodeContext,
+        kind: RegionIoKind,
+        ty: &'a Option<EDataType>,
+    ) -> GenericNodeField<'a> {
+        T::input_variable_type(self, context, kind, ty)
+    }
+
+    fn output_variable_type<'a>(
+        &self,
+        context: NodeContext,
+        kind: RegionIoKind,
+        ty: &'a Option<EDataType>,
+    ) -> GenericNodeField<'a> {
+        T::output_variable_type(self, context, kind, ty)
+    }
+
+    fn input_variable_type_mut<'a>(
+        &self,
+        context: NodeContext,
+        kind: RegionIoKind,
+        ty: &'a mut Option<EDataType>,
+    ) -> GenericNodeFieldMut<'a> {
+        T::input_variable_type_mut(self, context, kind, ty)
+    }
+
+    fn output_variable_type_mut<'a>(
+        &self,
+        context: NodeContext,
+        kind: RegionIoKind,
+        ty: &'a mut Option<EDataType>,
+    ) -> GenericNodeFieldMut<'a> {
+        T::output_variable_type_mut(self, context, kind, ty)
     }
 
     fn write_json(

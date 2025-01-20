@@ -14,7 +14,6 @@ use crate::graph::node::groups::subgraph::SubgraphNodeFactory;
 use crate::graph::node::list::ListNodeFactory;
 use crate::graph::node::mappings::MappingsNodeFactory;
 use crate::graph::node::ports::{InputData, NodePortType, OutputData};
-use crate::graph::node::regional::conditional::ConditionalNode;
 use crate::graph::node::regional::generic_regional::construct::ConstructListNode;
 use crate::graph::node::regional::generic_regional::for_each::{
     ListFilterMapNode, ListFilterNode, ListFlatMapNode, ListForEachNode, ListMapNode,
@@ -40,6 +39,7 @@ use dyn_hash::DynHash;
 use egui_snarl::{InPin, NodeId, OutPin, Snarl};
 use emath::Pos2;
 use miette::bail;
+use regional::generic_regional::conditional::{ConditionalIfNode, ConditionalMapNode};
 use smallvec::{smallvec, SmallVec};
 use std::collections::BTreeMap;
 use std::fmt::Debug;
@@ -103,7 +103,10 @@ fn default_nodes() -> impl Iterator<Item = (Ustr, Arc<dyn NodeFactory>)> {
     v.push(Arc::new(ExpressionNodeFactory));
     v.push(Arc::new(DestructuringNodeFactory));
     v.push(Arc::new(RegionalNodeFactory::<RepeatNode>::INSTANCE));
-    v.push(Arc::new(RegionalNodeFactory::<ConditionalNode>::INSTANCE));
+    v.push(Arc::new(RegionalNodeFactory::<ConditionalIfNode>::INSTANCE));
+    v.push(Arc::new(
+        RegionalNodeFactory::<ConditionalMapNode>::INSTANCE,
+    ));
     v.push(Arc::new(RegionalNodeFactory::<ListForEachNode>::INSTANCE));
     v.push(Arc::new(RegionalNodeFactory::<ListFilterNode>::INSTANCE));
     v.push(Arc::new(RegionalNodeFactory::<ListMapNode>::INSTANCE));
