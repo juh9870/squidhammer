@@ -77,7 +77,7 @@ impl Node for DestructuringNode {
         if input != 0 {
             bail!("Destructuring only has one input")
         }
-        Ok(GenericNodeField::Object(&self.id).as_input_ty(context, "input".into()))
+        Ok(GenericNodeField::Object(&self.id).as_input_ty(context, "input"))
     }
 
     fn outputs_count(&self, context: NodeContext) -> usize {
@@ -115,14 +115,12 @@ impl Node for DestructuringNode {
     ) -> miette::Result<bool> {
         let changed = match generic_try_connect(
             context,
-            commands,
-            from,
-            to,
+            to.id.input,
             incoming_type,
             &mut [GenericNodeFieldMut::Object(&mut self.id)],
         )? {
             ControlFlow::Continue(changed) => changed,
-            ControlFlow::Break(b) => return Ok(b),
+            ControlFlow::Break(_) => return Ok(false),
         };
         if changed {
             for (idx, _) in self.fields.iter().enumerate() {

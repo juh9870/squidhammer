@@ -15,6 +15,7 @@ members = [
 
 [workspace.dependencies]
 ouroboros = "0.18.5"
+bitflags = "2.8.0"
 ahash = "0.8.11"
 anyhow = "1.0.95"
 atomic_refcell = "0.1.13"
