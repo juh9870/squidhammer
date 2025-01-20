@@ -11,19 +11,21 @@ use std::ops::ControlFlow;
 use ustr::Ustr;
 use uuid::Uuid;
 
+pub mod generic;
+
 pub trait StatefulNode: 'static + Debug + Clone + Hash + Send + Sync {
-    type State<'a>;
+    type State;
 
     fn id() -> Ustr;
 
     /// See [Node::has_editable_state]
-    fn has_editable_state(&self, external_state: Self::State<'_>) -> bool {
+    fn has_editable_state(&self, external_state: &Self::State) -> bool {
         let _ = (external_state,);
         false
     }
 
     /// See [Node::editable_state]
-    fn editable_state(&self, external_state: Self::State<'_>) -> EditableState {
+    fn editable_state(&self, external_state: &Self::State) -> EditableState {
         assert!(
             self.has_editable_state(external_state),
             "editable_state should only be called if has_editable_state returns true"
@@ -35,7 +37,7 @@ pub trait StatefulNode: 'static + Debug + Clone + Hash + Send + Sync {
     fn apply_editable_state(
         &mut self,
         _context: NodeContext,
-        external_state: Self::State<'_>,
+        external_state: &Self::State,
         state: EditableState,
         commands: &mut SnarlCommands,
         node_id: NodeId,
@@ -48,20 +50,20 @@ pub trait StatefulNode: 'static + Debug + Clone + Hash + Send + Sync {
         unimplemented!()
     }
 
-    fn inputs_count(&self, context: NodeContext, external_state: Self::State<'_>) -> usize;
-    fn outputs_count(&self, context: NodeContext, external_state: Self::State<'_>) -> usize;
+    fn inputs_count(&self, context: NodeContext, external_state: &Self::State) -> usize;
+    fn outputs_count(&self, context: NodeContext, external_state: &Self::State) -> usize;
 
     fn input_unchecked(
         &self,
         context: NodeContext,
-        external_state: Self::State<'_>,
+        external_state: &Self::State,
         input: usize,
     ) -> miette::Result<InputData>;
 
     fn output_unchecked(
         &self,
         context: NodeContext,
-        external_state: Self::State<'_>,
+        external_state: &Self::State,
         output: usize,
     ) -> miette::Result<OutputData>;
 
@@ -69,7 +71,7 @@ pub trait StatefulNode: 'static + Debug + Clone + Hash + Send + Sync {
     fn try_connect(
         &mut self,
         context: NodeContext,
-        external_state: Self::State<'_>,
+        external_state: &Self::State,
         region: Uuid,
         commands: &mut SnarlCommands,
         from: &OutPin,
@@ -94,7 +96,7 @@ pub trait StatefulNode: 'static + Debug + Clone + Hash + Send + Sync {
     fn can_output_to(
         &self,
         context: NodeContext,
-        external_state: Self::State<'_>,
+        external_state: &Self::State,
         region: Uuid,
         from: &OutPin,
         to: &InPin,
@@ -111,7 +113,7 @@ pub trait StatefulNode: 'static + Debug + Clone + Hash + Send + Sync {
     fn connected_to_output(
         &mut self,
         context: NodeContext,
-        external_state: Self::State<'_>,
+        external_state: &Self::State,
         region: Uuid,
         commands: &mut SnarlCommands,
         from: &OutPin,
@@ -148,7 +150,7 @@ pub trait StatefulNode: 'static + Debug + Clone + Hash + Send + Sync {
     fn execute(
         &self,
         context: NodeContext,
-        external_state: Self::State<'_>,
+        external_state: &Self::State,
         region: Uuid,
         inputs: &[EValue],
         outputs: &mut Vec<EValue>,

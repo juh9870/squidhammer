@@ -4,8 +4,8 @@ use crate::graph::node::commands::{SnarlCommand, SnarlCommands};
 use crate::graph::node::editable_state::{EditableState, EditableStateValue};
 use crate::graph::node::generic::macros::generic_node_io;
 use crate::graph::node::generic::{GenericNodeField, GenericNodeFieldMut};
-use crate::graph::node::regional::generic_regional::GenericRegionalNode;
 use crate::graph::node::regional::{remember_variables, NodeWithVariables, RegionIoKind};
+use crate::graph::node::stateful::generic::GenericStatefulNode;
 use crate::graph::node::variables::ExecutionExtras;
 use crate::graph::node::{ExecutionResult, NodeContext};
 use crate::graph::region::{get_region_execution_data, RegionExecutionData};
@@ -32,25 +32,27 @@ pub struct ForEachDbeItem {
 
 impl NodeWithVariables for ForEachDbeItem {}
 
-impl GenericRegionalNode for ForEachDbeItem {
+impl GenericStatefulNode for ForEachDbeItem {
+    type State = RegionIoKind;
+
     fn id() -> Ustr {
         "for_each_dbeitem".into()
     }
 
-    fn input_names(&self, kind: RegionIoKind) -> &[&str] {
+    fn input_names(&self, kind: &RegionIoKind) -> &[&str] {
         match kind {
             RegionIoKind::Start => &[],
             RegionIoKind::End => &[],
         }
     }
-    fn output_names(&self, kind: RegionIoKind) -> &[&str] {
+    fn output_names(&self, kind: &RegionIoKind) -> &[&str] {
         match kind {
             RegionIoKind::Start => &["value", "path"],
             RegionIoKind::End => &[],
         }
     }
 
-    fn outputs(&self, kind: RegionIoKind) -> impl AsRef<[GenericNodeField]> {
+    fn outputs(&self, kind: &RegionIoKind) -> impl AsRef<[GenericNodeField]> {
         match kind {
             RegionIoKind::Start => {
                 if let Some((ty, _)) = self.enum_variant {
@@ -71,7 +73,7 @@ impl GenericRegionalNode for ForEachDbeItem {
         }
     }
 
-    fn outputs_mut(&mut self, kind: RegionIoKind) -> impl AsMut<[GenericNodeFieldMut]> {
+    fn outputs_mut(&mut self, kind: &RegionIoKind) -> impl AsMut<[GenericNodeFieldMut]> {
         match kind {
             RegionIoKind::Start => {
                 if let Some((ty, _)) = self.enum_variant {
@@ -100,7 +102,7 @@ impl GenericRegionalNode for ForEachDbeItem {
     fn write_json(
         &self,
         _registry: &crate::registry::ETypesRegistry,
-        kind: RegionIoKind,
+        kind: &RegionIoKind,
     ) -> miette::Result<JsonValue> {
         if kind.is_start() {
             miette::IntoDiagnostic::into_diagnostic(serde_json::value::to_value(self))
@@ -111,7 +113,7 @@ impl GenericRegionalNode for ForEachDbeItem {
     fn parse_json(
         &mut self,
         _registry: &crate::registry::ETypesRegistry,
-        kind: RegionIoKind,
+        kind: &RegionIoKind,
         value: &mut JsonValue,
     ) -> miette::Result<()> {
         if kind.is_end() {
@@ -122,11 +124,11 @@ impl GenericRegionalNode for ForEachDbeItem {
             .map(|node| *self = node)
     }
 
-    fn has_editable_state(&self, kind: RegionIoKind) -> bool {
+    fn has_editable_state(&self, kind: &RegionIoKind) -> bool {
         kind.is_start() && self.output_ty.is_some() && self.is_enum
     }
 
-    fn editable_state(&self, kind: RegionIoKind) -> EditableState {
+    fn editable_state(&self, kind: &RegionIoKind) -> EditableState {
         if !kind.is_start() {
             unimplemented!()
         }
@@ -148,7 +150,7 @@ impl GenericRegionalNode for ForEachDbeItem {
     fn apply_editable_state(
         &mut self,
         context: NodeContext,
-        kind: RegionIoKind,
+        kind: &RegionIoKind,
         state: EditableState,
         commands: &mut SnarlCommands,
         node_id: NodeId,
@@ -226,7 +228,7 @@ impl GenericRegionalNode for ForEachDbeItem {
     fn types_changed(
         &mut self,
         context: NodeContext,
-        kind: RegionIoKind,
+        kind: &RegionIoKind,
         _region: Uuid,
         _node: NodeId,
         _commands: &mut SnarlCommands,
@@ -257,7 +259,7 @@ impl GenericRegionalNode for ForEachDbeItem {
     fn execute(
         &self,
         _context: NodeContext,
-        kind: RegionIoKind,
+        kind: &RegionIoKind,
         region: Uuid,
         inputs: &[EValue],
         outputs: &mut Vec<EValue>,

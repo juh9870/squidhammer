@@ -1,7 +1,7 @@
 use crate::etype::EDataType;
 use crate::graph::node::generic::macros::generic_node_io;
-use crate::graph::node::regional::generic_regional::GenericRegionalNode;
 use crate::graph::node::regional::{remember_variables, NodeWithVariables, RegionIoKind};
+use crate::graph::node::stateful::generic::GenericStatefulNode;
 use crate::graph::node::variables::ExecutionExtras;
 use crate::graph::node::{ExecutionResult, NodeContext};
 use crate::graph::region::{get_region_execution_data, RegionExecutionData};
@@ -16,19 +16,21 @@ pub struct ConstructListNode {
 
 impl NodeWithVariables for ConstructListNode {}
 
-impl GenericRegionalNode for ConstructListNode {
+impl GenericStatefulNode for ConstructListNode {
+    type State = RegionIoKind;
+
     fn id() -> Ustr {
         "construct_list".into()
     }
 
-    fn input_names(&self, kind: RegionIoKind) -> &[&str] {
+    fn input_names(&self, kind: &RegionIoKind) -> &[&str] {
         match kind {
             RegionIoKind::Start => &["length"],
             RegionIoKind::End => &["value"],
         }
     }
 
-    fn output_names(&self, kind: RegionIoKind) -> &[&str] {
+    fn output_names(&self, kind: &RegionIoKind) -> &[&str] {
         match kind {
             RegionIoKind::Start => &["index"],
             RegionIoKind::End => &["values"],
@@ -63,7 +65,7 @@ impl GenericRegionalNode for ConstructListNode {
     fn execute(
         &self,
         context: NodeContext,
-        kind: RegionIoKind,
+        kind: &RegionIoKind,
         region: Uuid,
         inputs: &[EValue],
         outputs: &mut Vec<EValue>,

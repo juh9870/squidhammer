@@ -18,17 +18,17 @@ pub struct RepeatNode;
 impl NodeWithVariables for RepeatNode {}
 
 impl JsonSerde for RepeatNode {
-    type State<'a> = RegionIoKind;
+    type State = RegionIoKind;
 }
 
 impl StatefulNode for RepeatNode {
-    type State<'a> = RegionIoKind;
+    type State = RegionIoKind;
 
     fn id() -> Ustr {
         "repeat".into()
     }
 
-    fn inputs_count(&self, _context: NodeContext, kind: RegionIoKind) -> usize {
+    fn inputs_count(&self, _context: NodeContext, kind: &RegionIoKind) -> usize {
         if kind.is_start() {
             1
         } else {
@@ -36,7 +36,7 @@ impl StatefulNode for RepeatNode {
         }
     }
 
-    fn outputs_count(&self, _context: NodeContext, kind: RegionIoKind) -> usize {
+    fn outputs_count(&self, _context: NodeContext, kind: &RegionIoKind) -> usize {
         if kind.is_start() {
             1
         } else {
@@ -47,7 +47,7 @@ impl StatefulNode for RepeatNode {
     fn input_unchecked(
         &self,
         _context: NodeContext,
-        kind: RegionIoKind,
+        kind: &RegionIoKind,
         _input: usize,
     ) -> miette::Result<InputData> {
         if kind.is_start() {
@@ -63,7 +63,7 @@ impl StatefulNode for RepeatNode {
     fn output_unchecked(
         &self,
         _context: NodeContext,
-        kind: RegionIoKind,
+        kind: &RegionIoKind,
         _output: usize,
     ) -> miette::Result<OutputData> {
         if kind.is_start() {
@@ -92,7 +92,7 @@ impl StatefulNode for RepeatNode {
     fn execute(
         &self,
         _context: NodeContext,
-        kind: RegionIoKind,
+        kind: &RegionIoKind,
         region: Uuid,
         inputs: &[EValue],
         outputs: &mut Vec<EValue>,
