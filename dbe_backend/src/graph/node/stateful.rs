@@ -1,7 +1,7 @@
 use crate::graph::node::commands::SnarlCommands;
 use crate::graph::node::editable_state::EditableState;
+use crate::graph::node::extras::ExecutionExtras;
 use crate::graph::node::ports::{InputData, NodePortType, OutputData};
-use crate::graph::node::variables::ExecutionExtras;
 use crate::graph::node::{ExecutionResult, NodeContext};
 use crate::value::EValue;
 use egui_snarl::{InPin, NodeId, OutPin};
@@ -9,23 +9,22 @@ use std::fmt::Debug;
 use std::hash::Hash;
 use std::ops::ControlFlow;
 use ustr::Ustr;
-use uuid::Uuid;
 
 pub mod generic;
 
 pub trait StatefulNode: 'static + Debug + Clone + Hash + Send + Sync {
-    type State;
+    type State<'a>;
 
     fn id() -> Ustr;
 
     /// See [Node::has_editable_state]
-    fn has_editable_state(&self, external_state: &Self::State) -> bool {
+    fn has_editable_state(&self, external_state: Self::State<'_>) -> bool {
         let _ = (external_state,);
         false
     }
 
     /// See [Node::editable_state]
-    fn editable_state(&self, external_state: &Self::State) -> EditableState {
+    fn editable_state(&self, external_state: Self::State<'_>) -> EditableState {
         assert!(
             self.has_editable_state(external_state),
             "editable_state should only be called if has_editable_state returns true"
@@ -37,7 +36,7 @@ pub trait StatefulNode: 'static + Debug + Clone + Hash + Send + Sync {
     fn apply_editable_state(
         &mut self,
         _context: NodeContext,
-        external_state: &Self::State,
+        external_state: Self::State<'_>,
         state: EditableState,
         commands: &mut SnarlCommands,
         node_id: NodeId,
@@ -50,20 +49,20 @@ pub trait StatefulNode: 'static + Debug + Clone + Hash + Send + Sync {
         unimplemented!()
     }
 
-    fn inputs_count(&self, context: NodeContext, external_state: &Self::State) -> usize;
-    fn outputs_count(&self, context: NodeContext, external_state: &Self::State) -> usize;
+    fn inputs_count(&self, context: NodeContext, external_state: Self::State<'_>) -> usize;
+    fn outputs_count(&self, context: NodeContext, external_state: Self::State<'_>) -> usize;
 
     fn input_unchecked(
         &self,
         context: NodeContext,
-        external_state: &Self::State,
+        external_state: Self::State<'_>,
         input: usize,
     ) -> miette::Result<InputData>;
 
     fn output_unchecked(
         &self,
         context: NodeContext,
-        external_state: &Self::State,
+        external_state: Self::State<'_>,
         output: usize,
     ) -> miette::Result<OutputData>;
 
@@ -71,22 +70,13 @@ pub trait StatefulNode: 'static + Debug + Clone + Hash + Send + Sync {
     fn try_connect(
         &mut self,
         context: NodeContext,
-        external_state: &Self::State,
-        region: Uuid,
+        external_state: Self::State<'_>,
         commands: &mut SnarlCommands,
         from: &OutPin,
         to: &InPin,
         incoming_type: &NodePortType,
     ) -> miette::Result<ControlFlow<bool>> {
-        let _ = (
-            context,
-            external_state,
-            region,
-            commands,
-            from,
-            to,
-            incoming_type,
-        );
+        let _ = (context, external_state, commands, from, to, incoming_type);
         Ok(ControlFlow::Continue(()))
     }
 
@@ -96,13 +86,12 @@ pub trait StatefulNode: 'static + Debug + Clone + Hash + Send + Sync {
     fn can_output_to(
         &self,
         context: NodeContext,
-        external_state: &Self::State,
-        region: Uuid,
+        external_state: Self::State<'_>,
         from: &OutPin,
         to: &InPin,
         target_type: &NodePortType,
     ) -> miette::Result<bool> {
-        let _ = (context, external_state, region, from, to, target_type);
+        let _ = (context, external_state, from, to, target_type);
         unimplemented!("Node::can_output_to")
     }
 
@@ -113,23 +102,24 @@ pub trait StatefulNode: 'static + Debug + Clone + Hash + Send + Sync {
     fn connected_to_output(
         &mut self,
         context: NodeContext,
-        external_state: &Self::State,
-        region: Uuid,
+        external_state: Self::State<'_>,
         commands: &mut SnarlCommands,
         from: &OutPin,
         to: &InPin,
         incoming_type: &NodePortType,
     ) -> miette::Result<()> {
-        let _ = (
-            context,
-            external_state,
-            region,
-            commands,
-            from,
-            to,
-            incoming_type,
-        );
+        let _ = (context, external_state, commands, from, to, incoming_type);
         unimplemented!("Node::can_output_to")
+    }
+
+    /// Called whenever the external state is changed
+    fn external_state_changed(&mut self, context: NodeContext, external_state: Self::State<'_>) {
+        let _ = (context, external_state);
+    }
+
+    fn has_side_effects(&self, external_state: Self::State<'_>) -> bool {
+        let _ = (external_state,);
+        false
     }
 
     /// Checks if the region should be executed at least once
@@ -138,7 +128,7 @@ pub trait StatefulNode: 'static + Debug + Clone + Hash + Send + Sync {
     fn should_execute(
         &self,
         context: NodeContext,
-        region: Uuid,
+        external_state: Self::State<'_>,
         variables: &mut ExecutionExtras,
     ) -> miette::Result<bool>;
 
@@ -150,8 +140,7 @@ pub trait StatefulNode: 'static + Debug + Clone + Hash + Send + Sync {
     fn execute(
         &self,
         context: NodeContext,
-        external_state: &Self::State,
-        region: Uuid,
+        external_state: Self::State<'_>,
         inputs: &[EValue],
         outputs: &mut Vec<EValue>,
         variables: &mut ExecutionExtras,

@@ -1,7 +1,7 @@
 use crate::etype::conversion::EItemInfoAdapter;
+use crate::graph::node::extras::ExecutionExtras;
 use crate::graph::node::format_node::format_evalue_for_graph;
 use crate::graph::node::ports::NodePortType;
-use crate::graph::node::variables::ExecutionExtras;
 use crate::graph::node::{InputData, Node, NodeContext, NodeFactory, OutputData};
 use crate::project::side_effects::SideEffect;
 use crate::value::{ENumber, EValue};

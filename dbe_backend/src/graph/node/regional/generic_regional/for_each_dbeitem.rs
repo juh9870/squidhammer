@@ -2,11 +2,12 @@ use crate::etype::eenum::variant::EEnumVariantId;
 use crate::etype::EDataType;
 use crate::graph::node::commands::{SnarlCommand, SnarlCommands};
 use crate::graph::node::editable_state::{EditableState, EditableStateValue};
+use crate::graph::node::extras::ExecutionExtras;
 use crate::graph::node::generic::macros::generic_node_io;
 use crate::graph::node::generic::{GenericNodeField, GenericNodeFieldMut};
-use crate::graph::node::regional::{remember_variables, NodeWithVariables, RegionIoKind};
+use crate::graph::node::regional::{NodeWithVariables, RegionIoData, RegionIoKind};
 use crate::graph::node::stateful::generic::GenericStatefulNode;
-use crate::graph::node::variables::ExecutionExtras;
+use crate::graph::node::variables::remember_variables;
 use crate::graph::node::{ExecutionResult, NodeContext};
 use crate::graph::region::{get_region_execution_data, RegionExecutionData};
 use crate::json_utils::JsonValue;
@@ -21,7 +22,6 @@ use std::iter::Peekable;
 use std::ops::Deref;
 use ustr::Ustr;
 use utils::smallvec_n;
-use uuid::Uuid;
 
 #[derive(Debug, Clone, Hash, Serialize, Deserialize)]
 pub struct ForEachDbeItem {
@@ -30,30 +30,32 @@ pub struct ForEachDbeItem {
     enum_variant: Option<(EDataType, EEnumVariantId)>,
 }
 
-impl NodeWithVariables for ForEachDbeItem {}
+impl NodeWithVariables for ForEachDbeItem {
+    type State<'a> = &'a RegionIoData;
+}
 
 impl GenericStatefulNode for ForEachDbeItem {
-    type State = RegionIoKind;
+    type State<'a> = &'a RegionIoData;
 
     fn id() -> Ustr {
         "for_each_dbeitem".into()
     }
 
-    fn input_names(&self, kind: &RegionIoKind) -> &[&str] {
-        match kind {
+    fn input_names(&self, data: &&RegionIoData) -> &[&str] {
+        match data.kind {
             RegionIoKind::Start => &[],
             RegionIoKind::End => &[],
         }
     }
-    fn output_names(&self, kind: &RegionIoKind) -> &[&str] {
-        match kind {
+    fn output_names(&self, data: &&RegionIoData) -> &[&str] {
+        match data.kind {
             RegionIoKind::Start => &["value", "path"],
             RegionIoKind::End => &[],
         }
     }
 
-    fn outputs(&self, kind: &RegionIoKind) -> impl AsRef<[GenericNodeField]> {
-        match kind {
+    fn outputs(&self, data: &Self::State<'_>) -> impl AsRef<[GenericNodeField]> {
+        match data.kind {
             RegionIoKind::Start => {
                 if let Some((ty, _)) = self.enum_variant {
                     smallvec_n![2;
@@ -73,8 +75,8 @@ impl GenericStatefulNode for ForEachDbeItem {
         }
     }
 
-    fn outputs_mut(&mut self, kind: &RegionIoKind) -> impl AsMut<[GenericNodeFieldMut]> {
-        match kind {
+    fn outputs_mut(&mut self, data: &Self::State<'_>) -> impl AsMut<[GenericNodeFieldMut]> {
+        match data.kind {
             RegionIoKind::Start => {
                 if let Some((ty, _)) = self.enum_variant {
                     smallvec_n![2;
@@ -102,9 +104,9 @@ impl GenericStatefulNode for ForEachDbeItem {
     fn write_json(
         &self,
         _registry: &crate::registry::ETypesRegistry,
-        kind: &RegionIoKind,
+        data: &RegionIoData,
     ) -> miette::Result<JsonValue> {
-        if kind.is_start() {
+        if data.is_start() {
             miette::IntoDiagnostic::into_diagnostic(serde_json::value::to_value(self))
         } else {
             Ok(JsonValue::Null)
@@ -113,10 +115,10 @@ impl GenericStatefulNode for ForEachDbeItem {
     fn parse_json(
         &mut self,
         _registry: &crate::registry::ETypesRegistry,
-        kind: &RegionIoKind,
+        data: &RegionIoData,
         value: &mut JsonValue,
     ) -> miette::Result<()> {
-        if kind.is_end() {
+        if data.is_end() {
             return Ok(());
         }
 
@@ -124,12 +126,12 @@ impl GenericStatefulNode for ForEachDbeItem {
             .map(|node| *self = node)
     }
 
-    fn has_editable_state(&self, kind: &RegionIoKind) -> bool {
-        kind.is_start() && self.output_ty.is_some() && self.is_enum
+    fn has_editable_state(&self, data: &RegionIoData) -> bool {
+        data.is_start() && self.output_ty.is_some() && self.is_enum
     }
 
-    fn editable_state(&self, kind: &RegionIoKind) -> EditableState {
-        if !kind.is_start() {
+    fn editable_state(&self, data: &RegionIoData) -> EditableState {
+        if !data.is_start() {
             unimplemented!()
         }
 
@@ -150,12 +152,12 @@ impl GenericStatefulNode for ForEachDbeItem {
     fn apply_editable_state(
         &mut self,
         context: NodeContext,
-        kind: &RegionIoKind,
+        data: &RegionIoData,
         state: EditableState,
         commands: &mut SnarlCommands,
         node_id: NodeId,
     ) -> miette::Result<()> {
-        if !kind.is_start() {
+        if !data.is_start() {
             unimplemented!()
         }
 
@@ -228,12 +230,11 @@ impl GenericStatefulNode for ForEachDbeItem {
     fn types_changed(
         &mut self,
         context: NodeContext,
-        kind: &RegionIoKind,
-        _region: Uuid,
+        external_state: &RegionIoData,
         _node: NodeId,
         _commands: &mut SnarlCommands,
     ) {
-        if !kind.is_start() {
+        if !external_state.is_start() {
             return;
         }
         self.is_enum = match self.output_ty {
@@ -248,10 +249,10 @@ impl GenericStatefulNode for ForEachDbeItem {
     fn should_execute(
         &self,
         _context: NodeContext,
-        region: Uuid,
+        region: &RegionIoData,
         variables: &mut ExecutionExtras,
     ) -> miette::Result<bool> {
-        let state = get_region_execution_data::<ForEachDbeItemNodeState>(region, variables)?;
+        let state = get_region_execution_data::<ForEachDbeItemNodeState>(region.region, variables)?;
 
         Ok(state.iter.peek().is_some())
     }
@@ -259,15 +260,14 @@ impl GenericStatefulNode for ForEachDbeItem {
     fn execute(
         &self,
         _context: NodeContext,
-        kind: &RegionIoKind,
-        region: Uuid,
+        region: &RegionIoData,
         inputs: &[EValue],
         outputs: &mut Vec<EValue>,
         variables: &mut ExecutionExtras,
     ) -> miette::Result<ExecutionResult> {
-        if kind.is_start() {
+        if region.is_start() {
             let Some(ty) = self.output_ty else {
-                variables.get_or_init_region_data(region, |_| ForEachDbeItemNodeState {
+                variables.get_or_init_region_data(region.region, |_| ForEachDbeItemNodeState {
                     iter: vec![].into_iter().peekable(),
                     values: None,
                 });
@@ -275,14 +275,14 @@ impl GenericStatefulNode for ForEachDbeItem {
             };
 
             if !variables.side_effects.is_available() {
-                variables.get_or_init_region_data(region, |_| ForEachDbeItemNodeState {
+                variables.get_or_init_region_data(region.region, |_| ForEachDbeItemNodeState {
                     iter: vec![].into_iter().peekable(),
                     values: None,
                 });
                 return Ok(ExecutionResult::Done);
             }
 
-            let state = variables.get_or_try_init_region_data(region, |effects| {
+            let state = variables.get_or_try_init_region_data(region.region, |effects| {
                 let files: Vec<_> = effects
                     .project_files_iter()
                     .expect("side effects were checked for")
@@ -330,15 +330,18 @@ impl GenericStatefulNode for ForEachDbeItem {
 
             Ok(ExecutionResult::Done)
         } else {
-            let state = get_region_execution_data::<ForEachDbeItemNodeState>(region, variables)?;
+            let state =
+                get_region_execution_data::<ForEachDbeItemNodeState>(region.region, variables)?;
 
             if state.iter.peek().is_none() {
                 outputs.extend(inputs.iter().cloned());
-                variables.remove_region_data(region);
+                variables.remove_region_data(region.region);
                 Ok(ExecutionResult::Done)
             } else {
                 state.values = Some(inputs[..].to_vec());
-                Ok(ExecutionResult::RerunRegion { region })
+                Ok(ExecutionResult::RerunRegion {
+                    region: region.region,
+                })
             }
         }
     }

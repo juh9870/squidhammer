@@ -1,8 +1,8 @@
 use crate::etype::default::DefaultEValue;
 use crate::etype::eitem::EItemInfo;
 use crate::etype::EDataType;
+use crate::graph::node::extras::ExecutionExtras;
 use crate::graph::node::ports::{InputData, OutputData};
-use crate::graph::node::variables::ExecutionExtras;
 use crate::graph::node::{ExecutionResult, Node, NodeContext, NodeFactory};
 use crate::project::EXTENSION_VALUE;
 use crate::value::id::ETypeId;

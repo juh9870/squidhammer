@@ -5,6 +5,7 @@ use crate::graph::node::commands::{SnarlCommand, SnarlCommands};
 use crate::graph::node::editable_state::EditableState;
 use crate::graph::node::enum_node::EnumNodeFactory;
 use crate::graph::node::expression_node::ExpressionNodeFactory;
+use crate::graph::node::extras::ExecutionExtras;
 use crate::graph::node::format_node::FormatNodeFactory;
 use crate::graph::node::functional::functional_nodes;
 use crate::graph::node::generic::destructuring::DestructuringNodeFactory;
@@ -24,7 +25,8 @@ use crate::graph::node::regional::RegionalNodeFactory;
 use crate::graph::node::reroute::RerouteFactory;
 use crate::graph::node::saving_node::SavingNodeFactory;
 use crate::graph::node::struct_node::StructNodeFactory;
-use crate::graph::node::variables::ExecutionExtras;
+use crate::graph::node::variables::coalesce::{CoalesceNode, CoalesceOrDefaultNode};
+use crate::graph::node::variables::VariablesNodeFactory;
 use crate::graph::region::region_graph::RegionGraph;
 use crate::graph::region::RegionInfo;
 use crate::json_utils::JsonValue;
@@ -56,6 +58,7 @@ pub mod commands;
 pub mod editable_state;
 pub mod enum_node;
 pub mod expression_node;
+pub mod extras;
 pub mod format_node;
 pub mod functional;
 pub mod generic;
@@ -89,33 +92,44 @@ static NODE_FACTORIES_BY_CATEGORY: LazyLock<AtomicRefCell<FactoriesByCategory>> 
     });
 
 fn default_nodes() -> impl Iterator<Item = (Ustr, Arc<dyn NodeFactory>)> {
-    let mut v: Vec<Arc<dyn NodeFactory>> = functional_nodes();
-    v.push(Arc::new(RerouteFactory));
-    v.push(Arc::new(StructNodeFactory));
-    v.push(Arc::new(EnumNodeFactory));
-    v.push(Arc::new(SavingNodeFactory::<true>));
-    v.push(Arc::new(SavingNodeFactory::<false>));
-    v.push(Arc::new(ListNodeFactory));
-    v.push(Arc::new(GroupOutputNodeFactory));
-    v.push(Arc::new(GroupInputNodeFactory));
-    v.push(Arc::new(SubgraphNodeFactory));
-    v.push(Arc::new(MappingsNodeFactory));
-    v.push(Arc::new(FormatNodeFactory));
-    v.push(Arc::new(ExpressionNodeFactory));
-    v.push(Arc::new(DestructuringNodeFactory));
-    v.push(Arc::new(RegionalNodeFactory::<RepeatNode>::INSTANCE));
-    v.push(Arc::new(RegionalNodeFactory::<ConditionalIfNode>::INSTANCE));
-    v.push(Arc::new(
-        RegionalNodeFactory::<ConditionalMapNode>::INSTANCE,
-    ));
-    v.push(Arc::new(RegionalNodeFactory::<ListForEachNode>::INSTANCE));
-    v.push(Arc::new(RegionalNodeFactory::<ListFilterNode>::INSTANCE));
-    v.push(Arc::new(RegionalNodeFactory::<ListMapNode>::INSTANCE));
-    v.push(Arc::new(RegionalNodeFactory::<ListFilterMapNode>::INSTANCE));
-    v.push(Arc::new(RegionalNodeFactory::<ConstructListNode>::INSTANCE));
-    v.push(Arc::new(RegionalNodeFactory::<ListFlatMapNode>::INSTANCE));
-    v.push(Arc::new(RegionalNodeFactory::<ForEachDbeItem>::INSTANCE));
-    v.into_iter().map(|item| (Ustr::from(&item.id()), item))
+    fn push<T: NodeFactory>(v: &mut Vec<Arc<dyn NodeFactory>>, t: T) {
+        v.push(Arc::new(t))
+    }
+
+    let mut factories: Vec<Arc<dyn NodeFactory>> = functional_nodes();
+    let v = &mut factories;
+
+    push(v, RerouteFactory);
+    push(v, StructNodeFactory);
+    push(v, EnumNodeFactory);
+    push(v, SavingNodeFactory::<true>);
+    push(v, SavingNodeFactory::<false>);
+    push(v, ListNodeFactory);
+    push(v, GroupOutputNodeFactory);
+    push(v, GroupInputNodeFactory);
+    push(v, SubgraphNodeFactory);
+    push(v, MappingsNodeFactory);
+    push(v, FormatNodeFactory);
+    push(v, ExpressionNodeFactory);
+    push(v, DestructuringNodeFactory);
+    // regional
+    push(v, RegionalNodeFactory::<RepeatNode>::INSTANCE);
+    push(v, RegionalNodeFactory::<ConditionalIfNode>::INSTANCE);
+    push(v, RegionalNodeFactory::<ConditionalMapNode>::INSTANCE);
+    push(v, RegionalNodeFactory::<ListForEachNode>::INSTANCE);
+    push(v, RegionalNodeFactory::<ListFilterNode>::INSTANCE);
+    push(v, RegionalNodeFactory::<ListMapNode>::INSTANCE);
+    push(v, RegionalNodeFactory::<ListFilterMapNode>::INSTANCE);
+    push(v, RegionalNodeFactory::<ConstructListNode>::INSTANCE);
+    push(v, RegionalNodeFactory::<ListFlatMapNode>::INSTANCE);
+    push(v, RegionalNodeFactory::<ForEachDbeItem>::INSTANCE);
+    // variables
+    push(v, VariablesNodeFactory::<CoalesceNode>::INSTANCE);
+    push(v, VariablesNodeFactory::<CoalesceOrDefaultNode>::INSTANCE);
+
+    factories
+        .into_iter()
+        .map(|item| (Ustr::from(&item.id()), item))
 }
 
 // pub fn get_raw_snarl_node(id: &Ustr) -> Option<Box<dyn Node>> {

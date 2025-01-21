@@ -3,7 +3,7 @@ use crate::etype::EDataType;
 use crate::graph::inputs::{GraphInput, GraphIoData, GraphOutput};
 use crate::graph::node::commands::SnarlCommands;
 use crate::graph::node::ports::fields::{
-    get_field, map_inputs, sync_fields_and_types, FieldMapper, IoDirection,
+    get_field, get_field_index, map_inputs, sync_fields_and_types, FieldMapper, IoDirection,
 };
 use crate::graph::node::ports::{InputData, NodePortType, OutputData};
 use crate::registry::ETypesRegistry;
@@ -55,6 +55,14 @@ pub fn get_graph_io_field<'ctx, IO: GraphIoData>(
     get_field(&GraphIoMapper::<IO>::INSTANCE, fields, ids, index)
 }
 
+pub fn get_graph_io_field_index<IO: GraphIoData>(
+    fields: &[IO],
+    ids: &[Uuid],
+    index: usize,
+) -> Option<usize> {
+    get_field_index(&GraphIoMapper::<IO>::INSTANCE, fields, ids, index)
+}
+
 /// Synchronizes the inputs or outputs of a node and updates the ID lookup
 /// table to match the new order and presence of fields
 ///
@@ -64,10 +72,10 @@ pub fn get_graph_io_field<'ctx, IO: GraphIoData>(
 /// * `ids` - local index-to-ID lookup table
 /// * `types` - types table to update
 /// * `node_id` - The ID of the node
-pub fn sync_fields<IO: GraphIoData>(
+pub fn sync_fields<IO: GraphIoData, Store: AsRef<[Uuid]> + FromIterator<Uuid>>(
     commands: &mut SnarlCommands,
     fields: &[IO],
-    ids: &mut Vec<Uuid>,
+    ids: &mut Store,
     types: Option<&mut Vec<EDataType>>,
     node_id: NodeId,
     direction: IoDirection,

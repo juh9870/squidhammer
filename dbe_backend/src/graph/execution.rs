@@ -1,7 +1,7 @@
 use crate::graph::cache::GraphCache;
 use crate::graph::inputs::{GraphInput, GraphOutput};
+use crate::graph::node::extras::ExecutionExtras;
 use crate::graph::node::ports::NodePortType;
-use crate::graph::node::variables::ExecutionExtras;
 use crate::graph::node::SnarlNode;
 use crate::graph::node::{ExecutionResult, NodeContext};
 use crate::graph::region::region_graph::{RegionGraph, RegionGraphData};

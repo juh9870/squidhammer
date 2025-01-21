@@ -1,13 +1,13 @@
 use crate::etype::eitem::EItemInfo;
 use crate::graph::node::commands::SnarlCommands;
 use crate::graph::node::editable_state::EditableState;
+use crate::graph::node::extras::ExecutionExtras;
 use crate::graph::node::generic::{
     generic_can_output_to, generic_connected_to_output, generic_try_connect,
     parse_generic_json_fields, write_generic_json_fields, GenericNodeField, GenericNodeFieldMut,
 };
 use crate::graph::node::ports::{InputData, NodePortType, OutputData};
 use crate::graph::node::stateful::StatefulNode;
-use crate::graph::node::variables::ExecutionExtras;
 use crate::graph::node::{ExecutionResult, NodeContext};
 use crate::json_utils::json_serde::JsonSerde;
 use crate::json_utils::JsonValue;
@@ -19,30 +19,33 @@ use std::fmt::Debug;
 use std::hash::Hash;
 use std::ops::ControlFlow;
 use ustr::Ustr;
-use uuid::Uuid;
 
 pub trait GenericStatefulNode: 'static + Debug + Clone + Hash + Send + Sync {
-    type State;
+    type State<'a>;
     fn id() -> Ustr;
-    fn input_names(&self, external_state: &Self::State) -> &[&str];
-    fn output_names(&self, external_state: &Self::State) -> &[&str];
+    fn input_names(&self, external_state: &Self::State<'_>) -> &[&str];
+    fn output_names(&self, external_state: &Self::State<'_>) -> &[&str];
 
-    fn inputs(&self, external_state: &Self::State) -> impl AsRef<[GenericNodeField]>;
-    fn outputs(&self, external_state: &Self::State) -> impl AsRef<[GenericNodeField]>;
-    fn inputs_mut(&mut self, external_state: &Self::State) -> impl AsMut<[GenericNodeFieldMut]>;
-    fn outputs_mut(&mut self, external_state: &Self::State) -> impl AsMut<[GenericNodeFieldMut]>;
+    fn inputs(&self, external_state: &Self::State<'_>) -> impl AsRef<[GenericNodeField]>;
+    fn outputs(&self, external_state: &Self::State<'_>) -> impl AsRef<[GenericNodeField]>;
+    fn inputs_mut(&mut self, external_state: &Self::State<'_>)
+        -> impl AsMut<[GenericNodeFieldMut]>;
+    fn outputs_mut(
+        &mut self,
+        external_state: &Self::State<'_>,
+    ) -> impl AsMut<[GenericNodeFieldMut]>;
 
     /// Writes node state to json
     fn write_json(
         &self,
         registry: &ETypesRegistry,
-        external_state: &Self::State,
+        external_state: Self::State<'_>,
     ) -> miette::Result<JsonValue> {
         let _ = (registry,);
         write_generic_json_fields(
             self,
-            |n| n.inputs(external_state),
-            |n| n.outputs(external_state),
+            |n| n.inputs(&external_state),
+            |n| n.outputs(&external_state),
         )
     }
 
@@ -50,26 +53,26 @@ pub trait GenericStatefulNode: 'static + Debug + Clone + Hash + Send + Sync {
     fn parse_json(
         &mut self,
         registry: &ETypesRegistry,
-        external_state: &Self::State,
+        external_state: Self::State<'_>,
         value: &mut JsonValue,
     ) -> miette::Result<()> {
         let _ = (registry,);
         parse_generic_json_fields(value)?
-            .inputs(self, |n| n.inputs_mut(external_state))?
-            .outputs(self, |n| n.outputs_mut(external_state))?
+            .inputs(self, |n| n.inputs_mut(&external_state))?
+            .outputs(self, |n| n.outputs_mut(&external_state))?
             .done()?;
 
         Ok(())
     }
 
     /// See [Node::has_editable_state]
-    fn has_editable_state(&self, external_state: &Self::State) -> bool {
+    fn has_editable_state(&self, external_state: Self::State<'_>) -> bool {
         let _ = (external_state,);
         false
     }
 
     /// See [Node::editable_state]
-    fn editable_state(&self, external_state: &Self::State) -> EditableState {
+    fn editable_state(&self, external_state: Self::State<'_>) -> EditableState {
         assert!(
             self.has_editable_state(external_state),
             "editable_state should only be called if has_editable_state returns true"
@@ -81,7 +84,7 @@ pub trait GenericStatefulNode: 'static + Debug + Clone + Hash + Send + Sync {
     fn apply_editable_state(
         &mut self,
         _context: NodeContext,
-        external_state: &Self::State,
+        external_state: Self::State<'_>,
         state: EditableState,
         commands: &mut SnarlCommands,
         node_id: NodeId,
@@ -99,29 +102,39 @@ pub trait GenericStatefulNode: 'static + Debug + Clone + Hash + Send + Sync {
     fn types_changed(
         &mut self,
         context: NodeContext,
-        external_state: &Self::State,
-        region: Uuid,
+        external_state: Self::State<'_>,
         node: NodeId,
         commands: &mut SnarlCommands,
     ) {
-        let _ = (context, external_state, region, node, commands);
+        let _ = (context, external_state, node, commands);
     }
 
     fn should_execute(
         &self,
         context: NodeContext,
-        region: Uuid,
+        external_state: Self::State<'_>,
         variables: &mut ExecutionExtras,
-    ) -> miette::Result<bool>;
+    ) -> miette::Result<bool> {
+        let _ = (context, external_state, variables);
+        Ok(true)
+    }
+
+    fn external_state_changed(&mut self, context: NodeContext, external_state: Self::State<'_>) {
+        let _ = (context, external_state);
+    }
+
+    fn has_side_effects(&self, external_state: Self::State<'_>) -> bool {
+        let _ = (external_state,);
+        false
+    }
 
     fn execute(
         &self,
         context: NodeContext,
-        external_state: &Self::State,
-        region: Uuid,
+        external_state: Self::State<'_>,
         inputs: &[EValue],
         outputs: &mut Vec<EValue>,
-        variables: &mut ExecutionExtras,
+        extras: &mut ExecutionExtras,
     ) -> miette::Result<ExecutionResult>;
 
     fn categories() -> &'static [&'static str];
@@ -129,12 +142,12 @@ pub trait GenericStatefulNode: 'static + Debug + Clone + Hash + Send + Sync {
 }
 
 impl<T: GenericStatefulNode> JsonSerde for T {
-    type State = <T as GenericStatefulNode>::State;
+    type State<'a> = <T as GenericStatefulNode>::State<'a>;
 
     fn write_json(
         &self,
         _registry: &ETypesRegistry,
-        external_state: &Self::State,
+        external_state: Self::State<'_>,
     ) -> miette::Result<JsonValue> {
         <T as GenericStatefulNode>::write_json(self, _registry, external_state)
     }
@@ -142,7 +155,7 @@ impl<T: GenericStatefulNode> JsonSerde for T {
     fn parse_json(
         &mut self,
         _registry: &ETypesRegistry,
-        external_state: &Self::State,
+        external_state: Self::State<'_>,
         value: &mut JsonValue,
     ) -> miette::Result<()> {
         <T as GenericStatefulNode>::parse_json(self, _registry, external_state, value)
@@ -150,23 +163,23 @@ impl<T: GenericStatefulNode> JsonSerde for T {
 }
 
 impl<T: GenericStatefulNode> StatefulNode for T {
-    type State = <T as GenericStatefulNode>::State;
+    type State<'a> = <T as GenericStatefulNode>::State<'a>;
     fn id() -> Ustr {
         T::id()
     }
 
-    fn has_editable_state(&self, external_state: &Self::State) -> bool {
+    fn has_editable_state(&self, external_state: Self::State<'_>) -> bool {
         <T as GenericStatefulNode>::has_editable_state(self, external_state)
     }
 
-    fn editable_state(&self, external_state: &Self::State) -> EditableState {
+    fn editable_state(&self, external_state: Self::State<'_>) -> EditableState {
         <T as GenericStatefulNode>::editable_state(self, external_state)
     }
 
     fn apply_editable_state(
         &mut self,
         context: NodeContext,
-        external_state: &Self::State,
+        external_state: Self::State<'_>,
         state: EditableState,
         commands: &mut SnarlCommands,
         node_id: NodeId,
@@ -181,21 +194,21 @@ impl<T: GenericStatefulNode> StatefulNode for T {
         )
     }
 
-    fn inputs_count(&self, _context: NodeContext, external_state: &Self::State) -> usize {
-        self.inputs(external_state).as_ref().len()
+    fn inputs_count(&self, _context: NodeContext, external_state: Self::State<'_>) -> usize {
+        self.inputs(&external_state).as_ref().len()
     }
 
-    fn outputs_count(&self, _context: NodeContext, external_state: &Self::State) -> usize {
-        self.outputs(external_state).as_ref().len()
+    fn outputs_count(&self, _context: NodeContext, external_state: Self::State<'_>) -> usize {
+        self.outputs(&external_state).as_ref().len()
     }
 
     fn input_unchecked(
         &self,
         context: NodeContext,
-        external_state: &Self::State,
+        external_state: Self::State<'_>,
         input: usize,
     ) -> miette::Result<InputData> {
-        let inputs = self.inputs(external_state);
+        let inputs = self.inputs(&external_state);
         let Some(ty) = inputs.as_ref().get(input) else {
             bail!("Invalid input index: {}", input);
         };
@@ -206,17 +219,17 @@ impl<T: GenericStatefulNode> StatefulNode for T {
             } else {
                 NodePortType::BasedOnSource
             },
-            self.input_names(external_state)[input].into(),
+            self.input_names(&external_state)[input].into(),
         ))
     }
 
     fn output_unchecked(
         &self,
         context: NodeContext,
-        external_state: &Self::State,
+        external_state: Self::State<'_>,
         output: usize,
     ) -> miette::Result<OutputData> {
-        let outputs = self.outputs(external_state);
+        let outputs = self.outputs(&external_state);
         let Some(ty) = outputs.as_ref().get(output) else {
             bail!("Invalid output index: {}", output);
         };
@@ -227,15 +240,14 @@ impl<T: GenericStatefulNode> StatefulNode for T {
             } else {
                 NodePortType::BasedOnTarget
             },
-            self.output_names(external_state)[output].into(),
+            self.output_names(&external_state)[output].into(),
         ))
     }
 
     fn try_connect(
         &mut self,
         context: NodeContext,
-        external_state: &Self::State,
-        region: Uuid,
+        external_state: Self::State<'_>,
         commands: &mut SnarlCommands,
         _from: &OutPin,
         to: &InPin,
@@ -245,14 +257,14 @@ impl<T: GenericStatefulNode> StatefulNode for T {
             context,
             to.id.input,
             incoming_type,
-            self.inputs_mut(external_state).as_mut(),
+            self.inputs_mut(&external_state).as_mut(),
         )? {
             ControlFlow::Break(_) => return Ok(ControlFlow::Break(false)),
             ControlFlow::Continue(changed) => changed,
         };
 
         if changed {
-            self.types_changed(context, external_state, region, to.id.node, commands);
+            self.types_changed(context, external_state, to.id.node, commands);
         }
 
         Ok(ControlFlow::Continue(()))
@@ -261,8 +273,7 @@ impl<T: GenericStatefulNode> StatefulNode for T {
     fn can_output_to(
         &self,
         context: NodeContext,
-        external_state: &Self::State,
-        _region: Uuid,
+        external_state: Self::State<'_>,
         from: &OutPin,
         _to: &InPin,
         target_type: &NodePortType,
@@ -271,15 +282,14 @@ impl<T: GenericStatefulNode> StatefulNode for T {
             context,
             from.id.output,
             target_type,
-            self.outputs(external_state).as_ref(),
+            self.outputs(&external_state).as_ref(),
         )
     }
 
     fn connected_to_output(
         &mut self,
         context: NodeContext,
-        external_state: &Self::State,
-        region: Uuid,
+        external_state: Self::State<'_>,
         commands: &mut SnarlCommands,
         from: &OutPin,
         _to: &InPin,
@@ -289,28 +299,35 @@ impl<T: GenericStatefulNode> StatefulNode for T {
             context,
             from.id.output,
             incoming_type,
-            self.outputs_mut(external_state).as_mut(),
+            self.outputs_mut(&external_state).as_mut(),
         )? {
-            self.types_changed(context, external_state, region, from.id.node, commands);
+            self.types_changed(context, external_state, from.id.node, commands);
         }
 
         Ok(())
     }
 
+    fn external_state_changed(&mut self, context: NodeContext, external_state: Self::State<'_>) {
+        <T as GenericStatefulNode>::external_state_changed(self, context, external_state)
+    }
+
+    fn has_side_effects(&self, external_state: Self::State<'_>) -> bool {
+        <T as GenericStatefulNode>::has_side_effects(self, external_state)
+    }
+
     fn should_execute(
         &self,
         context: NodeContext,
-        region: Uuid,
+        external_state: Self::State<'_>,
         variables: &mut ExecutionExtras,
     ) -> miette::Result<bool> {
-        <T as GenericStatefulNode>::should_execute(self, context, region, variables)
+        <T as GenericStatefulNode>::should_execute(self, context, external_state, variables)
     }
 
     fn execute(
         &self,
         context: NodeContext,
-        external_state: &Self::State,
-        region: Uuid,
+        external_state: Self::State<'_>,
         inputs: &[EValue],
         outputs: &mut Vec<EValue>,
         variables: &mut ExecutionExtras,
@@ -319,7 +336,6 @@ impl<T: GenericStatefulNode> StatefulNode for T {
             self,
             context,
             external_state,
-            region,
             inputs,
             outputs,
             variables,

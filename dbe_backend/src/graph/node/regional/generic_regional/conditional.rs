@@ -1,8 +1,8 @@
 use crate::etype::EDataType;
+use crate::graph::node::extras::ExecutionExtras;
 use crate::graph::node::generic::{GenericNodeField, GenericNodeFieldMut};
-use crate::graph::node::regional::{NodeWithVariables, RegionIoKind, RegionVariableSide};
+use crate::graph::node::regional::{NodeWithVariables, RegionIoData, RegionIoKind, VariableSide};
 use crate::graph::node::stateful::generic::GenericStatefulNode;
-use crate::graph::node::variables::ExecutionExtras;
 use crate::graph::node::{ExecutionResult, NodeContext};
 use crate::graph::region::{get_region_execution_data, RegionExecutionData};
 use crate::registry::optional_helpers::{none_of_type, unwrap_optional_value, wrap_in_some};
@@ -10,7 +10,6 @@ use crate::value::EValue;
 use smallvec::smallvec;
 use ustr::Ustr;
 use utils::smallvec_n;
-use uuid::Uuid;
 
 pub type ConditionalIfNode = ConditionalNode<{ ConditionalKind::If as u8 }>;
 pub type ConditionalMapNode = ConditionalNode<{ ConditionalKind::Map as u8 }>;
@@ -44,17 +43,23 @@ impl ConditionalKind {
     }
 }
 impl<const KIND: u8> NodeWithVariables for ConditionalNode<KIND> {
-    fn allow_variables() -> RegionVariableSide {
-        RegionVariableSide::END_IN | RegionVariableSide::END_OUT
+    type State<'a> = &'a RegionIoData;
+
+    fn allow_variables(data: &RegionIoData) -> VariableSide {
+        if data.is_start() {
+            VariableSide::empty()
+        } else {
+            VariableSide::all()
+        }
     }
 
     fn output_variable_type<'a>(
         &self,
         _context: NodeContext,
-        kind: &RegionIoKind,
+        data: &RegionIoData,
         ty: &'a Option<EDataType>,
     ) -> GenericNodeField<'a> {
-        if !kind.is_end() {
+        if !data.is_end() {
             panic!("Repeat node has no variables on the start")
         }
 
@@ -64,10 +69,10 @@ impl<const KIND: u8> NodeWithVariables for ConditionalNode<KIND> {
     fn output_variable_type_mut<'a>(
         &self,
         _context: NodeContext,
-        kind: &RegionIoKind,
+        data: &RegionIoData,
         ty: &'a mut Option<EDataType>,
     ) -> GenericNodeFieldMut<'a> {
-        if !kind.is_end() {
+        if !data.is_end() {
             panic!("Repeat node has no variables on the start")
         }
 
@@ -76,7 +81,7 @@ impl<const KIND: u8> NodeWithVariables for ConditionalNode<KIND> {
 }
 
 impl<const KIND: u8> GenericStatefulNode for ConditionalNode<KIND> {
-    type State = RegionIoKind;
+    type State<'a> = &'a RegionIoData;
 
     fn id() -> Ustr {
         match ConditionalKind::of(KIND) {
@@ -85,8 +90,8 @@ impl<const KIND: u8> GenericStatefulNode for ConditionalNode<KIND> {
         }
     }
 
-    fn input_names(&self, kind: &RegionIoKind) -> &[&str] {
-        if !kind.is_start() {
+    fn input_names(&self, data: &Self::State<'_>) -> &[&str] {
+        if !data.is_start() {
             panic!("Conditional node has no inputs on the end")
         }
 
@@ -96,8 +101,8 @@ impl<const KIND: u8> GenericStatefulNode for ConditionalNode<KIND> {
         }
     }
 
-    fn output_names(&self, kind: &RegionIoKind) -> &[&str] {
-        if !kind.is_start() {
+    fn output_names(&self, data: &Self::State<'_>) -> &[&str] {
+        if !data.is_start() {
             panic!("Conditional node has no outputs on the end")
         }
         match self.kind() {
@@ -106,8 +111,8 @@ impl<const KIND: u8> GenericStatefulNode for ConditionalNode<KIND> {
         }
     }
 
-    fn inputs(&self, kind: &RegionIoKind) -> impl AsRef<[GenericNodeField]> {
-        match kind {
+    fn inputs(&self, data: &Self::State<'_>) -> impl AsRef<[GenericNodeField]> {
+        match data.kind {
             RegionIoKind::Start => match self.kind() {
                 ConditionalKind::If => smallvec_n![1;GenericNodeField::Fixed(EDataType::Boolean)],
                 ConditionalKind::Map => smallvec![GenericNodeField::Option(&self.input_ty)],
@@ -116,8 +121,8 @@ impl<const KIND: u8> GenericStatefulNode for ConditionalNode<KIND> {
         }
     }
 
-    fn outputs(&self, kind: &RegionIoKind) -> impl AsRef<[GenericNodeField]> {
-        match kind {
+    fn outputs(&self, data: &Self::State<'_>) -> impl AsRef<[GenericNodeField]> {
+        match data.kind {
             RegionIoKind::Start => match self.kind() {
                 ConditionalKind::If => smallvec![],
                 ConditionalKind::Map => smallvec_n![1;GenericNodeField::Value(&self.input_ty)],
@@ -126,8 +131,8 @@ impl<const KIND: u8> GenericStatefulNode for ConditionalNode<KIND> {
         }
     }
 
-    fn inputs_mut(&mut self, kind: &RegionIoKind) -> impl AsMut<[GenericNodeFieldMut]> {
-        match kind {
+    fn inputs_mut(&mut self, data: &Self::State<'_>) -> impl AsMut<[GenericNodeFieldMut]> {
+        match data.kind {
             RegionIoKind::Start => match self.kind() {
                 ConditionalKind::If => {
                     smallvec_n![1;GenericNodeFieldMut::Fixed(EDataType::Boolean)]
@@ -138,8 +143,8 @@ impl<const KIND: u8> GenericStatefulNode for ConditionalNode<KIND> {
         }
     }
 
-    fn outputs_mut(&mut self, kind: &RegionIoKind) -> impl AsMut<[GenericNodeFieldMut]> {
-        match kind {
+    fn outputs_mut(&mut self, data: &Self::State<'_>) -> impl AsMut<[GenericNodeFieldMut]> {
+        match data.kind {
             RegionIoKind::Start => match self.kind() {
                 ConditionalKind::If => smallvec![],
                 ConditionalKind::Map => {
@@ -153,10 +158,10 @@ impl<const KIND: u8> GenericStatefulNode for ConditionalNode<KIND> {
     fn should_execute(
         &self,
         _context: NodeContext,
-        region: Uuid,
+        region: &RegionIoData,
         variables: &mut ExecutionExtras,
     ) -> miette::Result<bool> {
-        let state = get_region_execution_data::<ConditionalNodeState>(region, variables)?;
+        let state = get_region_execution_data::<ConditionalNodeState>(region.region, variables)?;
 
         Ok(state.condition)
     }
@@ -164,26 +169,27 @@ impl<const KIND: u8> GenericStatefulNode for ConditionalNode<KIND> {
     fn execute(
         &self,
         context: NodeContext,
-        kind: &RegionIoKind,
-        region: Uuid,
+        region: &RegionIoData,
         inputs: &[EValue],
         outputs: &mut Vec<EValue>,
         variables: &mut ExecutionExtras,
     ) -> miette::Result<ExecutionResult> {
         outputs.clear();
 
-        if kind.is_start() {
+        if region.is_start() {
             match ConditionalKind::of(KIND) {
                 ConditionalKind::If => {
                     let condition = *inputs[0].try_as_boolean()?;
-                    variables
-                        .get_or_init_region_data(region, |_| ConditionalNodeState { condition });
+                    variables.get_or_init_region_data(region.region, |_| ConditionalNodeState {
+                        condition,
+                    });
                 }
                 ConditionalKind::Map => {
                     let value = unwrap_optional_value(context.registry, &inputs[0])?;
                     let condition = value.is_some();
-                    variables
-                        .get_or_init_region_data(region, |_| ConditionalNodeState { condition });
+                    variables.get_or_init_region_data(region.region, |_| ConditionalNodeState {
+                        condition,
+                    });
                     if let Some(value) = value {
                         outputs.push(value.clone())
                     }
@@ -191,7 +197,8 @@ impl<const KIND: u8> GenericStatefulNode for ConditionalNode<KIND> {
             }
             Ok(ExecutionResult::Done)
         } else {
-            let state = get_region_execution_data::<ConditionalNodeState>(region, variables)?;
+            let state =
+                get_region_execution_data::<ConditionalNodeState>(region.region, variables)?;
 
             if state.condition {
                 outputs.extend(
@@ -207,7 +214,7 @@ impl<const KIND: u8> GenericStatefulNode for ConditionalNode<KIND> {
                 );
             }
 
-            variables.remove_region_data(region);
+            variables.remove_region_data(region.region);
             Ok(ExecutionResult::Done)
         }
     }

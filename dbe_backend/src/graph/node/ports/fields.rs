@@ -64,12 +64,45 @@ pub fn get_field<'ctx, Mapper: FieldMapper>(
     fields.iter().find(|o| mapper.matches(o, id))
 }
 
+/// Gets the field index at the given local index, using the local cached
+/// fields to account for potential reordering
+///
+/// # Arguments
+/// * `fields` - The fields to get the data from
+/// * `local` - local cached fields representation
+/// * `index` - The index of the field to get
+/// * `matcher` - Equality function to compare the field with the local representation
+pub fn get_field_index<Mapper: FieldMapper>(
+    mapper: &Mapper,
+    fields: &[Mapper::Field],
+    local: &[Mapper::Local],
+    index: usize,
+) -> Option<usize> {
+    // If the index is not in the fields, return the field at the same index directly, it's likely a new field
+    let Some(id) = local.get(index) else {
+        return Some(index);
+    };
+
+    // Check the output at the same position
+    if let Some(output) = fields.get(index) {
+        if mapper.matches(output, id) {
+            return Some(index);
+        }
+    }
+
+    // In case the field was moved, find it by ID
+    fields.iter().position(|o| mapper.matches(o, id))
+}
+
 /// Same as [sync_fields_and_types] but without types
-pub fn sync_fields<Mapper: FieldMapper>(
+pub fn sync_fields<
+    Mapper: FieldMapper,
+    Store: AsRef<[Mapper::Local]> + FromIterator<Mapper::Local>,
+>(
     mapper: &Mapper,
     commands: &mut SnarlCommands,
     fields: &[Mapper::Field],
-    ids: &mut Vec<Mapper::Local>,
+    ids: &mut Store,
     node_id: NodeId,
     io: IoDirection,
 ) {
@@ -91,17 +124,21 @@ pub fn sync_fields<Mapper: FieldMapper>(
 /// * `to_local` - Function to convert the field to the local representation
 /// * `to_type` - Function to convert the field to the type
 /// * `offset` - The offset of the fields in the node
-pub fn sync_fields_and_types<Mapper: FieldMapper>(
+pub fn sync_fields_and_types<
+    Mapper: FieldMapper,
+    Store: AsRef<[Mapper::Local]> + FromIterator<Mapper::Local>,
+>(
     mapper: &Mapper,
     commands: &mut SnarlCommands,
     fields: &[Mapper::Field],
-    ids: &mut Vec<Mapper::Local>,
+    ids: &mut Store,
     types: Option<&mut Vec<Mapper::Type>>,
     node_id: NodeId,
     io: IoDirection,
 ) {
-    if ids.len() == fields.len()
+    if ids.as_ref().len() == fields.len()
         && ids
+            .as_ref()
             .iter()
             .zip_eq(fields.iter())
             .all(|(id, field)| mapper.matches(field, id))
@@ -109,16 +146,16 @@ pub fn sync_fields_and_types<Mapper: FieldMapper>(
         return;
     }
 
-    let new_fields = fields.iter().map(|f| mapper.to_local(f)).collect_vec();
+    let new_fields: Store = fields.iter().map(|f| mapper.to_local(f)).collect();
 
     let mut rearrangements = None::<RearrangeIndices>;
     let mut drops = vec![];
 
-    for (i, id) in ids.iter().enumerate() {
-        if let Some(pos) = new_fields.iter().position(|i| i == id) {
+    for (i, id) in ids.as_ref().iter().enumerate() {
+        if let Some(pos) = new_fields.as_ref().iter().position(|i| i == id) {
             if pos != i {
                 let indices = rearrangements
-                    .get_or_insert_with(|| (0..ids.len()).collect::<RearrangeIndices>());
+                    .get_or_insert_with(|| (0..ids.as_ref().len()).collect::<RearrangeIndices>());
                 indices[i] = pos;
             }
         } else {

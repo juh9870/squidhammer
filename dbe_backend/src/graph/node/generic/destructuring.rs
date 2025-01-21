@@ -1,11 +1,11 @@
 use crate::etype::eobject::EObject;
 use crate::graph::node::commands::{SnarlCommand, SnarlCommands};
+use crate::graph::node::extras::ExecutionExtras;
 use crate::graph::node::generic::{generic_try_connect, GenericNodeField, GenericNodeFieldMut};
 use crate::graph::node::ports::fields::{get_field, sync_fields, IoDirection};
 use crate::graph::node::ports::{InputData, NodePortType, OutputData};
 use crate::graph::node::serde_node::impl_serde_node;
 use crate::graph::node::struct_node::StructNodeFieldMapper;
-use crate::graph::node::variables::ExecutionExtras;
 use crate::graph::node::{ExecutionResult, Node, NodeContext, NodeFactory};
 use crate::project::docs::{Docs, DocsRef};
 use crate::value::id::ETypeId;

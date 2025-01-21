@@ -1,43 +1,45 @@
 use crate::etype::eitem::EItemInfo;
 use crate::etype::EDataType;
+use crate::graph::node::extras::ExecutionExtras;
 use crate::graph::node::ports::{InputData, OutputData};
-use crate::graph::node::regional::{remember_variables, NodeWithVariables, RegionIoKind};
+use crate::graph::node::regional::{NodeWithVariables, RegionIoData};
 use crate::graph::node::stateful::StatefulNode;
-use crate::graph::node::variables::ExecutionExtras;
+use crate::graph::node::variables::remember_variables;
 use crate::graph::node::{ExecutionResult, NodeContext};
 use crate::graph::region::RegionExecutionData;
 use crate::json_utils::json_serde::JsonSerde;
 use crate::value::EValue;
 use miette::bail;
 use ustr::Ustr;
-use uuid::Uuid;
 
 #[derive(Debug, Clone, Hash)]
 pub struct RepeatNode;
 
-impl NodeWithVariables for RepeatNode {}
+impl NodeWithVariables for RepeatNode {
+    type State<'a> = &'a RegionIoData;
+}
 
 impl JsonSerde for RepeatNode {
-    type State = RegionIoKind;
+    type State<'a> = &'a RegionIoData;
 }
 
 impl StatefulNode for RepeatNode {
-    type State = RegionIoKind;
+    type State<'a> = &'a RegionIoData;
 
     fn id() -> Ustr {
         "repeat".into()
     }
 
-    fn inputs_count(&self, _context: NodeContext, kind: &RegionIoKind) -> usize {
-        if kind.is_start() {
+    fn inputs_count(&self, _context: NodeContext, data: &RegionIoData) -> usize {
+        if data.is_start() {
             1
         } else {
             0
         }
     }
 
-    fn outputs_count(&self, _context: NodeContext, kind: &RegionIoKind) -> usize {
-        if kind.is_start() {
+    fn outputs_count(&self, _context: NodeContext, data: &RegionIoData) -> usize {
+        if data.is_start() {
             1
         } else {
             0
@@ -47,10 +49,10 @@ impl StatefulNode for RepeatNode {
     fn input_unchecked(
         &self,
         _context: NodeContext,
-        kind: &RegionIoKind,
+        data: &RegionIoData,
         _input: usize,
     ) -> miette::Result<InputData> {
-        if kind.is_start() {
+        if data.is_start() {
             Ok(InputData::new(
                 EItemInfo::simple_type(EDataType::Number).into(),
                 "iterations".into(),
@@ -63,10 +65,10 @@ impl StatefulNode for RepeatNode {
     fn output_unchecked(
         &self,
         _context: NodeContext,
-        kind: &RegionIoKind,
+        data: &RegionIoData,
         _output: usize,
     ) -> miette::Result<OutputData> {
-        if kind.is_start() {
+        if data.is_start() {
             Ok(OutputData::new(
                 EItemInfo::simple_type(EDataType::Number).into(),
                 "iteration".into(),
@@ -79,10 +81,10 @@ impl StatefulNode for RepeatNode {
     fn should_execute(
         &self,
         _context: NodeContext,
-        region: Uuid,
+        data: &RegionIoData,
         variables: &mut ExecutionExtras,
     ) -> miette::Result<bool> {
-        let Some(state) = variables.get_region_data::<RepeatNodeState>(region) else {
+        let Some(state) = variables.get_region_data::<RepeatNodeState>(data.region) else {
             bail!("End of repeat node without start")
         };
 
@@ -92,15 +94,14 @@ impl StatefulNode for RepeatNode {
     fn execute(
         &self,
         _context: NodeContext,
-        kind: &RegionIoKind,
-        region: Uuid,
+        data: &RegionIoData,
         inputs: &[EValue],
         outputs: &mut Vec<EValue>,
         variables: &mut ExecutionExtras,
     ) -> miette::Result<ExecutionResult> {
-        if kind.is_start() {
+        if data.is_start() {
             let n_repeats = inputs[0].try_as_number()?;
-            let state = variables.get_or_init_region_data(region, |_| RepeatNodeState {
+            let state = variables.get_or_init_region_data(data.region, |_| RepeatNodeState {
                 repeats: n_repeats.0 as u32,
                 current: 0,
                 values: None,
@@ -113,7 +114,7 @@ impl StatefulNode for RepeatNode {
 
             Ok(ExecutionResult::Done)
         } else {
-            let Some(state) = variables.get_region_data::<RepeatNodeState>(region) else {
+            let Some(state) = variables.get_region_data::<RepeatNodeState>(data.region) else {
                 bail!("End of repeat node without start")
             };
 
@@ -122,11 +123,13 @@ impl StatefulNode for RepeatNode {
             if state.current >= state.repeats {
                 outputs.clear();
                 outputs.extend(inputs.iter().cloned());
-                variables.remove_region_data(region);
+                variables.remove_region_data(data.region);
                 Ok(ExecutionResult::Done)
             } else {
                 state.values = Some(inputs.to_vec());
-                Ok(ExecutionResult::RerunRegion { region })
+                Ok(ExecutionResult::RerunRegion {
+                    region: data.region,
+                })
             }
         }
     }
