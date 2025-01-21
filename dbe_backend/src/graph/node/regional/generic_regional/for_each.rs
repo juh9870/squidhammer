@@ -1,11 +1,10 @@
 use crate::etype::EDataType;
 use crate::graph::node::commands::{SnarlCommand, SnarlCommands};
+use crate::graph::node::extras::ExecutionExtras;
 use crate::graph::node::generic::{GenericNodeField, GenericNodeFieldMut};
-use crate::graph::node::regional::{
-    remember_variables, NodeWithVariables, RegionIONode, RegionIoKind,
-};
+use crate::graph::node::regional::{NodeWithVariables, RegionIONode, RegionIoData, RegionIoKind};
 use crate::graph::node::stateful::generic::GenericStatefulNode;
-use crate::graph::node::variables::ExecutionExtras;
+use crate::graph::node::variables::remember_variables;
 use crate::graph::node::{ExecutionResult, NodeContext};
 use crate::graph::region::{get_region_execution_data, RegionExecutionData};
 use crate::value::{ENumber, EValue};
@@ -15,7 +14,6 @@ use miette::bail;
 use smallvec::smallvec;
 use ustr::Ustr;
 use utils::smallvec_n;
-use uuid::Uuid;
 
 pub type ListForEachNode = ForEachLikeRegionalNode<{ ForEachKind::ForEach as u8 }>;
 pub type ListMapNode = ForEachLikeRegionalNode<{ ForEachKind::Map as u8 }>;
@@ -82,9 +80,11 @@ impl PartialEq<ForEachKind> for u8 {
     }
 }
 
-impl<const KIND: u8> NodeWithVariables for ForEachLikeRegionalNode<KIND> {}
+impl<const KIND: u8> NodeWithVariables for ForEachLikeRegionalNode<KIND> {
+    type State<'a> = &'a RegionIoData;
+}
 impl<const KIND: u8> GenericStatefulNode for ForEachLikeRegionalNode<KIND> {
-    type State = RegionIoKind;
+    type State<'a> = &'a RegionIoData;
 
     fn id() -> Ustr {
         match ForEachKind::of(KIND) {
@@ -96,8 +96,8 @@ impl<const KIND: u8> GenericStatefulNode for ForEachLikeRegionalNode<KIND> {
         }
     }
 
-    fn input_names(&self, kind: &RegionIoKind) -> &[&str] {
-        match kind {
+    fn input_names(&self, data: &Self::State<'_>) -> &[&str] {
+        match data.kind {
             RegionIoKind::Start => &["values"],
             RegionIoKind::End => match self.kind() {
                 ForEachKind::ForEach => &[],
@@ -109,8 +109,8 @@ impl<const KIND: u8> GenericStatefulNode for ForEachLikeRegionalNode<KIND> {
         }
     }
 
-    fn output_names(&self, kind: &RegionIoKind) -> &[&str] {
-        match kind {
+    fn output_names(&self, data: &Self::State<'_>) -> &[&str] {
+        match data.kind {
             RegionIoKind::Start => &["value", "index", "length"],
             RegionIoKind::End => {
                 if is_map(KIND) || is_filter(KIND) {
@@ -136,8 +136,8 @@ impl<const KIND: u8> GenericStatefulNode for ForEachLikeRegionalNode<KIND> {
     //     }
     // }
 
-    fn inputs(&self, kind: &RegionIoKind) -> impl AsRef<[GenericNodeField]> {
-        match kind {
+    fn inputs(&self, data: &Self::State<'_>) -> impl AsRef<[GenericNodeField]> {
+        match data.kind {
             RegionIoKind::Start => smallvec_n![2;GenericNodeField::List(&self.input_ty)],
             RegionIoKind::End => match self.kind() {
                 ForEachKind::ForEach => smallvec![],
@@ -152,8 +152,8 @@ impl<const KIND: u8> GenericStatefulNode for ForEachLikeRegionalNode<KIND> {
         }
     }
 
-    fn outputs(&self, kind: &RegionIoKind) -> impl AsRef<[GenericNodeField]> {
-        match kind {
+    fn outputs(&self, data: &Self::State<'_>) -> impl AsRef<[GenericNodeField]> {
+        match data.kind {
             RegionIoKind::Start => {
                 smallvec_n![2;GenericNodeField::Value(&self.input_ty), GenericNodeField::Fixed(EDataType::Number), GenericNodeField::Fixed(EDataType::Number)]
             }
@@ -169,8 +169,8 @@ impl<const KIND: u8> GenericStatefulNode for ForEachLikeRegionalNode<KIND> {
         }
     }
 
-    fn inputs_mut(&mut self, kind: &RegionIoKind) -> impl AsMut<[GenericNodeFieldMut]> {
-        match kind {
+    fn inputs_mut(&mut self, data: &Self::State<'_>) -> impl AsMut<[GenericNodeFieldMut]> {
+        match data.kind {
             RegionIoKind::Start => smallvec_n![2;GenericNodeFieldMut::List(&mut self.input_ty)],
             RegionIoKind::End => match self.kind() {
                 ForEachKind::ForEach => smallvec![],
@@ -185,8 +185,8 @@ impl<const KIND: u8> GenericStatefulNode for ForEachLikeRegionalNode<KIND> {
         }
     }
 
-    fn outputs_mut(&mut self, kind: &RegionIoKind) -> impl AsMut<[GenericNodeFieldMut]> {
-        match kind {
+    fn outputs_mut(&mut self, data: &Self::State<'_>) -> impl AsMut<[GenericNodeFieldMut]> {
+        match data.kind {
             RegionIoKind::Start => {
                 smallvec_n![2;GenericNodeFieldMut::Value(&mut self.input_ty), GenericNodeFieldMut::Fixed(EDataType::Number), GenericNodeFieldMut::Fixed(EDataType::Number)]
             }
@@ -205,8 +205,7 @@ impl<const KIND: u8> GenericStatefulNode for ForEachLikeRegionalNode<KIND> {
     fn types_changed(
         &mut self,
         context: NodeContext,
-        kind: &RegionIoKind,
-        region: Uuid,
+        region_data: &RegionIoData,
         _node: NodeId,
         commands: &mut SnarlCommands,
     ) {
@@ -223,10 +222,10 @@ impl<const KIND: u8> GenericStatefulNode for ForEachLikeRegionalNode<KIND> {
             return;
         };
 
-        let other_id = if kind.is_start() {
-            data.region_data(&region).end_node
+        let other_id = if region_data.is_start() {
+            data.region_data(&region_data.region).end_node
         } else {
-            data.region_data(&region).start_node
+            data.region_data(&region_data.region).start_node
         };
 
         commands.push(SnarlCommand::Custom {
@@ -243,10 +242,10 @@ impl<const KIND: u8> GenericStatefulNode for ForEachLikeRegionalNode<KIND> {
     fn should_execute(
         &self,
         _context: NodeContext,
-        region: Uuid,
+        region: &RegionIoData,
         variables: &mut ExecutionExtras,
     ) -> miette::Result<bool> {
-        let state = get_region_execution_data::<ForEachNodeState>(region, variables)?;
+        let state = get_region_execution_data::<ForEachNodeState>(region.region, variables)?;
 
         Ok(state.index < state.length)
     }
@@ -254,17 +253,16 @@ impl<const KIND: u8> GenericStatefulNode for ForEachLikeRegionalNode<KIND> {
     fn execute(
         &self,
         context: NodeContext,
-        kind: &RegionIoKind,
-        region: Uuid,
+        region: &RegionIoData,
         inputs: &[EValue],
         outputs: &mut Vec<EValue>,
         variables: &mut ExecutionExtras,
     ) -> miette::Result<ExecutionResult> {
-        if kind.is_start() {
+        if region.is_start() {
             let EValue::List { values, .. } = &inputs[0] else {
                 bail!("Expected list input, got: {}", inputs[0].ty().name());
             };
-            let state = variables.get_or_init_region_data(region, |_| ForEachNodeState {
+            let state = variables.get_or_init_region_data(region.region, |_| ForEachNodeState {
                 index: 0,
                 length: values.len(),
                 output: Vec::with_capacity(values.len()),
@@ -290,7 +288,7 @@ impl<const KIND: u8> GenericStatefulNode for ForEachLikeRegionalNode<KIND> {
 
             Ok(ExecutionResult::Done)
         } else {
-            let state = get_region_execution_data::<ForEachNodeState>(region, variables)?;
+            let state = get_region_execution_data::<ForEachNodeState>(region.region, variables)?;
 
             if state.length > 0 {
                 match self.kind() {
@@ -346,11 +344,13 @@ impl<const KIND: u8> GenericStatefulNode for ForEachLikeRegionalNode<KIND> {
                     });
                 }
                 outputs.extend(inputs.iter().skip(skip_n).cloned());
-                variables.remove_region_data(region);
+                variables.remove_region_data(region.region);
                 Ok(ExecutionResult::Done)
             } else {
                 state.values = Some(inputs.iter().skip(skip_n).cloned().collect_vec());
-                Ok(ExecutionResult::RerunRegion { region })
+                Ok(ExecutionResult::RerunRegion {
+                    region: region.region,
+                })
             }
         }
     }

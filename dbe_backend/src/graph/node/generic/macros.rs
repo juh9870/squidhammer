@@ -29,8 +29,8 @@ macro_rules! generic_node_io {
     };
 
     ($io:ident { Start => [$($start_n:literal;)? $($start_kind:ident($($start_value:tt)*)),* $(,)?], End => [$($end_n:literal;)? $($end_kind:ident($($end_value:tt)*)),* $(,)?] }) => {
-        fn $io(&self, kind: &$crate::graph::node::regional::RegionIoKind) -> impl AsRef<[$crate::graph::node::generic::GenericNodeField]> {
-            match kind {
+        fn $io(&self, state: &Self::State<'_>) -> impl AsRef<[$crate::graph::node::generic::GenericNodeField]> {
+            match state.kind {
                 $crate::graph::node::regional::RegionIoKind::Start => {
                     $crate::graph::node::generic::macros::generic_node_io!(
                         @collection self @ref $($start_n)? [$($start_kind($($start_value)*)),*]
@@ -44,8 +44,8 @@ macro_rules! generic_node_io {
             }
         }
         paste::paste! {
-            fn [< $io _mut >](&mut self, kind: &$crate::graph::node::regional::RegionIoKind) -> impl AsMut<[$crate::graph::node::generic::GenericNodeFieldMut]> {
-                match kind {
+            fn [< $io _mut >](&mut self, state: &Self::State<'_>) -> impl AsMut<[$crate::graph::node::generic::GenericNodeFieldMut]> {
+                match state.kind {
                     $crate::graph::node::regional::RegionIoKind::Start => {
                         $crate::graph::node::generic::macros::generic_node_io!(
                             @collection self @mut $($start_n)? [$($start_kind($($start_value)*)),*]
@@ -61,20 +61,16 @@ macro_rules! generic_node_io {
         }
     };
     ($io:ident { [$($n:literal;)? $($kind:ident($($value:tt)*)),* $(,)?] }) => {
-        fn $io(&self) -> impl AsRef<[$crate::graph::node::generic::GenericNodeField]> {
-            $crate::graph::node::regional::RegionIoKind::Start => {
-                $crate::graph::node::generic::macros::generic_node_io!(
-                    @collection self @ref $($n)? [$($kind($($value)*)),*]
-                );
-            }
+        fn $io(&self, _state: &Self::State<'_>) -> impl AsRef<[$crate::graph::node::generic::GenericNodeField]> {
+            $crate::graph::node::generic::macros::generic_node_io!(
+                @collection self @ref $($n)? [$($kind($($value)*)),*]
+            );
         }
         paste::paste! {
-            fn [< $io _mut >](&mut self) -> impl AsMut<[$crate::graph::node::generic::GenericNodeFieldMut]> {
-                $crate::graph::node::regional::RegionIoKind::Start => {
-                    $crate::graph::node::generic::macros::generic_node_io!(
-                        @collection self @mut $($n)? [$($kind($($value)*)),*]
-                    );
-                }
+            fn [< $io _mut >](&mut self, _state: &Self::State<'_>) -> impl AsMut<[$crate::graph::node::generic::GenericNodeFieldMut]> {
+                $crate::graph::node::generic::macros::generic_node_io!(
+                    @collection self @mut $($n)? [$($kind($($value)*)),*]
+                );
             }
         }
     };

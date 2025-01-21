@@ -2,8 +2,8 @@ use super::{
     AsStaticSlice, FuncNode, FunctionalArgNames, FunctionalContext, FunctionalInputPortAdapter,
     FunctionalNode, FunctionalNodeOutput, FunctionalOutputPortAdapter, IntoFunctionalNode,
 };
+use crate::graph::node::extras::ExecutionExtras;
 use crate::graph::node::ports::{InputData, OutputData};
-use crate::graph::node::variables::ExecutionExtras;
 use crate::graph::node::{ExecutionResult, Node, NodeContext, NodeFactory};
 use crate::value::EValue;
 use miette::Context;

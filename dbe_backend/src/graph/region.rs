@@ -1,6 +1,6 @@
 use crate::etype::EDataType;
 use crate::graph::inputs::GraphIoData;
-use crate::graph::node::variables::ExecutionExtras;
+use crate::graph::node::extras::ExecutionExtras;
 use downcast_rs::{impl_downcast, Downcast};
 use miette::bail;
 use serde::{Deserialize, Serialize};
