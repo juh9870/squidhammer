@@ -9,6 +9,7 @@ use crate::graph::node::variables::{
 };
 use crate::graph::node::{ExecutionResult, NodeContext};
 use crate::registry::optional_helpers::{unwrap_optional_value, wrap_in_option};
+use crate::registry::ETypesRegistry;
 use crate::value::EValue;
 use egui_snarl::NodeId;
 use miette::Context;
@@ -83,14 +84,22 @@ impl<const DEFAULT: bool> GenericStatefulNode for Coalesce<DEFAULT> {
         }
     }
 
-    fn outputs(&self, _state: &Self::State<'_>) -> impl AsRef<[GenericNodeField]> {
+    fn outputs(
+        &self,
+        _registry: &ETypesRegistry,
+        _external_state: &Self::State<'_>,
+    ) -> impl AsRef<[GenericNodeField]> {
         if DEFAULT {
             [GenericNodeField::Value(&self.output_ty)]
         } else {
             [GenericNodeField::Option(&self.output_ty)]
         }
     }
-    fn outputs_mut(&mut self, _state: &Self::State<'_>) -> impl AsMut<[GenericNodeFieldMut]> {
+    fn outputs_mut(
+        &mut self,
+        _registry: &ETypesRegistry,
+        _external_state: &Self::State<'_>,
+    ) -> impl AsMut<[GenericNodeFieldMut]> {
         if DEFAULT {
             [GenericNodeFieldMut::Value(&mut self.output_ty)]
         } else {

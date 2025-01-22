@@ -12,6 +12,7 @@ use crate::graph::node::{ExecutionResult, NodeContext};
 use crate::graph::region::{get_region_execution_data, RegionExecutionData};
 use crate::json_utils::JsonValue;
 use crate::project::ProjectFile;
+use crate::registry::ETypesRegistry;
 use crate::value::EValue;
 use egui_snarl::{NodeId, OutPinId};
 use itertools::Itertools;
@@ -54,8 +55,12 @@ impl GenericStatefulNode for ForEachDbeItem {
         }
     }
 
-    fn outputs(&self, data: &Self::State<'_>) -> impl AsRef<[GenericNodeField]> {
-        match data.kind {
+    fn outputs(
+        &self,
+        _registry: &ETypesRegistry,
+        external_state: &Self::State<'_>,
+    ) -> impl AsRef<[GenericNodeField]> {
+        match external_state.kind {
             RegionIoKind::Start => {
                 if let Some((ty, _)) = self.enum_variant {
                     smallvec_n![2;
@@ -75,8 +80,12 @@ impl GenericStatefulNode for ForEachDbeItem {
         }
     }
 
-    fn outputs_mut(&mut self, data: &Self::State<'_>) -> impl AsMut<[GenericNodeFieldMut]> {
-        match data.kind {
+    fn outputs_mut(
+        &mut self,
+        _registry: &ETypesRegistry,
+        external_state: &Self::State<'_>,
+    ) -> impl AsMut<[GenericNodeFieldMut]> {
+        match external_state.kind {
             RegionIoKind::Start => {
                 if let Some((ty, _)) = self.enum_variant {
                     smallvec_n![2;
