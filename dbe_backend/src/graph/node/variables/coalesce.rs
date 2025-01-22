@@ -78,10 +78,11 @@ impl<const DEFAULT: bool> GenericStatefulNode for Coalesce<DEFAULT> {
     }
 
     generic_node_io! {
-        inputs {
+        inputs(&Self::State<'_>) {
             []
         }
     }
+
     fn outputs(&self, _state: &Self::State<'_>) -> impl AsRef<[GenericNodeField]> {
         if DEFAULT {
             [GenericNodeField::Value(&self.output_ty)]
@@ -148,7 +149,7 @@ impl<const DEFAULT: bool> GenericStatefulNode for Coalesce<DEFAULT> {
     }
 
     fn categories() -> &'static [&'static str] {
-        &["utility"]
+        &["optional"]
     }
 
     fn create() -> Self {
