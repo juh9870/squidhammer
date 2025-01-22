@@ -220,7 +220,7 @@ impl<const KIND: u8> GenericStatefulNode for ConditionalNode<KIND> {
     }
 
     fn categories() -> &'static [&'static str] {
-        &["utility", "utility.iterators"]
+        &["optional"]
     }
 
     fn create() -> Self {
