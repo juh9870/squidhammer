@@ -171,7 +171,7 @@ impl NodePortType {
             (NodePortType::Specific(_), NodePortType::BasedOnSource) => true, // Specific can be converted to Any
 
             (NodePortType::Specific(from), NodePortType::Specific(to)) => {
-                types_compatible(registry, from, to)
+                port_types_compatible(registry, from, to)
             }
         }
     }
@@ -214,7 +214,11 @@ impl NodePortType {
             return Ok(value);
         }
 
-        bail!("conversion not supported")
+        bail!(
+            "conversion from `{}` to `{}` is not supported",
+            from.ty().title(registry),
+            to.ty().title(registry),
+        );
     }
 }
 
@@ -224,7 +228,7 @@ impl From<EItemInfo> for NodePortType {
     }
 }
 
-fn types_compatible(registry: &ETypesRegistry, from: &EItemInfo, to: &EItemInfo) -> bool {
+pub fn port_types_compatible(registry: &ETypesRegistry, from: &EItemInfo, to: &EItemInfo) -> bool {
     let source_ty = from.ty();
     let target_ty = to.ty();
     if source_ty == target_ty {
