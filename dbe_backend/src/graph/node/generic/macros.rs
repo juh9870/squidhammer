@@ -29,7 +29,7 @@ macro_rules! generic_node_io {
     };
 
     ($io:ident { Start => [$($start_n:literal;)? $($start_kind:ident($($start_value:tt)*)),* $(,)?], End => [$($end_n:literal;)? $($end_kind:ident($($end_value:tt)*)),* $(,)?] }) => {
-        fn $io(&self, state: &Self::State<'_>) -> impl AsRef<[$crate::graph::node::generic::GenericNodeField]> {
+        fn $io(&self, _registry: &$crate::registry::ETypesRegistry, state: &Self::State<'_>) -> impl AsRef<[$crate::graph::node::generic::GenericNodeField]> {
             match state.kind {
                 $crate::graph::node::regional::RegionIoKind::Start => {
                     $crate::graph::node::generic::macros::generic_node_io!(
@@ -44,7 +44,7 @@ macro_rules! generic_node_io {
             }
         }
         paste::paste! {
-            fn [< $io _mut >](&mut self, state: &Self::State<'_>) -> impl AsMut<[$crate::graph::node::generic::GenericNodeFieldMut]> {
+            fn [< $io _mut >](&mut self, _registry: &$crate::registry::ETypesRegistry, state: &Self::State<'_>) -> impl AsMut<[$crate::graph::node::generic::GenericNodeFieldMut]> {
                 match state.kind {
                     $crate::graph::node::regional::RegionIoKind::Start => {
                         $crate::graph::node::generic::macros::generic_node_io!(
@@ -61,13 +61,13 @@ macro_rules! generic_node_io {
         }
     };
     ($io:ident($($state:ty)?) { [$($n:literal;)? $($kind:ident($($value:tt)*)),* $(,)?] }) => {
-        fn $io(&self, $(_state: $state)?) -> impl AsRef<[$crate::graph::node::generic::GenericNodeField]> {
+        fn $io(&self, _registry: &$crate::registry::ETypesRegistry, $(_state: $state)?) -> impl AsRef<[$crate::graph::node::generic::GenericNodeField]> {
             $crate::graph::node::generic::macros::generic_node_io!(
                 @collection self @ref $($n)? [$($kind($($value)*)),*]
             );
         }
         paste::paste! {
-            fn [< $io _mut >](&mut self, $(_state: $state)?) -> impl AsMut<[$crate::graph::node::generic::GenericNodeFieldMut]> {
+            fn [< $io _mut >](&mut self, _registry: &$crate::registry::ETypesRegistry, $(_state: $state)?) -> impl AsMut<[$crate::graph::node::generic::GenericNodeFieldMut]> {
                 $crate::graph::node::generic::macros::generic_node_io!(
                     @collection self @mut $($n)? [$($kind($($value)*)),*]
                 );

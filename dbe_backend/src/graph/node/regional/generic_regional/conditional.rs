@@ -6,6 +6,7 @@ use crate::graph::node::stateful::generic::GenericStatefulNode;
 use crate::graph::node::{ExecutionResult, NodeContext};
 use crate::graph::region::{get_region_execution_data, RegionExecutionData};
 use crate::registry::optional_helpers::{none_of_type, unwrap_optional_value, wrap_in_some};
+use crate::registry::ETypesRegistry;
 use crate::value::EValue;
 use smallvec::smallvec;
 use ustr::Ustr;
@@ -111,8 +112,12 @@ impl<const KIND: u8> GenericStatefulNode for ConditionalNode<KIND> {
         }
     }
 
-    fn inputs(&self, data: &Self::State<'_>) -> impl AsRef<[GenericNodeField]> {
-        match data.kind {
+    fn inputs(
+        &self,
+        _registry: &ETypesRegistry,
+        external_state: &Self::State<'_>,
+    ) -> impl AsRef<[GenericNodeField]> {
+        match external_state.kind {
             RegionIoKind::Start => match self.kind() {
                 ConditionalKind::If => smallvec_n![1;GenericNodeField::Fixed(EDataType::Boolean)],
                 ConditionalKind::Map => smallvec![GenericNodeField::Option(&self.input_ty)],
@@ -121,8 +126,12 @@ impl<const KIND: u8> GenericStatefulNode for ConditionalNode<KIND> {
         }
     }
 
-    fn outputs(&self, data: &Self::State<'_>) -> impl AsRef<[GenericNodeField]> {
-        match data.kind {
+    fn outputs(
+        &self,
+        _registry: &ETypesRegistry,
+        external_state: &Self::State<'_>,
+    ) -> impl AsRef<[GenericNodeField]> {
+        match external_state.kind {
             RegionIoKind::Start => match self.kind() {
                 ConditionalKind::If => smallvec![],
                 ConditionalKind::Map => smallvec_n![1;GenericNodeField::Value(&self.input_ty)],
@@ -131,8 +140,12 @@ impl<const KIND: u8> GenericStatefulNode for ConditionalNode<KIND> {
         }
     }
 
-    fn inputs_mut(&mut self, data: &Self::State<'_>) -> impl AsMut<[GenericNodeFieldMut]> {
-        match data.kind {
+    fn inputs_mut(
+        &mut self,
+        _registry: &ETypesRegistry,
+        external_state: &Self::State<'_>,
+    ) -> impl AsMut<[GenericNodeFieldMut]> {
+        match external_state.kind {
             RegionIoKind::Start => match self.kind() {
                 ConditionalKind::If => {
                     smallvec_n![1;GenericNodeFieldMut::Fixed(EDataType::Boolean)]
@@ -143,8 +156,12 @@ impl<const KIND: u8> GenericStatefulNode for ConditionalNode<KIND> {
         }
     }
 
-    fn outputs_mut(&mut self, data: &Self::State<'_>) -> impl AsMut<[GenericNodeFieldMut]> {
-        match data.kind {
+    fn outputs_mut(
+        &mut self,
+        _registry: &ETypesRegistry,
+        external_state: &Self::State<'_>,
+    ) -> impl AsMut<[GenericNodeFieldMut]> {
+        match external_state.kind {
             RegionIoKind::Start => match self.kind() {
                 ConditionalKind::If => smallvec![],
                 ConditionalKind::Map => {

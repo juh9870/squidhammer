@@ -14,6 +14,7 @@ members = [
 ]
 
 [workspace.dependencies]
+arrayvec = "0.7.6"
 ouroboros = "0.18.5"
 bitflags = "2.8.0"
 ahash = "0.8.11"

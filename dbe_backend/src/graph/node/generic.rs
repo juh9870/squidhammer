@@ -264,7 +264,7 @@ impl GenericNodeField<'_> {
 pub trait GenericNode: DynClone + DynHash + Debug + Send + Sync + Downcast + 'static {
     fn write_json(&self, registry: &ETypesRegistry) -> miette::Result<JsonValue> {
         let _ = (registry,);
-        write_generic_json_fields(self, |n| n.inputs(), |n| n.outputs())
+        write_generic_json_fields(self, |n| n.inputs(registry), |n| n.outputs(registry))
     }
 
     fn parse_json(
@@ -274,26 +274,20 @@ pub trait GenericNode: DynClone + DynHash + Debug + Send + Sync + Downcast + 'st
     ) -> miette::Result<()> {
         let _ = (registry,);
         parse_generic_json_fields(value)?
-            .inputs(self, |n| n.inputs_mut())?
-            .outputs(self, |n| n.outputs_mut())?
+            .inputs(self, |n| n.inputs_mut(registry))?
+            .outputs(self, |n| n.outputs_mut(registry))?
             .done()?;
         Ok(())
-    }
-
-    /// Called after one of the node's inputs/output types has changed,
-    /// allowing the node to update its state
-    fn types_changed(&mut self, context: NodeContext, node: NodeId, commands: &mut SnarlCommands) {
-        let _ = (context, node, commands);
     }
 
     fn id(&self) -> Ustr;
     fn input_names(&self) -> &[&str];
     fn output_names(&self) -> &[&str];
 
-    fn inputs(&self) -> impl AsRef<[GenericNodeField]>;
-    fn outputs(&self) -> impl AsRef<[GenericNodeField]>;
-    fn inputs_mut(&mut self) -> impl AsMut<[GenericNodeFieldMut]>;
-    fn outputs_mut(&mut self) -> impl AsMut<[GenericNodeFieldMut]>;
+    fn inputs(&self, registry: &ETypesRegistry) -> impl AsRef<[GenericNodeField]>;
+    fn outputs(&self, registry: &ETypesRegistry) -> impl AsRef<[GenericNodeField]>;
+    fn inputs_mut(&mut self, registry: &ETypesRegistry) -> impl AsMut<[GenericNodeFieldMut]>;
+    fn outputs_mut(&mut self, registry: &ETypesRegistry) -> impl AsMut<[GenericNodeFieldMut]>;
 
     /// See [Node::title]
     fn title(&self, context: NodeContext, docs: &Docs) -> String {
@@ -301,6 +295,12 @@ pub trait GenericNode: DynClone + DynHash + Debug + Send + Sync + Downcast + 'st
         DocsWindowRef::Node(self.id())
             .title(docs, context.registry)
             .to_string()
+    }
+
+    /// Called after one of the node's inputs/output types has changed,
+    /// allowing the node to update its state
+    fn types_changed(&mut self, context: NodeContext, node: NodeId, commands: &mut SnarlCommands) {
+        let _ = (context, node, commands);
     }
 
     /// See [Node::update_state]
@@ -403,7 +403,11 @@ pub fn write_generic_json_fields<
 pub fn parse_generic_json_fields(
     value: &mut JsonValue,
 ) -> miette::Result<ParsedGeneric<Vec<Option<EDataType>>, Vec<Option<EDataType>>>> {
-    let (inputs, outputs) = serde_json::from_value(value.take()).into_diagnostic()?;
+    let (inputs, outputs) = if value.is_null() {
+        Default::default()
+    } else {
+        serde_json::from_value(value.take()).into_diagnostic()?
+    };
     Ok(ParsedGeneric { inputs, outputs })
 }
 
@@ -513,12 +517,12 @@ impl<T: GenericNode> Node for T {
         T::has_inline_values(self)
     }
 
-    fn inputs_count(&self, _context: NodeContext) -> usize {
-        self.inputs().as_ref().len()
+    fn inputs_count(&self, context: NodeContext) -> usize {
+        self.inputs(context.registry).as_ref().len()
     }
 
     fn input_unchecked(&self, context: NodeContext, input: usize) -> miette::Result<InputData> {
-        let inputs = self.inputs();
+        let inputs = self.inputs(context.registry);
         let Some(ty) = inputs.as_ref().get(input) else {
             bail!("Invalid input index: {}", input);
         };
@@ -526,12 +530,12 @@ impl<T: GenericNode> Node for T {
         Ok(ty.as_input_ty(context, self.input_names()[input]))
     }
 
-    fn outputs_count(&self, _context: NodeContext) -> usize {
-        self.outputs().as_ref().len()
+    fn outputs_count(&self, context: NodeContext) -> usize {
+        self.outputs(context.registry).as_ref().len()
     }
 
     fn output_unchecked(&self, context: NodeContext, output: usize) -> miette::Result<OutputData> {
-        let outputs = self.outputs();
+        let outputs = self.outputs(context.registry);
         let Some(ty) = outputs.as_ref().get(output) else {
             bail!("Invalid output index: {}", output);
         };
@@ -551,7 +555,7 @@ impl<T: GenericNode> Node for T {
             context,
             to.id.input,
             incoming_type,
-            self.inputs_mut().as_mut(),
+            self.inputs_mut(context.registry).as_mut(),
         )? {
             ControlFlow::Break(_) => return Ok(false),
             ControlFlow::Continue(changed) => changed,
@@ -575,7 +579,7 @@ impl<T: GenericNode> Node for T {
             context,
             from.id.output,
             target_type,
-            self.outputs().as_ref(),
+            self.outputs(context.registry).as_ref(),
         )
     }
 
@@ -591,7 +595,7 @@ impl<T: GenericNode> Node for T {
             context,
             from.id.output,
             incoming_type,
-            self.outputs_mut().as_mut(),
+            self.outputs_mut(context.registry).as_mut(),
         )? {
             self.types_changed(context, from.id.node, commands);
         }

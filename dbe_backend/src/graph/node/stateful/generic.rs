@@ -26,12 +26,24 @@ pub trait GenericStatefulNode: 'static + Debug + Clone + Hash + Send + Sync {
     fn input_names(&self, external_state: &Self::State<'_>) -> &[&str];
     fn output_names(&self, external_state: &Self::State<'_>) -> &[&str];
 
-    fn inputs(&self, external_state: &Self::State<'_>) -> impl AsRef<[GenericNodeField]>;
-    fn outputs(&self, external_state: &Self::State<'_>) -> impl AsRef<[GenericNodeField]>;
-    fn inputs_mut(&mut self, external_state: &Self::State<'_>)
-        -> impl AsMut<[GenericNodeFieldMut]>;
+    fn inputs(
+        &self,
+        registry: &ETypesRegistry,
+        external_state: &Self::State<'_>,
+    ) -> impl AsRef<[GenericNodeField]>;
+    fn outputs(
+        &self,
+        registry: &ETypesRegistry,
+        external_state: &Self::State<'_>,
+    ) -> impl AsRef<[GenericNodeField]>;
+    fn inputs_mut(
+        &mut self,
+        registry: &ETypesRegistry,
+        external_state: &Self::State<'_>,
+    ) -> impl AsMut<[GenericNodeFieldMut]>;
     fn outputs_mut(
         &mut self,
+        registry: &ETypesRegistry,
         external_state: &Self::State<'_>,
     ) -> impl AsMut<[GenericNodeFieldMut]>;
 
@@ -44,8 +56,8 @@ pub trait GenericStatefulNode: 'static + Debug + Clone + Hash + Send + Sync {
         let _ = (registry,);
         write_generic_json_fields(
             self,
-            |n| n.inputs(&external_state),
-            |n| n.outputs(&external_state),
+            |n| n.inputs(registry, &external_state),
+            |n| n.outputs(registry, &external_state),
         )
     }
 
@@ -58,8 +70,8 @@ pub trait GenericStatefulNode: 'static + Debug + Clone + Hash + Send + Sync {
     ) -> miette::Result<()> {
         let _ = (registry,);
         parse_generic_json_fields(value)?
-            .inputs(self, |n| n.inputs_mut(&external_state))?
-            .outputs(self, |n| n.outputs_mut(&external_state))?
+            .inputs(self, |n| n.inputs_mut(registry, &external_state))?
+            .outputs(self, |n| n.outputs_mut(registry, &external_state))?
             .done()?;
 
         Ok(())
@@ -194,12 +206,16 @@ impl<T: GenericStatefulNode> StatefulNode for T {
         )
     }
 
-    fn inputs_count(&self, _context: NodeContext, external_state: Self::State<'_>) -> usize {
-        self.inputs(&external_state).as_ref().len()
+    fn inputs_count(&self, context: NodeContext, external_state: Self::State<'_>) -> usize {
+        self.inputs(context.registry, &external_state)
+            .as_ref()
+            .len()
     }
 
-    fn outputs_count(&self, _context: NodeContext, external_state: Self::State<'_>) -> usize {
-        self.outputs(&external_state).as_ref().len()
+    fn outputs_count(&self, context: NodeContext, external_state: Self::State<'_>) -> usize {
+        self.outputs(context.registry, &external_state)
+            .as_ref()
+            .len()
     }
 
     fn input_unchecked(
@@ -208,7 +224,7 @@ impl<T: GenericStatefulNode> StatefulNode for T {
         external_state: Self::State<'_>,
         input: usize,
     ) -> miette::Result<InputData> {
-        let inputs = self.inputs(&external_state);
+        let inputs = self.inputs(context.registry, &external_state);
         let Some(ty) = inputs.as_ref().get(input) else {
             bail!("Invalid input index: {}", input);
         };
@@ -229,7 +245,7 @@ impl<T: GenericStatefulNode> StatefulNode for T {
         external_state: Self::State<'_>,
         output: usize,
     ) -> miette::Result<OutputData> {
-        let outputs = self.outputs(&external_state);
+        let outputs = self.outputs(context.registry, &external_state);
         let Some(ty) = outputs.as_ref().get(output) else {
             bail!("Invalid output index: {}", output);
         };
@@ -257,7 +273,7 @@ impl<T: GenericStatefulNode> StatefulNode for T {
             context,
             to.id.input,
             incoming_type,
-            self.inputs_mut(&external_state).as_mut(),
+            self.inputs_mut(context.registry, &external_state).as_mut(),
         )? {
             ControlFlow::Break(_) => return Ok(ControlFlow::Break(false)),
             ControlFlow::Continue(changed) => changed,
@@ -282,7 +298,7 @@ impl<T: GenericStatefulNode> StatefulNode for T {
             context,
             from.id.output,
             target_type,
-            self.outputs(&external_state).as_ref(),
+            self.outputs(context.registry, &external_state).as_ref(),
         )
     }
 
@@ -299,7 +315,7 @@ impl<T: GenericStatefulNode> StatefulNode for T {
             context,
             from.id.output,
             incoming_type,
-            self.outputs_mut(&external_state).as_mut(),
+            self.outputs_mut(context.registry, &external_state).as_mut(),
         )? {
             self.types_changed(context, external_state, from.id.node, commands);
         }

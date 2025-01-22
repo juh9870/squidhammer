@@ -7,6 +7,7 @@ use crate::graph::node::stateful::generic::GenericStatefulNode;
 use crate::graph::node::variables::remember_variables;
 use crate::graph::node::{ExecutionResult, NodeContext};
 use crate::graph::region::{get_region_execution_data, RegionExecutionData};
+use crate::registry::ETypesRegistry;
 use crate::value::{ENumber, EValue};
 use egui_snarl::NodeId;
 use itertools::Itertools;
@@ -136,8 +137,12 @@ impl<const KIND: u8> GenericStatefulNode for ForEachLikeRegionalNode<KIND> {
     //     }
     // }
 
-    fn inputs(&self, data: &Self::State<'_>) -> impl AsRef<[GenericNodeField]> {
-        match data.kind {
+    fn inputs(
+        &self,
+        _registry: &ETypesRegistry,
+        external_state: &Self::State<'_>,
+    ) -> impl AsRef<[GenericNodeField]> {
+        match external_state.kind {
             RegionIoKind::Start => smallvec_n![2;GenericNodeField::List(&self.input_ty)],
             RegionIoKind::End => match self.kind() {
                 ForEachKind::ForEach => smallvec![],
@@ -152,8 +157,12 @@ impl<const KIND: u8> GenericStatefulNode for ForEachLikeRegionalNode<KIND> {
         }
     }
 
-    fn outputs(&self, data: &Self::State<'_>) -> impl AsRef<[GenericNodeField]> {
-        match data.kind {
+    fn outputs(
+        &self,
+        _registry: &ETypesRegistry,
+        external_state: &Self::State<'_>,
+    ) -> impl AsRef<[GenericNodeField]> {
+        match external_state.kind {
             RegionIoKind::Start => {
                 smallvec_n![2;GenericNodeField::Value(&self.input_ty), GenericNodeField::Fixed(EDataType::Number), GenericNodeField::Fixed(EDataType::Number)]
             }
@@ -169,8 +178,12 @@ impl<const KIND: u8> GenericStatefulNode for ForEachLikeRegionalNode<KIND> {
         }
     }
 
-    fn inputs_mut(&mut self, data: &Self::State<'_>) -> impl AsMut<[GenericNodeFieldMut]> {
-        match data.kind {
+    fn inputs_mut(
+        &mut self,
+        _registry: &ETypesRegistry,
+        external_state: &Self::State<'_>,
+    ) -> impl AsMut<[GenericNodeFieldMut]> {
+        match external_state.kind {
             RegionIoKind::Start => smallvec_n![2;GenericNodeFieldMut::List(&mut self.input_ty)],
             RegionIoKind::End => match self.kind() {
                 ForEachKind::ForEach => smallvec![],
@@ -185,8 +198,12 @@ impl<const KIND: u8> GenericStatefulNode for ForEachLikeRegionalNode<KIND> {
         }
     }
 
-    fn outputs_mut(&mut self, data: &Self::State<'_>) -> impl AsMut<[GenericNodeFieldMut]> {
-        match data.kind {
+    fn outputs_mut(
+        &mut self,
+        _registry: &ETypesRegistry,
+        external_state: &Self::State<'_>,
+    ) -> impl AsMut<[GenericNodeFieldMut]> {
+        match external_state.kind {
             RegionIoKind::Start => {
                 smallvec_n![2;GenericNodeFieldMut::Value(&mut self.input_ty), GenericNodeFieldMut::Fixed(EDataType::Number), GenericNodeFieldMut::Fixed(EDataType::Number)]
             }

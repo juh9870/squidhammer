@@ -1,13 +1,15 @@
+use super::generic::GenericFieldAdapter;
 use super::{
-    AsStaticSlice, FuncNode, FunctionalArgNames, FunctionalContext, FunctionalInputPortAdapter,
-    FunctionalNode, FunctionalNodeOutput, FunctionalOutputPortAdapter, IntoFunctionalNode,
+    AsStaticSlice, FuncNode, FunctionalContext, FunctionalNode, FunctionalNodeOutput,
+    IntoFunctionalNode,
 };
+use crate::etype::EDataType;
 use crate::graph::node::extras::ExecutionExtras;
-use crate::graph::node::ports::{InputData, OutputData};
-use crate::graph::node::{ExecutionResult, Node, NodeContext, NodeFactory};
+use crate::graph::node::generic::{GenericNodeField, GenericNodeFieldMut};
+use crate::graph::node::NodeContext;
+use crate::registry::ETypesRegistry;
 use crate::value::EValue;
 use miette::Context;
-use ustr::Ustr;
 
 macro_rules! count {
     () => (0usize);
@@ -28,7 +30,7 @@ macro_rules! enumerate {
 
 macro_rules! impl_into_node {
     ($($in:ident),*) => {
-        impl<$($in: FunctionalInputPortAdapter + 'static,)* O: FunctionalNodeOutput + 'static, F: Fn(FunctionalContext, $($in),*) -> O + Clone + Send + Sync + 'static> IntoFunctionalNode<($($in,)*), O> for F {
+        impl<$($in: GenericFieldAdapter + 'static,)* O: FunctionalNodeOutput + 'static, F: Fn(FunctionalContext, $($in),*) -> O + Clone + Send + Sync + 'static> IntoFunctionalNode<($($in,)*), O> for F {
             type Fn = FuncNode<($($in,)*), O, F>;
 
             fn into_node(
@@ -54,14 +56,28 @@ macro_rules! impl_into_node {
     };
 }
 
-macro_rules! get_edata_type {
-    ($adapter:ty, $context:ident, $varname:ident, $($i:expr, $in:ident);*) => {
+// macro_rules! get_edata_type {
+//     ($adapter:ty, $context:ident, $varname:ident, $($i:expr, $in:ident);*) => {
+//         paste::paste!{
+//             {
+//                 $(const [< $in _IDX >]: usize = $i;)*
+//                 match $varname {
+//                     $([< $in _IDX >] => <$in as $adapter>::port($context),)*
+//                     _ => panic!("input index out of bounds"),
+//                 }
+//             }
+//         }
+//     };
+// }
+
+macro_rules! get_field {
+    ($method:ident, $registry:ident, $ty:ty, $varname:ident, $($i:expr, $in:ident);*) => {
         paste::paste!{
             {
                 $(const [< $in _IDX >]: usize = $i;)*
                 match $varname {
-                    $([< $in _IDX >] => <$in as $adapter>::port($context),)*
-                    _ => panic!("input index out of bounds"),
+                    $([< $in _IDX >] => <$in as GenericFieldAdapter>::$method($registry, $ty),)*
+                    _ => panic!("Index out of bounds: the length is {} but the index is {}", count!($($i)*), $varname),
                 }
             }
         }
@@ -69,98 +85,85 @@ macro_rules! get_edata_type {
 }
 
 macro_rules! invoke_f {
-    ($self:ident, $ctx:ident, $inputs:ident, $($i:expr, $in:ident);*) => {
+    ($self:ident, $ctx:ident, $input_types:ident, $inputs:ident, $($i:expr, $in:ident);*) => {
         {
-            let registry = $ctx.0.registry;
+            let registry = $ctx.context.registry;
             ($self.f)(
                 $ctx,
                 $(
-                    $in::try_from_evalue(registry, &$inputs[$i]).with_context(||format!("failed to convert input argument #{} {}", $i, $self.input_names[$i]))?,
+                    $in::try_from_evalue(registry, $input_types[$i], &$inputs[$i]).with_context(||format!("failed to convert input argument #{} {}", $i, $self.input_names[$i]))?,
                 )*
             )
         }
     };
 }
 
-// macro_rules! write_results {
-//     ($self:ident, $outputs:ident, $($i:expr, $in:ident);*) => {
-//         $(
-//             $outputs.push(Into::<EValue>::into($self.$i));
-//         )*
-//     };
-// }
+macro_rules! write_results {
+    ($context:ident, $output_types:ident, $outputs:ident, $($i:expr, $in:ident);*) => {
+        $(
+            $outputs.push($in.into_evalue($context.registry, $output_types[$i])?);
+        )*
+    };
+}
 
 macro_rules! impl_functional_node {
     ($($in:ident),*) => {
         impl_into_node!($($in),*);
 
-        impl<$($in: FunctionalInputPortAdapter + 'static,)* Output: FunctionalNodeOutput, F: Fn(FunctionalContext, $($in),*) -> Output + Clone + Send + Sync> FunctionalNode for FuncNode<($($in,)*), Output, F> {
+        impl<$($in: GenericFieldAdapter + 'static,)* Output: FunctionalNodeOutput, F: Fn(FunctionalContext, $($in),*) -> Output + Clone + Send + Sync> FunctionalNode for FuncNode<($($in,)*), Output, F> {
             type Output = Output;
             type InputNames = &'static [&'static str; count!($($in)*)];
 
-            fn inputs_count(&self) -> usize {
+            fn id(&self) -> &'static str {
+                self.id
+            }
+
+            fn input_names(&self) -> &[&str] {
+                self.input_names
+            }
+
+            fn output_names(&self) -> &[&str] {
+                self.output_names
+            }
+
+            #[allow(unused_variables)]
+            fn input<'a>(registry: &ETypesRegistry, index: usize, ty: &'a Option<EDataType>) -> GenericNodeField<'a> {
+                enumerate!(get_field(field, registry, ty, index), $($in)*)
+            }
+
+            #[allow(unused_variables)]
+            fn input_mut<'a>(registry: &ETypesRegistry, index: usize, ty: &'a mut Option<EDataType>) -> GenericNodeFieldMut<'a> {
+                enumerate!(get_field(field_mut, registry, ty, index), $($in)*)
+            }
+            fn input_generic_indices() -> impl IntoIterator<Item = Option<usize>> {
+                [
+                    $($in::type_index()),*
+                ]
+            }
+
+
+            fn inputs_count() -> usize {
                 count!($($in)*)
-            }
-
-            #[allow(unused_variables)]
-            fn input_unchecked(&self, context: NodeContext, input: usize) -> InputData {
-                let port = enumerate!(get_edata_type(FunctionalInputPortAdapter, context, input), $($in)*);
-
-                #[allow(unreachable_code)]
-                InputData::new(port, self.input_names[input].into(),)
-            }
-
-            fn output_unchecked(&self, context: NodeContext, output: usize) -> OutputData {
-                Output::output_unchecked(context, output, self.output_names)
-            }
-
-            #[allow(unused_variables)]
-            fn execute(&self, context: NodeContext, variables: &mut ExecutionExtras, inputs: &[EValue], outputs: &mut Vec<EValue>) -> miette::Result<()> {
-                let ctx = (context, variables);
-                let result = enumerate!(invoke_f(self, ctx, inputs), $($in)*);
-
-                FunctionalNodeOutput::write_results(result, context, outputs)
-            }
-        }
-
-        impl<$($in: FunctionalInputPortAdapter + 'static,)* Output: FunctionalNodeOutput, F: Fn(FunctionalContext, $($in),*) -> Output + Clone + Send + Sync> Node for FuncNode<($($in,)*), Output, F> {
-            fn id(&self) -> Ustr {
-                self.id.into()
-            }
-
-            fn inputs_count(&self, _context: NodeContext) -> usize {
-                <Self as FunctionalNode>::inputs_count(self)
-            }
-
-            fn input_unchecked(&self, context: NodeContext, input: usize) -> miette::Result<InputData> {
-                Ok(<Self as FunctionalNode>::input_unchecked(self, context, input))
-            }
-
-            fn outputs_count(&self, _context: NodeContext) -> usize {
-                <Self as FunctionalNode>::outputs_count(self)
-            }
-
-            fn output_unchecked(&self, context: NodeContext, output: usize) -> miette::Result<OutputData> {
-                Ok(<Self as FunctionalNode>::output_unchecked(self, context, output))
             }
 
             fn has_side_effects(&self) -> bool {
                 self.has_side_effects
             }
 
-            fn execute(&self, context: NodeContext, inputs: &[EValue], outputs: &mut Vec<EValue>, variables: &mut ExecutionExtras) -> miette::Result<ExecutionResult> {
-                <Self as FunctionalNode>::execute(self, context, variables, inputs, outputs)?;
+            #[allow(unused_variables)]
+            fn execute(
+                &self,
+                context: NodeContext,
+                input_types: &[Option<EDataType>],
+                output_types: &[Option<EDataType>],
+                variables: &mut ExecutionExtras,
+                inputs: &[EValue],
+                outputs: &mut Vec<EValue>
+            ) -> miette::Result<()> {
+                let ctx = FunctionalContext::new(context, variables, input_types, output_types);
+                let result = enumerate!(invoke_f(self, ctx, input_types, inputs), $($in)*);
 
-                Ok(ExecutionResult::Done)
-            }
-        }
-        impl<$($in: FunctionalInputPortAdapter + 'static,)* Output: FunctionalNodeOutput, F: Fn(FunctionalContext, $($in),*) -> Output + Clone + Send + Sync> NodeFactory for FuncNode<($($in,)*), Output, F> {
-            fn id(&self) -> Ustr {
-                self.id.into()
-            }
-
-            fn create(&self) -> Box<dyn Node> {
-                Box::new(self.clone())
+                FunctionalNodeOutput::write_results(result, context, output_types, outputs)
             }
 
             fn categories(&self) -> &'static [&'static str] {
@@ -172,31 +175,42 @@ macro_rules! impl_functional_node {
 
 macro_rules! impl_functional_output {
     ($($out:ident),*) => {
-        impl<$($out: FunctionalOutputPortAdapter + 'static,)*> FunctionalNodeOutput for ($($out,)*) {
+        impl<$($out: GenericFieldAdapter + 'static,)*> FunctionalNodeOutput for ($($out,)*) {
             type OutputNames = &'static [&'static str; count!($($out)*)];
+
+            #[allow(unused_variables)]
+            fn output<'a>(registry: &ETypesRegistry, index: usize, ty: &'a Option<EDataType>) -> GenericNodeField<'a> {
+                enumerate!(get_field(field, registry, ty, index), $($out)*)
+            }
+
+            #[allow(unused_variables)]
+            fn output_mut<'a>(registry: &ETypesRegistry, index: usize, ty: &'a mut Option<EDataType>) -> GenericNodeFieldMut<'a> {
+                enumerate!(get_field(field_mut, registry, ty, index), $($out)*)
+            }
+
+            fn output_generic_indices() -> impl IntoIterator<Item = Option<usize>> {
+                [
+                    $($out::type_index()),*
+                ]
+            }
 
             fn outputs_count() -> usize {
                 count!($($out)*)
             }
 
             #[allow(unused_variables)]
-            fn output_unchecked(context: NodeContext, output: usize, names: FunctionalArgNames) -> OutputData {
-                let port = enumerate!(get_edata_type(FunctionalOutputPortAdapter, context, output), $($out)*);
-
-                #[allow(unreachable_code)]
-                OutputData::new(port,names[output].into())
-            }
-
-            #[allow(unused_variables)]
-            fn write_results(self, context: NodeContext, outputs: &mut Vec<EValue>) -> miette::Result<()> {
+            fn write_results(
+                self,
+                context: NodeContext,
+                output_types: &[Option<EDataType>],
+                outputs: &mut Vec<EValue>,
+            ) -> miette::Result<()> {
                 outputs.clear();
 
                 paste::paste! {
                     let ($([< $out:lower >],)*) = self;
 
-                    $(
-                        outputs.push([< $out:lower >].into_evalue(context.registry)?);
-                    )*
+                    enumerate!(write_results(context, output_types, outputs), $([< $out:lower >])*);
 
                     Ok(())
                 }
@@ -217,4 +231,4 @@ macro_rules! impl_all {
 impl_all!();
 impl_all!(1);
 impl_all!(1, 2);
-impl_all!(1, 2, 3);
+// impl_all!(1, 2, 3);

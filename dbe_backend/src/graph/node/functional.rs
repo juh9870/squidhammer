@@ -1,51 +1,102 @@
-use crate::etype::conversion::{EItemInfoAdapter, ValueAdapter};
+use crate::etype::conversion::EItemInfoAdapter;
 use crate::etype::eitem::EItemInfo;
 use crate::etype::EDataType;
 use crate::graph::node::extras::ExecutionExtras;
 use crate::graph::node::format_node::format_evalue_for_graph;
-use crate::graph::node::ports::NodePortType;
-use crate::graph::node::{InputData, Node, NodeContext, NodeFactory, OutputData};
+use crate::graph::node::functional::generic::{GenericFieldAdapter, GenericValue};
+use crate::graph::node::generic::{GenericNodeField, GenericNodeFieldMut};
+use crate::graph::node::{NodeContext, NodeFactory};
 use crate::project::side_effects::SideEffect;
 use crate::registry::ETypesRegistry;
 use crate::value::{ENumber, EValue};
-use miette::bail;
+use miette::{bail, miette};
 use std::fmt::{Debug, Formatter};
 use std::hash::{Hash, Hasher};
 use std::marker::PhantomData;
 use std::sync::Arc;
 use ustr::ustr;
 
+pub mod generic;
+pub mod impls;
 pub mod macros;
 
 pub type FunctionalArgNames = &'static [&'static str];
 
-trait FunctionalNode: Node {
+trait FunctionalNode: 'static + Clone + Debug + Hash + Send + Sync {
     type Output: FunctionalNodeOutput;
     type InputNames: AsStaticSlice;
-    fn inputs_count(&self) -> usize;
-    fn outputs_count(&self) -> usize {
+    fn id(&self) -> &'static str;
+    fn input_names(&self) -> &[&str];
+    fn output_names(&self) -> &[&str];
+
+    fn input<'a>(
+        registry: &ETypesRegistry,
+        index: usize,
+        ty: &'a Option<EDataType>,
+    ) -> GenericNodeField<'a>;
+    fn input_mut<'a>(
+        registry: &ETypesRegistry,
+        index: usize,
+        ty: &'a mut Option<EDataType>,
+    ) -> GenericNodeFieldMut<'a>;
+    fn inputs_count() -> usize;
+    fn input_generic_indices() -> impl IntoIterator<Item = Option<usize>>;
+
+    fn output<'a>(
+        registry: &ETypesRegistry,
+        index: usize,
+        ty: &'a Option<EDataType>,
+    ) -> GenericNodeField<'a> {
+        Self::Output::output(registry, index, ty)
+    }
+    fn output_mut<'a>(
+        registry: &ETypesRegistry,
+        index: usize,
+        ty: &'a mut Option<EDataType>,
+    ) -> GenericNodeFieldMut<'a> {
+        Self::Output::output_mut(registry, index, ty)
+    }
+    fn outputs_count() -> usize {
         Self::Output::outputs_count()
     }
-    fn input_unchecked(&self, context: NodeContext, input: usize) -> InputData;
-    fn output_unchecked(&self, context: NodeContext, output: usize) -> OutputData;
+    fn output_generic_indices() -> impl IntoIterator<Item = Option<usize>> {
+        Self::Output::output_generic_indices()
+    }
+
+    fn has_side_effects(&self) -> bool;
     fn execute(
         &self,
         context: NodeContext,
+        input_types: &[Option<EDataType>],
+        output_types: &[Option<EDataType>],
         variables: &mut ExecutionExtras,
         inputs: &[EValue],
         outputs: &mut Vec<EValue>,
     ) -> miette::Result<()>;
+
+    fn categories(&self) -> &'static [&'static str];
 }
 
 trait FunctionalNodeOutput: 'static {
     type OutputNames: AsStaticSlice;
+    fn output<'a>(
+        registry: &ETypesRegistry,
+        index: usize,
+        ty: &'a Option<EDataType>,
+    ) -> GenericNodeField<'a>;
+    fn output_mut<'a>(
+        registry: &ETypesRegistry,
+        index: usize,
+        ty: &'a mut Option<EDataType>,
+    ) -> GenericNodeFieldMut<'a>;
     fn outputs_count() -> usize;
-    fn output_unchecked(
+    fn output_generic_indices() -> impl IntoIterator<Item = Option<usize>>;
+    fn write_results(
+        self,
         context: NodeContext,
-        output: usize,
-        names: FunctionalArgNames,
-    ) -> OutputData;
-    fn write_results(self, context: NodeContext, outputs: &mut Vec<EValue>) -> miette::Result<()>;
+        output_types: &[Option<EDataType>],
+        outputs: &mut Vec<EValue>,
+    ) -> miette::Result<()>;
 }
 
 pub struct FuncNode<Input, Output, F: Clone + Send + Sync + 'static> {
@@ -103,44 +154,78 @@ trait IntoFunctionalNode<Input, Output> {
     ) -> Self::Fn;
 }
 
-impl<T: FunctionalOutputPortAdapter + 'static> FunctionalNodeOutput for T {
+impl<T: GenericFieldAdapter + 'static> FunctionalNodeOutput for T {
     type OutputNames = <(T,) as FunctionalNodeOutput>::OutputNames;
+
+    fn output<'a>(
+        registry: &ETypesRegistry,
+        index: usize,
+        ty: &'a Option<EDataType>,
+    ) -> GenericNodeField<'a> {
+        <(T,) as FunctionalNodeOutput>::output(registry, index, ty)
+    }
+
+    fn output_mut<'a>(
+        registry: &ETypesRegistry,
+        index: usize,
+        ty: &'a mut Option<EDataType>,
+    ) -> GenericNodeFieldMut<'a> {
+        <(T,) as FunctionalNodeOutput>::output_mut(registry, index, ty)
+    }
 
     fn outputs_count() -> usize {
         <(T,) as FunctionalNodeOutput>::outputs_count()
     }
 
-    fn output_unchecked(
-        context: NodeContext,
-        output: usize,
-        names: FunctionalArgNames,
-    ) -> OutputData {
-        <(T,) as FunctionalNodeOutput>::output_unchecked(context, output, names)
+    fn output_generic_indices() -> impl IntoIterator<Item = Option<usize>> {
+        <(T,) as FunctionalNodeOutput>::output_generic_indices()
     }
 
-    fn write_results(self, context: NodeContext, outputs: &mut Vec<EValue>) -> miette::Result<()> {
-        <(T,) as FunctionalNodeOutput>::write_results((self,), context, outputs)
+    fn write_results(
+        self,
+        context: NodeContext,
+        output_types: &[Option<EDataType>],
+        outputs: &mut Vec<EValue>,
+    ) -> miette::Result<()> {
+        <(T,) as FunctionalNodeOutput>::write_results((self,), context, output_types, outputs)
     }
 }
 
 impl<T: FunctionalNodeOutput> FunctionalNodeOutput for miette::Result<T> {
     type OutputNames = T::OutputNames;
 
+    fn output<'a>(
+        registry: &ETypesRegistry,
+        index: usize,
+        ty: &'a Option<EDataType>,
+    ) -> GenericNodeField<'a> {
+        T::output(registry, index, ty)
+    }
+
+    fn output_mut<'a>(
+        registry: &ETypesRegistry,
+        index: usize,
+        ty: &'a mut Option<EDataType>,
+    ) -> GenericNodeFieldMut<'a> {
+        T::output_mut(registry, index, ty)
+    }
+
     fn outputs_count() -> usize {
         T::outputs_count()
     }
 
-    fn output_unchecked(
-        context: NodeContext,
-        output: usize,
-        names: FunctionalArgNames,
-    ) -> OutputData {
-        T::output_unchecked(context, output, names)
+    fn output_generic_indices() -> impl IntoIterator<Item = Option<usize>> {
+        T::output_generic_indices()
     }
 
-    fn write_results(self, context: NodeContext, outputs: &mut Vec<EValue>) -> miette::Result<()> {
+    fn write_results(
+        self,
+        context: NodeContext,
+        output_types: &[Option<EDataType>],
+        outputs: &mut Vec<EValue>,
+    ) -> miette::Result<()> {
         let result = self?;
-        FunctionalNodeOutput::write_results(result, context, outputs)
+        FunctionalNodeOutput::write_results(result, context, output_types, outputs)
     }
 }
 
@@ -154,25 +239,25 @@ impl<const N: usize> AsStaticSlice for &'static [&'static str; N] {
     }
 }
 
-pub trait FunctionalInputPortAdapter: ValueAdapter {
-    fn port(context: NodeContext) -> NodePortType;
-}
-
-pub trait FunctionalOutputPortAdapter: ValueAdapter {
-    fn port(context: NodeContext) -> NodePortType;
-}
-
-impl<T: EItemInfoAdapter> FunctionalInputPortAdapter for T {
-    fn port(context: NodeContext) -> NodePortType {
-        T::edata_type(context.registry).into()
-    }
-}
-
-impl<T: EItemInfoAdapter> FunctionalOutputPortAdapter for T {
-    fn port(context: NodeContext) -> NodePortType {
-        T::edata_type(context.registry).into()
-    }
-}
+// pub trait FunctionalInputPortAdapter: ValueAdapter {
+//     fn port(context: NodeContext) -> NodePortType;
+// }
+//
+// pub trait FunctionalOutputPortAdapter: ValueAdapter {
+//     fn port(context: NodeContext) -> NodePortType;
+// }
+//
+// impl<T: EItemInfoAdapter> FunctionalInputPortAdapter for T {
+//     fn port(context: NodeContext) -> NodePortType {
+//         T::edata_type(context.registry).into()
+//     }
+// }
+//
+// impl<T: EItemInfoAdapter> FunctionalOutputPortAdapter for T {
+//     fn port(context: NodeContext) -> NodePortType {
+//         T::edata_type(context.registry).into()
+//     }
+// }
 
 struct AnyEValue(EValue);
 
@@ -196,8 +281,30 @@ impl EItemInfoAdapter for AnyEValue {
     }
 }
 
-type FunctionalContext<'this, 'ctx, 'extras> =
-    (NodeContext<'ctx>, &'this mut ExecutionExtras<'extras>);
+struct FunctionalContext<'this, 'ctx, 'extras> {
+    context: NodeContext<'ctx>,
+    extras: &'this mut ExecutionExtras<'extras>,
+    #[allow(dead_code)]
+    input_types: &'this [Option<EDataType>],
+    #[allow(dead_code)]
+    output_types: &'this [Option<EDataType>],
+}
+
+impl<'this, 'ctx, 'extras> FunctionalContext<'this, 'ctx, 'extras> {
+    pub fn new(
+        context: NodeContext<'ctx>,
+        extras: &'this mut ExecutionExtras<'extras>,
+        input_types: &'this [Option<EDataType>],
+        output_types: &'this [Option<EDataType>],
+    ) -> Self {
+        Self {
+            context,
+            extras,
+            input_types,
+            output_types,
+        }
+    }
+}
 
 type C<'this, 'ctx, 'extras> = FunctionalContext<'this, 'ctx, 'extras>;
 
@@ -544,6 +651,13 @@ pub fn functional_nodes() -> Vec<Arc<dyn NodeFactory>> {
             &["string"],
         ),
         functional_node(
+            |_: C, value: Option<GenericValue<0>>| value.ok_or_else(|| miette!("value is None")),
+            "unwrap",
+            &["value"],
+            &["value"],
+            &["optional"],
+        ),
+        functional_node(
             |_: C, value: AnyEValue, field: String| {
                 let value = value.0;
                 fn get_value(value: &EValue, field: &str) -> miette::Result<Option<EValue>> {
@@ -565,7 +679,7 @@ pub fn functional_nodes() -> Vec<Arc<dyn NodeFactory>> {
             |ctx: C, value: AnyEValue| {
                 // ignore errors
                 let _ = ctx
-                    .1
+                    .extras
                     .side_effects
                     .push(SideEffect::ShowDebug { value: value.0 });
             },
