@@ -55,12 +55,12 @@ macro_rules! impl_into_node {
 }
 
 macro_rules! get_edata_type {
-    ($adapter:ty, $varname:ident, $($i:expr, $in:ident);*) => {
+    ($adapter:ty, $context:ident, $varname:ident, $($i:expr, $in:ident);*) => {
         paste::paste!{
             {
                 $(const [< $in _IDX >]: usize = $i;)*
                 match $varname {
-                    $([< $in _IDX >] => <$in as $adapter>::port(),)*
+                    $([< $in _IDX >] => <$in as $adapter>::port($context),)*
                     _ => panic!("input index out of bounds"),
                 }
             }
@@ -70,12 +70,15 @@ macro_rules! get_edata_type {
 
 macro_rules! invoke_f {
     ($self:ident, $ctx:ident, $inputs:ident, $($i:expr, $in:ident);*) => {
-        ($self.f)(
-            $ctx,
-            $(
-                $in::try_from(&$inputs[$i]).with_context(||format!("failed to convert input argument #{} {}", $i, $self.input_names[$i]))?,
-            )*
-        )
+        {
+            let registry = $ctx.0.registry;
+            ($self.f)(
+                $ctx,
+                $(
+                    $in::try_from_evalue(registry, &$inputs[$i]).with_context(||format!("failed to convert input argument #{} {}", $i, $self.input_names[$i]))?,
+                )*
+            )
+        }
     };
 }
 
@@ -100,15 +103,15 @@ macro_rules! impl_functional_node {
             }
 
             #[allow(unused_variables)]
-            fn input_unchecked(&self, input: usize) -> InputData {
-                let port = enumerate!(get_edata_type(FunctionalInputPortAdapter, input), $($in)*);
+            fn input_unchecked(&self, context: NodeContext, input: usize) -> InputData {
+                let port = enumerate!(get_edata_type(FunctionalInputPortAdapter, context, input), $($in)*);
 
                 #[allow(unreachable_code)]
                 InputData::new(port, self.input_names[input].into(),)
             }
 
-            fn output_unchecked(&self, output: usize) -> OutputData {
-                Output::output_unchecked(output, self.output_names)
+            fn output_unchecked(&self, context: NodeContext, output: usize) -> OutputData {
+                Output::output_unchecked(context, output, self.output_names)
             }
 
             #[allow(unused_variables)]
@@ -116,7 +119,7 @@ macro_rules! impl_functional_node {
                 let ctx = (context, variables);
                 let result = enumerate!(invoke_f(self, ctx, inputs), $($in)*);
 
-                FunctionalNodeOutput::write_results(result, outputs)
+                FunctionalNodeOutput::write_results(result, context, outputs)
             }
         }
 
@@ -129,16 +132,16 @@ macro_rules! impl_functional_node {
                 <Self as FunctionalNode>::inputs_count(self)
             }
 
-            fn input_unchecked(&self, _context: NodeContext, input: usize) -> miette::Result<InputData> {
-                Ok(<Self as FunctionalNode>::input_unchecked(self, input))
+            fn input_unchecked(&self, context: NodeContext, input: usize) -> miette::Result<InputData> {
+                Ok(<Self as FunctionalNode>::input_unchecked(self, context, input))
             }
 
             fn outputs_count(&self, _context: NodeContext) -> usize {
                 <Self as FunctionalNode>::outputs_count(self)
             }
 
-            fn output_unchecked(&self, _context: NodeContext, output: usize) -> miette::Result<OutputData> {
-                Ok(<Self as FunctionalNode>::output_unchecked(self, output))
+            fn output_unchecked(&self, context: NodeContext, output: usize) -> miette::Result<OutputData> {
+                Ok(<Self as FunctionalNode>::output_unchecked(self, context, output))
             }
 
             fn has_side_effects(&self) -> bool {
@@ -177,21 +180,22 @@ macro_rules! impl_functional_output {
             }
 
             #[allow(unused_variables)]
-            fn output_unchecked(output: usize, names: FunctionalArgNames) -> OutputData {
-                let port = enumerate!(get_edata_type(FunctionalOutputPortAdapter, output), $($out)*);
+            fn output_unchecked(context: NodeContext, output: usize, names: FunctionalArgNames) -> OutputData {
+                let port = enumerate!(get_edata_type(FunctionalOutputPortAdapter, context, output), $($out)*);
 
                 #[allow(unreachable_code)]
                 OutputData::new(port,names[output].into())
             }
 
-            fn write_results(self, outputs: &mut Vec<EValue>) -> miette::Result<()> {
+            #[allow(unused_variables)]
+            fn write_results(self, context: NodeContext, outputs: &mut Vec<EValue>) -> miette::Result<()> {
                 outputs.clear();
 
                 paste::paste! {
                     let ($([< $out:lower >],)*) = self;
 
                     $(
-                        outputs.push(Into::<EValue>::into([< $out:lower >]));
+                        outputs.push([< $out:lower >].into_evalue(context.registry)?);
                     )*
 
                     Ok(())

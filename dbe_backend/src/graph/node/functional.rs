@@ -1,9 +1,12 @@
-use crate::etype::conversion::EItemInfoAdapter;
+use crate::etype::conversion::{EItemInfoAdapter, ValueAdapter};
+use crate::etype::eitem::EItemInfo;
+use crate::etype::EDataType;
 use crate::graph::node::extras::ExecutionExtras;
 use crate::graph::node::format_node::format_evalue_for_graph;
 use crate::graph::node::ports::NodePortType;
 use crate::graph::node::{InputData, Node, NodeContext, NodeFactory, OutputData};
 use crate::project::side_effects::SideEffect;
+use crate::registry::ETypesRegistry;
 use crate::value::{ENumber, EValue};
 use std::fmt::{Debug, Formatter};
 use std::hash::{Hash, Hasher};
@@ -21,8 +24,8 @@ trait FunctionalNode: Node {
     fn outputs_count(&self) -> usize {
         Self::Output::outputs_count()
     }
-    fn input_unchecked(&self, input: usize) -> InputData;
-    fn output_unchecked(&self, output: usize) -> OutputData;
+    fn input_unchecked(&self, context: NodeContext, input: usize) -> InputData;
+    fn output_unchecked(&self, context: NodeContext, output: usize) -> OutputData;
     fn execute(
         &self,
         context: NodeContext,
@@ -35,8 +38,12 @@ trait FunctionalNode: Node {
 trait FunctionalNodeOutput: 'static {
     type OutputNames: AsStaticSlice;
     fn outputs_count() -> usize;
-    fn output_unchecked(output: usize, names: FunctionalArgNames) -> OutputData;
-    fn write_results(self, outputs: &mut Vec<EValue>) -> miette::Result<()>;
+    fn output_unchecked(
+        context: NodeContext,
+        output: usize,
+        names: FunctionalArgNames,
+    ) -> OutputData;
+    fn write_results(self, context: NodeContext, outputs: &mut Vec<EValue>) -> miette::Result<()>;
 }
 
 pub struct FuncNode<Input, Output, F: Clone + Send + Sync + 'static> {
@@ -101,12 +108,16 @@ impl<T: FunctionalOutputPortAdapter + 'static> FunctionalNodeOutput for T {
         <(T,) as FunctionalNodeOutput>::outputs_count()
     }
 
-    fn output_unchecked(output: usize, names: FunctionalArgNames) -> OutputData {
-        <(T,) as FunctionalNodeOutput>::output_unchecked(output, names)
+    fn output_unchecked(
+        context: NodeContext,
+        output: usize,
+        names: FunctionalArgNames,
+    ) -> OutputData {
+        <(T,) as FunctionalNodeOutput>::output_unchecked(context, output, names)
     }
 
-    fn write_results(self, outputs: &mut Vec<EValue>) -> miette::Result<()> {
-        <(T,) as FunctionalNodeOutput>::write_results((self,), outputs)
+    fn write_results(self, context: NodeContext, outputs: &mut Vec<EValue>) -> miette::Result<()> {
+        <(T,) as FunctionalNodeOutput>::write_results((self,), context, outputs)
     }
 }
 
@@ -117,13 +128,17 @@ impl<T: FunctionalNodeOutput> FunctionalNodeOutput for miette::Result<T> {
         T::outputs_count()
     }
 
-    fn output_unchecked(output: usize, names: FunctionalArgNames) -> OutputData {
-        T::output_unchecked(output, names)
+    fn output_unchecked(
+        context: NodeContext,
+        output: usize,
+        names: FunctionalArgNames,
+    ) -> OutputData {
+        T::output_unchecked(context, output, names)
     }
 
-    fn write_results(self, outputs: &mut Vec<EValue>) -> miette::Result<()> {
+    fn write_results(self, context: NodeContext, outputs: &mut Vec<EValue>) -> miette::Result<()> {
         let result = self?;
-        FunctionalNodeOutput::write_results(result, outputs)
+        FunctionalNodeOutput::write_results(result, context, outputs)
     }
 }
 
@@ -137,27 +152,23 @@ impl<const N: usize> AsStaticSlice for &'static [&'static str; N] {
     }
 }
 
-pub trait FunctionalInputPortAdapter:
-    Into<EValue> + for<'a> TryFrom<&'a EValue, Error = miette::Report>
-{
-    fn port() -> NodePortType;
+pub trait FunctionalInputPortAdapter: ValueAdapter {
+    fn port(context: NodeContext) -> NodePortType;
 }
 
-pub trait FunctionalOutputPortAdapter:
-    Into<EValue> + for<'a> TryFrom<&'a EValue, Error = miette::Report>
-{
-    fn port() -> NodePortType;
+pub trait FunctionalOutputPortAdapter: ValueAdapter {
+    fn port(context: NodeContext) -> NodePortType;
 }
 
 impl<T: EItemInfoAdapter> FunctionalInputPortAdapter for T {
-    fn port() -> NodePortType {
-        T::edata_type().into()
+    fn port(context: NodeContext) -> NodePortType {
+        T::edata_type(context.registry).into()
     }
 }
 
 impl<T: EItemInfoAdapter> FunctionalOutputPortAdapter for T {
-    fn port() -> NodePortType {
-        T::edata_type().into()
+    fn port(context: NodeContext) -> NodePortType {
+        T::edata_type(context.registry).into()
     }
 }
 
@@ -177,9 +188,9 @@ impl From<AnyEValue> for EValue {
     }
 }
 
-impl FunctionalInputPortAdapter for AnyEValue {
-    fn port() -> NodePortType {
-        NodePortType::BasedOnSource
+impl EItemInfoAdapter for AnyEValue {
+    fn edata_type(_registry: &ETypesRegistry) -> EItemInfo {
+        EItemInfo::simple_type(EDataType::Unknown)
     }
 }
 
