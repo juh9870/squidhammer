@@ -263,7 +263,7 @@ impl GenericStatefulNode for ForEachDbeItem {
     ) -> miette::Result<bool> {
         let state = get_region_execution_data::<ForEachDbeItemNodeState>(region.region, variables)?;
 
-        Ok(state.iter.peek().is_some())
+        Ok(state.had_value)
     }
 
     fn execute(
@@ -278,6 +278,7 @@ impl GenericStatefulNode for ForEachDbeItem {
             let Some(ty) = self.output_ty else {
                 variables.get_or_init_region_data(region.region, |_| ForEachDbeItemNodeState {
                     iter: vec![].into_iter().peekable(),
+                    had_value: false,
                     values: None,
                 });
                 return Ok(ExecutionResult::Done);
@@ -286,6 +287,7 @@ impl GenericStatefulNode for ForEachDbeItem {
             if !variables.side_effects.is_available() {
                 variables.get_or_init_region_data(region.region, |_| ForEachDbeItemNodeState {
                     iter: vec![].into_iter().peekable(),
+                    had_value: false,
                     values: None,
                 });
                 return Ok(ExecutionResult::Done);
@@ -325,17 +327,21 @@ impl GenericStatefulNode for ForEachDbeItem {
 
                 Ok(ForEachDbeItemNodeState {
                     iter: files.into_iter().peekable(),
+                    had_value: false,
                     values: None,
                 })
             })?;
+
+            state.had_value = false;
 
             outputs.clear();
             if let Some((path, value)) = state.iter.next() {
                 outputs.push(value);
                 outputs.push(path.into());
+                state.had_value = true;
             }
 
-            remember_variables(&mut state.values, &inputs[1..], outputs);
+            remember_variables(&mut state.values, &inputs[..], outputs);
 
             Ok(ExecutionResult::Done)
         } else {
@@ -371,6 +377,7 @@ impl GenericStatefulNode for ForEachDbeItem {
 #[derive(Debug)]
 struct ForEachDbeItemNodeState {
     iter: Peekable<std::vec::IntoIter<(String, EValue)>>,
+    had_value: bool,
     values: Option<Vec<EValue>>,
 }
 
