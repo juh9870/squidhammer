@@ -1,9 +1,10 @@
 use crate::etype::default::DefaultEValue;
 use crate::etype::eenum::variant::{EEnumVariant, EEnumVariantId};
 use crate::etype::eitem::EItemInfo;
+use crate::etype::eobject::EObject;
 use crate::etype::property::default_properties::{
     PROP_OBJECT_GRAPH_AUTOCONVERT, PROP_OBJECT_GRAPH_AUTOCONVERT_RECURSIVE,
-    PROP_OBJECT_GRAPH_AUTOCONVERT_VARIANT,
+    PROP_OBJECT_GRAPH_AUTOCONVERT_VARIANT, PROP_OBJECT_GRAPH_INLINE,
 };
 use crate::etype::EDataType;
 use crate::json_utils::repr::JsonRepr;
@@ -125,6 +126,36 @@ impl NodePortType {
                 EDataType::null()
             }
             NodePortType::Specific(info) => info.ty(),
+        }
+    }
+
+    pub fn has_inline_value(&self, registry: &ETypesRegistry) -> bool {
+        fn has_inline_value(registry: &ETypesRegistry, ty: EDataType) -> bool {
+            match ty {
+                EDataType::Boolean => true,
+                EDataType::Number => true,
+                EDataType::String => true,
+                EDataType::Object { ident } => registry
+                    .get_object(&ident)
+                    .and_then(|obj| PROP_OBJECT_GRAPH_INLINE.try_get(obj.extra_properties()))
+                    .unwrap_or(true),
+                EDataType::Const { .. } => false,
+                EDataType::List { id } => registry
+                    .get_list(&id)
+                    .map(|list| has_inline_value(registry, list.value_type))
+                    .unwrap_or(true),
+                EDataType::Map { id } => registry
+                    .get_map(&id)
+                    .map(|map| has_inline_value(registry, map.value_type))
+                    .unwrap_or(true),
+                EDataType::Unknown => false,
+            }
+        }
+        match self {
+            NodePortType::Invalid => false,
+            NodePortType::BasedOnSource => false,
+            NodePortType::BasedOnTarget => false,
+            NodePortType::Specific(ty) => has_inline_value(registry, ty.ty()),
         }
     }
 

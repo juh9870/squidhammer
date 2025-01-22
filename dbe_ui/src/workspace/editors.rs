@@ -285,6 +285,7 @@ fn editor_for_raw(
             }
             EDataType::List { .. } => "list".into(),
             EDataType::Map { .. } => "map".into(),
+            EDataType::Unknown => "unknown".into(),
         },
         Some(name) => name,
     };

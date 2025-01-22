@@ -633,6 +633,7 @@ fn pin_color(ty: EDataType, registry: &ETypesRegistry) -> Color32 {
     const BOOLEAN_COLOR: Color32 = Color32::from_rgb(204, 166, 214);
     const STRING_COLOR: Color32 = Color32::from_rgb(112, 178, 255);
     const NULL_COLOR: Color32 = Color32::from_rgb(0, 0, 0);
+    const UNKNOWN_COLOR: Color32 = Color32::from_rgb(255, 178, 112);
     match ty {
         EDataType::Number => NUMBER_COLOR,
         EDataType::String => STRING_COLOR,
@@ -665,6 +666,7 @@ fn pin_color(ty: EDataType, registry: &ETypesRegistry) -> Color32 {
             .get_map(&id)
             .map(|e| pin_color(e.value_type, registry))
             .unwrap_or(NULL_COLOR),
+        EDataType::Unknown => UNKNOWN_COLOR,
     }
 }
 
@@ -691,7 +693,8 @@ fn pin_info(ty: &NodePortType, registry: &ETypesRegistry) -> PinInfo {
                 | EDataType::Const { .. } => PinInfo::circle(),
                 EDataType::Object { .. } => PinInfo::circle(),
                 EDataType::List { .. } => PinInfo::square(),
-                EDataType::Map { .. } => PinInfo::star(),
+                EDataType::Map { .. } => PinInfo::square(),
+                EDataType::Unknown => PinInfo::star(),
             };
 
             shape

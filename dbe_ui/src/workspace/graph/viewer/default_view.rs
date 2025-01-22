@@ -1,15 +1,11 @@
 use crate::error::report_error;
 use crate::main_toolbar::docs::{docs_hover_type, docs_label};
-use crate::ui_props::PROP_OBJECT_GRAPH_INLINE;
 use crate::workspace::editors::{editor_for_item, EditorContext};
 use crate::workspace::graph::viewer::default_view::state_editor::show_state_editor;
 use crate::workspace::graph::viewer::NodeView;
 use crate::workspace::graph::{any_pin, pin_info, GraphViewer};
-use dbe_backend::etype::eobject::EObject;
-use dbe_backend::etype::EDataType;
 use dbe_backend::graph::node::SnarlNode;
 use dbe_backend::project::docs::{DocsRef, DocsWindowRef};
-use dbe_backend::registry::ETypesRegistry;
 use dbe_backend::value::EValue;
 use egui::Ui;
 use egui_snarl::ui::{NodeLayout, PinInfo};
@@ -40,27 +36,6 @@ pub fn format_value(value: &EValue) -> String {
         EValue::Enum { .. } => "".to_string(),
         EValue::List { .. } => "".to_string(),
         EValue::Map { .. } => "".to_string(),
-    }
-}
-
-pub fn has_inline_editor(registry: &ETypesRegistry, ty: EDataType, editable: bool) -> bool {
-    match ty {
-        EDataType::Boolean => editable,
-        EDataType::Number => editable,
-        EDataType::String => editable,
-        EDataType::Object { ident } => registry
-            .get_object(&ident)
-            .and_then(|obj| PROP_OBJECT_GRAPH_INLINE.try_get(obj.extra_properties()))
-            .unwrap_or(editable),
-        EDataType::Const { .. } => false,
-        EDataType::List { id } => registry
-            .get_list(&id)
-            .map(|list| has_inline_editor(registry, list.value_type, editable))
-            .unwrap_or(editable),
-        EDataType::Map { id } => registry
-            .get_map(&id)
-            .map(|map| has_inline_editor(registry, map.value_type, editable))
-            .unwrap_or(editable),
     }
 }
 
@@ -123,7 +98,7 @@ impl NodeView for DefaultNodeView {
         if pin.remotes.is_empty() {
             let mut full_ctx = viewer.ctx.as_full(snarl);
             if let Some(value) = full_ctx.get_inline_input_mut(pin.id)? {
-                if has_inline_editor(registry, input_data.ty.ty(), true) {
+                if input_data.ty.has_inline_value(registry) {
                     let editor = editor_for_item(registry, info);
                     let res = ui.vertical(|ui| {
                         editor.show(
