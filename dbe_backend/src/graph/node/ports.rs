@@ -191,6 +191,11 @@ impl NodePortType {
             return Ok(value);
         };
 
+        // Values can be converted to Unknown
+        if to.ty().is_unknown() {
+            return Ok(value);
+        }
+
         let from = from.item_info_or_null();
 
         if let Some(repr) = from.repr(registry) {
@@ -223,6 +228,10 @@ fn types_compatible(registry: &ETypesRegistry, from: &EItemInfo, to: &EItemInfo)
     let source_ty = from.ty();
     let target_ty = to.ty();
     if source_ty == target_ty {
+        return true;
+    }
+
+    if target_ty.is_unknown() {
         return true;
     }
 
