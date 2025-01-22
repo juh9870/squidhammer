@@ -51,6 +51,9 @@ pub enum EDataType {
     Map {
         id: EMapId,
     },
+    /// Unknown type. Cannot be named by the kdl type system, but can be used
+    /// in graphs
+    Unknown,
 }
 
 impl EDataType {
@@ -71,6 +74,7 @@ impl EDataType {
                 id: *id,
                 values: Default::default(),
             },
+            EDataType::Unknown => EValue::Null,
         }
         .into()
     }
@@ -91,13 +95,16 @@ impl EDataType {
             EDataType::Const { value } => value.to_string().into(),
             EDataType::List { id: ty } => ty.to_string().into(),
             EDataType::Map { id: ty } => ty.to_string().into(),
+            EDataType::Unknown => "unknown".into(),
         }
     }
 
     /// Returns the human-readable title of the type
     pub fn title(&self, registry: &ETypesRegistry) -> String {
         match self {
-            EDataType::Boolean | EDataType::Number | EDataType::String => self.name().to_string(),
+            EDataType::Boolean | EDataType::Number | EDataType::String | EDataType::Unknown => {
+                self.name().to_string()
+            }
             EDataType::Object { ident } => registry.get_object(ident).map_or_else(
                 || format!("Unknown object `{}`", ident),
                 |data| data.title(registry),
@@ -144,7 +151,8 @@ impl EDataType {
             EDataType::Boolean
             | EDataType::Number
             | EDataType::String
-            | EDataType::Const { .. } => Names::Ref(&[]),
+            | EDataType::Const { .. }
+            | EDataType::Unknown => Names::Ref(&[]),
             EDataType::Object { ident } => {
                 let obj = registry.get_object(ident).expect("object should exist");
                 Names::Map(WhateverRef::map(obj, |obj| obj.generic_arguments_names()))
@@ -187,7 +195,8 @@ impl EDataType {
             EDataType::Boolean
             | EDataType::Number
             | EDataType::String
-            | EDataType::Const { .. } => Names::Nil,
+            | EDataType::Const { .. }
+            | EDataType::Unknown => Names::Nil,
             EDataType::Object { ident } => {
                 let obj = registry.get_object(ident).expect("object should exist");
                 Names::Ref(WhateverRef::map(obj, |obj| obj.generic_arguments_values()))
@@ -309,6 +318,9 @@ impl EDataType {
                     id: *id,
                     values: entries,
                 })
+            }
+            EDataType::Unknown => {
+                bail!("cannot parse unknown type")
             }
         }
     }

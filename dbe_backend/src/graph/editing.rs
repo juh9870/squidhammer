@@ -116,6 +116,14 @@ impl GraphEditingContext<'_, '_> {
             return Ok(false);
         }
 
+        if !node
+            .try_input(node_context!(self.ctx), pin.input)?
+            .ty
+            .has_inline_value(self.registry)
+        {
+            return Ok(false);
+        };
+
         match self.ctx.inline_values.entry(pin) {
             utils::map::OrderMapEntry::Occupied(_) => Ok(true),
             utils::map::OrderMapEntry::Vacant(e) => {

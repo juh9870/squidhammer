@@ -39,5 +39,4 @@ extra_properties! {
     pub prop<object> kind: ETypeConst;
     pub prop<object> pin_color: PinColor;
     pub prop<object> graph_search_hide: bool;
-    pub prop<object> graph_inline: bool;
 }

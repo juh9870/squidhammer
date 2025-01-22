@@ -26,4 +26,7 @@ extra_properties! {
 
     /// Format string for the human-readable title of the object
     pub prop<object> title: ParsedFmtProp;
+
+    /// Whether this type should have an inline value in the graph input
+    pub prop<object> graph_inline: bool;
 }

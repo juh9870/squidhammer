@@ -220,6 +220,13 @@ impl GraphExecutionContext<'_, '_> {
         if !node.has_inline_values()? {
             return Ok(None);
         }
+        if !node
+            .try_input(node_context!(self), pin.input)?
+            .ty
+            .has_inline_value(self.registry)
+        {
+            return Ok(None);
+        }
         Ok(self.inline_values.get(&pin))
     }
 
