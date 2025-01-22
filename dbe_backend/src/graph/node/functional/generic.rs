@@ -8,7 +8,7 @@ use arrayvec::ArrayVec;
 use itertools::Itertools;
 use miette::bail;
 
-pub(super) const MAX_FIELDS: usize = 2;
+pub(super) const MAX_FIELDS: usize = 3;
 
 pub(super) fn sync_generic_state<'a>(
     types: impl IntoIterator<Item = &'a mut Option<EDataType>>,
