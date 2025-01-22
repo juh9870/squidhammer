@@ -5,6 +5,7 @@ use crate::graph::node::extras::ExecutionExtras;
 use crate::graph::node::format_node::format_evalue_for_graph;
 use crate::graph::node::functional::generic::{GenericFieldAdapter, GenericValue};
 use crate::graph::node::generic::{GenericNodeField, GenericNodeFieldMut};
+use crate::graph::node::ports::{port_types_compatible, NodePortType};
 use crate::graph::node::{NodeContext, NodeFactory};
 use crate::project::side_effects::SideEffect;
 use crate::registry::ETypesRegistry;
@@ -650,7 +651,8 @@ pub fn functional_nodes() -> Vec<Arc<dyn NodeFactory>> {
             &["result"],
             &["string"],
         ),
-        functional_node(
+        // unwrap node is a side effect node, since it can intentionally interrupt the execution
+        side_effects_node(
             |_: C, value: Option<GenericValue<0>>, msg: String| {
                 value.ok_or_else(|| {
                     let msg = msg.trim();
@@ -697,6 +699,51 @@ pub fn functional_nodes() -> Vec<Arc<dyn NodeFactory>> {
             },
             "get_field",
             &["value", "field"],
+            &["result"],
+            &["optional.raw"],
+        ),
+        functional_node(
+            |ctx: C, value: AnyEValue| -> miette::Result<Option<GenericValue<0>>> {
+                let target_ty = ctx.output_types[0].unwrap_or_else(EDataType::null);
+                let in_info = EItemInfo::simple_type(value.0.ty());
+                let out_info = EItemInfo::simple_type(target_ty);
+
+                if !port_types_compatible(ctx.context.registry, &in_info, &out_info) {
+                    return Ok(None);
+                }
+
+                let in_port: NodePortType = in_info.into();
+                let out_port: NodePortType = out_info.into();
+
+                let converted = NodePortType::convert_value(
+                    ctx.context.registry,
+                    &in_port,
+                    &out_port,
+                    value.0,
+                )?;
+                Ok(Some(GenericValue(converted)))
+            },
+            "try_as_type",
+            &["value"],
+            &["result"],
+            &["optional.raw"],
+        ),
+        functional_node(
+            |ctx: C, value: AnyEValue| -> miette::Result<GenericValue<0>> {
+                let target_ty = ctx.output_types[0].unwrap_or_else(EDataType::null);
+                let in_port: NodePortType = EItemInfo::simple_type(value.0.ty()).into();
+                let out_port: NodePortType = EItemInfo::simple_type(target_ty).into();
+
+                let converted = NodePortType::convert_value(
+                    ctx.context.registry,
+                    &in_port,
+                    &out_port,
+                    value.0,
+                )?;
+                Ok(GenericValue(converted))
+            },
+            "as_type",
+            &["value"],
             &["result"],
             &["optional.raw"],
         ),
