@@ -8,10 +8,12 @@ use crate::graph::node::{InputData, Node, NodeContext, NodeFactory, OutputData};
 use crate::project::side_effects::SideEffect;
 use crate::registry::ETypesRegistry;
 use crate::value::{ENumber, EValue};
+use miette::bail;
 use std::fmt::{Debug, Formatter};
 use std::hash::{Hash, Hasher};
 use std::marker::PhantomData;
 use std::sync::Arc;
+use ustr::ustr;
 
 pub mod macros;
 
@@ -540,6 +542,24 @@ pub fn functional_nodes() -> Vec<Arc<dyn NodeFactory>> {
             &["value"],
             &["result"],
             &["string"],
+        ),
+        functional_node(
+            |_: C, value: AnyEValue, field: String| {
+                let value = value.0;
+                fn get_value(value: &EValue, field: &str) -> miette::Result<Option<EValue>> {
+                    match value {
+                        EValue::Struct { fields, .. } => Ok(fields.get(&ustr(field)).cloned()),
+                        EValue::Enum { data, .. } => get_value(data, field),
+                        _ => bail!("value is not a struct or an enum"),
+                    }
+                }
+                let value = get_value(&value, &field)?;
+                Ok(value.map(AnyEValue))
+            },
+            "get_field",
+            &["value", "field"],
+            &["result"],
+            &["optional.raw"],
         ),
         side_effects_node(
             |ctx: C, value: AnyEValue| {

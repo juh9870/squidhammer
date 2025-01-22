@@ -76,9 +76,7 @@ impl EEnumVariant {
                         EnumPattern::UntaggedObject
                     }
                 }
-                EDataType::Unknown => {
-                    bail!("`unknown` type while deserializing enum pattern")
-                }
+                EDataType::Unknown => EnumPattern::Never,
             }
         };
 
