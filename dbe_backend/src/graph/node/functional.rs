@@ -698,7 +698,7 @@ pub fn functional_nodes() -> Vec<Arc<dyn NodeFactory>> {
                 Ok(value.map(AnyEValue))
             },
             "get_field",
-            &["value", "field"],
+            &["object", "field"],
             &["result"],
             &["optional.raw"],
         ),
@@ -746,6 +746,53 @@ pub fn functional_nodes() -> Vec<Arc<dyn NodeFactory>> {
             &["value"],
             &["result"],
             &["optional.raw"],
+        ),
+        functional_node(
+            |_: C, value: Vec<GenericValue<0>>| ENumber::from(value.len() as f64),
+            "list_length",
+            &["list"],
+            &["length"],
+            &["list"],
+        ),
+        functional_node(
+            |_: C, mut list: Vec<GenericValue<0>>, item: GenericValue<0>| {
+                list.push(item);
+                list
+            },
+            "list_push",
+            &["list", "item"],
+            &["list"],
+            &["list"],
+        ),
+        functional_node(
+            |_: C, mut list: Vec<GenericValue<0>>, index: ENumber, item: GenericValue<0>| {
+                list.insert(index.0 as usize, item);
+                list
+            },
+            "list_insert",
+            &["list", "index", "item"],
+            &["list"],
+            &["list"],
+        ),
+        functional_node(
+            |_: C, mut list: Vec<GenericValue<0>>| {
+                let item = list.pop();
+                (item, list)
+            },
+            "list_pop",
+            &["list"],
+            &["item", "list"],
+            &["list"],
+        ),
+        functional_node(
+            |_: C, mut list: Vec<GenericValue<0>>, index: ENumber| {
+                let item = list.remove(index.0 as usize);
+                (item, list)
+            },
+            "list_remove",
+            &["list", "index"],
+            &["item", "list"],
+            &["list"],
         ),
         side_effects_node(
             |ctx: C, value: AnyEValue| {
