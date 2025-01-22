@@ -651,8 +651,33 @@ pub fn functional_nodes() -> Vec<Arc<dyn NodeFactory>> {
             &["string"],
         ),
         functional_node(
-            |_: C, value: Option<GenericValue<0>>| value.ok_or_else(|| miette!("value is None")),
+            |_: C, value: Option<GenericValue<0>>, msg: String| {
+                value.ok_or_else(|| {
+                    let msg = msg.trim();
+                    if msg.is_empty() {
+                        miette!("value is None")
+                    } else {
+                        miette!("{}", msg)
+                    }
+                })
+            },
             "unwrap",
+            &["value", "message"],
+            &["value"],
+            &["optional"],
+        ),
+        functional_node(
+            |ctx: C, value: Option<GenericValue<0>>| {
+                value.unwrap_or_else(|| {
+                    GenericValue(
+                        ctx.input_types[0]
+                            .unwrap_or_else(EDataType::null)
+                            .default_value(ctx.context.registry)
+                            .into_owned(),
+                    )
+                })
+            },
+            "unwrap_or_default",
             &["value"],
             &["value"],
             &["optional"],

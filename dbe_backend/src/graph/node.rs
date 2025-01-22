@@ -9,7 +9,6 @@ use crate::graph::node::extras::ExecutionExtras;
 use crate::graph::node::format_node::FormatNodeFactory;
 use crate::graph::node::functional::functional_nodes;
 use crate::graph::node::generic::destructuring::DestructuringNodeFactory;
-use crate::graph::node::generic::or_default::OptOrDefaultFactory;
 use crate::graph::node::groups::input::GroupInputNodeFactory;
 use crate::graph::node::groups::output::GroupOutputNodeFactory;
 use crate::graph::node::groups::subgraph::SubgraphNodeFactory;
@@ -113,7 +112,6 @@ fn default_nodes() -> impl Iterator<Item = (Ustr, Arc<dyn NodeFactory>)> {
     push(v, FormatNodeFactory);
     push(v, ExpressionNodeFactory);
     push(v, DestructuringNodeFactory);
-    push(v, OptOrDefaultFactory);
     // regional
     push(v, RegionalNodeFactory::<RepeatNode>::INSTANCE);
     push(v, RegionalNodeFactory::<ConditionalIfNode>::INSTANCE);
