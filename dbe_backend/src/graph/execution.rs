@@ -288,8 +288,10 @@ impl GraphExecutionContext<'_, '_> {
 
     fn eval_node_inner(&mut self, id: NodeId, run_side_effects: bool) -> miette::Result<()> {
         // trace!("Evaluating node {:?}", id);
+        let mut iteration = 0;
         m_try(|| {
             loop {
+                iteration += 1;
                 let node = self
                     .snarl
                     .get_node(id)
@@ -389,7 +391,16 @@ impl GraphExecutionContext<'_, '_> {
                 }
             }
         })
-        .with_context(|| format!("failed to evaluate node {:?}", id))
+        .with_context(|| {
+            if iteration == 1 {
+                format!("failed to evaluate node {:?}", id)
+            } else {
+                format!(
+                    "failed to evaluate iteration #{} of node {:?}",
+                    iteration, id
+                )
+            }
+        })
     }
 }
 
