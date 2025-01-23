@@ -79,54 +79,57 @@ impl NodeView for DefaultNodeView {
         _scale: f32,
         snarl: &mut Snarl<SnarlNode>,
     ) -> miette::Result<PinInfo> {
-        let registry = viewer.ctx.registry;
-        let docs = viewer.ctx.docs;
-        let node = &snarl[pin.id.node];
-        let node_ident = node.id();
-        let input_data = node.try_input(viewer.ctx.as_node_context(), pin.id.input)?;
+        ui.push_id(pin.id, |ui| {
+            let registry = viewer.ctx.registry;
+            let docs = viewer.ctx.docs;
+            let node = &snarl[pin.id.node];
+            let node_ident = node.id();
+            let input_data = node.try_input(viewer.ctx.as_node_context(), pin.id.input)?;
 
-        let docs_ref = input_data
-            .custom_docs
-            .unwrap_or(DocsRef::NodeInput(node_ident, input_data.name));
-        let ctx = EditorContext::new(registry, docs, docs_ref);
+            let docs_ref = input_data
+                .custom_docs
+                .unwrap_or(DocsRef::NodeInput(node_ident, input_data.name));
+            let ctx = EditorContext::new(registry, docs, docs_ref);
 
-        let Some(info) = input_data.ty.item_info() else {
-            docs_label(ui, &input_data.name, docs, registry, ctx.docs_ref);
-            return Ok(any_pin());
-        };
+            let Some(info) = input_data.ty.item_info() else {
+                docs_label(ui, &input_data.name, docs, registry, ctx.docs_ref);
+                return Ok(any_pin());
+            };
 
-        if pin.remotes.is_empty() {
-            let mut full_ctx = viewer.ctx.as_full(snarl);
-            if let Some(value) = full_ctx.get_inline_input_mut(pin.id)? {
-                if input_data.ty.has_inline_value(registry) {
-                    let editor = editor_for_item(registry, info);
-                    let res = ui.vertical(|ui| {
-                        editor.show(
-                            ui,
-                            ctx,
-                            viewer.diagnostics.enter_field(input_data.name.as_str()),
-                            &input_data.name,
-                            value,
-                        )
-                    });
+            if pin.remotes.is_empty() {
+                let mut full_ctx = viewer.ctx.as_full(snarl);
+                if let Some(value) = full_ctx.get_inline_input_mut(pin.id)? {
+                    if input_data.ty.has_inline_value(registry) {
+                        let editor = editor_for_item(registry, info);
+                        let res = ui.vertical(|ui| {
+                            editor.show(
+                                ui,
+                                ctx,
+                                viewer.diagnostics.enter_field(input_data.name.as_str()),
+                                &input_data.name,
+                                value,
+                            )
+                        });
 
-                    if res.inner.changed {
-                        full_ctx.mark_node_dirty(pin.id.node);
+                        if res.inner.changed {
+                            full_ctx.mark_node_dirty(pin.id.node);
+                        }
+                    } else {
+                        ui.horizontal(|ui| {
+                            docs_label(ui, &input_data.name, docs, registry, ctx.docs_ref);
+                            ui.label(format_value(value));
+                        });
                     }
                 } else {
-                    ui.horizontal(|ui| {
-                        docs_label(ui, &input_data.name, docs, registry, ctx.docs_ref);
-                        ui.label(format_value(value));
-                    });
+                    docs_label(ui, &input_data.name, docs, registry, ctx.docs_ref);
                 }
             } else {
                 docs_label(ui, &input_data.name, docs, registry, ctx.docs_ref);
             }
-        } else {
-            docs_label(ui, &input_data.name, docs, registry, ctx.docs_ref);
-        }
 
-        Ok(pin_info(&input_data.ty, registry))
+            Ok(pin_info(&input_data.ty, registry))
+        })
+        .inner
     }
 
     fn show_output(
@@ -137,18 +140,21 @@ impl NodeView for DefaultNodeView {
         _scale: f32,
         snarl: &mut Snarl<SnarlNode>,
     ) -> miette::Result<PinInfo> {
-        let registry = viewer.ctx.registry;
-        let node = &snarl[pin.id.node];
-        let output_data = node.try_output(viewer.ctx.as_node_context(), pin.id.output)?;
-        let docs = viewer.ctx.docs;
-        let docs_ref = output_data
-            .custom_docs
-            .unwrap_or_else(|| DocsRef::NodeOutput(node.id(), output_data.name));
-        ui.horizontal(|ui| {
-            docs_label(ui, &output_data.name, docs, registry, docs_ref);
-        });
+        ui.push_id(pin.id, |ui| {
+            let registry = viewer.ctx.registry;
+            let node = &snarl[pin.id.node];
+            let output_data = node.try_output(viewer.ctx.as_node_context(), pin.id.output)?;
+            let docs = viewer.ctx.docs;
+            let docs_ref = output_data
+                .custom_docs
+                .unwrap_or_else(|| DocsRef::NodeOutput(node.id(), output_data.name));
+            ui.horizontal(|ui| {
+                docs_label(ui, &output_data.name, docs, registry, docs_ref);
+            });
 
-        Ok(pin_info(&output_data.ty, registry))
+            Ok(pin_info(&output_data.ty, registry))
+        })
+        .inner
     }
 
     fn node_layout(&self, _viewer: &mut GraphViewer, _node: &SnarlNode) -> NodeLayout {
