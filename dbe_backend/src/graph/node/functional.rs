@@ -685,16 +685,44 @@ pub fn functional_nodes() -> Vec<Arc<dyn NodeFactory>> {
             &["optional"],
         ),
         functional_node(
-            |_: C, value: AnyEValue, field: String| {
+            |ctx: C, value: AnyEValue, field: String| {
                 let value = value.0;
-                fn get_value(value: &EValue, field: &str) -> miette::Result<Option<EValue>> {
+                fn get_value(
+                    registry: &ETypesRegistry,
+                    value: &EValue,
+                    field: &str,
+                ) -> miette::Result<Option<EValue>> {
                     match value {
-                        EValue::Struct { fields, .. } => Ok(fields.get(&ustr(field)).cloned()),
-                        EValue::Enum { data, .. } => get_value(data, field),
+                        EValue::Struct { fields, ident } => {
+                            if let Some(value) = fields.get(&ustr(field)) {
+                                return Ok(Some(value.clone()));
+                            }
+
+                            let data = registry
+                                .get_struct(ident)
+                                .ok_or_else(|| miette!("struct not found"))?;
+                            for inline_field in &data.fields {
+                                if !inline_field.is_inline() {
+                                    continue;
+                                }
+
+                                let inline_value =
+                                    fields.get(&inline_field.name).ok_or_else(|| {
+                                        miette!("!!INTERNAL ERROR!! field should be present")
+                                    })?;
+
+                                if let Some(value) = get_value(registry, inline_value, field)? {
+                                    return Ok(Some(value));
+                                }
+                            }
+
+                            Ok(None)
+                        }
+                        EValue::Enum { data, .. } => get_value(registry, data, field),
                         _ => bail!("value is not a struct or an enum"),
                     }
                 }
-                let value = get_value(&value, &field)?;
+                let value = get_value(ctx.context.registry, &value, &field)?;
                 Ok(value.map(AnyEValue))
             },
             "get_field",
