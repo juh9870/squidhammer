@@ -1,0 +1,15 @@
+## Path to the directory where the tinylogs are stored (relative to this config file)
+tinylogs_dir = ".tinychange"
+## Path to the CHANGELOG file (relative to this config file)
+changelog = "CHANGELOG.md"
+## Allowed change categories
+categories = ["Added", "Changed", "Deprecated", "Removed", "Fixed", "Documented", "Security"]
+
+## Default filename naming scheme
+## Allowed values: buzzword, lorem, hash
+## Defaults to "buzzword" if not set
+# naming = "buzzword"
+
+## Maximum length of the filename (including the 8 symbols-long hash suffix, but excluding the extension)
+## Defaults to 127 if not set
+# max_filename_length = 40

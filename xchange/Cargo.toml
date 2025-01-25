@@ -1,0 +1,14 @@
+[package]
+name = "xchange"
+version = "0.1.0"
+edition = "2021"
+repository = "https://github.com/juh9870/dbe"
+publish = false
+
+[dependencies]
+clap = { workspace = true }
+miette = { workspace = true, features = ["fancy"] }
+tinychange = { workspace = true }
+
+[package.metadata.release]
+release = false

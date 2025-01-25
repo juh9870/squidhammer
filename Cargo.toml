@@ -10,10 +10,12 @@ members = [
     "list_edit",
     "squidfmt",
     "utils",
+    "xchange",
     "xtask"
 ]
 
 [workspace.dependencies]
+tinychange = "0.3.1"
 arrayvec = "0.7.6"
 ouroboros = "0.18.5"
 bitflags = "2.8.0"
@@ -125,3 +127,10 @@ lto = "thin"
 
 [workspace.metadata.release]
 publish = false
+pre-release-replacements = [
+    { file = "../CHANGELOG.md", search = "Unreleased", replace = "{{version}}" },
+    { file = "../CHANGELOG.md", search = "\\.\\.\\.HEAD", replace = "...{{tag_name}}", exactly = 1 },
+    { file = "../CHANGELOG.md", search = "ReleaseDate", replace = "{{date}}" },
+    { file = "../CHANGELOG.md", search = "<!-- next-header -->", replace = "<!-- next-header -->\n\n## [Unreleased] - ReleaseDate", exactly = 1 },
+    { file = "../CHANGELOG.md", search = "<!-- next-url -->", replace = "<!-- next-url -->\n[Unreleased]: https://github.com/juh9870/dbe/compare/{{tag_name}}...HEAD", exactly = 1 }
+]
