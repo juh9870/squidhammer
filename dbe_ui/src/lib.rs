@@ -27,9 +27,7 @@ use std::sync::{Arc, OnceLock};
 use tracing::info;
 use utils::map::HashMap;
 
-mod diagnostics_list;
 mod error;
-mod file_tree;
 pub mod main_toolbar;
 mod settings;
 mod ui_props;
@@ -60,6 +58,9 @@ pub struct DbeApp {
 
     // Closing
     allow_close: Option<bool>,
+
+    // Saving
+    last_save_time: f64,
 }
 
 #[derive(Debug, Default, Serialize, Deserialize)]
@@ -123,6 +124,7 @@ impl DbeApp {
             allow_close: None,
             settings: Default::default(),
             show_settings_menu: false,
+            last_save_time: 0.0,
         }
     }
 
@@ -135,7 +137,7 @@ impl DbeApp {
                 self.settings = storage.settings;
                 self.history = storage.history;
                 if let Some(head) = self.history.first() {
-                    self.load_project_from_path(head.clone())
+                    self.load_project_from_path(ctx, head.clone())
                 }
 
                 self.colorix = Colorix::global(ctx, storage.theme);
@@ -196,6 +198,20 @@ impl DbeApp {
             project
                 .history
                 .set_time(&project.files, &project.graphs, time);
+
+            if self.settings.autosave
+                && time - self.last_save_time > self.settings.autosave_interval as f64
+            {
+                self.toasts.push(Toast {
+                    kind: ToastKind::Info,
+                    text: "Starting autosave".into(),
+                    options: ToastOptions::default()
+                        .duration_in_seconds(3.0)
+                        .show_progress(true),
+                    style: Default::default(),
+                });
+                self.save_project(ctx);
+            }
         }
 
         egui::TopBottomPanel::top("top_panel").show(ctx, |ui| {
@@ -207,7 +223,7 @@ impl DbeApp {
                         .add_enabled(self.project.is_some(), Button::new("Save"))
                         .clicked()
                     {
-                        self.save_project();
+                        self.save_project(ctx);
                         ui.close_menu();
                     }
 
@@ -246,31 +262,10 @@ impl DbeApp {
                 });
                 ui.add_space(16.0);
 
-                if let Some(project) = &self.project {
-                    let mut want_undo = false;
-                    let mut want_redo = false;
-
-                    ui.horizontal(|ui| {
-                        if ui
-                            .add_enabled(project.history.can_undo(), Button::new("Undo"))
-                            .clicked()
-                        {
-                            want_undo = true;
-                        }
-                        if ui
-                            .add_enabled(project.history.can_redo(), Button::new("Redo"))
-                            .clicked()
-                        {
-                            want_redo = true;
-                        }
-                    });
-
-                    if want_undo && want_redo {
-                        report_error(miette!("Can't undo and redo at the same time"));
-                    } else if want_undo {
-                        self.undo();
-                    } else if want_redo {
-                        self.redo();
+                self.undo_buttons(ui);
+                if let Some(project) = &mut self.project {
+                    if ui.button("Run Graphs").clicked() {
+                        project.clean_validate().unwrap_or_else(report_error);
                     }
                 }
             });
@@ -303,13 +298,13 @@ impl DbeApp {
         .persist(true)
         .show(ctx, "right_toolbar", &mut ToolPanelViewer(self));
 
-        egui::CentralPanel::default().show(ctx, |ui| workspace::workspace(ui, self));
+        CentralPanel::default().show(ctx, |ui| workspace::workspace(ui, self));
 
         if let Some(dialog) = &mut self.open_file_dialog {
             if dialog.show(ctx).selected() {
                 if let Some(file) = dialog.path() {
                     let file = file.to_path_buf();
-                    self.load_project_from_path(file)
+                    self.load_project_from_path(ctx, file)
                 }
             }
         }
@@ -359,7 +354,37 @@ impl DbeApp {
             }
         }
         if let Some(path) = want_open {
-            self.load_project_from_path(path);
+            self.load_project_from_path(ui.ctx(), path);
+        }
+    }
+
+    fn undo_buttons(&mut self, ui: &mut Ui) {
+        if let Some(project) = &self.project {
+            let mut want_undo = false;
+            let mut want_redo = false;
+
+            ui.horizontal(|ui| {
+                if ui
+                    .add_enabled(project.history.can_undo(), Button::new("Undo"))
+                    .clicked()
+                {
+                    want_undo = true;
+                }
+                if ui
+                    .add_enabled(project.history.can_redo(), Button::new("Redo"))
+                    .clicked()
+                {
+                    want_redo = true;
+                }
+            });
+
+            if want_undo && want_redo {
+                report_error(miette!("Can't undo and redo at the same time"));
+            } else if want_undo {
+                self.undo();
+            } else if want_redo {
+                self.redo();
+            }
         }
     }
 
@@ -373,7 +398,8 @@ impl DbeApp {
         self.open_file_dialog = Some(dialog);
     }
 
-    fn save_project(&mut self) -> bool {
+    fn save_project(&mut self, ctx: &Context) -> bool {
+        self.last_save_time = ctx.input(|i| i.time);
         if let Some(project) = &mut self.project {
             match project.save() {
                 Ok(_) => {
@@ -457,7 +483,7 @@ impl DbeApp {
                         ui.ctx().send_viewport_cmd(ViewportCommand::Close);
                         self.allow_close = Some(true);
                     }
-                    if modal.suggested_button(ui, "Save").clicked() && self.save_project() {
+                    if modal.suggested_button(ui, "Save").clicked() && self.save_project(ctx) {
                         ui.ctx().send_viewport_cmd(ViewportCommand::Close);
                         self.allow_close = Some(true);
                     }
@@ -466,7 +492,7 @@ impl DbeApp {
         });
     }
 
-    fn load_project_from_path(&mut self, path: impl AsRef<Path>) {
+    fn load_project_from_path(&mut self, ctx: &Context, path: impl AsRef<Path>) {
         let path = path.as_ref().to_path_buf();
         self.remember_last_project(path.clone());
         match Project::from_path(&path) {
@@ -480,7 +506,8 @@ impl DbeApp {
                         .duration_in_seconds(3.0)
                         .show_progress(true),
                     style: Default::default(),
-                })
+                });
+                self.last_save_time = ctx.input(|i| i.time);
             }
             Err(err) => {
                 report_error(err);

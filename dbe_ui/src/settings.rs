@@ -1,12 +1,15 @@
 use crate::widgets::toggle_button::toggle_button_label;
-use egui::{Label, RichText, Ui};
+use egui::{DragValue, Label, RichText, Ui, Widget};
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AppSettings {
-    /// Whether to show a confirmation dialog when the user tries to exit the application.
     #[serde(default = "d_bool::<true>")]
     pub exit_confirmation: bool,
+    #[serde(default = "d_bool::<false>")]
+    pub autosave: bool,
+    #[serde(default = "d_u32::<60>")]
+    pub autosave_interval: u32,
 }
 
 impl AppSettings {
@@ -18,6 +21,25 @@ impl AppSettings {
 
         toggle_button_label(ui, "Exit Confirmation", &mut self.exit_confirmation)
             .on_hover_text("Show exit confirmation dialog when a project is loaded");
+
+        toggle_button_label(ui, "Autosave", &mut self.autosave)
+            .on_hover_text("Automatically save the project at a set interval");
+
+        ui.add_enabled_ui(self.autosave, |ui| {
+            ui.indent("autosave_fields", |ui| {
+                ui.horizontal(|ui| {
+                    ui.label("Autosave Interval (s)")
+                        | DragValue::new(&mut self.autosave_interval)
+                            .speed(1.0)
+                            .range(30..=3600)
+                            .ui(ui)
+                })
+                .inner
+                .on_hover_text(
+                    "The interval in seconds at which the project is automatically saved",
+                );
+            });
+        });
     }
 }
 
@@ -25,10 +47,16 @@ impl Default for AppSettings {
     fn default() -> Self {
         Self {
             exit_confirmation: true,
+            autosave: false,
+            autosave_interval: 60,
         }
     }
 }
 
 fn d_bool<const VALUE: bool>() -> bool {
+    VALUE
+}
+
+fn d_u32<const VALUE: u32>() -> u32 {
     VALUE
 }
