@@ -192,7 +192,7 @@ impl DbeApp {
             egui::menu::bar(ui, |ui| {
                 ui.menu_button("File", |ui| {
                     if ui
-                        .add_enabled(self.project.is_some(), egui::Button::new("Save"))
+                        .add_enabled(self.project.is_some(), Button::new("Save"))
                         .clicked()
                     {
                         self.save_project();
@@ -209,7 +209,7 @@ impl DbeApp {
                     });
 
                     if ui
-                        .add_enabled(self.project.is_some(), egui::Button::new("Close Project"))
+                        .add_enabled(self.project.is_some(), Button::new("Close Project"))
                         .clicked()
                     {
                         self.project = None;
@@ -218,7 +218,7 @@ impl DbeApp {
 
                     #[cfg(not(target_arch = "wasm32"))]
                     if ui.button("Quit").clicked() {
-                        ctx.send_viewport_cmd(egui::ViewportCommand::Close);
+                        ctx.send_viewport_cmd(ViewportCommand::Close);
                         ui.close_menu();
                     }
 
