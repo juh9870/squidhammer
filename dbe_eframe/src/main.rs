@@ -1,6 +1,7 @@
 #![windows_subsystem = "windows"]
 
 use color_backtrace::{default_output_stream, BacktracePrinter};
+use dbe_ui::info::AppInfo;
 use dbe_ui::DbeApp;
 use eframe::egui::Context;
 use eframe::icon_data::from_png_bytes;
@@ -10,6 +11,7 @@ use egui_tracing::EventCollector;
 use std::fs::File;
 use std::io::Write;
 use std::{fs, panic};
+use tracing::info;
 use tracing_subscriber::filter::LevelFilter;
 use tracing_subscriber::layer::SubscriberExt;
 use tracing_subscriber::EnvFilter;
@@ -129,7 +131,16 @@ impl AppWrapper {
     pub fn new(cx: &CreationContext, collector: EventCollector) -> Self {
         DbeApp::register_fonts(&cx.egui_ctx);
 
-        let mut app = DbeApp::new(collector);
+        let info = AppInfo {
+            name: "Squidhammer".to_string(),
+            version: env!("CARGO_PKG_VERSION").to_string(),
+            authors: env!("CARGO_PKG_AUTHORS").to_string(),
+            homepage: env!("CARGO_PKG_HOMEPAGE").to_string(),
+        };
+
+        info!(app_info=?info, "Starting Squidhammer");
+
+        let mut app = DbeApp::new(info, collector);
         if let Some(storage) = cx.storage {
             if let Some(value) = storage.get_string("dbe") {
                 app.load_storage(&cx.egui_ctx, &value);

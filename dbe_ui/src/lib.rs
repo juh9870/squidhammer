@@ -1,8 +1,10 @@
 #![deny(clippy::disallowed_types)]
 
 use crate::error::report_error;
+use crate::info::AppInfo;
 use crate::main_toolbar::{ToolPanel, ToolPanelViewer};
 use crate::settings::AppSettings;
+use crate::updates::check_for_updates;
 use crate::widgets::collapsible_toolbar::CollapsibleToolbar;
 use crate::widgets::dpanel::DPanelSide;
 use crate::workspace::Tab;
@@ -28,11 +30,14 @@ use tracing::info;
 use utils::map::HashMap;
 
 mod error;
-pub mod main_toolbar;
+mod main_toolbar;
 mod settings;
 mod ui_props;
+mod updates;
 pub mod widgets;
 mod workspace;
+
+pub mod info;
 
 /// A function that can be called to show a modal
 ///
@@ -50,6 +55,8 @@ pub struct DbeApp {
     history: Vec<PathBuf>,
     settings: AppSettings,
 
+    info: AppInfo,
+
     show_settings_menu: bool,
 
     // Theming
@@ -61,6 +68,11 @@ pub struct DbeApp {
 
     // Saving
     last_save_time: f64,
+
+    check_for_updates_chan: (
+        std::sync::mpsc::Sender<update_informer::Version>,
+        std::sync::mpsc::Receiver<update_informer::Version>,
+    ),
 }
 
 #[derive(Debug, Default, Serialize, Deserialize)]
@@ -108,7 +120,7 @@ impl DbeApp {
         ctx.set_fonts(fonts);
     }
 
-    pub fn new(collector: EventCollector) -> Self {
+    pub fn new(info: AppInfo, collector: EventCollector) -> Self {
         ui_props::register_extra_properties();
 
         Self {
@@ -123,8 +135,10 @@ impl DbeApp {
             dark_mode: true,
             allow_close: None,
             settings: Default::default(),
+            info,
             show_settings_menu: false,
             last_save_time: 0.0,
+            check_for_updates_chan: std::sync::mpsc::channel(),
         }
     }
 
@@ -181,15 +195,35 @@ impl DbeApp {
 
         INIT.get_or_init(|| {
             self.colorix = Colorix::global(ctx, *self.colorix.theme());
+
+            if self.settings.check_for_updates {
+                check_for_updates(
+                    self.check_for_updates_chan.0.clone(),
+                    self.info.version.clone(),
+                );
+            }
         });
 
         self.dark_mode = ctx.style().visuals.dark_mode;
         self.colorix.draw_background(ctx, false);
 
-        // self.colorix = Colorix::init(ctx, [ColorPreset::Red; 12]);
-
         self.close_prompt(ctx);
         self.settings_menu(ctx);
+
+        if let Ok(new_version) = self.check_for_updates_chan.1.try_recv() {
+            let msg = format!(
+                "New version available: {} -> {}\nGet a new version at https://github.com/juh9870/squidhammer/releases/latest",
+                self.info.version,
+                new_version
+            );
+            info!("{}", msg);
+            self.toasts.push(Toast {
+                kind: ToastKind::Info,
+                text: msg.into(),
+                options: ToastOptions::default().duration(None).show_progress(true),
+                style: Default::default(),
+            });
+        }
 
         if let Some(project) = &mut self.project {
             project.registry.apply_pending();

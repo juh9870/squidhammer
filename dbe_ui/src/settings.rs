@@ -10,6 +10,8 @@ pub struct AppSettings {
     pub autosave: bool,
     #[serde(default = "d_u32::<60>")]
     pub autosave_interval: u32,
+    #[serde(default = "d_bool::<true>")]
+    pub check_for_updates: bool,
 }
 
 impl AppSettings {
@@ -18,6 +20,9 @@ impl AppSettings {
             false,
             Label::new(RichText::new("Hover over the labels to see more information").small()),
         );
+
+        toggle_button_label(ui, "Check for updates", &mut self.check_for_updates)
+            .on_hover_text("Check for updates on startup");
 
         toggle_button_label(ui, "Exit Confirmation", &mut self.exit_confirmation)
             .on_hover_text("Show exit confirmation dialog when a project is loaded");
@@ -49,6 +54,7 @@ impl Default for AppSettings {
             exit_confirmation: true,
             autosave: false,
             autosave_interval: 60,
+            check_for_updates: true,
         }
     }
 }

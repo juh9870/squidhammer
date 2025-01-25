@@ -84,6 +84,7 @@ toml = "0.8.16"
 tracing = "0.1.40"
 tracing-panic = "0.1.2"
 tracing-subscriber = "0.3.18"
+update-informer = { version = "1.2.0", default-features = false }
 ustr = "1.0.0"
 uuid = "1.11.0"
 walkdir = "2.5.0"
