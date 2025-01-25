@@ -1,14 +1,14 @@
-use crate::error::report_error;
 use crate::DbeApp;
 use dbe_backend::project::undo::{FileSnapshot, SnapshotKind};
 use egui::{Button, Ui};
-use miette::miette;
 
 pub fn history_tab(ui: &mut Ui, app: &mut DbeApp) {
     ui.label("Undo History");
 
     let height =
         ui.text_style_height(&egui::TextStyle::Button) + ui.style().spacing.button_padding.y * 2.0;
+
+    app.undo_buttons(ui);
 
     let Some(project) = &mut app.project else {
         ui.label("No project loaded");
@@ -45,24 +45,6 @@ pub fn history_tab(ui: &mut Ui, app: &mut DbeApp) {
         }
     }
 
-    let mut want_undo = false;
-    let mut want_redo = false;
-
-    ui.horizontal(|ui| {
-        if ui
-            .add_enabled(project.history.can_undo(), Button::new("Undo"))
-            .clicked()
-        {
-            want_undo = true;
-        }
-        if ui
-            .add_enabled(project.history.can_redo(), Button::new("Redo"))
-            .clicked()
-        {
-            want_redo = true;
-        }
-    });
-
     let history = project.history.history();
     let undone = project.history.undone_history();
     let future = project.history.future();
@@ -92,12 +74,4 @@ pub fn history_tab(ui: &mut Ui, app: &mut DbeApp) {
             }
         }
     });
-
-    if want_undo && want_redo {
-        report_error(miette!("Can't undo and redo at the same time"));
-    } else if want_undo {
-        app.undo();
-    } else if want_redo {
-        app.redo();
-    }
 }

@@ -1,16 +1,18 @@
-use crate::diagnostics_list::diagnostics_tab;
-use crate::file_tree::file_tab;
 use crate::main_toolbar::colors::colors_tab;
 use crate::widgets::collapsible_toolbar::simple_new_tab_menu::simple_new_tab_menu;
 use crate::widgets::collapsible_toolbar::ToolbarViewer;
 use crate::widgets::rotated_label::RotLabelDirection;
 use crate::DbeApp;
+use diagnostics_list::diagnostics_tab;
 use egui::Ui;
+use file_tree::file_tab;
 use serde::{Deserialize, Serialize};
 use std::borrow::Cow;
 
 pub mod colors;
+mod diagnostics_list;
 pub mod docs;
+mod file_tree;
 pub mod history;
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
