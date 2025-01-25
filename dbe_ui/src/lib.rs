@@ -7,10 +7,14 @@ use crate::widgets::dpanel::DPanelSide;
 use crate::workspace::Tab;
 use dbe_backend::project::io::FilesystemIO;
 use dbe_backend::project::Project;
-use egui::{Align2, Button, Color32, Context, FontData, FontDefinitions, FontFamily, Id, Ui};
+use egui::{
+    Align2, Button, Color32, Context, FontData, FontDefinitions, FontFamily, Id, Ui,
+    ViewportCommand,
+};
 use egui_colors::Colorix;
 use egui_dock::DockState;
 use egui_file::FileDialog;
+use egui_modal::Modal;
 use egui_toast::{Toast, ToastKind, ToastOptions, Toasts};
 use egui_tracing::EventCollector;
 use itertools::Itertools;
@@ -48,6 +52,9 @@ pub struct DbeApp {
     // Theming
     colorix: Colorix,
     dark_mode: bool,
+
+    // Closing
+    allow_close: Option<bool>,
 }
 
 #[derive(Debug, Default, Serialize, Deserialize)]
@@ -106,6 +113,7 @@ impl DbeApp {
             history: vec![],
             tabs: DockState::new(vec![]),
             dark_mode: true,
+            allow_close: None,
         }
     }
 
@@ -166,6 +174,8 @@ impl DbeApp {
         self.colorix.draw_background(ctx, false);
 
         // self.colorix = Colorix::init(ctx, [ColorPreset::Red; 12]);
+
+        self.close_prompt(ctx);
 
         if let Some(project) = &mut self.project {
             project.registry.apply_pending();
@@ -343,7 +353,7 @@ impl DbeApp {
         self.open_file_dialog = Some(dialog);
     }
 
-    fn save_project(&mut self) {
+    fn save_project(&mut self) -> bool {
         if let Some(project) = &mut self.project {
             match project.save() {
                 Ok(_) => {
@@ -355,13 +365,60 @@ impl DbeApp {
                             .duration_in_seconds(3.0)
                             .show_progress(true),
                         style: Default::default(),
-                    })
+                    });
+                    true
                 }
                 Err(error) => {
                     report_error(error);
+                    false
                 }
             }
+        } else {
+            false
         }
+    }
+
+    fn close_prompt(&mut self, ctx: &Context) {
+        let modal = Modal::new(ctx, "close_app_prompt");
+        if self.project.is_none() {
+            return;
+        }
+
+        // Only show exit prompt when project is open
+        let close_requested = ctx.input(|i| i.viewport().close_requested());
+        if close_requested && self.allow_close.is_none_or(|x| !x) {
+            ctx.send_viewport_cmd(ViewportCommand::CancelClose);
+            self.allow_close = Some(false);
+        }
+
+        if self.allow_close.is_none() {
+            return;
+        };
+
+        modal.open();
+        modal.show(|ui| {
+            ui.vertical(|ui| {
+                modal.title(ui, "Confirm Exit");
+
+                modal.frame(ui, |ui| {
+                    ui.label("Do you want to save before closing?");
+                });
+
+                modal.buttons(ui, |ui| {
+                    if modal.button(ui, "Cancel").clicked() {
+                        self.allow_close = None;
+                    }
+                    if modal.caution_button(ui, "Don't Save").clicked() {
+                        ui.ctx().send_viewport_cmd(ViewportCommand::Close);
+                        self.allow_close = Some(true);
+                    }
+                    if modal.suggested_button(ui, "Save").clicked() && self.save_project() {
+                        ui.ctx().send_viewport_cmd(ViewportCommand::Close);
+                        self.allow_close = Some(true);
+                    }
+                })
+            });
+        });
     }
 
     fn load_project_from_path(&mut self, path: impl AsRef<Path>) {

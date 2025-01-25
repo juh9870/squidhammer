@@ -937,7 +937,15 @@
         {
           "color_scheme": null,
           "custom_title": null,
-          "data": null,
+          "data": [
+            [
+              "Number",
+              "Number"
+            ],
+            [
+              "Number"
+            ]
+          ],
           "id": "add",
           "open": true,
           "pos": {
@@ -951,7 +959,12 @@
         {
           "color_scheme": null,
           "custom_title": null,
-          "data": null,
+          "data": [
+            [
+              "Unknown"
+            ],
+            []
+          ],
           "id": "debug_print",
           "open": true,
           "pos": {
@@ -1019,7 +1032,15 @@
         {
           "color_scheme": null,
           "custom_title": null,
-          "data": null,
+          "data": [
+            [
+              "Number",
+              "Number"
+            ],
+            [
+              "Number"
+            ]
+          ],
           "id": "add",
           "open": true,
           "pos": {
@@ -1088,7 +1109,15 @@
         {
           "color_scheme": null,
           "custom_title": null,
-          "data": null,
+          "data": [
+            [
+              "Number",
+              "Number"
+            ],
+            [
+              "Boolean"
+            ]
+          ],
           "id": "greater_than",
           "open": true,
           "pos": {
@@ -1102,7 +1131,12 @@
         {
           "color_scheme": null,
           "custom_title": null,
-          "data": null,
+          "data": [
+            [
+              "Unknown"
+            ],
+            []
+          ],
           "id": "debug_print",
           "open": true,
           "pos": {
@@ -1170,7 +1204,12 @@
         {
           "color_scheme": null,
           "custom_title": null,
-          "data": null,
+          "data": [
+            [
+              "Unknown"
+            ],
+            []
+          ],
           "id": "debug_print",
           "open": true,
           "pos": {
@@ -1184,7 +1223,15 @@
         {
           "color_scheme": null,
           "custom_title": null,
-          "data": null,
+          "data": [
+            [
+              "Number",
+              "Number"
+            ],
+            [
+              "Number"
+            ]
+          ],
           "id": "add",
           "open": true,
           "pos": {
@@ -1304,7 +1351,15 @@
         {
           "color_scheme": null,
           "custom_title": null,
-          "data": null,
+          "data": [
+            [
+              "Number",
+              "Number"
+            ],
+            [
+              "Number"
+            ]
+          ],
           "id": "add",
           "open": true,
           "pos": {
@@ -1355,7 +1410,12 @@
         {
           "color_scheme": null,
           "custom_title": null,
-          "data": null,
+          "data": [
+            [
+              "Unknown"
+            ],
+            []
+          ],
           "id": "debug_print",
           "open": true,
           "pos": {
@@ -1425,7 +1485,12 @@
         {
           "color_scheme": null,
           "custom_title": null,
-          "data": null,
+          "data": [
+            [
+              "Unknown"
+            ],
+            []
+          ],
           "id": "debug_print",
           "open": true,
           "pos": {
