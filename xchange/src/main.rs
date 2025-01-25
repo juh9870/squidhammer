@@ -5,10 +5,10 @@ use tinychange::TinyChangeArgs;
 fn main() -> miette::Result<()> {
     tinychange::run(
         TinyChangeArgs::parse_from(
-            [OsString::from("cargo xtask")]
+            [OsString::from("cargo xchange")]
                 .into_iter()
-                .chain(std::env::args_os().skip(2)),
+                .chain(std::env::args_os().skip(1)),
         ),
-        "cargo xtask change",
+        "cargo xchange",
     )
 }
