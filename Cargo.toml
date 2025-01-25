@@ -79,7 +79,7 @@ strip-ansi-escapes = "0.2.0"
 strum = "0.26.1"
 termcolor = "1.4.1"
 thiserror = "2.0.3"
-tinychange = "0.3.1"
+tinychange = "0.3.2"
 toml = "0.8.16"
 tracing = "0.1.40"
 tracing-panic = "0.1.2"
@@ -128,10 +128,11 @@ lto = "thin"
 
 [workspace.metadata.release]
 publish = false
+tag-prefix = ""
 pre-release-replacements = [
     { file = "../CHANGELOG.md", search = "Unreleased", replace = "{{version}}" },
     { file = "../CHANGELOG.md", search = "\\.\\.\\.HEAD", replace = "...{{tag_name}}", exactly = 1 },
     { file = "../CHANGELOG.md", search = "ReleaseDate", replace = "{{date}}" },
-    { file = "../CHANGELOG.md", search = "<!-- next-header -->", replace = "<!-- next-header -->\n\n## [Unreleased] - ReleaseDate", exactly = 1 },
-    { file = "../CHANGELOG.md", search = "<!-- next-url -->", replace = "<!-- next-url -->\n[Unreleased]: https://github.com/juh9870/dbe/compare/{{tag_name}}...HEAD", exactly = 1 }
+    { file = "../CHANGELOG.md", search = "<!-- next-header -->", replace = "<!-- next-header -->\n\n## [Unreleased]\n\n> Released on ReleaseDate", exactly = 1 },
+    { file = "../CHANGELOG.md", search = "<!-- next-url -->", replace = "<!-- next-url -->\n[Unreleased]: https://github.com/juh9870/squidhammer/compare/{{tag_name}}...HEAD", exactly = 1 }
 ]

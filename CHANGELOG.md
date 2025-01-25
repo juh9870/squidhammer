@@ -2,9 +2,13 @@
 
 <!-- next-header -->
 
-## [Unreleased] - ReleaseDate
+## [Unreleased]
 
-## [0.1.8] - 2025-01-25
+> Released on ReleaseDate
+
+## [v0.1.8]
+
+> Released on 2025-01-25
 
 ### Added
 
@@ -16,13 +20,33 @@
 
 ### Changed
 
-- `get_field` node now fails instead of returning None in case of a missing field. Use `try_get_field` to achieve the old behavior (by juh9870)
+- `get_field` node now fails instead of returning None in case of a missing field. Use `try_get_field` to achieve the
+  old behavior (by juh9870)
 
-## [0.1.7] - 2025-01-23
+## [v0.1.7]
+
+> Released on 2025-01-23
 
 No changelog for this and all previous versions.
 
 <!-- next-url -->
+
 [Unreleased]: https://github.com/juh9870/dbe/compare/squidhammer-v0.1.8...HEAD
 
-[0.1.8]: https://github.com/juh9870/dbe/compare/v0.1.7...squidhammer-v0.1.8
+[v0.1.8]: https://github.com/juh9870/dbe/compare/squidhammer-v0.1.7...squidhammer-v0.1.8
+
+[v0.1.7]: https://github.com/juh9870/dbe/compare/squidhammer-v0.1.6...squidhammer-v0.1.7
+
+[v0.1.6]: https://github.com/juh9870/dbe/compare/squidhammer-v0.1.5...squidhammer-v0.1.6
+
+[v0.1.5]: https://github.com/juh9870/dbe/compare/squidhammer-v0.1.4...squidhammer-v0.1.5
+
+[v0.1.4]: https://github.com/juh9870/dbe/compare/squidhammer-v0.1.3...squidhammer-v0.1.4
+
+[v0.1.3]: https://github.com/juh9870/dbe/compare/scrapyard_editor-v0.1.2...squidhammer-v0.1.3
+
+[v0.1.2]: https://github.com/juh9870/dbe/compare/scrapyard_editor-v0.1.1...scrapyard_editor-v0.1.2
+
+[v0.1.1]: https://github.com/juh9870/dbe/compare/scrapyard_editor-v0.1.0...scrapyard_editor-v0.1.1
+
+[v0.1.0]: https://github.com/juh9870/dbe/tree/scrapyard_editor-v0.1.0

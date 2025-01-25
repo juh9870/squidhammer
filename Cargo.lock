@@ -3850,7 +3850,7 @@ dependencies = [
  "once_cell",
  "socket2",
  "tracing",
- "windows-sys 0.52.0",
+ "windows-sys 0.59.0",
 ]
 
 [[package]]
@@ -4772,9 +4772,9 @@ dependencies = [
 
 [[package]]
 name = "tinychange"
-version = "0.3.1"
+version = "0.3.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "60c8236579bcd0296d877cd7c2472dd665716d7aa2ce89a893b84daf97d5239d"
+checksum = "ee61096ffe685bd7d162b09cd718a443e1bdb3ebb44f6076fc81afcae789912c"
 dependencies = [
  "clap",
  "fake",
