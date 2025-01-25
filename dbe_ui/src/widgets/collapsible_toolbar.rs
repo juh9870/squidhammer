@@ -2,8 +2,8 @@ use crate::widgets::dpanel::{DPanel, DPanelSide};
 use crate::widgets::rotated_label::{RotLabelDirection, SelectableRotLabel};
 use egui::util::id_type_map::SerializableAny;
 use egui::{
-    vec2, Align, CentralPanel, Context, Frame, Id, Layout, Response, Rounding, Stroke, Style, Ui,
-    Widget,
+    vec2, Align, CentralPanel, Context, Frame, Id, Layout, PopupCloseBehavior, Response, Rounding,
+    Stroke, Style, Ui, Widget,
 };
 use inline_tweak::tweak;
 use serde::{Deserialize, Serialize};
@@ -12,6 +12,8 @@ use std::borrow::Cow;
 use std::hash::Hash;
 use std::sync::Arc;
 use tracing::debug;
+
+pub mod simple_new_tab_menu;
 
 /// Trait for a tab that can be shown in the toolbar
 pub trait ToolbarViewer {
@@ -36,6 +38,16 @@ pub trait ToolbarViewer {
 
     /// Shows the content of the tab
     fn ui(&mut self, ui: &mut Ui, tab: &Self::Tab, direction: RotLabelDirection);
+
+    /// Whether the toolbar has a new tab button and a menu
+    fn has_new_tab_menu(&self) -> bool {
+        false
+    }
+
+    fn new_tab_menu(&self, ui: &mut Ui) -> Option<Self::Tab> {
+        let _ = (ui,);
+        None
+    }
 }
 
 #[must_use = "You should put this widget in a ui with `ui.add(widget);`"]
@@ -359,6 +371,27 @@ impl<Tab: SerializableAny + Eq + Hash> CollapsibleToolbar<'_, Tab> {
                         ui.memory_mut(|mem| {
                             mem.data.remove_temp::<f64>(timer_id);
                         });
+                    }
+                    if viewer.has_new_tab_menu() && !drag_state.rearranging {
+                        let popup_id = ui.id().with("new_tab_popup");
+                        let res = SelectableRotLabel::new(false, "+", direction).ui(ui);
+
+                        if res.clicked() {
+                            ui.memory_mut(|mem| mem.open_popup(popup_id));
+                        }
+
+                        egui::popup_below_widget(
+                            ui,
+                            popup_id,
+                            &res,
+                            PopupCloseBehavior::CloseOnClick,
+                            |ui| {
+                                ui.style_mut().wrap_mode = Some(egui::TextWrapMode::Extend);
+                                if let Some(new_tab) = viewer.new_tab_menu(ui) {
+                                    to_insert = Some((tabs.len(), new_tab));
+                                }
+                            },
+                        );
                     }
                     for (i, tab) in tabs.iter().enumerate() {
                         if drag_state.rearranging {

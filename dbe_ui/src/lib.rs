@@ -263,6 +263,7 @@ impl DbeApp {
         CollapsibleToolbar::new(DPanelSide::Bottom, &[ToolPanel::Log], &[])
             .default_selected_start(0)
             .global_drag_id(global_drag_id)
+            .persist(true)
             .show(ctx, "bottom_toolbar", &mut ToolPanelViewer(self));
 
         CollapsibleToolbar::new(
@@ -272,6 +273,7 @@ impl DbeApp {
         )
         .default_selected_start(0)
         .global_drag_id(global_drag_id)
+        .persist(true)
         .show(ctx, "left_toolbar", &mut ToolPanelViewer(self));
 
         CollapsibleToolbar::new(
@@ -281,6 +283,7 @@ impl DbeApp {
         )
         .default_selected_start(0)
         .global_drag_id(global_drag_id)
+        .persist(true)
         .show(ctx, "right_toolbar", &mut ToolPanelViewer(self));
 
         egui::CentralPanel::default().show(ctx, |ui| workspace::workspace(ui, self));

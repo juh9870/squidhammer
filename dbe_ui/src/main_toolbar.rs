@@ -1,6 +1,7 @@
 use crate::diagnostics_list::diagnostics_tab;
 use crate::file_tree::file_tab;
 use crate::main_toolbar::colors::colors_tab;
+use crate::widgets::collapsible_toolbar::simple_new_tab_menu::simple_new_tab_menu;
 use crate::widgets::collapsible_toolbar::ToolbarViewer;
 use crate::widgets::rotated_label::RotLabelDirection;
 use crate::DbeApp;
@@ -39,7 +40,7 @@ impl ToolbarViewer for ToolPanelViewer<'_> {
     }
 
     fn closable(&self, _tab: &Self::Tab) -> bool {
-        false
+        true
     }
 
     fn ui(&mut self, ui: &mut Ui, tab: &Self::Tab, _direction: RotLabelDirection) {
@@ -59,5 +60,24 @@ impl ToolbarViewer for ToolPanelViewer<'_> {
                 history::history_tab(ui, self.0);
             }
         }
+    }
+
+    fn has_new_tab_menu(&self) -> bool {
+        true
+    }
+
+    fn new_tab_menu(&self, ui: &mut Ui) -> Option<Self::Tab> {
+        simple_new_tab_menu(
+            ui,
+            self,
+            &[
+                ToolPanel::ProjectTree,
+                ToolPanel::Diagnostics,
+                ToolPanel::Log,
+                ToolPanel::Theme,
+                ToolPanel::Docs,
+                ToolPanel::History,
+            ],
+        )
     }
 }
