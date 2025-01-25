@@ -1,5 +1,6 @@
 use crate::main_toolbar::docs::{docs_hover, docs_label};
-use crate::workspace::editors::{editor_for_value, EditorContext, EditorResponse};
+use crate::workspace::editors::quick::quick_edit_evalue;
+use crate::workspace::editors::{EditorContext, EditorResponse};
 use crate::workspace::graph::GraphViewer;
 use dbe_backend::etype::eenum::variant::EEnumVariantId;
 use dbe_backend::graph::node::editable_state::{EditableState, EditableStateValue};
@@ -19,13 +20,12 @@ pub fn show_state_editor(
         for (ref field_name, ref mut value) in state.iter_mut() {
             match value {
                 EditableStateValue::Value(value) => {
-                    let editor = editor_for_value(viewer.ctx.registry, value);
                     let ctx = EditorContext {
                         registry: viewer.ctx.registry,
                         docs: viewer.ctx.docs,
                         docs_ref: DocsRef::NodeState(node_id, *field_name),
                     };
-                    res |= editor.show(
+                    res |= quick_edit_evalue(
                         ui,
                         ctx,
                         viewer.diagnostics.enter_inline(),

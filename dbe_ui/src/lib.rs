@@ -2,14 +2,15 @@
 
 use crate::error::report_error;
 use crate::main_toolbar::{ToolPanel, ToolPanelViewer};
+use crate::settings::AppSettings;
 use crate::widgets::collapsible_toolbar::CollapsibleToolbar;
 use crate::widgets::dpanel::DPanelSide;
 use crate::workspace::Tab;
 use dbe_backend::project::io::FilesystemIO;
 use dbe_backend::project::Project;
 use egui::{
-    Align2, Button, Color32, Context, FontData, FontDefinitions, FontFamily, Id, Ui,
-    ViewportCommand,
+    Align2, Button, CentralPanel, Color32, Context, FontData, FontDefinitions, FontFamily, Id, Ui,
+    ViewportBuilder, ViewportClass, ViewportCommand, ViewportId,
 };
 use egui_colors::Colorix;
 use egui_dock::DockState;
@@ -30,6 +31,7 @@ mod diagnostics_list;
 mod error;
 mod file_tree;
 pub mod main_toolbar;
+mod settings;
 mod ui_props;
 pub mod widgets;
 mod workspace;
@@ -46,8 +48,11 @@ pub struct DbeApp {
     collector: EventCollector,
     toasts: Vec<Toast>,
     modals: HashMap<&'static str, ModalFn>,
-    history: Vec<PathBuf>,
     tabs: DockState<Tab>,
+    history: Vec<PathBuf>,
+    settings: AppSettings,
+
+    show_settings_menu: bool,
 
     // Theming
     colorix: Colorix,
@@ -65,6 +70,8 @@ struct AppStorage {
     theme: egui_colors::Theme,
     #[serde(default)]
     dark_mode: bool,
+    #[serde(default)]
+    settings: AppSettings,
 }
 
 static ERROR_HAPPENED: AtomicBool = AtomicBool::new(false);
@@ -114,6 +121,8 @@ impl DbeApp {
             tabs: DockState::new(vec![]),
             dark_mode: true,
             allow_close: None,
+            settings: Default::default(),
+            show_settings_menu: false,
         }
     }
 
@@ -123,6 +132,7 @@ impl DbeApp {
             .context("Failed to load persistent app storage")
         {
             Ok(storage) => {
+                self.settings = storage.settings;
                 self.history = storage.history;
                 if let Some(head) = self.history.first() {
                     self.load_project_from_path(head.clone())
@@ -146,6 +156,7 @@ impl DbeApp {
             history: self.history.clone(),
             theme: *self.colorix.theme(),
             dark_mode: self.dark_mode,
+            settings: self.settings.clone(),
         })
         .into_diagnostic()
         .context("Failed to save persistent app storage")
@@ -176,6 +187,7 @@ impl DbeApp {
         // self.colorix = Colorix::init(ctx, [ColorPreset::Red; 12]);
 
         self.close_prompt(ctx);
+        self.settings_menu(ctx);
 
         if let Some(project) = &mut self.project {
             project.registry.apply_pending();
@@ -213,6 +225,11 @@ impl DbeApp {
                         .clicked()
                     {
                         self.project = None;
+                        ui.close_menu();
+                    }
+
+                    if ui.button("Settings").clicked() {
+                        self.show_settings_menu = true;
                         ui.close_menu();
                     }
 
@@ -381,6 +398,30 @@ impl DbeApp {
         }
     }
 
+    fn settings_menu(&mut self, ctx: &Context) {
+        if self.show_settings_menu {
+            ctx.show_viewport_immediate(
+                ViewportId::from_hash_of("dbe_settings"),
+                ViewportBuilder::default()
+                    .with_title("Settings")
+                    .with_inner_size([400.0, 200.0]),
+                move |ctx, viewport| {
+                    let show_ui = |ui: &mut Ui| {
+                        self.settings.edit(ui);
+                    };
+                    if viewport == ViewportClass::Embedded {
+                        egui::Window::new("Settings").show(ctx, show_ui);
+                    } else {
+                        CentralPanel::default().show(ctx, show_ui);
+                    }
+
+                    if ctx.input(|i| i.viewport().close_requested()) {
+                        self.show_settings_menu = false;
+                    }
+                },
+            );
+        }
+    }
     fn close_prompt(&mut self, ctx: &Context) {
         let modal = Modal::new(ctx, "close_app_prompt");
         if self.project.is_none() {
@@ -389,7 +430,8 @@ impl DbeApp {
 
         // Only show exit prompt when project is open
         let close_requested = ctx.input(|i| i.viewport().close_requested());
-        if close_requested && self.allow_close.is_none_or(|x| !x) {
+        if self.settings.exit_confirmation && close_requested && self.allow_close.is_none_or(|x| !x)
+        {
             ctx.send_viewport_cmd(ViewportCommand::CancelClose);
             self.allow_close = Some(false);
         }

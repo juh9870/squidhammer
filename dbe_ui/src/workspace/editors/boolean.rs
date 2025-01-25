@@ -1,3 +1,4 @@
+use crate::widgets::toggle_button::toggle_button;
 use crate::workspace::editors::utils::{labeled_field, unsupported, EditorSize};
 use crate::workspace::editors::{DynProps, Editor, EditorContext, EditorResponse};
 use dbe_backend::diagnostic::context::DiagnosticContextRef;
@@ -24,9 +25,7 @@ impl Editor for BooleanEditor {
         let Ok(value) = value.try_as_boolean_mut() else {
             unsupported!(ui, field_name, value, self);
         };
-        let res = labeled_field(ui, field_name, ctx, |ui| {
-            ui.toggle_value(value, if *value { "⏹ True" } else { "☐ False" })
-        });
+        let res = labeled_field(ui, field_name, ctx, |ui| toggle_button(ui, value));
 
         EditorResponse::new(res.inner.changed())
     }

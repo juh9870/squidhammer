@@ -34,6 +34,7 @@ use std::ops::{BitOr, BitOrAssign, Deref};
 use std::sync::LazyLock;
 use ustr::{Ustr, UstrMap};
 
+pub mod quick;
 mod utils;
 
 mod boolean;
