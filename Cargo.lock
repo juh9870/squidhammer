@@ -1118,6 +1118,7 @@ dependencies = [
  "petgraph",
  "rand",
  "random_color",
+ "rayon",
  "rstest",
  "sanitise-file-name",
  "serde",
