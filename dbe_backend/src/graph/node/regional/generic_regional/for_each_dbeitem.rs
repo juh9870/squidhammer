@@ -341,7 +341,7 @@ impl GenericStatefulNode for ForEachDbeItem {
                 state.had_value = true;
             }
 
-            remember_variables(&mut state.values, &inputs[..], outputs);
+            remember_variables(&mut state.values, inputs, outputs);
 
             Ok(ExecutionResult::Done)
         } else {
