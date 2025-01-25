@@ -1,11 +1,11 @@
 use miette::{bail, IntoDiagnostic};
 use std::path::{Path, PathBuf};
 
-pub trait ProjectIO {
-    fn read_file(&mut self, path: impl AsRef<Path>) -> miette::Result<Vec<u8>>;
-    fn file_exists(&mut self, path: impl AsRef<Path>) -> miette::Result<bool>;
-    fn write_file(&mut self, path: impl AsRef<Path>, data: &[u8]) -> miette::Result<()>;
-    fn delete_file(&mut self, path: impl AsRef<Path>) -> miette::Result<()>;
+pub trait ProjectIO: Send + Sync {
+    fn read_file(&self, path: impl AsRef<Path>) -> miette::Result<Vec<u8>>;
+    fn file_exists(&self, path: impl AsRef<Path>) -> miette::Result<bool>;
+    fn write_file(&self, path: impl AsRef<Path>, data: &[u8]) -> miette::Result<()>;
+    fn delete_file(&self, path: impl AsRef<Path>) -> miette::Result<()>;
 }
 
 pub struct FilesystemIO {
@@ -36,23 +36,23 @@ impl FilesystemIO {
 }
 
 impl ProjectIO for FilesystemIO {
-    fn read_file(&mut self, path: impl AsRef<Path>) -> miette::Result<Vec<u8>> {
+    fn read_file(&self, path: impl AsRef<Path>) -> miette::Result<Vec<u8>> {
         let path = self.process_path(path)?;
         fs_err::read(path).into_diagnostic()
     }
 
-    fn file_exists(&mut self, path: impl AsRef<Path>) -> miette::Result<bool> {
+    fn file_exists(&self, path: impl AsRef<Path>) -> miette::Result<bool> {
         let path = self.process_path(path)?;
         Ok(path.exists() && fs_err::metadata(path).into_diagnostic()?.is_file())
     }
 
-    fn write_file(&mut self, path: impl AsRef<Path>, data: &[u8]) -> miette::Result<()> {
+    fn write_file(&self, path: impl AsRef<Path>, data: &[u8]) -> miette::Result<()> {
         let path = self.process_path(path)?;
         fs_err::create_dir_all(path.parent().unwrap()).into_diagnostic()?;
         fs_err::write(path, data).into_diagnostic()
     }
 
-    fn delete_file(&mut self, path: impl AsRef<Path>) -> miette::Result<()> {
+    fn delete_file(&self, path: impl AsRef<Path>) -> miette::Result<()> {
         let path = self.process_path(path)?;
         fs_err::remove_file(path).into_diagnostic()
     }

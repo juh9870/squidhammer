@@ -16,9 +16,12 @@ use camino::{Utf8Path, Utf8PathBuf};
 use diagnostic::context::DiagnosticContext;
 use diagnostic::diagnostic::DiagnosticLevel;
 use miette::{bail, miette, Context, IntoDiagnostic, Report};
+use rayon::iter::ParallelDrainFull;
+use rayon::prelude::{IntoParallelRefIterator, ParallelIterator};
 use serde::{Deserialize, Serialize};
 use std::collections::{BTreeMap, BTreeSet};
 use std::path::{Path, PathBuf};
+use std::time::Instant;
 use tracing::info;
 use utils::map::HashSet;
 use uuid::Uuid;
@@ -147,7 +150,7 @@ impl<IO: ProjectIO> Project<IO> {
         root: impl AsRef<Path>,
         config: ProjectConfig,
         files: impl IntoIterator<Item = PathBuf>,
-        mut io: IO,
+        io: IO,
     ) -> miette::Result<Self> {
         let mut registry_items = BTreeMap::new();
         let mut import_jsons = BTreeMap::<Utf8PathBuf, (JsonValue, Option<EDataType>)>::new();
@@ -384,12 +387,19 @@ impl<IO: ProjectIO> Project<IO> {
     /// Clean and validate the project, evaluating all graphs and running side effects
     pub fn clean_validate(&mut self) -> miette::Result<()> {
         self.diagnostics.diagnostics.clear();
+        let graph_eval_time = Instant::now();
         self.evaluate_graphs()?;
+        let graph_eval_time = graph_eval_time.elapsed().as_secs_f32();
         clear_validation_cache(&self.registry);
+        let validate_time = Instant::now();
         // Double validate to ensure that validation cache is populated
         self.validate_all()?;
         self.validate_all()?;
-        info!("Project built and validated successfully");
+        let validate_time = validate_time.elapsed().as_secs_f32();
+        info!(
+            graph_eval_time,
+            validate_time, "Project built and validated successfully"
+        );
         Ok(())
     }
 
@@ -425,75 +435,90 @@ impl<IO: ProjectIO> Project<IO> {
             return Err(miette!("project has unresolved errors, cannot save"));
         }
 
-        for (path, file) in &self.files {
-            self.to_delete.remove(path);
-            let mut generated = false;
-            fn wrap_if_dbe(path: &Utf8Path, value: &EValue, json: JsonValue) -> JsonValue {
-                if path
-                    .extension()
-                    .is_some_and(|ext| ext.to_lowercase().ends_with(EXTENSION_VALUE))
-                {
-                    let json = MiscJson {
-                        ty: value.ty(),
-                        value: json,
+        let (no_delete_sender, no_delete_receiver) = std::sync::mpsc::channel::<Utf8PathBuf>();
+
+        self.files.par_iter().try_for_each_with(
+            no_delete_sender,
+            |sender, (path, file)| -> miette::Result<()> {
+                sender.send(path.clone()).unwrap();
+                let mut generated = false;
+                fn wrap_if_dbe(path: &Utf8Path, value: &EValue, json: JsonValue) -> JsonValue {
+                    if path
+                        .extension()
+                        .is_some_and(|ext| ext.to_lowercase().ends_with(EXTENSION_VALUE))
+                    {
+                        let json = MiscJson {
+                            ty: value.ty(),
+                            value: json,
+                        };
+
+                        serde_json::value::to_value(&json)
+                            .expect("serialization of MiscJson should not fail")
+                    } else {
+                        json
+                    }
+                }
+                let json_string = m_try(|| {
+                    let json = match file {
+                        ProjectFile::Value(value) => {
+                            wrap_if_dbe(path, value, self.serialize_json(value)?)
+                        }
+                        ProjectFile::GeneratedValue(value) => {
+                            generated = true;
+                            wrap_if_dbe(path, value, self.serialize_json(value)?)
+                        }
+                        ProjectFile::Graph(id) => {
+                            let Some(graph) = self.graphs.graphs.get(id) else {
+                                panic!("graph {:?} at path {} is not found", id, path);
+                            };
+                            graph.write_json(&self.registry)?
+                        }
+                        ProjectFile::BadValue(_) => {
+                            panic!("BadValue should have been filtered out by validate_all");
+                        }
                     };
 
-                    serde_json::value::to_value(&json)
-                        .expect("serialization of MiscJson should not fail")
-                } else {
-                    json
+                    let mut buf = vec![];
+                    let mut serializer = serde_json::ser::Serializer::with_formatter(
+                        &mut buf,
+                        DBEJsonFormatter::pretty(),
+                    );
+
+                    json.serialize(&mut serializer).into_diagnostic()?;
+
+                    Ok(String::from_utf8(buf).expect("JSON should be UTF-8"))
+                })
+                .with_context(|| format!("failed to serialize file at `{}`", path))?;
+
+                if generated {
+                    let generated_path = generated_marker_path(path);
+                    sender.send(generated_path.clone()).unwrap();
+                    self.io.write_file(&generated_path, &[]).with_context(|| {
+                        format!("failed to write generated marker to `{}`", generated_path)
+                    })?;
                 }
-            }
-            let json_string = m_try(|| {
-                let json = match file {
-                    ProjectFile::Value(value) => {
-                        wrap_if_dbe(path, value, self.serialize_json(value)?)
-                    }
-                    ProjectFile::GeneratedValue(value) => {
-                        generated = true;
-                        wrap_if_dbe(path, value, self.serialize_json(value)?)
-                    }
-                    ProjectFile::Graph(id) => {
-                        let Some(graph) = self.graphs.graphs.get(id) else {
-                            panic!("graph {:?} at path {} is not found", id, path);
-                        };
-                        graph.write_json(&self.registry)?
-                    }
-                    ProjectFile::BadValue(_) => {
-                        panic!("BadValue should have been filtered out by validate_all");
-                    }
-                };
 
-                let mut buf = vec![];
-                let mut serializer = serde_json::ser::Serializer::with_formatter(
-                    &mut buf,
-                    DBEJsonFormatter::pretty(),
-                );
+                self.io
+                    .write_file(path, json_string.as_bytes())
+                    .with_context(|| format!("failed to write JSON to `{}`", path))?;
 
-                json.serialize(&mut serializer).into_diagnostic()?;
+                Ok(())
+            },
+        )?;
 
-                Ok(String::from_utf8(buf).expect("JSON should be UTF-8"))
-            })
-            .with_context(|| format!("failed to serialize file at `{}`", path))?;
-
-            if generated {
-                let generated_path = generated_marker_path(path);
-                self.to_delete.remove(&generated_path);
-                self.io.write_file(&generated_path, &[]).with_context(|| {
-                    format!("failed to write generated marker to `{}`", generated_path)
-                })?;
-            }
-
-            self.io
-                .write_file(path, json_string.as_bytes())
-                .with_context(|| format!("failed to write JSON to `{}`", path))?;
+        for p in no_delete_receiver.try_iter() {
+            self.to_delete.remove(&p);
         }
 
-        for path in self.to_delete.drain() {
-            self.io
-                .delete_file(&path)
-                .with_context(|| format!("failed to delete `{}`", path))?;
-        }
+        self.to_delete
+            .par_drain()
+            .try_for_each(|path| -> miette::Result<()> {
+                self.io
+                    .delete_file(&path)
+                    .with_context(|| format!("failed to delete `{}`", path))?;
+
+                Ok(())
+            })?;
 
         Ok(())
     }

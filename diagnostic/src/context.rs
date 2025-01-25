@@ -20,6 +20,15 @@ impl Default for DiagnosticContext {
 }
 
 impl DiagnosticContext {
+    pub fn merge(&mut self, other: DiagnosticContext) {
+        for (ident, diagnostics) in other.diagnostics {
+            let entry = self.diagnostics.entry(ident).or_default();
+            for (path, reports) in diagnostics {
+                entry.entry(path).or_default().extend(reports);
+            }
+        }
+    }
+
     pub fn enter<'a>(&'a mut self, ident: &'a str) -> DiagnosticContextMut<'a> {
         let entry = self.diagnostics.entry(ident.to_string()).or_default();
         DiagnosticContextMut {
