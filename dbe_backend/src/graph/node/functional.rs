@@ -15,11 +15,11 @@ use std::fmt::{Debug, Formatter};
 use std::hash::{Hash, Hasher};
 use std::marker::PhantomData;
 use std::sync::Arc;
-use ustr::ustr;
 
 pub mod generic;
 pub mod impls;
 pub mod macros;
+pub mod raw_manip;
 
 pub type FunctionalArgNames = &'static [&'static str];
 
@@ -687,47 +687,60 @@ pub fn functional_nodes() -> Vec<Arc<dyn NodeFactory>> {
         functional_node(
             |ctx: C, value: AnyEValue, field: String| {
                 let value = value.0;
-                fn get_value(
-                    registry: &ETypesRegistry,
-                    value: &EValue,
-                    field: &str,
-                ) -> miette::Result<Option<EValue>> {
-                    match value {
-                        EValue::Struct { fields, ident } => {
-                            if let Some(value) = fields.get(&ustr(field)) {
-                                return Ok(Some(value.clone()));
-                            }
-
-                            let data = registry
-                                .get_struct(ident)
-                                .ok_or_else(|| miette!("struct not found"))?;
-                            for inline_field in &data.fields {
-                                if !inline_field.is_inline() {
-                                    continue;
-                                }
-
-                                let inline_value =
-                                    fields.get(&inline_field.name).ok_or_else(|| {
-                                        miette!("!!INTERNAL ERROR!! field should be present")
-                                    })?;
-
-                                if let Some(value) = get_value(registry, inline_value, field)? {
-                                    return Ok(Some(value));
-                                }
-                            }
-
-                            Ok(None)
-                        }
-                        EValue::Enum { data, .. } => get_value(registry, data, field),
-                        _ => bail!("value is not a struct or an enum"),
-                    }
-                }
-                let value = get_value(ctx.context.registry, &value, &field)?;
+                let value = raw_manip::get_value(ctx.context.registry, &value, &field)?;
                 Ok(value.map(AnyEValue))
+            },
+            "try_get_field",
+            &["object", "field"],
+            &["result"],
+            &["optional.raw"],
+        ),
+        functional_node(
+            |ctx: C, value: AnyEValue, field: String| {
+                let value = value.0;
+                let Some(value) = raw_manip::get_value(ctx.context.registry, &value, &field)?
+                else {
+                    bail!(
+                        "field `{}` not found in object of type `{}`",
+                        field,
+                        value.ty().name()
+                    )
+                };
+
+                Ok(AnyEValue(value))
             },
             "get_field",
             &["object", "field"],
             &["result"],
+            &["optional.raw"],
+        ),
+        functional_node(
+            |ctx: C, mut obj: AnyEValue, field: String, mut value: AnyEValue| {
+                let success =
+                    raw_manip::swap_value(ctx.context.registry, &mut obj.0, &field, &mut value.0)?;
+                Ok((obj, success, success.then_some(value)))
+            },
+            "try_set_field",
+            &["object", "field", "value"],
+            &["object", "success", "old_value"],
+            &["optional.raw"],
+        ),
+        functional_node(
+            |ctx: C, mut obj: AnyEValue, field: String, mut value: AnyEValue| {
+                let success =
+                    raw_manip::swap_value(ctx.context.registry, &mut obj.0, &field, &mut value.0)?;
+                if !success {
+                    bail!(
+                        "field `{}` not found in object of type `{}`",
+                        field,
+                        obj.0.ty().name()
+                    );
+                }
+                Ok((obj, value))
+            },
+            "set_field",
+            &["object", "field", "value"],
+            &["object", "old_value"],
             &["optional.raw"],
         ),
         functional_node(
