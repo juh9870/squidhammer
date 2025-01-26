@@ -175,25 +175,31 @@ pub fn node_docs(ui: &mut Ui, node: &dyn NodeFactory, docs: &NodeDocs) {
     if !docs.state.is_empty() {
         ui.label(RichText::new("State").heading());
         ui.separator();
-        for docs in &docs.state {
-            show_collapsing_description(ui, docs, &mut md_cache, &docs.title);
-        }
+        ui.push_id("state", |ui| {
+            for docs in &docs.state {
+                show_collapsing_description(ui, docs, &mut md_cache, &docs.title);
+            }
+        });
     }
 
     if !docs.inputs.is_empty() {
         ui.label(RichText::new("Inputs").heading());
         ui.separator();
-        for docs in &docs.inputs {
-            show_collapsing_description(ui, docs, &mut md_cache, &docs.title);
-        }
+        ui.push_id("inputs", |ui| {
+            for docs in &docs.inputs {
+                show_collapsing_description(ui, docs, &mut md_cache, &docs.title);
+            }
+        });
     }
 
     if !docs.outputs.is_empty() {
         ui.label(RichText::new("Outputs").heading());
         ui.separator();
-        for docs in &docs.outputs {
-            show_collapsing_description(ui, docs, &mut md_cache, &docs.title);
-        }
+        ui.push_id("outputs", |ui| {
+            for docs in &docs.outputs {
+                show_collapsing_description(ui, docs, &mut md_cache, &docs.title);
+            }
+        });
     }
 }
 
