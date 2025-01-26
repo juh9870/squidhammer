@@ -6,6 +6,10 @@
 
 > Released on ReleaseDate
 
+## [0.1.10]
+
+> Released on 2025-01-26
+
 ### Added
 
 - `is_none` node (by juh9870)
@@ -68,7 +72,8 @@
 No changelog for this and all previous versions.
 
 <!-- next-url -->
-[Unreleased]: https://github.com/juh9870/squidhammer/compare/v0.1.9...HEAD
+[Unreleased]: https://github.com/juh9870/squidhammer/compare/v0.1.10...HEAD
+[0.1.10]: https://github.com/juh9870/squidhammer/compare/v0.1.9...v0.1.10
 
 [0.1.9]: https://github.com/juh9870/dbe/compare/squidhammer-v0.1.8...v0.1.9
 

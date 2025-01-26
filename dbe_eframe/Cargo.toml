@@ -1,6 +1,6 @@
 [package]
 name = "squidhammer"
-version = "0.1.9"
+version = "0.1.10"
 authors = ["juh9870"]
 edition = "2021"
 homepage = "https://github.com/juh9870/dbe"
