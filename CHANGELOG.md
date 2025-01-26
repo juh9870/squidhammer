@@ -6,6 +6,25 @@
 
 > Released on ReleaseDate
 
+### Added
+
+- `is_none` node (by juh9870)
+- `is_some` node (by juh9870)
+
+### Changed
+
+- `try_set_field` and `set_field` are now geeneric over the object (by juh9870)
+
+### Fixed
+
+- Duplicate ID in docs UI if the input and output fields have the same type (by juh9870)
+- `set_field` creating fields with invalid types (by juh9870)
+
+### Documented
+
+- `try_set_field` node (by juh9870)
+- `set_field` node (by juh9870)
+
 ## [0.1.9]
 
 > Released on 2025-01-26
