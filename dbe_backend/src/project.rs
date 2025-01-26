@@ -150,7 +150,7 @@ impl<IO: ProjectIO> Project<IO> {
         root: impl AsRef<Path>,
         config: ProjectConfig,
         files: impl IntoIterator<Item = PathBuf>,
-        io: IO,
+        mut io: IO,
     ) -> miette::Result<Self> {
         let mut registry_items = BTreeMap::new();
         let mut import_jsons = BTreeMap::<Utf8PathBuf, (JsonValue, Option<EDataType>)>::new();
@@ -238,6 +238,8 @@ impl<IO: ProjectIO> Project<IO> {
             })
             .with_context(|| format!("failed to load file at `{}`", path))?;
         }
+
+        io.flush()?;
 
         let registry = ETypesRegistry::from_raws(registry_items, config)?;
 
@@ -519,6 +521,8 @@ impl<IO: ProjectIO> Project<IO> {
 
                 Ok(())
             })?;
+
+        self.io.flush()?;
 
         Ok(())
     }
