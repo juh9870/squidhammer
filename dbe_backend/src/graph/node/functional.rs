@@ -789,6 +789,20 @@ pub fn functional_nodes() -> Vec<Arc<dyn NodeFactory>> {
             &["optional.raw"],
         ),
         functional_node(
+            |_: C, value: Option<GenericValue<0>>| ENumber::from(value.is_some()),
+            "is_some",
+            &["option"],
+            &["is_some"],
+            &["optional"],
+        ),
+        functional_node(
+            |_: C, value: Option<GenericValue<0>>| ENumber::from(value.is_none()),
+            "is_none",
+            &["option"],
+            &["is_none"],
+            &["optional"],
+        ),
+        functional_node(
             |_: C, value: Vec<GenericValue<0>>| ENumber::from(value.len() as f64),
             "list_length",
             &["list"],
