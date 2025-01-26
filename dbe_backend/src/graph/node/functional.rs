@@ -4,6 +4,7 @@ use crate::etype::EDataType;
 use crate::graph::node::extras::ExecutionExtras;
 use crate::graph::node::format_node::format_evalue_for_graph;
 use crate::graph::node::functional::generic::{GenericFieldAdapter, GenericValue};
+use crate::graph::node::functional::raw_manip::SwapValueResult;
 use crate::graph::node::generic::{GenericNodeField, GenericNodeFieldMut};
 use crate::graph::node::ports::{port_types_compatible, NodePortType};
 use crate::graph::node::{NodeContext, NodeFactory};
@@ -716,8 +717,16 @@ pub fn functional_nodes() -> Vec<Arc<dyn NodeFactory>> {
         ),
         functional_node(
             |ctx: C, mut obj: GenericValue<0>, field: String, mut value: AnyEValue| {
-                let success =
-                    raw_manip::swap_value(ctx.context.registry, &mut obj.0, &field, &mut value.0)?;
+                let success = match raw_manip::swap_value(
+                    ctx.context.registry,
+                    &mut obj.0,
+                    &field,
+                    &mut value.0,
+                )? {
+                    SwapValueResult::Swapped => true,
+                    SwapValueResult::InvalidType => false,
+                    SwapValueResult::FieldNotFound => false,
+                };
                 Ok((obj, success, success.then_some(value)))
             },
             "try_set_field",
@@ -727,14 +736,23 @@ pub fn functional_nodes() -> Vec<Arc<dyn NodeFactory>> {
         ),
         functional_node(
             |ctx: C, mut obj: GenericValue<0>, field: String, mut value: AnyEValue| {
-                let success =
-                    raw_manip::swap_value(ctx.context.registry, &mut obj.0, &field, &mut value.0)?;
-                if !success {
-                    bail!(
-                        "field `{}` not found in object of type `{}`",
-                        field,
-                        obj.0.ty().name()
-                    );
+                match raw_manip::swap_value(ctx.context.registry, &mut obj.0, &field, &mut value.0)?
+                {
+                    SwapValueResult::Swapped => {}
+                    SwapValueResult::InvalidType => {
+                        bail!(
+                            "type mismatch when setting field `{}` in object of type `{}`",
+                            field,
+                            obj.0.ty().name()
+                        );
+                    }
+                    SwapValueResult::FieldNotFound => {
+                        bail!(
+                            "field `{}` not found in object of type `{}`",
+                            field,
+                            obj.0.ty().name()
+                        );
+                    }
                 }
                 Ok((obj, value))
             },
