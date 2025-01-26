@@ -6,6 +6,10 @@
 
 > Released on ReleaseDate
 
+## [0.1.9]
+
+> Released on 2025-01-26
+
 ### Added
 
 - Autosave (by juh9870)
@@ -45,8 +49,9 @@
 No changelog for this and all previous versions.
 
 <!-- next-url -->
+[Unreleased]: https://github.com/juh9870/squidhammer/compare/v0.1.9...HEAD
 
-[Unreleased]: https://github.com/juh9870/dbe/compare/squidhammer-v0.1.8...HEAD
+[0.1.9]: https://github.com/juh9870/dbe/compare/squidhammer-v0.1.8...v0.1.9
 
 [v0.1.8]: https://github.com/juh9870/dbe/compare/squidhammer-v0.1.7...squidhammer-v0.1.8
 
