@@ -6,6 +6,21 @@
 
 > Released on ReleaseDate
 
+### Added
+
+- Autosave (by juh9870)
+- Saving prompt upon trying to exist an app while a project is open (by juh9870)
+- Button to add tabs to the sidebars (by juh9870)
+- Update checker (by juh9870)
+- Settings menu (currently only for disabling exit prompt) (by juh9870)
+
+### Changed
+
+- Sidebar tabs layout now persist across app restart (by juh9870)
+- Changelog format and tag naming (by juh9870)
+- Reduced the amount of file writes by avoiding writing unchanged files (by juh9870)
+- Parallelized project file saving (by juh9870)
+
 ## [v0.1.8]
 
 > Released on 2025-01-25
