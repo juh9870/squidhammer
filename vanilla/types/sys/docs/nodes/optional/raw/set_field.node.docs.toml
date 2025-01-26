@@ -1,0 +1,53 @@
+[nodes.set_field]
+title = "Set Field"
+description = "Replaces value of the specified field in the input object."
+docs = """
+#### Field detection
+- If the input object is a struct and contains the specified field, that field \
+will be replaced.
+- If the input object is a struct that contains inline fields, the search will \
+be performed recursively on inline fields.
+- If the input object is an enum, the search will be performed on the enum's \
+value
+- Otherwise, the node will fail.
+
+#### Failures
+- The node will fail is the input object is not a struct or enum.
+- The node will fail if the field does not exist in the input object.
+- The node will fail if the input value is not compatible with the field type.
+"""
+
+[[nodes.set_field.inputs]]
+title = "Object"
+id = "object"
+description = "Object to modify. Must be a struct or an enum."
+
+[[nodes.set_field.inputs]]
+title = "Field"
+id = "field"
+description = "Field name to replace"
+
+[[nodes.set_field.inputs]]
+title = "Value"
+id = "value"
+description = "New value for the field"
+docs = """
+Value will be converted to the field type using the same logic as node port
+connection. If the conversion fails, the node will fail.
+"""
+
+[[nodes.set_field.outputs]]
+title = "Object"
+id = "object"
+description = "The modified object"
+docs = """
+"""
+
+[[nodes.set_field.outputs]]
+title = "Old Value"
+id = "old_value"
+description = "Previous value of the field"
+docs = """
+This value might have different type than the new value, in case if the \
+conversion was performed
+"""
