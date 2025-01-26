@@ -715,7 +715,7 @@ pub fn functional_nodes() -> Vec<Arc<dyn NodeFactory>> {
             &["optional.raw"],
         ),
         functional_node(
-            |ctx: C, mut obj: AnyEValue, field: String, mut value: AnyEValue| {
+            |ctx: C, mut obj: GenericValue<0>, field: String, mut value: AnyEValue| {
                 let success =
                     raw_manip::swap_value(ctx.context.registry, &mut obj.0, &field, &mut value.0)?;
                 Ok((obj, success, success.then_some(value)))
@@ -726,7 +726,7 @@ pub fn functional_nodes() -> Vec<Arc<dyn NodeFactory>> {
             &["optional.raw"],
         ),
         functional_node(
-            |ctx: C, mut obj: AnyEValue, field: String, mut value: AnyEValue| {
+            |ctx: C, mut obj: GenericValue<0>, field: String, mut value: AnyEValue| {
                 let success =
                     raw_manip::swap_value(ctx.context.registry, &mut obj.0, &field, &mut value.0)?;
                 if !success {
