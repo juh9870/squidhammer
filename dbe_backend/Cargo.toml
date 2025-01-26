@@ -12,6 +12,7 @@ atomic_refcell = { workspace = true }
 bitflags = { workspace = true }
 camino = { workspace = true, features = ["serde", "serde1"] }
 collection_traits = { workspace = true, features = ["smallvec"] }
+crossbeam-channel = { workspace = true }
 derive_more = { workspace = true, features = ["debug"] }
 diagnostic = { workspace = true }
 downcast-rs = { workspace = true }
@@ -39,6 +40,7 @@ sanitise-file-name = { workspace = true }
 serde = { workspace = true, features = ["derive"] }
 serde_json = { workspace = true }
 serde_json5 = { workspace = true }
+sha2 = { workspace = true }
 smallvec = { workspace = true, features = ["serde", "union"] }
 squidfmt = { workspace = true }
 strum = { workspace = true, features = ["derive"] }
