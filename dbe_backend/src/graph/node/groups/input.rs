@@ -116,8 +116,6 @@ impl Node for GroupInputNode {
             id: field.id,
         });
 
-        commands.push(SnarlCommand::MarkDirty { node: from.id.node });
-
         Ok(())
     }
 

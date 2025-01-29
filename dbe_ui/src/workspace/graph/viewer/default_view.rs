@@ -101,7 +101,7 @@ impl NodeView for DefaultNodeView {
                 if let Some(value) = full_ctx.get_inline_input_mut(pin.id)? {
                     if input_data.ty.has_inline_value(registry) {
                         let editor = editor_for_item(registry, info);
-                        let res = ui.vertical(|ui| {
+                        ui.vertical(|ui| {
                             editor.show(
                                 ui,
                                 ctx,
@@ -110,13 +110,8 @@ impl NodeView for DefaultNodeView {
                                 value,
                             )
                         });
-
-                        if res.inner.changed {
-                            full_ctx.mark_node_dirty(pin.id.node);
-                        }
                     } else {
                         ui.horizontal(|ui| {
-                            docs_label(ui, &input_data.name, docs, registry, ctx.docs_ref);
                             ui.label(format_value(value));
                         });
                     }

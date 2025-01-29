@@ -1,4 +1,3 @@
-use crate::graph::cache::GraphCache;
 use crate::graph::execution::GraphExecutionContext;
 use crate::graph::inputs::{GraphInput, GraphOutput};
 use crate::graph::node::commands::{SnarlCommand, SnarlCommands};
@@ -51,7 +50,6 @@ impl<'a> GraphEditingContext<'a, 'a> {
         registry: &'a ETypesRegistry,
         docs: &'a Docs,
         graphs: Option<&'a ProjectGraphs>,
-        cache: &'a mut GraphCache,
         side_effects: SideEffectsContext<'a>,
         is_node_group: bool,
         input_values: &'a [EValue],
@@ -62,7 +60,6 @@ impl<'a> GraphEditingContext<'a, 'a> {
             registry,
             docs,
             graphs,
-            cache,
             side_effects,
             is_node_group,
             input_values,
@@ -94,7 +91,6 @@ impl GraphEditingContext<'_, '_> {
             self.ctx.inline_values,
             self.ctx.registry,
             self.ctx.graphs,
-            self.ctx.cache,
             self.ctx.side_effects.clone(),
             self.ctx.is_node_group,
             self.ctx.input_values,
@@ -312,10 +308,6 @@ impl GraphEditingContext<'_, '_> {
         Ok(smallvec![id])
     }
 
-    pub fn mark_node_dirty(&mut self, node: NodeId) {
-        self.as_execution_context().mark_dirty(node)
-    }
-
     pub fn read_output(&mut self, id: OutPinId) -> miette::Result<EValue> {
         self.as_execution_context().read_output(id)
     }
@@ -348,7 +340,6 @@ pub struct PartialGraphEditingContext<'a> {
     is_node_group: bool,
     input_values: &'a [EValue],
     output_values: &'a mut Option<Vec<EValue>>,
-    cache: &'a mut GraphCache,
 }
 
 impl<'a> PartialGraphEditingContext<'a> {
@@ -358,7 +349,6 @@ impl<'a> PartialGraphEditingContext<'a> {
         registry: &'a ETypesRegistry,
         docs: &'a Docs,
         graphs: Option<&'a ProjectGraphs>,
-        cache: &'a mut GraphCache,
         side_effects: SideEffectsContext<'a>,
         is_node_group: bool,
         input_values: &'a [EValue],
@@ -368,7 +358,6 @@ impl<'a> PartialGraphEditingContext<'a> {
             PartialGraphEditingContext {
                 inline_values: &mut graph.inline_values,
                 inputs: &mut graph.inputs,
-                cache,
                 registry,
                 docs,
                 graphs,
@@ -395,7 +384,6 @@ impl<'a> PartialGraphEditingContext<'a> {
             snarl,
             ctx: PartialGraphEditingContext {
                 inline_values: self.inline_values,
-                cache: self.cache,
                 registry: self.registry,
                 docs: self.docs,
                 graphs: self.graphs,

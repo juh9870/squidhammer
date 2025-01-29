@@ -130,14 +130,12 @@ impl Graph {
         };
 
         m_try(|| {
-            let mut cache = cache::GraphCache::default();
             let out_values = &mut None;
             let mut ctx = GraphEditingContext::from_graph(
                 &mut graph,
                 registry,
                 &Docs::Stub,
                 None,
-                &mut cache,
                 SideEffectsContext::unavailable(),
                 true,
                 &[],

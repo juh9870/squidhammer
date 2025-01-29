@@ -31,8 +31,6 @@ pub enum SnarlCommand {
     /// The most likely use case for this is when a node's input pin type
     /// changes, this allows to propagate the change and clean up the now invalid connections
     ReconnectInput { id: InPinId },
-    /// Marks a node as dirty
-    MarkDirty { node: NodeId },
     /// Marks regions graph as dirty, requiring a rebuild
     RequireRegionRebuild,
     /// Removes the inline input value of the pin
@@ -117,12 +115,10 @@ impl SnarlCommand {
         match self {
             SnarlCommand::DisconnectRaw { from, to } => {
                 ctx.snarl.disconnect(from, to);
-                ctx.mark_node_dirty(to.node);
                 ctx.mark_dirty();
             }
             SnarlCommand::ConnectRaw { from, to } => {
                 ctx.snarl.connect(from, to);
-                ctx.mark_node_dirty(to.node);
                 ctx.mark_dirty();
             }
             SnarlCommand::InputMovedRaw { from, to } => {
@@ -139,16 +135,13 @@ impl SnarlCommand {
                 }
                 if from.node != to.node {
                     ctx.mark_dirty();
-                    ctx.mark_node_dirty(from.node);
                 }
-                ctx.mark_node_dirty(to.node);
             }
             SnarlCommand::OutputMovedRaw { from, to } => {
                 let pin = ctx.snarl.out_pin(from);
                 ctx.snarl.drop_outputs(from);
                 for remote in pin.remotes {
                     ctx.snarl.connect(to, remote);
-                    ctx.mark_node_dirty(remote.node);
                 }
                 if from.node != to.node {
                     ctx.mark_dirty();
@@ -254,9 +247,6 @@ impl SnarlCommand {
                     }
                 }
             }
-            SnarlCommand::MarkDirty { node } => {
-                ctx.mark_node_dirty(node);
-            }
             SnarlCommand::Custom { cb } => {
                 cb(ctx)?;
             }
@@ -284,7 +274,6 @@ impl SnarlCommand {
             }
             SnarlCommand::DropInputsRaw { to } => {
                 ctx.snarl.drop_inputs(to);
-                ctx.mark_node_dirty(to.node);
                 ctx.mark_dirty();
             }
             // SnarlCommand::DropOutputsRaw { from } => {
@@ -364,13 +353,6 @@ impl SnarlCommand {
                     .variables;
 
                 operation.apply(vars);
-                if let Ok(data) = ctx.region_graph.try_as_data() {
-                    let data = data.region_data(&region);
-                    let start = data.start_node;
-                    let end = data.end_node;
-                    ctx.mark_node_dirty(start);
-                    ctx.mark_node_dirty(end);
-                }
             }
         }
         Ok(())
