@@ -1,2 +1,2 @@
 ignore-interior-mutability = ["bytes::Bytes", "lockfree_object_pool::LinearReusable"]
-disallowed-types = ["std::collections::HashMap", "std::collections::HashSet", "ahash::AHMap", "ahash::AHashSet", "ahash::AHasher", "ahash::RandomState"]
+disallowed-types = ["std::collections::HashMap", "std::collections::HashSet", "ahash::AHMap", "ahash::AHashSet", "ahash::AHasher", "ahash::RandomState", "dashmap::DashMap", "dashmap::DashSet"]

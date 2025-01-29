@@ -8,6 +8,7 @@ publish = false
 [dependencies]
 ahash = { workspace = true }
 collection_traits = { workspace = true }
+dashmap = { workspace = true }
 dyn-clone = { workspace = true }
 ecolor = { workspace = true }
 emath = { workspace = true }

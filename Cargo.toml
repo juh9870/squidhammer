@@ -91,7 +91,9 @@ walkdir = "2.5.0"
 xflags = "0.3"
 xshell = "0.2"
 sha2 = "0.10.8"
-crossbeam-channel = "0.5.14"
+zip = "2.2.2"
+dashmap = "6.1.0"
+include_dir = "0.7.4"
 
 # Workspace crates
 collection_traits = { path = "collection_traits" }
