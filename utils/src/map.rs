@@ -1,3 +1,5 @@
+pub use dashmap;
+
 pub type OrderMapEntry<'a, K, V> = ordermap::map::Entry<'a, K, V>;
 
 #[allow(clippy::disallowed_types)]
@@ -7,6 +9,11 @@ pub type BuildHasher = std::hash::BuildHasherDefault<Hasher>;
 // DOS is of no concern to us
 pub type OrderMap<K, V> = ordermap::OrderMap<K, V, BuildHasher>;
 pub type OrderSet<V> = ordermap::OrderSet<V, BuildHasher>;
+
+#[allow(clippy::disallowed_types)]
+pub type DashMap<K, V> = dashmap::DashMap<K, V, BuildHasher>;
+#[allow(clippy::disallowed_types)]
+pub type DashSet<V> = dashmap::DashSet<V, BuildHasher>;
 
 #[allow(clippy::disallowed_types)]
 pub type HashMap<K, V> = std::collections::HashMap<K, V, BuildHasher>;

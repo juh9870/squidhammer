@@ -5,6 +5,7 @@ use crate::json_utils::{json_kind, JsonValue};
 use crate::m_try;
 use crate::project::docs::{Docs, DocsFile};
 use crate::project::io::{FilesystemIO, ProjectIO};
+use crate::project::module::find_dbemodule_path;
 use crate::project::project_graph::{ProjectGraph, ProjectGraphs};
 use crate::project::side_effects::SideEffectsContext;
 use crate::project::undo::{UndoHistory, UndoSettings};
@@ -19,24 +20,27 @@ use miette::{bail, miette, Context, IntoDiagnostic, Report};
 use rayon::iter::ParallelDrainFull;
 use rayon::prelude::{IntoParallelRefIterator, ParallelIterator};
 use serde::{Deserialize, Serialize};
-use std::collections::{BTreeMap, BTreeSet};
+use std::collections::BTreeMap;
 use std::path::{Path, PathBuf};
 use std::time::Instant;
 use tracing::info;
 use utils::map::HashSet;
 use uuid::Uuid;
-use walkdir::WalkDir;
 
 pub mod docs;
 pub mod io;
+pub mod module;
 pub mod project_graph;
 pub mod side_effects;
 pub mod undo;
 
 pub const EXTENSION_GRAPH: &str = "dbegraph";
 pub const EXTENSION_VALUE: &str = "dbevalue";
+pub const EXTENSION_MODULE: &str = "dbemodule";
 pub const EXTENSION_ITEM: &str = "json";
 pub const EXTENSION_DOCS: &str = "docs.toml";
+
+pub const TYPES_FOLDER: &str = "types";
 
 #[derive(Debug)]
 pub struct Project<IO> {
@@ -106,24 +110,12 @@ fn default_emitted_dir() -> Utf8PathBuf {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct TypesConfig {
-    root: String,
     pub import: ETypeId,
 }
 
 impl Project<FilesystemIO> {
     pub fn from_path(root: impl AsRef<Path>) -> miette::Result<Self> {
         let root = root.as_ref();
-
-        let mut paths = BTreeSet::new();
-        let wd = WalkDir::new(root);
-        for entry in wd {
-            let entry = entry.into_diagnostic()?;
-            if entry.path().is_dir() {
-                continue;
-            }
-
-            paths.insert(entry.path().to_path_buf());
-        }
 
         let config = fs_err::read_to_string(root.join("project.toml"))
             .into_diagnostic()
@@ -133,15 +125,11 @@ impl Project<FilesystemIO> {
             .into_diagnostic()
             .context("Failed to parse project configuration")?;
 
-        // let items = paths
-        //     .into_par_iter()
-        //     .map(|path| {
-        //         let data = fs_err::read(&path).into_diagnostic()?;
-        //         miette::Result::<(PathBuf, Vec<u8>)>::Ok((path, data))
-        //     })
-        //     .collect::<Result<Vec<_>, _>>()?;
+        let fs = FilesystemIO::new(root.to_path_buf())?;
 
-        Self::from_files(root, config, paths, FilesystemIO::new(root.to_path_buf()))
+        let paths = fs.list_files()?;
+
+        Self::from_files(root, config, paths, fs)
     }
 }
 
@@ -176,16 +164,18 @@ impl<IO: ProjectIO> Project<IO> {
 
             let path = Utf8Path::from_path(relative)
                 .ok_or_else(|| miette!("Got non-UTF8 path at {}", relative.display()))?;
-            let lower_path = path.as_str().to_lowercase();
 
-            let Some(ext) = path.extension() else {
+            let Some(ext) = path.extension().map(|ext| ext.to_lowercase()) else {
                 continue;
             };
 
             m_try(|| {
-                match ext {
+                match ext.as_str() {
                     "kdl" => {
-                        let id = ETypeId::from_path(path, &config.types_config.root)
+                        let Some(module) = find_dbemodule_path(path) else {
+                            bail!("Type is outside of dbemodule");
+                        };
+                        let id = ETypeId::from_path(path, module.join(TYPES_FOLDER))
                             .context("failed to generate type identifier")?;
                         let value = utf8str(path, io.read_file(path)?)?;
                         registry_items.insert(id, value);
@@ -194,7 +184,7 @@ impl<IO: ProjectIO> Project<IO> {
                         let data = serde_json5::from_str(&utf8str(path, io.read_file(path)?)?)
                             .into_diagnostic()
                             .context("failed to deserialize JSON")?;
-                        if path.starts_with(&config.types_config.root) {
+                        if find_dbemodule_path(path).is_some() {
                             types_jsons.insert(path.to_path_buf(), data);
                         } else {
                             import_jsons.insert(path.to_path_buf(), (data, None));
@@ -213,7 +203,7 @@ impl<IO: ProjectIO> Project<IO> {
                             .context("failed to deserialize graph JSON")?;
                         graphs.insert(path.to_path_buf(), data);
                     }
-                    "toml" if lower_path.ends_with(EXTENSION_DOCS) => {
+                    "toml" if path_has_suffix(path, EXTENSION_DOCS) => {
                         let data =
                             toml::de::from_str::<DocsFile>(&utf8str(path, io.read_file(path)?)?)
                                 .into_diagnostic()
@@ -221,10 +211,7 @@ impl<IO: ProjectIO> Project<IO> {
 
                         docs.add_file(data, path.to_path_buf())?;
                     }
-                    "toml"
-                        if path != "project.toml"
-                            && path.starts_with(&config.types_config.root) =>
-                    {
+                    "toml" if path != "project.toml" && find_dbemodule_path(path).is_some() => {
                         let data =
                             toml::de::from_str::<JsonValue>(&utf8str(path, io.read_file(path)?)?)
                                 .into_diagnostic()
@@ -592,4 +579,13 @@ impl<IO: ProjectIO> Project<IO> {
         // object.parse_json(&self.registry, &mut value, false)
         value.write_json(&self.registry)
     }
+}
+
+fn path_has_suffix(path: &Utf8Path, extension: &str) -> bool {
+    let path_str = path.as_str();
+    if path_str.len() < extension.len() {
+        return false;
+    }
+
+    path_str[(path_str.len() - extension.len())..].eq_ignore_ascii_case(extension)
 }

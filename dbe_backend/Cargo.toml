@@ -12,7 +12,6 @@ atomic_refcell = { workspace = true }
 bitflags = { workspace = true }
 camino = { workspace = true, features = ["serde", "serde1"] }
 collection_traits = { workspace = true, features = ["smallvec"] }
-crossbeam-channel = { workspace = true }
 derive_more = { workspace = true, features = ["debug"] }
 diagnostic = { workspace = true }
 downcast-rs = { workspace = true }
@@ -24,6 +23,7 @@ egui_colors = { workspace = true, features = ["serde"] }
 emath = { workspace = true }
 exmex = { workspace = true }
 fs-err = { workspace = true }
+include_dir = { workspace = true }
 inline_tweak = { workspace = true }
 itertools = { workspace = true }
 knus = { workspace = true }
@@ -51,6 +51,7 @@ ustr = { workspace = true, features = ["serde"] }
 utils = { workspace = true }
 uuid = { workspace = true, features = ["v4", "serde"] }
 walkdir = { workspace = true }
+zip = { workspace = true }
 
 [dev-dependencies]
 miette = { workspace = true, features = ["fancy-no-syscall"] }
