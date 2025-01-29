@@ -341,37 +341,29 @@ impl<IO: ProjectIO> Project<IO> {
                     return Ok(());
                 };
 
-                if let Some(result) = self.graphs.try_borrow_cache(*id, |graph, cache, graphs| {
-                    if graph.is_node_group {
-                        return Ok(());
-                    }
-
-                    let out_values = &mut None;
-                    let mut ctx = GraphExecutionContext::from_graph(
-                        graph.graph(),
-                        &self.registry,
-                        Some(graphs),
-                        cache,
-                        SideEffectsContext::new(&mut side_effects, path.clone(), &self.files),
-                        graph.is_node_group,
-                        &[],
-                        out_values,
-                    );
-
-                    ctx.full_eval(true)?;
-
-                    drop(ctx);
-
-                    if out_values.is_some() {
-                        bail!("graph {:?} at path {} has outputs", id, path);
-                    }
-
-                    Ok(())
-                }) {
-                    result?;
-                } else {
+                let Some(graph) = self.graphs.graphs.get(id) else {
                     bail!("graph {:?} at path {} is not found", id, path);
+                };
+
+                if graph.is_node_group {
+                    return Ok(());
                 }
+                let out_values = &mut None;
+                let mut ctx = GraphExecutionContext::from_graph(
+                    graph.graph(),
+                    &self.registry,
+                    Some(&self.graphs),
+                    SideEffectsContext::new(&mut side_effects, path.clone(), &self.files),
+                    graph.is_node_group,
+                    &[],
+                    out_values,
+                );
+                ctx.full_eval(true)?;
+                drop(ctx);
+                if out_values.is_some() {
+                    bail!("graph {:?} at path {} has outputs", id, path);
+                }
+
                 Ok(())
             })
             .with_context(|| format!("failed to evaluate graph at `{}`", path))?

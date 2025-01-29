@@ -215,8 +215,6 @@ pub fn sync_fields_and_types<
         }
     }
 
-    commands.push(SnarlCommand::MarkDirty { node: node_id });
-
     *ids = new_fields;
 
     if let Some(types) = types {

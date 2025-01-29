@@ -1,6 +1,5 @@
 use crate::etype::eitem::EItemInfo;
 use crate::etype::EDataType;
-use crate::graph::cache::GraphCache;
 use crate::graph::execution::GraphExecutionContext;
 use crate::graph::node::commands::SnarlCommands;
 use crate::graph::node::groups::utils::{
@@ -154,13 +153,10 @@ impl Node for SubgraphNode {
                 &mut graph_in,
             )?;
 
-            // TODO: caching for subgraphs
-            let mut cache = GraphCache::default();
             let mut ctx = GraphExecutionContext::from_graph(
                 graph.graph(),
                 context.registry,
                 context.graphs,
-                &mut cache,
                 variables.side_effects.with_subgraph(self.graph_id),
                 true,
                 &graph_in,

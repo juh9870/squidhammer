@@ -312,14 +312,13 @@ impl<Io> TabViewer for WorkspaceTabViewer<'_, Io> {
                         ..Default::default()
                     })
                     .show_inside(ui, |ui| {
-                        self.0.graphs.edit_graph(*id, |graph, cache, graphs| {
+                        self.0.graphs.edit_graph(*id, |graph, graphs| {
                             let outputs = &mut None;
                             let (mut ctx, snarl) = PartialGraphEditingContext::from_graph(
                                 graph,
                                 &self.0.registry,
                                 &self.0.docs,
                                 Some(graphs),
-                                cache,
                                 SideEffectsContext::unavailable(),
                                 is_node_group,
                                 &[],

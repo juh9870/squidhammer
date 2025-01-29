@@ -1,4 +1,3 @@
-use crate::graph::cache::GraphCache;
 use crate::graph::inputs::{GraphInput, GraphOutput};
 use crate::graph::Graph;
 use crate::json_utils::JsonValue;
@@ -13,11 +12,6 @@ use std::hash::Hash;
 use strum::EnumIs;
 use utils::map::HashMap;
 use uuid::Uuid;
-
-#[derive(Debug)]
-pub struct NodeGroup {
-    pub nodes: HashMap<Uuid, Graph>,
-}
 
 #[derive(Debug, Clone, Hash)]
 pub struct ProjectGraph {
@@ -214,47 +208,21 @@ enum SerializedGraphRepr {
 pub struct ProjectGraphs {
     /// All project graphs
     pub graphs: HashMap<Uuid, ProjectGraph>,
-    /// Cache for project graphs. Should only be used when executing graph standalone, not as a node group
-    pub cache: HashMap<Uuid, GraphCache>,
     paths: HashMap<Uuid, Utf8PathBuf>,
 }
 
 impl ProjectGraphs {
-    pub fn edit_graph<Fn: FnOnce(&mut Graph, &mut GraphCache, &Self) -> R, R>(
-        &mut self,
-        id: Uuid,
-        func: Fn,
-    ) -> R {
+    pub fn edit_graph<Fn: FnOnce(&mut Graph, &Self) -> R, R>(&mut self, id: Uuid, func: Fn) -> R {
         // Take the graph data out of the graphs map
         let graph = self.graphs.get_mut(&id).unwrap();
         let mut taken = graph.take_graph();
-        let mut cache = self.cache.remove(&id).unwrap_or_default();
 
         // Run the callback
-        let result = func(&mut taken, &mut cache, self);
+        let result = func(&mut taken, self);
 
-        // Return the graph data to the project
-        self.cache.insert(id, cache);
         let graph = self.graphs.get_mut(&id).unwrap();
         graph.return_graph(taken);
         result
-    }
-
-    pub fn try_borrow_cache<Fn: FnOnce(&ProjectGraph, &mut GraphCache, &Self) -> R, R>(
-        &mut self,
-        id: Uuid,
-        func: Fn,
-    ) -> Option<R> {
-        let graph = self.graphs.get(&id)?;
-        let mut cache = self
-            .cache
-            .get_mut(&id)
-            .map(std::mem::take)
-            .unwrap_or_default();
-        let result = func(graph, &mut cache, self);
-
-        self.cache.insert(id, cache);
-        Some(result)
     }
 
     pub fn insert_new_graph(&mut self) -> Uuid {
