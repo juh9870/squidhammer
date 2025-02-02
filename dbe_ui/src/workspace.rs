@@ -56,7 +56,7 @@ impl DbeApp {
             report_error(miette!("No project is open"));
             return;
         };
-        if !project.io.file_writable(&folder).unwrap_or(false) {
+        if !project.io.is_file_writable(&folder).unwrap_or(false) {
             report_error(miette!("Folder is not writable"));
             return;
         }
@@ -93,7 +93,7 @@ impl DbeApp {
                 return;
             };
 
-            if !project.io.file_writable(&path).unwrap_or(false) {
+            if !project.io.is_file_writable(&path).unwrap_or(false) {
                 report_error(miette!("Path is not writable"));
                 return;
             }
@@ -118,7 +118,7 @@ impl DbeApp {
             report_error(miette!("No project is open"));
             return;
         };
-        if !project.io.file_writable(&folder).unwrap_or(false) {
+        if !project.io.is_file_writable(&folder).unwrap_or(false) {
             report_error(miette!("Folder is not writable"));
             return;
         }
@@ -155,7 +155,7 @@ impl DbeApp {
                 return;
             };
 
-            if !project.io.file_writable(&path).unwrap_or(false) {
+            if !project.io.is_file_writable(&path).unwrap_or(false) {
                 report_error(miette!("Path is not writable"));
                 return;
             }
@@ -232,7 +232,7 @@ impl<Io: ProjectIO> TabViewer for WorkspaceTabViewer<'_, Io> {
             return;
         };
 
-        let editable = self.0.io.file_writable(&tab).unwrap_or(false);
+        let editable = self.0.io.is_file_writable(&tab).unwrap_or(false);
 
         let mut diagnostics = self.0.diagnostics.enter(tab.as_str());
         let mut changed = false;

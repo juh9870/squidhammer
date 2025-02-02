@@ -8,7 +8,6 @@ use miette::{bail, Context, IntoDiagnostic};
 use std::borrow::Cow;
 use std::io::Read;
 use std::path::{Path, PathBuf};
-use strum::{EnumIs, EnumTryAs};
 use tracing::{error, trace};
 use utils::map::dashmap::Entry;
 use utils::map::DashMap;
@@ -50,8 +49,10 @@ impl FilesystemIO {
     fn load_files(&mut self) -> miette::Result<()> {
         self.files.clear();
 
+        let embedded_dir = self.root.join("\0<embedded>\0");
+
         for file in walk_files(&MODULES).filter_map(DirEntry::as_file) {
-            let path = self.root.join("\0<embedded>\0").join(file.path());
+            let path = embedded_dir.join(file.path());
             self.files.insert(
                 path,
                 FileData {
@@ -63,6 +64,13 @@ impl FilesystemIO {
             );
         }
 
+        self.files.insert(
+            embedded_dir,
+            FileData {
+                kind: FileKind::ReadOnlyDirectoryMarker,
+            },
+        );
+
         let wd = WalkDir::new(&self.root);
         for entry in wd {
             let entry = entry.into_diagnostic()?;
@@ -73,6 +81,12 @@ impl FilesystemIO {
             let path = self.process_path(entry.path())?;
 
             if path.extension().and_then(|ext| ext.to_str()) == Some(EXTENSION_MODULE) {
+                self.files.insert(
+                    path.clone(),
+                    FileData {
+                        kind: FileKind::ReadOnlyDirectoryMarker,
+                    },
+                );
                 m_try(|| {
                     let mod_archive = fs_err::read(&path)
                         .into_diagnostic()
@@ -144,6 +158,7 @@ impl ProjectIO for FilesystemIO {
         Ok(self
             .files
             .iter()
+            .filter(|entry| !entry.value().is_directory())
             .map(|entry| entry.key().clone())
             .collect_vec())
     }
@@ -205,6 +220,12 @@ impl ProjectIO for FilesystemIO {
                     error!("file `{}` is not a fs file, skipping write", path.display());
                     return Ok(());
                 }
+                FileKind::ReadOnlyDirectoryMarker => {
+                    bail!(
+                        "file at `{}` is a read-only directory marker",
+                        path.display()
+                    );
+                }
             },
             Entry::Vacant(e) => {
                 e.insert(FileData {
@@ -227,7 +248,7 @@ impl ProjectIO for FilesystemIO {
         fs_err::remove_file(&path).into_diagnostic()?;
 
         if let Entry::Occupied(f) = self.files.entry(path.clone()) {
-            if !f.get().kind.is_fs() {
+            if !f.get().is_writeable() {
                 bail!("file `{}` is not a fs file", path.display());
             }
             f.remove();
@@ -236,14 +257,12 @@ impl ProjectIO for FilesystemIO {
         Ok(())
     }
 
-    fn file_writable(&self, path: impl AsRef<Path>) -> miette::Result<bool> {
+    fn is_file_writable(&self, path: impl AsRef<Path>) -> miette::Result<bool> {
         let path = self.process_path(path)?;
 
         for path in path.ancestors() {
             if let Some(file) = self.files.get(path) {
-                if !file.kind.is_fs() {
-                    return Ok(false);
-                }
+                return Ok(file.is_writeable());
             }
         }
 
@@ -260,7 +279,17 @@ struct FileData {
     kind: FileKind,
 }
 
-#[derive(Debug, Clone, EnumIs, EnumTryAs)]
+impl FileData {
+    fn is_writeable(&self) -> bool {
+        matches!(self.kind, FileKind::Fs { .. })
+    }
+
+    fn is_directory(&self) -> bool {
+        matches!(self.kind, FileKind::ReadOnlyDirectoryMarker)
+    }
+}
+
+#[derive(Debug, Clone)]
 enum FileKind {
     Fs {
         hash: Option<Vec<u8>>,
@@ -269,4 +298,5 @@ enum FileKind {
         content: Cow<'static, [u8]>,
         hash: Vec<u8>,
     },
+    ReadOnlyDirectoryMarker,
 }
