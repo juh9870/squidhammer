@@ -6,6 +6,19 @@
 
 > Released on ReleaseDate
 
+### Breaking Changes
+
+- New module system replaces the old approach, where each type has its own folder. Due to this, all custom types have to
+  be re-packaged as dbemodules.
+    - `sys` and `color` modules are now bundled indo the editor and can not be modified or removed.
+    - `eh` module is now archived and can be downloaded from the artifacts.
+
+---
+
+### Added
+
+- Module system for types (by juh9870)
+
 ## [0.1.10]
 
 > Released on 2025-01-26
@@ -72,7 +85,9 @@
 No changelog for this and all previous versions.
 
 <!-- next-url -->
+
 [Unreleased]: https://github.com/juh9870/squidhammer/compare/v0.1.10...HEAD
+
 [0.1.10]: https://github.com/juh9870/squidhammer/compare/v0.1.9...v0.1.10
 
 [0.1.9]: https://github.com/juh9870/dbe/compare/squidhammer-v0.1.8...v0.1.9
