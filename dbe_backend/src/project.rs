@@ -64,7 +64,7 @@ pub struct Project<IO> {
     pub history: UndoHistory,
     /// Root folder of the project
     pub root: Utf8PathBuf,
-    io: IO,
+    pub io: IO,
 }
 
 #[derive(Debug)]

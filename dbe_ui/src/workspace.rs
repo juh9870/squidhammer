@@ -11,6 +11,7 @@ use dbe_backend::diagnostic::diagnostic::{Diagnostic, DiagnosticLevel};
 use dbe_backend::graph::editing::PartialGraphEditingContext;
 use dbe_backend::graph::node::SnarlNode;
 use dbe_backend::project::docs::DocsRef;
+use dbe_backend::project::io::ProjectIO;
 use dbe_backend::project::side_effects::SideEffectsContext;
 use dbe_backend::project::{
     Project, ProjectFile, EXTENSION_GRAPH, EXTENSION_ITEM, EXTENSION_VALUE,
@@ -51,6 +52,14 @@ impl DbeApp {
     }
 
     pub fn new_file(&mut self, ctx: &Context, folder: Utf8PathBuf) {
+        let Some(project) = self.project.as_mut() else {
+            report_error(miette!("No project is open"));
+            return;
+        };
+        if !project.io.file_writable(&folder).unwrap_or(false) {
+            report_error(miette!("Folder is not writable"));
+            return;
+        }
         self.show_new_file_modal(ctx, folder, |app, ctx, folder, mut filename| {
             let segments: Vec<&str> = filename.split('.').collect();
             if segments.len() > 1 {
@@ -84,6 +93,11 @@ impl DbeApp {
                 return;
             };
 
+            if !project.io.file_writable(&path).unwrap_or(false) {
+                report_error(miette!("Path is not writable"));
+                return;
+            }
+
             if project.files.contains_key(&path) {
                 report_error(miette!("File already exists"))
             } else {
@@ -100,6 +114,14 @@ impl DbeApp {
     }
 
     pub fn new_graph(&mut self, ctx: &Context, folder: Utf8PathBuf) {
+        let Some(project) = self.project.as_mut() else {
+            report_error(miette!("No project is open"));
+            return;
+        };
+        if !project.io.file_writable(&folder).unwrap_or(false) {
+            report_error(miette!("Folder is not writable"));
+            return;
+        }
         self.show_new_file_modal(ctx, folder, |app, ctx, folder, mut filename| {
             let split: Vec<&str> = filename.split('.').collect();
             if split.len() > 1 {
@@ -132,6 +154,11 @@ impl DbeApp {
                 report_error(miette!("No project is open"));
                 return;
             };
+
+            if !project.io.file_writable(&path).unwrap_or(false) {
+                report_error(miette!("Path is not writable"));
+                return;
+            }
 
             if project.files.contains_key(&path) {
                 report_error(miette!("File already exists"))
@@ -183,9 +210,9 @@ impl DbeApp {
 
 pub type Tab = Utf8PathBuf;
 
-struct WorkspaceTabViewer<'a, Io>(&'a mut Project<Io>);
+struct WorkspaceTabViewer<'a, Io: ProjectIO>(&'a mut Project<Io>);
 
-impl<Io> TabViewer for WorkspaceTabViewer<'_, Io> {
+impl<Io: ProjectIO> TabViewer for WorkspaceTabViewer<'_, Io> {
     type Tab = Tab;
 
     fn title(&mut self, tab: &mut Self::Tab) -> WidgetText {
@@ -205,44 +232,21 @@ impl<Io> TabViewer for WorkspaceTabViewer<'_, Io> {
             return;
         };
 
+        let editable = self.0.io.file_writable(&tab).unwrap_or(false);
+
         let mut diagnostics = self.0.diagnostics.enter(tab.as_str());
         let mut changed = false;
         let force_snapshot = false;
 
-        match data {
-            ProjectFile::Value(value) => {
-                let editor = editor_for_value(&self.0.registry, value);
+        ui.add_enabled_ui(editable, |ui| {
+            match data {
+                ProjectFile::Value(value) => {
+                    let editor = editor_for_value(&self.0.registry, value);
 
-                // value is always considered changed. Undo history should
-                // figure out when it's actually changed based on hash
-                changed = true;
+                    // value is always considered changed. Undo history should
+                    // figure out when it's actually changed based on hash
+                    changed = true;
 
-                let res = editor.show(
-                    ui,
-                    EditorContext::new(&self.0.registry, &self.0.docs, DocsRef::None),
-                    diagnostics.as_readonly(),
-                    "",
-                    value,
-                );
-
-                if res.changed {
-                    trace!(%tab, "tab value changed, revalidating");
-                    if let Err(err) =
-                        validate(&self.0.registry, diagnostics.enter_inline(), None, value)
-                    {
-                        report_error(err);
-                    }
-                }
-
-                ui.add_space(ui.ctx().screen_rect().height() * 0.5);
-                ui.separator();
-            }
-            ProjectFile::GeneratedValue(value) => {
-                let editor = editor_for_value(&self.0.registry, value);
-
-                ui.label("Generated value, do not edit");
-                ui.separator();
-                ui.add_enabled_ui(false, |ui| {
                     let res = editor.show(
                         ui,
                         EditorContext::new(&self.0.registry, &self.0.docs, DocsRef::None),
@@ -250,111 +254,145 @@ impl<Io> TabViewer for WorkspaceTabViewer<'_, Io> {
                         "",
                         value,
                     );
+
                     if res.changed {
-                        panic!("Generated value was edited");
+                        trace!(%tab, "tab value changed, revalidating");
+                        if let Err(err) =
+                            validate(&self.0.registry, diagnostics.enter_inline(), None, value)
+                        {
+                            report_error(err);
+                        }
                     }
-                });
 
-                ui.add_space(ui.ctx().screen_rect().height() * 0.5);
-                ui.separator();
-            }
-            ProjectFile::BadValue(err) => {
-                let err_str = format!("{:?}", err);
+                    ui.add_space(ui.ctx().screen_rect().height() * 0.5);
+                    ui.separator();
+                }
+                ProjectFile::GeneratedValue(value) => {
+                    let editor = editor_for_value(&self.0.registry, value);
 
-                ui.label(RichText::new(strip_ansi_escapes::strip_str(err_str)).color(Color32::RED));
-            }
-            ProjectFile::Graph(id) => {
-                let Some(graph) = self.0.graphs.graphs.get_mut(id) else {
-                    ui.centered_and_justified(|ui| {
-                        ui.label(format!("!!INTERNAL ERROR!! the graph {} is missing", id));
+                    ui.label("Generated value, do not edit");
+                    ui.separator();
+                    ui.add_enabled_ui(false, |ui| {
+                        let res = editor.show(
+                            ui,
+                            EditorContext::new(&self.0.registry, &self.0.docs, DocsRef::None),
+                            diagnostics.as_readonly(),
+                            "",
+                            value,
+                        );
+                        if res.changed {
+                            panic!("Generated value was edited");
+                        }
                     });
-                    return;
-                };
 
-                // graph is always considered changed. Undo history should
-                // figure out when it's actually changed based on hash
-                changed = true;
+                    ui.add_space(ui.ctx().screen_rect().height() * 0.5);
+                    ui.separator();
+                }
+                ProjectFile::BadValue(err) => {
+                    let err_str = format!("{:?}", err);
 
-                graph.graph_mut().ensure_region_graph_ready();
+                    ui.label(
+                        RichText::new(strip_ansi_escapes::strip_str(err_str)).color(Color32::RED),
+                    );
+                }
+                ProjectFile::Graph(id) => {
+                    let Some(graph) = self.0.graphs.graphs.get_mut(id) else {
+                        ui.centered_and_justified(|ui| {
+                            ui.label(format!("!!INTERNAL ERROR!! the graph {} is missing", id));
+                        });
+                        return;
+                    };
 
-                let is_node_group = graph.is_node_group;
+                    // graph is always considered changed. Undo history should
+                    // figure out when it's actually changed based on hash
+                    changed = true;
 
-                let mut selected_nodes = ui.use_state(Vec::<NodeId>::new, ()).into_var();
+                    graph.graph_mut().ensure_region_graph_ready();
 
-                CollapsibleToolbar::new(
-                    DPanelSide::Right,
-                    &[
-                        GraphTab::General,
-                        GraphTab::Node,
-                        #[cfg(debug_assertions)]
-                        GraphTab::Debug,
-                    ],
-                    &[],
-                )
-                .show_inside(
-                    ui,
-                    &mut GraphToolbarViewer {
-                        graph,
-                        selected_nodes: &selected_nodes,
-                        registry: &self.0.registry,
-                        docs: &self.0.docs,
-                    },
-                );
+                    let is_node_group = graph.is_node_group;
 
-                egui::CentralPanel::default()
-                    .frame(Frame {
-                        inner_margin: Margin {
-                            left: tweak!(2.0),
-                            right: tweak!(4.0),
-                            top: tweak!(1.0),
-                            bottom: tweak!(1.0),
+                    let mut selected_nodes = ui.use_state(Vec::<NodeId>::new, ()).into_var();
+
+                    CollapsibleToolbar::new(
+                        DPanelSide::Right,
+                        &[
+                            GraphTab::General,
+                            GraphTab::Node,
+                            #[cfg(debug_assertions)]
+                            GraphTab::Debug,
+                        ],
+                        &[],
+                    )
+                    .show_inside(
+                        ui,
+                        &mut GraphToolbarViewer {
+                            graph,
+                            selected_nodes: &selected_nodes,
+                            registry: &self.0.registry,
+                            docs: &self.0.docs,
                         },
-                        ..Default::default()
-                    })
-                    .show_inside(ui, |ui| {
-                        self.0.graphs.edit_graph(*id, |graph, graphs| {
-                            let outputs = &mut None;
-                            let (mut ctx, snarl) = PartialGraphEditingContext::from_graph(
-                                graph,
-                                &self.0.registry,
-                                &self.0.docs,
-                                Some(graphs),
-                                SideEffectsContext::unavailable(),
-                                is_node_group,
-                                &[],
-                                outputs,
-                            );
+                    );
 
-                            if let Err(err) = ctx
-                                .as_full(snarl)
-                                .ensure_regions_graph_ready()
-                                .try_as_data()
-                            {
-                                diagnostic_widget(
-                                    ui,
-                                    &Diagnostic {
-                                        info: err.into(),
-                                        level: DiagnosticLevel::Error,
-                                    },
-                                );
-                            };
-
-                            let mut rects = ui.use_state(NodeRects::default, ()).into_var();
-
-                            let mut viewer = graph::GraphViewer::new(
-                                ctx,
-                                diagnostics.as_readonly(),
-                                rects.deref_mut(),
-                            );
-
-                            snarl.show(&mut viewer, &SnarlStyle::default(), tab.to_string(), ui);
-
-                            *selected_nodes =
-                                Snarl::<SnarlNode>::get_selected_nodes(tab.to_string(), ui);
+                    egui::CentralPanel::default()
+                        .frame(Frame {
+                            inner_margin: Margin {
+                                left: tweak!(2.0),
+                                right: tweak!(4.0),
+                                top: tweak!(1.0),
+                                bottom: tweak!(1.0),
+                            },
+                            ..Default::default()
                         })
-                    });
+                        .show_inside(ui, |ui| {
+                            self.0.graphs.edit_graph(*id, |graph, graphs| {
+                                let outputs = &mut None;
+                                let (mut ctx, snarl) = PartialGraphEditingContext::from_graph(
+                                    graph,
+                                    &self.0.registry,
+                                    &self.0.docs,
+                                    Some(graphs),
+                                    SideEffectsContext::unavailable(),
+                                    is_node_group,
+                                    &[],
+                                    outputs,
+                                );
+
+                                if let Err(err) = ctx
+                                    .as_full(snarl)
+                                    .ensure_regions_graph_ready()
+                                    .try_as_data()
+                                {
+                                    diagnostic_widget(
+                                        ui,
+                                        &Diagnostic {
+                                            info: err.into(),
+                                            level: DiagnosticLevel::Error,
+                                        },
+                                    );
+                                };
+
+                                let mut rects = ui.use_state(NodeRects::default, ()).into_var();
+
+                                let mut viewer = graph::GraphViewer::new(
+                                    ctx,
+                                    diagnostics.as_readonly(),
+                                    rects.deref_mut(),
+                                );
+
+                                snarl.show(
+                                    &mut viewer,
+                                    &SnarlStyle::default(),
+                                    tab.to_string(),
+                                    ui,
+                                );
+
+                                *selected_nodes =
+                                    Snarl::<SnarlNode>::get_selected_nodes(tab.to_string(), ui);
+                            })
+                        });
+                }
             }
-        }
+        });
 
         drop(diagnostics);
         if changed {
