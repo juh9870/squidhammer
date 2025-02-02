@@ -6,11 +6,14 @@ repository = "https://github.com/juh9870/dbe"
 publish = false
 
 [dependencies]
-duplicate = { workspace = true }
+arrayvec = { workspace = true, optional = true }
+ordermap = { workspace = true, optional = true }
 smallvec = { workspace = true, optional = true, features = ["const_generics"] }
 
 [features]
 smallvec = ["dep:smallvec"]
+arrayvec = ["dep:arrayvec"]
+ordermap = ["dep:ordermap"]
 
 [package.metadata.release]
 release = false
