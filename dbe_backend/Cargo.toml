@@ -37,6 +37,7 @@ petgraph = { workspace = true }
 random_color = { workspace = true }
 rayon = { workspace = true }
 sanitise-file-name = { workspace = true }
+semver = { workspace = true, features = ["serde"] }
 serde = { workspace = true, features = ["derive"] }
 serde_json = { workspace = true }
 serde_json5 = { workspace = true }

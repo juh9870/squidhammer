@@ -1,3 +1,4 @@
+use crate::project::module::DbeModule;
 use crate::value::id::editor_id::EditorId;
 use std::path::Path;
 
@@ -58,11 +59,8 @@ macro_rules! id_type {
 id_type!(ETypeId);
 
 impl ETypeId {
-    pub fn from_path(path: impl AsRef<Path>, types_root: impl AsRef<Path>) -> miette::Result<Self> {
-        Ok(Self(EditorId::from_path(
-            path.as_ref(),
-            types_root.as_ref(),
-        )?))
+    pub fn from_path(module: &DbeModule, path: impl AsRef<Path>) -> miette::Result<Self> {
+        Ok(Self(EditorId::from_path(module, path.as_ref())?))
     }
 
     pub fn strip_generics(&self) -> Self {

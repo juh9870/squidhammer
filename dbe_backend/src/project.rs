@@ -5,12 +5,13 @@ use crate::json_utils::{json_kind, JsonValue};
 use crate::m_try;
 use crate::project::docs::{Docs, DocsFile};
 use crate::project::io::{FilesystemIO, ProjectIO};
-use crate::project::module::find_dbemodule_path;
+use crate::project::module::{find_dbemodule_path, DbeModule};
 use crate::project::project_graph::{ProjectGraph, ProjectGraphs};
 use crate::project::side_effects::SideEffectsContext;
 use crate::project::undo::{UndoHistory, UndoSettings};
 use crate::registry::ETypesRegistry;
 use crate::validation::{clear_validation_cache, validate};
+use crate::value::id::editor_id::Namespace;
 use crate::value::id::ETypeId;
 use crate::value::EValue;
 use camino::{Utf8Path, Utf8PathBuf};
@@ -20,11 +21,11 @@ use miette::{bail, miette, Context, IntoDiagnostic, Report};
 use rayon::iter::ParallelDrainFull;
 use rayon::prelude::{IntoParallelRefIterator, ParallelIterator};
 use serde::{Deserialize, Serialize};
-use std::collections::BTreeMap;
+use std::collections::{hash_map, BTreeMap};
 use std::path::{Path, PathBuf};
 use std::time::Instant;
 use tracing::info;
-use utils::map::HashSet;
+use utils::map::{HashMap, HashSet};
 use uuid::Uuid;
 
 pub mod docs;
@@ -34,6 +35,7 @@ pub mod project_graph;
 pub mod side_effects;
 pub mod undo;
 
+pub const EXTENSION_TYPE: &str = "kdl";
 pub const EXTENSION_GRAPH: &str = "dbegraph";
 pub const EXTENSION_VALUE: &str = "dbevalue";
 pub const EXTENSION_MODULE: &str = "dbemodule";
@@ -41,6 +43,9 @@ pub const EXTENSION_ITEM: &str = "json";
 pub const EXTENSION_DOCS: &str = "docs.toml";
 
 pub const TYPES_FOLDER: &str = "types";
+
+pub const MODULE_FILE: &str = "mod.toml";
+pub const PROJECT_FILE: &str = "project.toml";
 
 #[derive(Debug)]
 pub struct Project<IO> {
@@ -51,6 +56,8 @@ pub struct Project<IO> {
     pub diagnostics: DiagnosticContext,
     /// Files present in the project
     pub files: BTreeMap<Utf8PathBuf, ProjectFile>,
+    /// Loaded modules
+    pub modules: HashMap<Namespace, DbeModule>,
     pub graphs: ProjectGraphs,
     /// Files that should be deleted on save
     pub to_delete: HashSet<Utf8PathBuf>,
@@ -117,7 +124,7 @@ impl Project<FilesystemIO> {
     pub fn from_path(root: impl AsRef<Path>) -> miette::Result<Self> {
         let root = root.as_ref();
 
-        let config = fs_err::read_to_string(root.join("project.toml"))
+        let config = fs_err::read_to_string(root.join(PROJECT_FILE))
             .into_diagnostic()
             .context("failed to read project configuration")?;
 
@@ -140,11 +147,12 @@ impl<IO: ProjectIO> Project<IO> {
         files: impl IntoIterator<Item = PathBuf>,
         mut io: IO,
     ) -> miette::Result<Self> {
-        let mut registry_items = BTreeMap::new();
-        let mut import_jsons = BTreeMap::<Utf8PathBuf, (JsonValue, Option<EDataType>)>::new();
-        let mut types_jsons = BTreeMap::<Utf8PathBuf, JsonValue>::new();
-        let mut graphs = BTreeMap::<Utf8PathBuf, JsonValue>::new();
+        let mut registry_items = HashMap::default();
+        let mut import_jsons = HashMap::<Utf8PathBuf, (JsonValue, Option<EDataType>)>::default();
+        let mut types_jsons = HashMap::<Utf8PathBuf, JsonValue>::default();
+        let mut graphs = HashMap::<Utf8PathBuf, JsonValue>::default();
         let mut docs = Docs::Docs(Default::default());
+        let mut modules = HashMap::<Utf8PathBuf, DbeModule>::default();
 
         fn utf8str(path: &Utf8Path, data: Vec<u8>) -> miette::Result<String> {
             String::from_utf8(data).into_diagnostic().with_context(|| {
@@ -152,6 +160,28 @@ impl<IO: ProjectIO> Project<IO> {
                     "failed to parse content of a file `{path}`. Are you sure it's UTF-8 encoded?"
                 )
             })
+        }
+
+        fn get_module<'a, IO: ProjectIO>(
+            modules: &'a mut HashMap<Utf8PathBuf, DbeModule>,
+            io: &IO,
+            module_path: &Utf8Path,
+        ) -> miette::Result<&'a DbeModule> {
+            match modules.entry(module_path.to_path_buf()) {
+                hash_map::Entry::Vacant(e) => m_try(|| {
+                    let path = module_path.join(MODULE_FILE);
+                    let module =
+                        toml::de::from_str::<DbeModule>(&utf8str(&path, io.read_file(&path)?)?)
+                            .into_diagnostic()
+                            .context("failed to deserialize module TOML")?
+                            .with_path(module_path.to_path_buf());
+                    Ok(&*e.insert(module))
+                })
+                .with_context(|| {
+                    format!("failed to load module {}", module_path.file_name().unwrap())
+                }),
+                hash_map::Entry::Occupied(e) => Ok(e.into_mut()),
+            }
         }
 
         let root = root.as_ref();
@@ -169,13 +199,17 @@ impl<IO: ProjectIO> Project<IO> {
                 continue;
             };
 
+            let module_path = find_dbemodule_path(path);
+
             m_try(|| {
                 match ext.as_str() {
-                    "kdl" => {
-                        let Some(module) = find_dbemodule_path(path) else {
+                    EXTENSION_TYPE => {
+                        let Some(module) = module_path else {
                             bail!("Type is outside of dbemodule");
                         };
-                        let id = ETypeId::from_path(path, module.join(TYPES_FOLDER))
+
+                        let module = get_module(&mut modules, &io, module)?;
+                        let id = ETypeId::from_path(module, path)
                             .context("failed to generate type identifier")?;
                         let value = utf8str(path, io.read_file(path)?)?;
                         registry_items.insert(id, value);
@@ -184,13 +218,19 @@ impl<IO: ProjectIO> Project<IO> {
                         let data = serde_json5::from_str(&utf8str(path, io.read_file(path)?)?)
                             .into_diagnostic()
                             .context("failed to deserialize JSON")?;
-                        if find_dbemodule_path(path).is_some() {
+                        if let Some(module_path) = module_path {
+                            if !path.starts_with(module_path.join(TYPES_FOLDER)) {
+                                bail!("types config JSON file is outside of types folder");
+                            }
                             types_jsons.insert(path.to_path_buf(), data);
                         } else {
                             import_jsons.insert(path.to_path_buf(), (data, None));
                         }
                     }
                     EXTENSION_VALUE => {
+                        if module_path.is_some() {
+                            bail!("value files are not allowed inside dbemodule");
+                        }
                         let data: MiscJson =
                             serde_json5::from_str(&utf8str(path, io.read_file(path)?)?)
                                 .into_diagnostic()
@@ -204,6 +244,9 @@ impl<IO: ProjectIO> Project<IO> {
                         graphs.insert(path.to_path_buf(), data);
                     }
                     "toml" if path_has_suffix(path, EXTENSION_DOCS) => {
+                        if module_path.is_none() {
+                            bail!("docs file is outside of dbemodule");
+                        }
                         let data =
                             toml::de::from_str::<DocsFile>(&utf8str(path, io.read_file(path)?)?)
                                 .into_diagnostic()
@@ -211,12 +254,25 @@ impl<IO: ProjectIO> Project<IO> {
 
                         docs.add_file(data, path.to_path_buf())?;
                     }
-                    "toml" if path != "project.toml" && find_dbemodule_path(path).is_some() => {
-                        let data =
-                            toml::de::from_str::<JsonValue>(&utf8str(path, io.read_file(path)?)?)
-                                .into_diagnostic()
-                                .context("failed to deserialize types config TOML")?;
-                        types_jsons.insert(path.to_path_buf(), data);
+                    "toml" if module_path.is_some() => {
+                        let module_path = module_path.unwrap();
+
+                        let filename = path.file_name().unwrap();
+                        if filename.eq_ignore_ascii_case(MODULE_FILE) {
+                            get_module(&mut modules, &io, module_path)?;
+                        } else {
+                            if !path.starts_with(module_path.join(TYPES_FOLDER)) {
+                                bail!("types config TOML file is outside of types folder");
+                            }
+
+                            let data = toml::de::from_str::<JsonValue>(&utf8str(
+                                path,
+                                io.read_file(path)?,
+                            )?)
+                            .into_diagnostic()
+                            .context("failed to deserialize types config TOML")?;
+                            types_jsons.insert(path.to_path_buf(), data);
+                        }
                     }
                     _ => {}
                 }
@@ -228,6 +284,23 @@ impl<IO: ProjectIO> Project<IO> {
 
         io.flush()?;
 
+        let mut project_modules = HashMap::default();
+        for (path, module) in modules {
+            match project_modules.entry(module.namespace.clone()) {
+                hash_map::Entry::Vacant(e) => {
+                    e.insert(module);
+                }
+                hash_map::Entry::Occupied(e) => {
+                    bail!(
+                        "module with namespace `{}` is declared in multiple locations: `{}` and `{}`",
+                        module.namespace,
+                        e.get().path,
+                        path,
+                    );
+                }
+            }
+        }
+
         let registry = ETypesRegistry::from_raws(registry_items, config)?;
 
         let mut project = Self {
@@ -235,6 +308,7 @@ impl<IO: ProjectIO> Project<IO> {
             docs,
             diagnostics: Default::default(),
             files: Default::default(),
+            modules: project_modules,
             graphs: Default::default(),
             to_delete: Default::default(),
             history: UndoHistory::new(UndoSettings::default()),

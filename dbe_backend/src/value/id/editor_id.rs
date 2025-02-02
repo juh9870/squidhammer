@@ -1,7 +1,9 @@
-use std::fmt::{Display, Formatter};
+use std::fmt::{Debug, Display, Formatter};
 use std::path::Path;
 use std::str::FromStr;
 
+use crate::project::module::DbeModule;
+use crate::project::TYPES_FOLDER;
 use itertools::Itertools;
 use miette::{bail, miette};
 use serde::{Deserializer, Serializer};
@@ -20,6 +22,7 @@ pub fn bad_path_char(c: char) -> bool {
 pub fn namespace_errors(namespace: &str) -> Option<(usize, char)> {
     namespace.chars().find_position(|c| bad_namespace_char(*c))
 }
+
 pub fn path_errors(namespace: &str) -> Option<(usize, char)> {
     namespace.chars().find_position(|c| bad_path_char(*c))
 }
@@ -78,31 +81,25 @@ impl EditorId {
             .collect_tuple()
             .ok_or_else(|| miette!("Type path must be in a form of `namespace:path`"))?;
 
-        if namespace.is_empty() {
-            bail!("Namespace can't be empty")
-        }
+        let namespace = Namespace::from_str(namespace)?;
 
         if path.is_empty() {
             bail!("Path can't be empty")
         }
 
-        if let Some((i, c)) = namespace_errors(namespace) {
-            bail!("Invalid symbol `{c}` in namespace, at position {i}")
-        }
-
         if let Some((i, c)) = path_errors(path) {
             bail!(
                 "Invalid symbol `{c}` in path, at position {}",
-                i + namespace.len() + 1
+                i + namespace.id.len() + 1
             )
         }
 
         Ok(EditorId::Persistent(data.into()))
     }
 
-    pub fn from_path(path: &Path, types_root: &Path) -> miette::Result<Self> {
+    pub fn from_path(module: &DbeModule, path: &Path) -> miette::Result<Self> {
         let sub_path = path
-            .strip_prefix(types_root)
+            .strip_prefix(module.path.join(TYPES_FOLDER))
             .map_err(|_| {
                 miette!(
                     "Type is outside of types root folder.\nType: `{}`",
@@ -111,22 +108,14 @@ impl EditorId {
             })?
             .components()
             .collect_vec();
-        if sub_path.len() < 2 {
-            bail!("Types can't be placed in a root of types folder")
+        if sub_path.is_empty() {
+            bail!("Malformed type path: `{}`", path.display())
         }
 
-        let mut segments = sub_path.into_iter();
-        let namespace = segments
-            .next()
-            .expect("Namespace should be present")
-            .as_os_str()
-            .to_string_lossy();
+        let namespace = &module.namespace;
 
-        if let Some((i, c)) = namespace_errors(&namespace) {
-            bail!("Namespace folder contains invalid character `{c}` at position {i}")
-        }
-
-        let segments: Vec<String> = segments
+        let segments: Vec<String> = sub_path
+            .into_iter()
             .with_position()
             .map(|(pos, path)| {
                 let str = if matches!(pos, itertools::Position::Last | itertools::Position::Only) {
@@ -171,5 +160,79 @@ impl Display for EditorId {
             EditorId::Persistent(id) => write!(f, "{}", id),
             EditorId::Temp(id) => write!(f, "$temp:{}", id),
         }
+    }
+}
+
+#[derive(Clone, Eq, PartialEq, Hash)]
+pub struct Namespace {
+    id: String,
+}
+
+impl Debug for Namespace {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        Debug::fmt(&self.id, f)
+    }
+}
+
+impl Display for Namespace {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        Display::fmt(&self.id, f)
+    }
+}
+
+impl AsRef<str> for Namespace {
+    fn as_ref(&self) -> &str {
+        &self.id
+    }
+}
+
+impl From<Namespace> for String {
+    fn from(value: Namespace) -> Self {
+        value.id
+    }
+}
+
+impl FromStr for Namespace {
+    type Err = miette::Error;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        if s.is_empty() {
+            bail!("Namespace can't be empty")
+        }
+
+        if let Some((i, c)) = namespace_errors(s) {
+            bail!("Invalid symbol `{c}` in namespace, at position {i}")
+        }
+
+        Ok(Namespace { id: s.into() })
+    }
+}
+
+struct NamespaceVisitor;
+
+impl serde::de::Visitor<'_> for NamespaceVisitor {
+    type Value = Namespace;
+
+    fn expecting(&self, formatter: &mut Formatter) -> std::fmt::Result {
+        formatter.write_str("a string")
+    }
+
+    fn visit_str<E>(self, v: &str) -> Result<Self::Value, E>
+    where
+        E: serde::de::Error,
+    {
+        match Namespace::from_str(v) {
+            Err(e) => Err(serde::de::Error::custom(e)),
+            Ok(v) => Ok(v),
+        }
+    }
+}
+
+impl<'de> serde::Deserialize<'de> for Namespace {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        deserializer.deserialize_string(NamespaceVisitor)
     }
 }
