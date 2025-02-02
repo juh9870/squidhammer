@@ -9,7 +9,7 @@ use std::borrow::Cow;
 use std::io::Read;
 use std::path::{Path, PathBuf};
 use strum::{EnumIs, EnumTryAs};
-use tracing::trace;
+use tracing::{error, trace};
 use utils::map::dashmap::Entry;
 use utils::map::DashMap;
 use walkdir::WalkDir;
@@ -57,6 +57,7 @@ impl FilesystemIO {
                 FileData {
                     kind: FileKind::Mem {
                         content: Cow::Borrowed(file.contents()),
+                        hash: sha256(&file.contents()),
                     },
                 },
             );
@@ -107,6 +108,7 @@ impl FilesystemIO {
                                 archive_file_path.clone(),
                                 FileData {
                                     kind: FileKind::Mem {
+                                        hash: sha256(&data),
                                         content: Cow::Owned(data),
                                     },
                                 },
@@ -150,7 +152,7 @@ impl ProjectIO for FilesystemIO {
         let path = self.process_path(path)?;
 
         if let Some(file) = self.files.get(&path) {
-            if let FileKind::Mem { content } = &file.kind {
+            if let FileKind::Mem { content, .. } = &file.kind {
                 return Ok(content.to_vec());
             }
         }
@@ -188,8 +190,20 @@ impl ProjectIO for FilesystemIO {
                     }
                     *file_hash = Some(hash);
                 }
-                _ => {
-                    bail!("file `{}` is not a fs file", path.display());
+                FileKind::Mem {
+                    hash: file_hash, ..
+                } => {
+                    if file_hash == &hash {
+                        return Ok(());
+                    }
+                    if cfg!(debug_assertions) {
+                        bail!(
+                            "attempted to save a changed mem file at `{}`",
+                            path.display()
+                        );
+                    }
+                    error!("file `{}` is not a fs file, skipping write", path.display());
+                    return Ok(());
                 }
             },
             Entry::Vacant(e) => {
@@ -222,6 +236,20 @@ impl ProjectIO for FilesystemIO {
         Ok(())
     }
 
+    fn file_writable(&self, path: impl AsRef<Path>) -> miette::Result<bool> {
+        let path = self.process_path(path)?;
+
+        for path in path.ancestors() {
+            if let Some(file) = self.files.get(path) {
+                if !file.kind.is_fs() {
+                    return Ok(false);
+                }
+            }
+        }
+
+        Ok(true)
+    }
+
     fn flush(&mut self) -> miette::Result<()> {
         Ok(())
     }
@@ -234,6 +262,11 @@ struct FileData {
 
 #[derive(Debug, Clone, EnumIs, EnumTryAs)]
 enum FileKind {
-    Fs { hash: Option<Vec<u8>> },
-    Mem { content: Cow<'static, [u8]> },
+    Fs {
+        hash: Option<Vec<u8>>,
+    },
+    Mem {
+        content: Cow<'static, [u8]>,
+        hash: Vec<u8>,
+    },
 }

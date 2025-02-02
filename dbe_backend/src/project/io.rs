@@ -10,6 +10,7 @@ pub trait ProjectIO: Send + Sync {
     fn file_exists(&self, path: impl AsRef<Path>) -> miette::Result<bool>;
     fn write_file(&self, path: impl AsRef<Path>, data: &[u8]) -> miette::Result<()>;
     fn delete_file(&self, path: impl AsRef<Path>) -> miette::Result<()>;
+    fn file_writable(&self, path: impl AsRef<Path>) -> miette::Result<bool>;
 
     /// Flush any pending state changes. Should be called after any calls to
     /// `read_file`, `write_file`, or `delete_file`.
