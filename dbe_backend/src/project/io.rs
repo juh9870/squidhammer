@@ -1,6 +1,5 @@
-use std::path::{Path, PathBuf};
-
 pub use fs::FilesystemIO;
+use std::path::{Path, PathBuf};
 
 mod embedded;
 mod fs;
