@@ -238,6 +238,11 @@ impl<IO: ProjectIO> Project<IO> {
                         import_jsons.insert(path.to_path_buf(), (data.value, Some(data.ty)));
                     }
                     EXTENSION_GRAPH => {
+                        if let Some(module_path) = module_path {
+                            if path.starts_with(module_path.join(TYPES_FOLDER)) {
+                                bail!("graphs are not allowed inside types folder");
+                            }
+                        }
                         let data = serde_json5::from_str(&utf8str(path, io.read_file(path)?)?)
                             .into_diagnostic()
                             .context("failed to deserialize graph JSON")?;
