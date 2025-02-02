@@ -1,4 +1,4 @@
-use crate::Resizable;
+use crate::{Iterable, Resizable};
 
 impl<T> Resizable for Vec<T> {
     type Item = T;
@@ -25,5 +25,14 @@ impl<T> Resizable for Vec<T> {
 
     fn swap_remove(&mut self, index: usize) -> Self::Item {
         self.swap_remove(index)
+    }
+}
+
+impl<T> Iterable for Vec<T> {
+    type Item<'a> = &'a T where Self: 'a;
+
+    #[expect(clippy::needless_lifetimes)]
+    fn iter<'a>(&'a self) -> impl Iterator<Item = Self::Item<'a>> {
+        self.as_slice().iter()
     }
 }
