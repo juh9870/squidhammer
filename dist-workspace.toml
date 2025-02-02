@@ -22,5 +22,5 @@ precise-builds = true
 
 
 [[dist.extra-artifacts]]
-artifact = "eh.dbemodule"
+artifacts = ["eh.dbemodule"]
 build = ["zip", "-r", "eh.dbemodule", "./vanilla/modules/eh.dbemodule"]
