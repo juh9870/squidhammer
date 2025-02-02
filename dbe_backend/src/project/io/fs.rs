@@ -87,6 +87,7 @@ impl FilesystemIO {
                         kind: FileKind::ReadOnlyDirectoryMarker,
                     },
                 );
+                let archive_parent = path.parent().unwrap();
                 m_try(|| {
                     let mod_archive = fs_err::read(&path)
                         .into_diagnostic()
@@ -112,14 +113,14 @@ impl FilesystemIO {
                             let name = file
                                 .enclosed_name()
                                 .context("failed to get enclosed file name")?;
-                            let archive_file_path = path.join(name);
+                            let archive_file_path = archive_parent.join(name);
                             let data = file
                                 .bytes()
                                 .collect::<Result<Vec<u8>, _>>()
                                 .into_diagnostic()
                                 .context("failed to read file")?;
                             self.files.insert(
-                                archive_file_path.clone(),
+                                archive_file_path,
                                 FileData {
                                     kind: FileKind::Mem {
                                         hash: sha256(&data),
