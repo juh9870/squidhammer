@@ -6,6 +6,10 @@
 
 > Released on ReleaseDate
 
+## [0.2.0]
+
+> Released on 2025-02-02
+
 ### Breaking Changes
 
 - New module system replaces the old approach, where each type has its own folder. Due to this, all custom types have to
@@ -85,8 +89,9 @@
 No changelog for this and all previous versions.
 
 <!-- next-url -->
+[Unreleased]: https://github.com/juh9870/squidhammer/compare/v0.2.0...HEAD
 
-[Unreleased]: https://github.com/juh9870/squidhammer/compare/v0.1.10...HEAD
+[0.2.0]: https://github.com/juh9870/squidhammer/compare/v0.1.10...v0.2.0
 
 [0.1.10]: https://github.com/juh9870/squidhammer/compare/v0.1.9...v0.1.10
 
