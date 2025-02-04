@@ -34,6 +34,7 @@ impl ManualEItemInfoAdapter for () {
 }
 
 pub trait EItemInfoAdapter: ValueAdapter {
+    /// Get the data type of this value.
     fn edata_type(registry: &ETypesRegistry) -> EItemInfo;
 }
 

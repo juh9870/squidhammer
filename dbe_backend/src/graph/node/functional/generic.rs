@@ -1,4 +1,5 @@
 use crate::etype::conversion::EItemInfoAdapter;
+use crate::etype::default::DefaultEValue;
 use crate::etype::EDataType;
 use crate::graph::node::generic::{GenericNodeField, GenericNodeFieldMut};
 use crate::registry::optional_helpers::{none_of_type, unwrap_optional_value, wrap_in_option};
@@ -63,6 +64,11 @@ pub(super) trait GenericFieldAdapter {
         registry: &ETypesRegistry,
         generic_ty: Option<EDataType>,
     ) -> miette::Result<EValue>;
+
+    fn custom_default_value(registry: &ETypesRegistry) -> miette::Result<Option<DefaultEValue>> {
+        let _ = (registry,);
+        Ok(None)
+    }
 }
 
 impl<const N: usize> GenericFieldAdapter for GenericValue<N> {

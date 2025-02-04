@@ -1,7 +1,9 @@
 use crate::etype::conversion::ManualEItemInfoAdapter;
 use crate::etype::eitem::EItemInfo;
 use crate::etype::EDataType;
-use crate::graph::node::functional::{side_effects_node, CustomEValue, C};
+use crate::graph::node::functional::values::default::DefaultTrueBool;
+use crate::graph::node::functional::values::{CustomEValue, WithDefault};
+use crate::graph::node::functional::{side_effects_node, C};
 use crate::graph::node::NodeFactory;
 use crate::project::side_effects::mappings::Mappings;
 use crate::project::side_effects::SideEffectsContext;
@@ -34,7 +36,11 @@ impl ManualEItemInfoAdapter for MappingsKind {
 pub(super) fn mappings_nodes() -> Vec<Arc<dyn NodeFactory>> {
     vec![
         side_effects_node(
-            |ctx: C, path: String, persistent: bool, input: String, value: ENumber| {
+            |ctx: C,
+             path: String,
+             persistent: WithDefault<bool, DefaultTrueBool>,
+             input: String,
+             value: ENumber| {
                 let mappings = get_mappings_for_path(
                     ctx.context.registry,
                     &mut ctx.extras.side_effects,
@@ -42,7 +48,7 @@ pub(super) fn mappings_nodes() -> Vec<Arc<dyn NodeFactory>> {
                     &path,
                 )?;
 
-                let id = mappings.set_id(input, value.0 as i64, persistent)?;
+                let id = mappings.set_id(input, value.0 as i64, persistent.0)?;
 
                 Ok(ENumber::from(id as f64))
             },
@@ -55,7 +61,7 @@ pub(super) fn mappings_nodes() -> Vec<Arc<dyn NodeFactory>> {
             |ctx: C,
              path: String,
              ranges: CustomEValue<ERangeList>,
-             persistent: bool,
+             persistent: WithDefault<bool, DefaultTrueBool>,
              kind: CustomEValue<MappingsKind>,
              value: String| {
                 let kind = kind.0;
@@ -74,8 +80,8 @@ pub(super) fn mappings_nodes() -> Vec<Arc<dyn NodeFactory>> {
                 )?;
 
                 let id = match kind_idx.0 {
-                    0.0 => mappings.get_id_raw(value.to_string(), persistent)?,
-                    1.0 => mappings.new_id(value.to_string(), persistent)?,
+                    0.0 => mappings.get_id_raw(value.to_string(), persistent.0)?,
+                    1.0 => mappings.new_id(value.to_string(), persistent.0)?,
                     // 2.0 => mappings.existing_id(value)?,
                     2.0 => bail!(
                         "existing ID mapping is not yet implemented, blocked due to multistage runtime"

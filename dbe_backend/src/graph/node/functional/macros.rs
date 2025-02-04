@@ -3,6 +3,7 @@ use super::{
     AsStaticSlice, FuncNode, FunctionalContext, FunctionalNode, FunctionalNodeOutput,
     IntoFunctionalNode,
 };
+use crate::etype::default::DefaultEValue;
 use crate::etype::EDataType;
 use crate::graph::node::extras::ExecutionExtras;
 use crate::graph::node::generic::{GenericNodeField, GenericNodeFieldMut};
@@ -83,6 +84,19 @@ macro_rules! get_field {
         }
     };
 }
+macro_rules! custom_default_value {
+    ($registry:ident, $varname:ident, $($i:expr, $in:ident);*) => {
+        paste::paste!{
+            {
+                $(const [< $in _IDX >]: usize = $i;)*
+                match $varname {
+                    $([< $in _IDX >] => <$in as GenericFieldAdapter>::custom_default_value($registry),)*
+                    _ => panic!("Index out of bounds: the length is {} but the index is {}", count!($($i)*), $varname),
+                }
+            }
+        }
+    };
+}
 
 macro_rules! invoke_f {
     ($self:ident, $ctx:ident, $input_types:ident, $inputs:ident, $($i:expr, $in:ident);*) => {
@@ -141,6 +155,15 @@ macro_rules! impl_functional_node {
                 ]
             }
 
+            fn custom_default_value(
+                &self,
+                context: NodeContext,
+                input: usize,
+            ) -> miette::Result<Option<DefaultEValue>> {
+                #[allow(unused_variables)]
+                let registry = context.registry;
+                enumerate!(custom_default_value(registry, input), $($in)*)
+            }
 
             fn inputs_count() -> usize {
                 count!($($in)*)
