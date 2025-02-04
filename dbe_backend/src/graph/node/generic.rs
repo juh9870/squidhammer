@@ -1,5 +1,6 @@
 #![forbid(clippy::unconditional_recursion)]
 
+use crate::etype::default::DefaultEValue;
 use crate::etype::eitem::EItemInfo;
 use crate::etype::EDataType;
 use crate::graph::node::commands::SnarlCommands;
@@ -283,6 +284,19 @@ pub trait GenericNode: DynClone + DynHash + Debug + Send + Sync + Downcast + 'st
     fn input_names(&self) -> &[&str];
     fn output_names(&self) -> &[&str];
 
+    fn default_input_value(
+        &self,
+        context: NodeContext,
+        input: usize,
+    ) -> miette::Result<DefaultEValue> {
+        let inputs = self.inputs(context.registry);
+        let input = inputs
+            .as_ref()
+            .get(input)
+            .ok_or_else(|| miette!("Invalid input index: {}", input))?;
+        Ok(input.ty(context.registry).default_value(context.registry))
+    }
+
     fn inputs(&self, registry: &ETypesRegistry) -> impl AsRef<[GenericNodeField]>;
     fn outputs(&self, registry: &ETypesRegistry) -> impl AsRef<[GenericNodeField]>;
     fn inputs_mut(&mut self, registry: &ETypesRegistry) -> impl AsMut<[GenericNodeFieldMut]>;
@@ -483,6 +497,14 @@ impl<T: GenericNode> Node for T {
 
     fn id(&self) -> Ustr {
         T::id(self)
+    }
+
+    fn default_input_value(
+        &self,
+        context: NodeContext,
+        input: usize,
+    ) -> miette::Result<DefaultEValue> {
+        T::default_input_value(self, context, input)
     }
 
     fn update_state(

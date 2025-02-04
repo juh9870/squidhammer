@@ -1,3 +1,4 @@
+use crate::etype::default::DefaultEValue;
 use crate::etype::EDataType;
 use crate::graph::node::commands::SnarlCommands;
 use crate::graph::node::extras::ExecutionExtras;
@@ -9,6 +10,7 @@ use crate::registry::ETypesRegistry;
 use crate::value::EValue;
 use arrayvec::ArrayVec;
 use egui_snarl::NodeId;
+use miette::miette;
 use ustr::Ustr;
 
 #[derive(Debug, Clone, Hash)]
@@ -29,6 +31,23 @@ impl<T: FunctionalNode> GenericNode for FuncNodeState<T> {
 
     fn output_names(&self) -> &[&str] {
         self.node.output_names()
+    }
+
+    fn default_input_value(
+        &self,
+        context: NodeContext,
+        input: usize,
+    ) -> miette::Result<DefaultEValue> {
+        if let Some(value) = self.node.custom_default_value(context, input)? {
+            Ok(value)
+        } else {
+            let inputs = self.inputs(context.registry);
+            let input = inputs
+                .as_ref()
+                .get(input)
+                .ok_or_else(|| miette!("Invalid input index: {}", input))?;
+            Ok(input.ty(context.registry).default_value(context.registry))
+        }
     }
 
     fn inputs(&self, registry: &ETypesRegistry) -> impl AsRef<[GenericNodeField]> {

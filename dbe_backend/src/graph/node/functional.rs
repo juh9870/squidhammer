@@ -1,4 +1,4 @@
-use crate::etype::conversion::{EItemInfoAdapter, ManualEItemInfoAdapter};
+use crate::etype::default::DefaultEValue;
 use crate::etype::eitem::EItemInfo;
 use crate::etype::EDataType;
 use crate::graph::node::extras::ExecutionExtras;
@@ -6,6 +6,7 @@ use crate::graph::node::format_node::format_evalue_for_graph;
 use crate::graph::node::functional::generic::{GenericFieldAdapter, GenericValue};
 use crate::graph::node::functional::mappings::mappings_nodes;
 use crate::graph::node::functional::raw_manip::SwapValueResult;
+use crate::graph::node::functional::values::AnyEValue;
 use crate::graph::node::generic::{GenericNodeField, GenericNodeFieldMut};
 use crate::graph::node::ports::{port_types_compatible, NodePortType};
 use crate::graph::node::{NodeContext, NodeFactory};
@@ -18,10 +19,11 @@ use std::hash::{Hash, Hasher};
 use std::marker::PhantomData;
 use std::sync::Arc;
 
-pub mod generic;
-pub mod impls;
-pub mod macros;
-pub mod raw_manip;
+mod generic;
+mod impls;
+mod macros;
+mod raw_manip;
+mod values;
 
 pub mod mappings;
 
@@ -46,6 +48,12 @@ trait FunctionalNode: 'static + Clone + Debug + Hash + Send + Sync {
     ) -> GenericNodeFieldMut<'a>;
     fn inputs_count() -> usize;
     fn input_generic_indices() -> impl IntoIterator<Item = Option<usize>>;
+
+    fn custom_default_value(
+        &self,
+        context: NodeContext,
+        input: usize,
+    ) -> miette::Result<Option<DefaultEValue>>;
 
     fn output<'a>(
         registry: &ETypesRegistry,
@@ -241,70 +249,6 @@ trait AsStaticSlice {
 impl<const N: usize> AsStaticSlice for &'static [&'static str; N] {
     fn as_static_slice(&self) -> &'static [&'static str] {
         (*self).as_slice()
-    }
-}
-
-// pub trait FunctionalInputPortAdapter: ValueAdapter {
-//     fn port(context: NodeContext) -> NodePortType;
-// }
-//
-// pub trait FunctionalOutputPortAdapter: ValueAdapter {
-//     fn port(context: NodeContext) -> NodePortType;
-// }
-//
-// impl<T: EItemInfoAdapter> FunctionalInputPortAdapter for T {
-//     fn port(context: NodeContext) -> NodePortType {
-//         T::edata_type(context.registry).into()
-//     }
-// }
-//
-// impl<T: EItemInfoAdapter> FunctionalOutputPortAdapter for T {
-//     fn port(context: NodeContext) -> NodePortType {
-//         T::edata_type(context.registry).into()
-//     }
-// }
-
-struct AnyEValue(EValue);
-
-impl TryFrom<&EValue> for AnyEValue {
-    type Error = miette::Report;
-
-    fn try_from(value: &EValue) -> Result<Self, Self::Error> {
-        Ok(Self(value.clone()))
-    }
-}
-
-impl From<AnyEValue> for EValue {
-    fn from(value: AnyEValue) -> Self {
-        value.0
-    }
-}
-
-impl EItemInfoAdapter for AnyEValue {
-    fn edata_type(_registry: &ETypesRegistry) -> EItemInfo {
-        EItemInfo::simple_type(EDataType::Unknown)
-    }
-}
-
-struct CustomEValue<T: ManualEItemInfoAdapter>(EValue, PhantomData<fn() -> T>);
-
-impl<T: ManualEItemInfoAdapter> TryFrom<&EValue> for CustomEValue<T> {
-    type Error = miette::Report;
-
-    fn try_from(value: &EValue) -> Result<Self, Self::Error> {
-        Ok(Self(value.clone(), Default::default()))
-    }
-}
-
-impl<T: ManualEItemInfoAdapter> From<CustomEValue<T>> for EValue {
-    fn from(value: CustomEValue<T>) -> Self {
-        value.0
-    }
-}
-
-impl<T: ManualEItemInfoAdapter> EItemInfoAdapter for CustomEValue<T> {
-    fn edata_type(_registry: &ETypesRegistry) -> EItemInfo {
-        T::edata_type(_registry)
     }
 }
 
