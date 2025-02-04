@@ -6,7 +6,8 @@ use duplicate::duplicate_item;
 use miette::bail;
 use serde::{Deserialize, Serialize};
 use std::borrow::Cow;
-use std::collections::hash_map::Entry;
+use std::collections::btree_map::Entry;
+use std::collections::BTreeMap;
 use std::ops::{Deref, DerefMut};
 use std::sync::LazyLock;
 use strum::EnumIs;
@@ -28,16 +29,16 @@ pub enum Docs {
     Stub,
 }
 
-static STUB_NODES: LazyLock<HashMap<String, WithLocation<NodeDocs>>> =
+static STUB_NODES: LazyLock<BTreeMap<String, WithLocation<NodeDocs>>> =
     LazyLock::new(Default::default);
 
-static STUB_TYPES: LazyLock<HashMap<ETypeId, WithLocation<TypeDocs>>> =
+static STUB_TYPES: LazyLock<BTreeMap<ETypeId, WithLocation<TypeDocs>>> =
     LazyLock::new(Default::default);
 
 #[derive(Debug, Default)]
 pub struct DocsContent {
-    nodes: HashMap<String, WithLocation<NodeDocs>>,
-    types: HashMap<ETypeId, WithLocation<TypeDocs>>,
+    nodes: BTreeMap<String, WithLocation<NodeDocs>>,
+    types: BTreeMap<ETypeId, WithLocation<TypeDocs>>,
 }
 
 impl Docs {
