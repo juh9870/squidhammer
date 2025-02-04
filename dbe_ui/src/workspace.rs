@@ -6,7 +6,7 @@ use crate::workspace::editors::{editor_for_value, EditorContext};
 use crate::workspace::graph::rects::NodeRects;
 use crate::workspace::graph::toolbar::{GraphTab, GraphToolbarViewer};
 use crate::DbeApp;
-use camino::Utf8PathBuf;
+use camino::{Utf8Path, Utf8PathBuf};
 use dbe_backend::diagnostic::diagnostic::{Diagnostic, DiagnosticLevel};
 use dbe_backend::graph::editing::PartialGraphEditingContext;
 use dbe_backend::graph::node::SnarlNode;
@@ -25,6 +25,7 @@ use egui_snarl::ui::SnarlStyle;
 use egui_snarl::{NodeId, Snarl};
 use egui_toast::{Toast, ToastKind, ToastOptions};
 use inline_tweak::tweak;
+use itertools::Itertools;
 use miette::miette;
 use std::ops::DerefMut;
 use tracing::trace;
@@ -52,14 +53,6 @@ impl DbeApp {
     }
 
     pub fn new_file(&mut self, ctx: &Context, folder: Utf8PathBuf) {
-        let Some(project) = self.project.as_mut() else {
-            report_error(miette!("No project is open"));
-            return;
-        };
-        if !project.io.is_file_writable(&folder).unwrap_or(false) {
-            report_error(miette!("Folder is not writable"));
-            return;
-        }
         self.show_new_file_modal(ctx, folder, |app, ctx, folder, mut filename| {
             let segments: Vec<&str> = filename.split('.').collect();
             if segments.len() > 1 {
@@ -114,14 +107,6 @@ impl DbeApp {
     }
 
     pub fn new_graph(&mut self, ctx: &Context, folder: Utf8PathBuf) {
-        let Some(project) = self.project.as_mut() else {
-            report_error(miette!("No project is open"));
-            return;
-        };
-        if !project.io.is_file_writable(&folder).unwrap_or(false) {
-            report_error(miette!("Folder is not writable"));
-            return;
-        }
         self.show_new_file_modal(ctx, folder, |app, ctx, folder, mut filename| {
             let split: Vec<&str> = filename.split('.').collect();
             if split.len() > 1 {
@@ -174,8 +159,16 @@ impl DbeApp {
         &mut self,
         ctx: &Context,
         folder: Utf8PathBuf,
-        cb: impl Fn(&mut DbeApp, &Context, Utf8PathBuf, String) + 'static,
+        cb: impl Fn(&mut DbeApp, &Context, &Utf8Path, String) + 'static,
     ) {
+        let Some(project) = self.project.as_mut() else {
+            report_error(miette!("No project is open"));
+            return;
+        };
+        if !project.io.is_file_writable(&folder).unwrap_or(false) {
+            report_error(miette!("Folder is not writable"));
+            return;
+        }
         let modal = Modal::new(ctx, "new_file_modal");
         modal.open();
         self.modals.insert(
@@ -191,12 +184,15 @@ impl DbeApp {
                             editor.request_focus();
                         });
                     });
-                    let sanitized = sanitise_file_name::sanitise(file_name.trim());
+                    let sanitized = sanitize_path(file_name.trim());
                     modal.buttons(ui, |ui| {
                         let can_create = !sanitized.is_empty();
                         ui.add_enabled_ui(can_create, |ui| {
                             if modal.suggested_button(ui, "create").clicked() {
-                                cb(app, ctx, folder.clone(), sanitized);
+                                let joined = folder.join(sanitized);
+                                let folder = joined.parent().unwrap();
+                                let name = joined.file_name().unwrap();
+                                cb(app, ctx, folder, name.to_string());
                             }
                         });
                         if modal.button(ui, "close").clicked() {}
@@ -206,6 +202,13 @@ impl DbeApp {
             }),
         );
     }
+}
+
+fn sanitize_path(path: &str) -> String {
+    path.split(['/', '\\'])
+        .map(|segment| sanitise_file_name::sanitise(segment.trim()))
+        .filter(|seg| !seg.is_empty())
+        .join("/")
 }
 
 pub type Tab = Utf8PathBuf;
