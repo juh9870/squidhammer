@@ -33,7 +33,7 @@ impl ManualEItemInfoAdapter for MappingsKind {
     }
 }
 
-pub(super) fn mappings_nodes() -> Vec<Arc<dyn NodeFactory>> {
+pub(super) fn nodes() -> Vec<Arc<dyn NodeFactory>> {
     vec![
         side_effects_node(
             |ctx: C,

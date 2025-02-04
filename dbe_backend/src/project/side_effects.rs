@@ -102,6 +102,7 @@ impl SideEffect {
 pub struct SideEffects {
     effects: Vec<(SideEffectEmitter, SideEffect)>,
     mappings: HashMap<Utf8PathBuf, (u64, Mappings)>,
+    transistent_storage: HashMap<String, EValue>,
 }
 
 impl SideEffects {
@@ -109,6 +110,7 @@ impl SideEffects {
         Self {
             effects: Vec::new(),
             mappings: Default::default(),
+            transistent_storage: Default::default(),
         }
     }
 
@@ -208,6 +210,22 @@ impl SideEffects {
             },
         })
         .with_context(|| format!("failed to load mappings at `{}`", path))
+    }
+
+    pub fn get_transient_storage(&mut self, key: &str) -> Option<&EValue> {
+        self.transistent_storage.get(key)
+    }
+
+    pub fn set_transient_storage(&mut self, key: String, value: EValue) {
+        self.transistent_storage.insert(key, value);
+    }
+
+    pub fn has_transient_storage(&self, key: &str) -> bool {
+        self.transistent_storage.contains_key(key)
+    }
+
+    pub fn clear_transient_storage(&mut self) {
+        self.transistent_storage.clear();
     }
 }
 
@@ -357,6 +375,30 @@ impl<'a> SideEffectsContext<'a> {
             SideEffectsContext::Context { effects, files, .. } => {
                 effects.load_mappings(registry, files, path, ranges)
             }
+            SideEffectsContext::Unavailable => bail!("Side effects context is unavailable"),
+        }
+    }
+
+    pub fn get_transient_storage(&mut self, key: &str) -> miette::Result<Option<&EValue>> {
+        match self {
+            SideEffectsContext::Context { effects, .. } => Ok(effects.get_transient_storage(key)),
+            SideEffectsContext::Unavailable => bail!("Side effects context is unavailable"),
+        }
+    }
+
+    pub fn set_transient_storage(&mut self, key: String, value: EValue) -> miette::Result<()> {
+        match self {
+            SideEffectsContext::Context { effects, .. } => {
+                effects.set_transient_storage(key, value);
+                Ok(())
+            }
+            SideEffectsContext::Unavailable => bail!("Side effects context is unavailable"),
+        }
+    }
+
+    pub fn has_transient_storage(&self, key: &str) -> miette::Result<bool> {
+        match self {
+            SideEffectsContext::Context { effects, .. } => Ok(effects.has_transient_storage(key)),
             SideEffectsContext::Unavailable => bail!("Side effects context is unavailable"),
         }
     }

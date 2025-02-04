@@ -398,6 +398,7 @@ impl<IO: ProjectIO> Project<IO> {
         }
 
         for (path, file) in &self.files {
+            side_effects.clear_transient_storage();
             m_try(|| {
                 if file.is_generated() {
                     generated.push(path.clone());
