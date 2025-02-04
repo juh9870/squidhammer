@@ -4,7 +4,6 @@ use crate::etype::EDataType;
 use crate::graph::node::extras::ExecutionExtras;
 use crate::graph::node::format_node::format_evalue_for_graph;
 use crate::graph::node::functional::generic::{GenericFieldAdapter, GenericValue};
-use crate::graph::node::functional::mappings::mappings_nodes;
 use crate::graph::node::functional::raw_manip::SwapValueResult;
 use crate::graph::node::functional::values::AnyEValue;
 use crate::graph::node::generic::{GenericNodeField, GenericNodeFieldMut};
@@ -25,7 +24,8 @@ mod macros;
 mod raw_manip;
 mod values;
 
-pub mod mappings;
+mod mappings;
+mod transient_storage;
 
 pub type FunctionalArgNames = &'static [&'static str];
 
@@ -851,7 +851,8 @@ pub fn functional_nodes() -> Vec<Arc<dyn NodeFactory>> {
         ),
     ];
 
-    nodes.extend(mappings_nodes());
+    nodes.extend(mappings::nodes());
+    nodes.extend(transient_storage::nodes());
 
     nodes
 }
