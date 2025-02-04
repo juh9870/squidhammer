@@ -254,7 +254,24 @@ impl GraphEditingContext<'_, '_> {
             let node = &mut self.snarl[*id].node;
             *node = duplicated_node;
         }
-        self.process_created_nodes(created_ids, commands)?;
+        self.process_created_nodes(created_ids.iter().copied(), commands)?;
+
+        let inline_values = self
+            .inline_values
+            .iter()
+            .filter(|(in_pin, _)| in_pin.node == node_id)
+            .map(|(in_pin, value)| (in_pin.input, value.clone()))
+            .collect_vec();
+
+        for (input, value) in inline_values {
+            self.inline_values.insert(
+                InPinId {
+                    node: created_ids[0],
+                    input,
+                },
+                value.clone(),
+            );
+        }
 
         Ok(())
     }
