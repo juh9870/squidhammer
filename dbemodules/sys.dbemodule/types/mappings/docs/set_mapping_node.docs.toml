@@ -1,0 +1,43 @@
+[nodes.set_mapping]
+title = "Set Mapping"
+description = "A mapping node that creates a hardcoded mapping between string ID and numeric ID"
+docs = """
+See docs for `mappings` node for general explanation of mappings system.
+
+This node is used to set a specific string ID to a specific numeric ID. This \
+can be useful for reserving IDs that require a specific numeric value.
+
+#### Failures
+- The node will fail if the provided `Input` is already mapped to a numeric ID \
+that is different from the provided `Value`.
+"""
+outputs = []
+
+[[nodes.set_mapping.inputs]]
+title = "Path"
+id = "path"
+description = "Path to the mapping file"
+docs = """
+Same as in `mappings` node.
+"""
+
+[[nodes.set_mapping.inputs]]
+title = "Persistent"
+id = "persistent"
+description = "Marks the mappings as persistent. Persistent markings will be consistent across runs, while non-persistent mappings are not saved to disk and may change between runs"
+docs = """
+Same as in `mappings` node.
+"""
+
+[[nodes.set_mapping.inputs]]
+title = "Input"
+id = "input"
+description = "Input string ID to map to a numeric ID"
+
+[[nodes.set_mapping.inputs]]
+title = "Value"
+id = "value"
+description = "Numeric ID to map the input string ID to"
+docs = """
+This value can be outside of the mappings ranges.
+"""

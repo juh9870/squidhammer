@@ -22,6 +22,17 @@ impl<T: Into<EValue> + for<'a> TryFrom<&'a EValue, Error = miette::Report>> Valu
     }
 }
 
+/// Like [`EItemInfoAdapter`], but for nodes that have custom handling of their data type.
+pub trait ManualEItemInfoAdapter {
+    fn edata_type(registry: &ETypesRegistry) -> EItemInfo;
+}
+
+impl ManualEItemInfoAdapter for () {
+    fn edata_type(_registry: &ETypesRegistry) -> EItemInfo {
+        EItemInfo::simple_type(EDataType::Unknown)
+    }
+}
+
 pub trait EItemInfoAdapter: ValueAdapter {
     fn edata_type(registry: &ETypesRegistry) -> EItemInfo;
 }

@@ -232,3 +232,5 @@ impl_all!();
 impl_all!(1);
 impl_all!(1, 2);
 impl_all!(1, 2, 3);
+impl_all!(1, 2, 3, 4);
+impl_all!(1, 2, 3, 4, 5);
