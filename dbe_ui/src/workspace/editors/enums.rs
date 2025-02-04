@@ -160,21 +160,27 @@ impl Editor for EnumEditor {
             }
             _ => {
                 if editor.body_size().is_block() {
-                    CollapsingState::load_with_default_open(
-                        ui.ctx(),
-                        ui.id().with(field_name),
-                        true,
-                    )
-                    .show_header(ui, |ui| {
-                        labeled_field(ui, field_name, docs_ctx, |ui| editor.picker(ui))
+                    ui.vertical(|ui| {
+                        CollapsingState::load_with_default_open(
+                            ui.ctx(),
+                            ui.id().with(field_name),
+                            true,
+                        )
+                        .show_header(ui, |ui| {
+                            labeled_field(ui, field_name, docs_ctx, |ui| editor.picker(ui))
+                        })
+                        .body_unindented(|ui| editor.body(ui))
+                        .2
+                        .map(|r| r.inner)
+                        .unwrap_or(EditorResponse::unchanged())
                     })
-                    .body_unindented(|ui| editor.body(ui))
-                    .2
-                    .map(|r| r.inner)
-                    .unwrap_or(EditorResponse::unchanged())
+                    .inner
                 } else {
-                    labeled_field(ui, field_name, docs_ctx, |ui| editor.picker(ui));
-                    editor.body(ui)
+                    ui.horizontal(|ui| {
+                        labeled_field(ui, field_name, docs_ctx, |ui| editor.picker(ui));
+                        editor.body(ui)
+                    })
+                    .inner
                 }
             }
         }
