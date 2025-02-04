@@ -16,8 +16,10 @@ use crate::registry::{EObjectType, ETypesRegistry};
 use crate::value::id::{EListId, ETypeId};
 use crate::value::EValue;
 use egui_snarl::{InPin, InPinId, NodeId, OutPin, OutPinId, Snarl};
-use emath::Pos2;
-use miette::Context;
+use emath::{Pos2, Vec2};
+use inline_tweak::tweak;
+use itertools::Itertools;
+use miette::{miette, Context};
 use smallvec::{smallvec, SmallVec};
 use std::ops::{Deref, DerefMut};
 use ustr::Ustr;
@@ -219,26 +221,75 @@ impl GraphEditingContext<'_, '_> {
             .with_context(|| format!("failed to remove node: {:?}", node))
     }
 
+    pub fn duplicate_node(
+        &mut self,
+        node_id: NodeId,
+        commands: &mut SnarlCommands,
+    ) -> miette::Result<()> {
+        let node = self.snarl.get_node_info(node_id).unwrap();
+        let factory_id = node.value.id();
+        let duplicate_nodes = node.value.duplicate();
+        let pos = node.pos + Vec2::splat(tweak!(50.0));
+        let created_ids = get_node_factory(&factory_id)
+            .unwrap()
+            .create_nodes(self.snarl, pos);
+
+        if duplicate_nodes.len() != created_ids.len() {
+            for node in created_ids.iter() {
+                self.snarl.remove_node(*node);
+            }
+            return Err(miette!(
+                help =
+                    "This is a bug in the node implementation, please report it to the developers.",
+                "created node count mismatch. Factory: {}, created: {}",
+                duplicate_nodes.len(),
+                created_ids.len()
+            ))
+            .with_context(|| format!("failed to duplicate node {}({:?})", factory_id, node_id));
+        }
+
+        self.mark_dirty();
+
+        for (id, duplicated_node) in created_ids.iter().zip_eq(duplicate_nodes) {
+            let node = &mut self.snarl[*id].node;
+            *node = duplicated_node;
+        }
+        self.process_created_nodes(created_ids, commands)?;
+
+        Ok(())
+    }
+
     pub fn create_node(
         &mut self,
         id: Ustr,
         pos: Pos2,
-        _commands: &mut SnarlCommands,
+        commands: &mut SnarlCommands,
     ) -> miette::Result<SmallVec<[NodeId; 2]>> {
         let ids = get_node_factory(&id).unwrap().create_nodes(self.snarl, pos);
         self.mark_dirty();
-        for id in &ids {
-            let node = &self.snarl[*id].node;
+
+        self.process_created_nodes(ids.iter().copied(), commands)?;
+
+        Ok(ids)
+    }
+
+    fn process_created_nodes(
+        &mut self,
+        ids: impl IntoIterator<Item = NodeId>,
+        _commands: &mut SnarlCommands,
+    ) -> miette::Result<()> {
+        for id in ids {
+            let node = &self.snarl[id].node;
             for reg in [node.region_source(), node.region_end()].iter().flatten() {
                 self.ctx
                     .regions
                     .entry(*reg)
                     .or_insert_with(|| RegionInfo::new(*reg));
             }
-            self.inline_values.retain(|in_pin, _| &in_pin.node != id);
+            self.inline_values.retain(|in_pin, _| in_pin.node != id);
         }
 
-        Ok(ids)
+        Ok(())
     }
 
     pub fn create_object_node(

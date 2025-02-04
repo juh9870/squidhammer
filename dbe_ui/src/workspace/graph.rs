@@ -524,6 +524,12 @@ impl SnarlViewer<SnarlNode> for GraphViewer<'_> {
         snarl: &mut Snarl<SnarlNode>,
     ) {
         m_try(|| {
+            if ui.button("Duplicate").clicked() {
+                self.ctx
+                    .as_full(snarl)
+                    .duplicate_node(node, &mut self.commands)?;
+                ui.close_menu();
+            }
             if ui.button("Remove").clicked() {
                 self.ctx
                     .as_full(snarl)

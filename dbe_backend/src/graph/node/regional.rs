@@ -24,7 +24,7 @@ use inline_tweak::tweak;
 use miette::{bail, miette, IntoDiagnostic};
 use serde::{Deserialize, Serialize};
 use serde_json::json;
-use smallvec::SmallVec;
+use smallvec::{smallvec, SmallVec};
 use std::fmt::Debug;
 use std::hash::Hash;
 use std::marker::PhantomData;
@@ -139,6 +139,25 @@ impl<T: RegionalNode> Node for RegionIONode<T> {
             .parse_json(registry, &self.data, &mut packed.node)?;
 
         Ok(())
+    }
+
+    fn custom_duplicates(&self) -> Option<SmallVec<[Box<dyn Node>; 1]>> {
+        let new_region = Uuid::new_v4();
+        let mut start = self.clone();
+        start.data = RegionIoData {
+            region: new_region,
+            kind: RegionIoKind::Start,
+        };
+        let mut end = self.clone();
+        end.data = RegionIoData {
+            region: new_region,
+            kind: RegionIoKind::End,
+        };
+
+        let start_box: Box<dyn Node> = Box::new(start);
+        let end_box: Box<dyn Node> = Box::new(end);
+
+        Some(smallvec![start_box, end_box])
     }
 
     fn id(&self) -> Ustr {

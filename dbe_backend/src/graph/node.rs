@@ -36,7 +36,7 @@ use crate::registry::ETypesRegistry;
 use crate::value::EValue;
 use atomic_refcell::{AtomicRef, AtomicRefCell};
 use downcast_rs::{impl_downcast, Downcast};
-use dyn_clone::DynClone;
+use dyn_clone::{clone_box, DynClone};
 use dyn_hash::DynHash;
 use egui_snarl::{InPin, NodeId, OutPin, Snarl};
 use emath::Pos2;
@@ -244,6 +244,11 @@ pub trait Node: DynClone + DynHash + Debug + Send + Sync + Downcast + 'static {
     ) -> miette::Result<()> {
         let _ = (registry, value);
         Ok(())
+    }
+
+    /// Custom logic for creating duplicates of the node
+    fn custom_duplicates(&self) -> Option<SmallVec<[Box<dyn Node>; 1]>> {
+        None
     }
 
     fn id(&self) -> Ustr;
@@ -506,6 +511,19 @@ pub trait Node: DynClone + DynHash + Debug + Send + Sync + Downcast + 'static {
             to: to.id,
         });
         Ok(())
+    }
+}
+
+impl dyn Node {
+    /// Creates a duplicate of the node
+    ///
+    /// Some nodes may want to spawn multiple nodes when duplicated (e.g. regional nodes)
+    pub fn duplicate(&self) -> SmallVec<[Box<dyn Node>; 1]> {
+        if let Some(clones) = self.custom_duplicates() {
+            clones
+        } else {
+            smallvec![clone_box(self)]
+        }
     }
 }
 
