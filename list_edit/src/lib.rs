@@ -1,10 +1,13 @@
+use crate::handle::Handle;
 use collection_traits::Resizable;
-use egui::{Id, Rect, Sense, Separator, Ui, Vec2, Widget};
+use egui::{vec2, Id, Sense, Ui, Vec2, Widget};
 pub use egui_dnd::ItemState;
 use egui_dnd::{dnd, DragDropItem};
 use inline_tweak::tweak;
 use std::hash::Hash;
 use std::marker::PhantomData;
+
+pub mod handle;
 
 pub struct ListEditor<T, NewItem, CanDelete, IdSource> {
     new_item: NewItem,
@@ -70,27 +73,27 @@ impl<T, NewItem: Fn(usize) -> T, CanDelete: Fn(usize, T) -> bool, IdSource: Hash
                                 ui.memory_mut(|mem| mem.data.get_temp(id));
 
                             let handle_content = |ui: &mut Ui| {
-                                let (res_a, res_b) = ui
+                                let res = ui
                                     .push_id("_handle_sizer", |ui| {
-                                        let style = ui.style_mut();
-                                        style.visuals.widgets.noninteractive.bg_stroke.color =
-                                            style.visuals.widgets.active.fg_stroke.color;
-                                        fn separator() -> Separator {
-                                            Separator::default()
-                                                .spacing(tweak!(1.0))
-                                                .shrink(tweak!(2.0))
-                                        }
-                                        let res_left = separator().ui(ui);
-                                        separator().ui(ui);
-                                        let res_right = separator().ui(ui);
-                                        (res_left, res_right)
+                                        Handle::default()
+                                            .spacing(vec2(tweak!(3.0), tweak!(3.0)))
+                                            .margins(vec2(tweak!(2.0), tweak!(2.0)))
+                                            .dot_size(tweak!(2.0))
+                                            .width(tweak!(24.0))
+                                            .color(
+                                                ui.style()
+                                                    .visuals
+                                                    .widgets
+                                                    .active
+                                                    .fg_stroke
+                                                    .color
+                                                    .gamma_multiply(tweak!(0.5)),
+                                            )
+                                            .ui(ui)
                                     })
                                     .inner;
 
-                                let rect = Rect::from_two_pos(
-                                    res_a.rect.left_top(),
-                                    res_b.rect.right_bottom(),
-                                );
+                                let rect = res.rect;
 
                                 let res = ui.interact(
                                     rect,
