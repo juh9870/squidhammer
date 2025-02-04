@@ -1,4 +1,3 @@
-use crate::etype::econst::ETypeConst;
 use crate::etype::eitem::EItemInfo;
 use crate::etype::EDataType;
 use crate::graph::node::commands::{SnarlCommand, SnarlCommands};
@@ -14,31 +13,22 @@ use ustr::Ustr;
 
 #[derive(Debug, Clone, Hash, Serialize, Deserialize)]
 pub struct ListNode {
-    item: EDataType,
-    /// Determines whenever the list retains its type once empty
-    ///
-    /// This flag is NOT persisted
-    #[serde(skip)]
-    fixed: bool,
-    #[serde(skip)]
+    item: Option<EDataType>,
+    #[serde(default)]
     items_count: usize,
 }
 
 impl ListNode {
     pub fn new() -> Self {
         Self {
-            item: EDataType::Const {
-                value: ETypeConst::Null,
-            },
-            fixed: false,
+            item: None,
             items_count: 0,
         }
     }
 
     pub fn of_type(ty: EDataType) -> Self {
         Self {
-            item: ty,
-            fixed: true,
+            item: Some(ty),
             items_count: 0,
         }
     }
@@ -67,10 +57,10 @@ impl Node for ListNode {
 
     fn input_unchecked(&self, _context: NodeContext, input: usize) -> miette::Result<InputData> {
         Ok(InputData::new(
-            if self.items_count == 0 && !self.fixed {
-                NodePortType::BasedOnSource
+            if let Some(ty) = self.item.as_ref() {
+                EItemInfo::simple_type(*ty).into()
             } else {
-                EItemInfo::simple_type(self.item).into()
+                NodePortType::BasedOnSource
             },
             if input == self.items_count {
                 "+".into()
@@ -86,7 +76,12 @@ impl Node for ListNode {
 
     fn output_unchecked(&self, context: NodeContext, output: usize) -> miette::Result<OutputData> {
         Ok(OutputData::new(
-            EItemInfo::simple_type(context.registry.list_of(self.item)).into(),
+            EItemInfo::simple_type(
+                context
+                    .registry
+                    .list_of(self.item.unwrap_or(EDataType::Unknown)),
+            )
+            .into(),
             output.to_string().into(),
         ))
     }
@@ -99,8 +94,8 @@ impl Node for ListNode {
         to: &InPin,
         incoming_type: &NodePortType,
     ) -> miette::Result<bool> {
-        if incoming_type.is_specific() && self.items_count == 0 && self.item != incoming_type.ty() {
-            self.item = incoming_type.ty();
+        if incoming_type.is_specific() && self.item.is_none() {
+            self.item = Some(incoming_type.ty());
             commands.push(SnarlCommand::ReconnectOutput {
                 id: OutPinId {
                     node: to.id.node,
@@ -110,7 +105,9 @@ impl Node for ListNode {
         }
 
         if self._default_try_connect(context, commands, from, to, incoming_type)? {
-            self.items_count += 1;
+            if to.id.input == self.items_count {
+                self.items_count += 1;
+            }
             Ok(true)
         } else {
             Ok(false)
@@ -165,7 +162,9 @@ impl Node for ListNode {
         }
         outputs.clear();
         outputs.push(EValue::List {
-            id: context.registry.list_id_of(self.item),
+            id: context
+                .registry
+                .list_id_of(self.item.unwrap_or(EDataType::Unknown)),
             values,
         });
 
