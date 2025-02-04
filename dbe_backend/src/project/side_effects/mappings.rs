@@ -35,6 +35,8 @@ pub struct Mappings {
     available_ids: SmallVec<[RangeInclusive<i64>; 1]>,
     /// Default available ID ranges
     default_ranges: SmallVec<[PackedRange; 1]>,
+    /// Whenever the default ranges were initialized
+    default_ranges_initialized: bool,
 }
 
 #[derive(Debug, Clone)]
@@ -69,6 +71,31 @@ impl Mappings {
         self.get_id_raw(id, persistent)
     }
 
+    /// Establishes a link between the string ID and the provided numeric ID
+    ///
+    /// Bails if the string ID is already mapped to a different ID
+    pub fn set_id(&mut self, id: String, value: i64, persistent: bool) -> miette::Result<i64> {
+        match self.ids.entry(id) {
+            Entry::Occupied(entry) => {
+                if entry.get().id != value {
+                    bail!(
+                        "ID `{}` is already mapped to {}",
+                        entry.key(),
+                        entry.get().id
+                    );
+                };
+            }
+            Entry::Vacant(entry) => {
+                entry.insert(MappingEntry {
+                    id: value,
+                    persistent,
+                });
+            }
+        }
+
+        Ok(value)
+    }
+
     /// Returns the numeric ID corresponding to the given string ID if it exists
     pub fn existing_id(&self, id: &str) -> miette::Result<i64> {
         if !self.currently_created.contains(id) {
@@ -87,47 +114,66 @@ impl Mappings {
 }
 
 impl Mappings {
-    pub fn new(ranges: &EValue) -> miette::Result<Self> {
-        let ranges = match ranges {
-            EValue::List { values, .. } => values
-                .iter()
-                .map(|v| match v {
-                    EValue::Struct { fields, ident } => {
-                        if ident != &*RANGE_ID {
-                            bail!("Expected a {} struct, got {:?}", *RANGE_ID, ident);
-                        }
-
-                        let start = fields
-                            .get(&"start".into())
-                            .and_then(|v| v.try_as_number().ok())
-                            .ok_or_else(|| miette!("Expected a number in `start` field"))?;
-
-                        let end = fields
-                            .get(&"end".into())
-                            .and_then(|v| v.try_as_number().ok())
-                            .ok_or_else(|| miette!("Expected a number in `end` field"))?;
-
-                        Ok(PackedRange {
-                            start: start.0.trunc(),
-                            end: end.0.trunc(),
-                        })
-                    }
-                    _ => bail!("Expected a struct, got {:?}", v),
-                })
-                .collect::<miette::Result<SmallVec<[PackedRange; 1]>>>()?,
-            _ => bail!("Expected a list of ranges, got {:?}", ranges),
-        };
-
-        Ok(Self {
+    pub fn new(ranges: Option<&EValue>) -> miette::Result<Self> {
+        let mut mappings = Self {
             ids: Default::default(),
             currently_created: Default::default(),
             occupied_ids: Default::default(),
-            available_ids: ranges
-                .iter()
-                .map(|r| (r.start as i64)..=(r.end as i64))
-                .collect(),
-            default_ranges: ranges,
-        })
+            available_ids: Default::default(),
+            default_ranges: Default::default(),
+            default_ranges_initialized: false,
+        };
+
+        if let Some(ranges) = ranges {
+            mappings.provide_default_ranges(ranges)?;
+        }
+
+        Ok(mappings)
+    }
+
+    pub fn provide_default_ranges(&mut self, ranges: &EValue) -> miette::Result<()> {
+        if self.default_ranges_initialized {
+            return Ok(());
+        }
+
+        let EValue::List { values, .. } = ranges else {
+            bail!("Expected a list of ranges, got {:?}", ranges);
+        };
+
+        let ranges = values
+            .iter()
+            .map(|v| match v {
+                EValue::Struct { fields, ident } => {
+                    if ident != &*RANGE_ID {
+                        bail!("Expected a {} struct, got {:?}", *RANGE_ID, ident);
+                    }
+
+                    let start = fields
+                        .get(&"start".into())
+                        .and_then(|v| v.try_as_number().ok())
+                        .ok_or_else(|| miette!("Expected a number in `start` field"))?;
+
+                    let end = fields
+                        .get(&"end".into())
+                        .and_then(|v| v.try_as_number().ok())
+                        .ok_or_else(|| miette!("Expected a number in `end` field"))?;
+
+                    Ok(PackedRange {
+                        start: start.0.trunc(),
+                        end: end.0.trunc(),
+                    })
+                }
+                _ => bail!("Expected a struct, got {:?}", v),
+            })
+            .collect::<miette::Result<SmallVec<[PackedRange; 1]>>>()?;
+
+        self.available_ids = ranges
+            .iter()
+            .map(|r| (r.start as i64)..=(r.end as i64))
+            .collect();
+        self.default_ranges = ranges;
+        self.default_ranges_initialized = true;
+        Ok(())
     }
 
     pub fn from_evalue(registry: &ETypesRegistry, value: &EValue) -> miette::Result<Self> {
@@ -201,6 +247,7 @@ impl PackedMappings {
                 .collect(),
             default_ranges: self.ranges,
             currently_created: Default::default(),
+            default_ranges_initialized: true,
         };
 
         // debug!("Converted packed mappings to full: {:?}", m);

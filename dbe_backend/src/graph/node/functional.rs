@@ -1,9 +1,10 @@
-use crate::etype::conversion::EItemInfoAdapter;
+use crate::etype::conversion::{EItemInfoAdapter, ManualEItemInfoAdapter};
 use crate::etype::eitem::EItemInfo;
 use crate::etype::EDataType;
 use crate::graph::node::extras::ExecutionExtras;
 use crate::graph::node::format_node::format_evalue_for_graph;
 use crate::graph::node::functional::generic::{GenericFieldAdapter, GenericValue};
+use crate::graph::node::functional::mappings::mappings_nodes;
 use crate::graph::node::functional::raw_manip::SwapValueResult;
 use crate::graph::node::generic::{GenericNodeField, GenericNodeFieldMut};
 use crate::graph::node::ports::{port_types_compatible, NodePortType};
@@ -21,6 +22,8 @@ pub mod generic;
 pub mod impls;
 pub mod macros;
 pub mod raw_manip;
+
+pub mod mappings;
 
 pub type FunctionalArgNames = &'static [&'static str];
 
@@ -283,6 +286,28 @@ impl EItemInfoAdapter for AnyEValue {
     }
 }
 
+struct CustomEValue<T: ManualEItemInfoAdapter>(EValue, PhantomData<fn() -> T>);
+
+impl<T: ManualEItemInfoAdapter> TryFrom<&EValue> for CustomEValue<T> {
+    type Error = miette::Report;
+
+    fn try_from(value: &EValue) -> Result<Self, Self::Error> {
+        Ok(Self(value.clone(), Default::default()))
+    }
+}
+
+impl<T: ManualEItemInfoAdapter> From<CustomEValue<T>> for EValue {
+    fn from(value: CustomEValue<T>) -> Self {
+        value.0
+    }
+}
+
+impl<T: ManualEItemInfoAdapter> EItemInfoAdapter for CustomEValue<T> {
+    fn edata_type(_registry: &ETypesRegistry) -> EItemInfo {
+        T::edata_type(_registry)
+    }
+}
+
 struct FunctionalContext<'this, 'ctx, 'extras> {
     context: NodeContext<'ctx>,
     extras: &'this mut ExecutionExtras<'extras>,
@@ -349,7 +374,7 @@ fn functional_node<I, O, Arg: IntoFunctionalNode<I, O>>(
 }
 
 pub fn functional_nodes() -> Vec<Arc<dyn NodeFactory>> {
-    vec![
+    let mut nodes: Vec<Arc<dyn NodeFactory>> = vec![
         functional_node(
             |_: C, a: ENumber, b: ENumber| a + b,
             "add",
@@ -880,5 +905,9 @@ pub fn functional_nodes() -> Vec<Arc<dyn NodeFactory>> {
             &[],
             &["debug"],
         ),
-    ]
+    ];
+
+    nodes.extend(mappings_nodes());
+
+    nodes
 }

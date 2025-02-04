@@ -185,10 +185,16 @@ impl SideEffects {
         registry: &ETypesRegistry,
         files: &BTreeMap<Utf8PathBuf, ProjectFile>,
         path: &Utf8Path,
-        ranges: &EValue,
+        ranges: Option<&EValue>,
     ) -> miette::Result<&mut Mappings> {
         m_try(|| match self.mappings.entry(path.to_path_buf()) {
-            hash_map::Entry::Occupied(entry) => Ok(&mut entry.into_mut().1),
+            hash_map::Entry::Occupied(entry) => {
+                let mappings = &mut entry.into_mut().1;
+                if let Some(ranges) = ranges {
+                    mappings.provide_default_ranges(ranges)?;
+                }
+                Ok(mappings)
+            }
             hash_map::Entry::Vacant(entry) => match files.get(path) {
                 None => Ok(&mut entry.insert((0, Mappings::new(ranges)?)).1),
                 Some(file) => {
@@ -345,7 +351,7 @@ impl<'a> SideEffectsContext<'a> {
         &mut self,
         registry: &ETypesRegistry,
         path: &Utf8Path,
-        ranges: &EValue,
+        ranges: Option<&EValue>,
     ) -> miette::Result<&mut Mappings> {
         match self {
             SideEffectsContext::Context { effects, files, .. } => {
