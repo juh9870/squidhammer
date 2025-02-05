@@ -6,6 +6,41 @@
 
 > Released on ReleaseDate
 
+### Added
+
+- `enum_variant_name` node (by juh9870)
+- Creation of files inside nested folders (put `/` into the file name when creating a new file or a graph) (by juh9870)
+- Better search bar matching and sorting (by juh9870)
+- `list_concat` node (by juh9870)
+- Assertion nodes: `assert`, `assert_not`, `assert_equals`, `assert_not_equals` (by juh9870)
+- `enum_variant_tag` node (by juh9870)
+- (internal) Default value capabilities for functional nodes (by juh9870)
+- `assert` node (by juh9870)
+- `set_mapping` node (by juh9870)
+- Subgraphs in node search (by juh9870)
+- Transistent storage nodes (`set_transistent_value`, `has_transistent_value`, `try_get_transistent_value`,
+  `get_transistent_value`) (by juh9870)
+- Duplicate node button (by juh9870)
+- `enum_inner_value` node (by juh9870)
+- `bool_invert` node (by juh9870)
+- `list_contains` node (by juh9870)
+- `any_equals` and `any_not_equals` nodes (by juh9870)
+- Tag for hiding fields in struct editor (by juh9870)
+- List nodes: `list_get`, `list_try_get`, `list_remove`, `list_swap`, `list_move`, `list_rotate_left`,
+  `list_rotate_right` (by juh9870)
+
+### Changed
+
+- Sort docs tab entries alphabetically (by juh9870)
+- Moved `raw` nodes form `optional` to `utilities` category (by juh9870)
+- Updated visual of list editor handle to use dots instead of lines (by juh9870)
+
+### Fixed
+
+- List nodes failing to deserialize in some cases (by juh9870)
+- Bad placement of enum editor body (by juh9870)
+- Various issues with text editor (by juh9870)
+
 ## [0.2.0]
 
 > Released on 2025-02-02
@@ -89,6 +124,7 @@
 No changelog for this and all previous versions.
 
 <!-- next-url -->
+
 [Unreleased]: https://github.com/juh9870/squidhammer/compare/v0.2.0...HEAD
 
 [0.2.0]: https://github.com/juh9870/squidhammer/compare/v0.1.10...v0.2.0
