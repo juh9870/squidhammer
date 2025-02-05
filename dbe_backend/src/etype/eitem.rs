@@ -8,13 +8,12 @@ use crate::json_utils::repr::Repr;
 use crate::registry::ETypesRegistry;
 use crate::validation::Validator;
 use crate::value::EValue;
-use atomic_refcell::AtomicRefCell;
 use std::ops::Deref;
 use std::sync::{Arc, LazyLock};
 use strum::EnumIs;
 use tracing::error;
 use ustr::Ustr;
-use utils::map::HashMap;
+use utils::map::{DashMap, HashMap};
 use utils::whatever_ref::WhateverRef;
 
 #[derive(Debug, Clone)]
@@ -39,10 +38,8 @@ pub enum EItemInfo {
 
 impl EItemInfo {
     pub fn simple_type(ty: EDataType) -> Self {
-        static CACHE: LazyLock<AtomicRefCell<HashMap<EDataType, EItemInfo>>> =
-            LazyLock::new(|| AtomicRefCell::new(Default::default()));
+        static CACHE: LazyLock<DashMap<EDataType, EItemInfo>> = LazyLock::new(Default::default);
         CACHE
-            .borrow_mut()
             .entry(ty)
             .or_insert_with(|| {
                 Self::Specific(Arc::new(EItemInfoSpecific {
