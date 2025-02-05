@@ -248,6 +248,19 @@ pub(super) fn nodes() -> Vec<Arc<dyn NodeFactory>> {
         ),
         functional_node(
             |_: C, value: AnyEValue| {
+                let EValue::Enum { data, variant: _ } = value.0 else {
+                    bail!("value is not an enum");
+                };
+
+                Ok(AnyEValue(*data))
+            },
+            "enum_inner_value",
+            &["enum"],
+            &["value"],
+            &["utility.raw"],
+        ),
+        functional_node(
+            |_: C, value: AnyEValue| {
                 let EValue::Enum { data: _, variant } = value.0 else {
                     bail!("value is not an enum");
                 };
