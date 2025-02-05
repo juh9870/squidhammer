@@ -35,6 +35,7 @@ extra_properties! {
     pub prop<field> multiline: bool;
     pub prop<field> show_file_path: bool;
     pub prop<field> show_field_path: bool;
+    pub prop<field> hide_fields: Ustr;
 
     pub prop<object> kind: ETypeConst;
     pub prop<object> pin_color: PinColor;
