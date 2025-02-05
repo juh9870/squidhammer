@@ -6,6 +6,10 @@
 
 > Released on ReleaseDate
 
+## [0.2.1]
+
+> Released on 2025-02-05
+
 ### Added
 
 - `enum_variant_name` node (by juh9870)
@@ -124,8 +128,9 @@
 No changelog for this and all previous versions.
 
 <!-- next-url -->
+[Unreleased]: https://github.com/juh9870/squidhammer/compare/v0.2.1...HEAD
 
-[Unreleased]: https://github.com/juh9870/squidhammer/compare/v0.2.0...HEAD
+[0.2.1]: https://github.com/juh9870/squidhammer/compare/v0.2.0...v0.2.1
 
 [0.2.0]: https://github.com/juh9870/squidhammer/compare/v0.1.10...v0.2.0
 
