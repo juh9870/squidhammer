@@ -36,7 +36,7 @@ impl<'a, T> WhateverRef<'a, T> {
         let cloned = map.clone();
         Ok(WhateverRefCallMap(SelfRefCallMap::try_new(
             data,
-            move |x| cloned(x).expect("try_call_map closure should be determenistic"),
+            move |x| cloned(x).expect("try_call_map closure should be deterministic"),
             |x| map(x),
         )?))
     }

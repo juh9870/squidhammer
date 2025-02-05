@@ -122,7 +122,7 @@ pub(super) fn nodes() -> Vec<Arc<dyn NodeFactory>> {
             "try_get_field",
             &["object", "field"],
             &["result"],
-            &["optional.raw"],
+            &["utility.raw"],
         ),
         functional_node(
             |ctx: C, value: AnyEValue, field: String| {
@@ -140,7 +140,7 @@ pub(super) fn nodes() -> Vec<Arc<dyn NodeFactory>> {
             "get_field",
             &["object", "field"],
             &["result"],
-            &["optional.raw"],
+            &["utility.raw"],
         ),
         functional_node(
             |ctx: C, mut obj: GenericValue<0>, field: String, mut value: AnyEValue| {
@@ -155,7 +155,7 @@ pub(super) fn nodes() -> Vec<Arc<dyn NodeFactory>> {
             "try_set_field",
             &["object", "field", "value"],
             &["object", "success", "old_value"],
-            &["optional.raw"],
+            &["utility.raw"],
         ),
         functional_node(
             |ctx: C, mut obj: GenericValue<0>, field: String, mut value: AnyEValue| {
@@ -181,7 +181,7 @@ pub(super) fn nodes() -> Vec<Arc<dyn NodeFactory>> {
             "set_field",
             &["object", "field", "value"],
             &["object", "old_value"],
-            &["optional.raw"],
+            &["utility.raw"],
         ),
         functional_node(
             |ctx: C, value: AnyEValue| -> miette::Result<Option<GenericValue<0>>> {
@@ -207,7 +207,7 @@ pub(super) fn nodes() -> Vec<Arc<dyn NodeFactory>> {
             "try_as_type",
             &["value"],
             &["result"],
-            &["optional.raw"],
+            &["utility.raw"],
         ),
         functional_node(
             |ctx: C, value: AnyEValue| -> miette::Result<GenericValue<0>> {
@@ -226,7 +226,52 @@ pub(super) fn nodes() -> Vec<Arc<dyn NodeFactory>> {
             "as_type",
             &["value"],
             &["result"],
-            &["optional.raw"],
+            &["utility.raw"],
+        ),
+        functional_node(
+            |ctx: C, value: AnyEValue| {
+                let EValue::Enum { data: _, variant } = value.0 else {
+                    bail!("value is not an enum");
+                };
+                let Some(variant) = variant.variant(ctx.context.registry) else {
+                    bail!("enum variant not found");
+                };
+
+                let tag = variant.get_tag_value();
+
+                Ok(AnyEValue(tag.default_value()))
+            },
+            "enum_variant_tag",
+            &["enum"],
+            &["tag"],
+            &["utility.raw"],
+        ),
+        functional_node(
+            |_: C, value: AnyEValue| {
+                let EValue::Enum { data: _, variant } = value.0 else {
+                    bail!("value is not an enum");
+                };
+
+                Ok(variant.variant_name().to_string())
+            },
+            "enum_variant_name",
+            &["enum"],
+            &["variant_name"],
+            &["utility.raw"],
+        ),
+        functional_node(
+            |_: C, a: AnyEValue, b: AnyEValue| a == b,
+            "any_equals",
+            &["a", "b"],
+            &["a == b"],
+            &["utility.raw"],
+        ),
+        functional_node(
+            |_: C, a: AnyEValue, b: AnyEValue| a != b,
+            "any_not_equals",
+            &["a", "b"],
+            &["a != b"],
+            &["utility.raw"],
         ),
     ]
 }

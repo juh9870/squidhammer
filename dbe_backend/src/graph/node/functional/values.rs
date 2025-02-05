@@ -8,6 +8,7 @@ use crate::registry::ETypesRegistry;
 use crate::value::EValue;
 use std::marker::PhantomData;
 
+#[derive(Debug, Clone, Eq, PartialEq, Hash, Ord, PartialOrd)]
 pub struct AnyEValue(pub EValue);
 
 impl TryFrom<&EValue> for AnyEValue {

@@ -6,10 +6,8 @@ use crate::graph::node::functional::generic::GenericFieldAdapter;
 use crate::graph::node::functional::values::AnyEValue;
 use crate::graph::node::generic::{GenericNodeField, GenericNodeFieldMut};
 use crate::graph::node::{NodeContext, NodeFactory};
-use crate::project::side_effects::SideEffect;
 use crate::registry::ETypesRegistry;
 use crate::value::{ENumber, EValue};
-use miette::bail;
 use std::fmt::{Debug, Formatter};
 use std::hash::{Hash, Hasher};
 use std::marker::PhantomData;
@@ -20,6 +18,7 @@ mod impls;
 mod macros;
 mod values;
 
+mod debug;
 mod list;
 mod mappings;
 mod math;
@@ -327,6 +326,20 @@ pub fn functional_nodes() -> Vec<Arc<dyn NodeFactory>> {
             &["boolean"],
         ),
         functional_node(
+            |_: C, a: bool, b: bool| a != b,
+            "bool_not_equals",
+            &["a", "b"],
+            &["a != b"],
+            &["boolean"],
+        ),
+        functional_node(
+            |_: C, a: bool| !a,
+            "bool_invert",
+            &["a"],
+            &["not a"],
+            &["boolean"],
+        ),
+        functional_node(
             |_: C, a: bool, b: bool| a && b,
             "bool_and",
             &["a", "b"],
@@ -338,13 +351,6 @@ pub fn functional_nodes() -> Vec<Arc<dyn NodeFactory>> {
             "bool_or",
             &["a", "b"],
             &["a or b"],
-            &["boolean"],
-        ),
-        functional_node(
-            |_: C, a: bool, b: bool| a != b,
-            "bool_not_equals",
-            &["a", "b"],
-            &["a != b"],
             &["boolean"],
         ),
         functional_node(
@@ -403,38 +409,9 @@ pub fn functional_nodes() -> Vec<Arc<dyn NodeFactory>> {
             &["result"],
             &["string"],
         ),
-        side_effects_node(
-            |ctx: C, value: AnyEValue| {
-                // ignore errors
-                let _ = ctx
-                    .extras
-                    .side_effects
-                    .push(SideEffect::ShowDebug { value: value.0 });
-            },
-            "debug_print",
-            &["value"],
-            &[],
-            &["debug"],
-        ),
-        side_effects_node(
-            |_: C, value: bool, msg: String| {
-                if !value {
-                    let msg = msg.trim();
-                    if msg.is_empty() {
-                        bail!("assert failed")
-                    } else {
-                        bail!("{}", msg)
-                    }
-                }
-                Ok(())
-            },
-            "assert",
-            &["value", "message"],
-            &[],
-            &["debug"],
-        ),
     ];
 
+    nodes.extend(debug::nodes());
     nodes.extend(list::nodes());
     nodes.extend(mappings::nodes());
     nodes.extend(math::nodes());
