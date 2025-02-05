@@ -4,6 +4,7 @@ use crate::ui_props::{PROP_OBJECT_GRAPH_SEARCH_HIDE, PROP_OBJECT_PIN_COLOR};
 use crate::widgets::report::diagnostic_widget;
 use crate::workspace::graph::rects::NodeRects;
 use crate::workspace::graph::viewer::get_viewer;
+use atomic_refcell::AtomicRefCell;
 use dbe_backend::diagnostic::context::DiagnosticContextRef;
 use dbe_backend::diagnostic::prelude::{Diagnostic, DiagnosticLevel};
 use dbe_backend::etype::econst::ETypeConst;
@@ -25,13 +26,14 @@ use egui_snarl::ui::{
 };
 use egui_snarl::{InPin, NodeId, OutPin, OutPinId, Snarl};
 use inline_tweak::tweak;
+use nucleo::pattern::{CaseMatching, Normalization};
+use nucleo::Nucleo;
 use random_color::options::Luminosity;
 use random_color::RandomColor;
 use std::iter::Peekable;
-use std::ops::DerefMut;
+use std::ops::{Deref, DerefMut};
 use std::sync::Arc;
 use ustr::Ustr;
-use utils::map::HashMap;
 
 pub mod rects;
 pub mod toolbar;
@@ -306,10 +308,14 @@ impl SnarlViewer<SnarlNode> for GraphViewer<'_> {
                     }
                 }
             }
-
             let mut search_query = ui.use_state(|| "".to_string(), ()).into_var();
-            let search_nodes = ui.use_memo(
+            let nucleo = ui.use_memo(
                 || {
+                    let mut cfg = nucleo::Config::DEFAULT;
+                    cfg.set_match_paths();
+                    let nucleo = Nucleo::<NodeCombo>::new(cfg, Arc::new(|| {}), None, 1);
+
+                    let injector = nucleo.injector();
                     let factories = all_node_factories();
                     let all_nodes = factories.iter().map(|(id, _)| NodeCombo::Factory(*id));
                     let objects = self
@@ -320,23 +326,47 @@ impl SnarlViewer<SnarlNode> for GraphViewer<'_> {
                             !PROP_OBJECT_GRAPH_SEARCH_HIDE.get(obj.extra_properties(), false)
                         })
                         .map(|s| NodeCombo::Object(s.ident()));
-                    all_nodes
-                        .chain(objects)
-                        .map(|n| (n.as_ref().to_string(), n))
-                        .collect::<HashMap<_, _>>()
+                    for node in all_nodes.chain(objects) {
+                        injector.push(node, |i, col| {
+                            col[0] = i.as_ref().to_string().into();
+                        });
+                    }
+                    Arc::new(AtomicRefCell::new(nucleo))
                 },
                 (),
             );
 
+            nucleo.borrow_mut().tick(10);
+
             let search_bar = ui.text_edit_singleline(search_query.deref_mut());
-            search_bar.request_focus();
+            ui.use_effect(
+                || {
+                    search_bar.request_focus();
+                },
+                (),
+            );
+
+            ui.use_effect(
+                || {
+                    let mut n = nucleo.deref().borrow_mut();
+                    n.pattern.reparse(
+                        0,
+                        search_query.trim(),
+                        CaseMatching::Ignore,
+                        Normalization::Smart,
+                        false,
+                    )
+                },
+                search_query.trim().to_owned(),
+            );
+
+            let nucleo = nucleo.deref().borrow();
+            let snapshot = nucleo.snapshot();
 
             if search_query.trim() != "" {
-                for (name, node) in search_nodes
-                    .iter()
-                    .filter(|(k, _)| k.contains(search_query.as_str()))
-                    .take(10)
-                {
+                for node in snapshot.matched_items(0..snapshot.matched_item_count().min(10)) {
+                    let node = node.data;
+                    let name = node.as_ref();
                     if ui.button(name).clicked() {
                         let node =
                             match node {
