@@ -34,6 +34,7 @@ use std::iter::Peekable;
 use std::ops::{Deref, DerefMut};
 use std::sync::Arc;
 use ustr::Ustr;
+use uuid::Uuid;
 
 pub mod rects;
 pub mod toolbar;
@@ -294,9 +295,10 @@ impl SnarlViewer<SnarlNode> for GraphViewer<'_> {
     ) {
         ui.style_mut().wrap_mode = Some(egui::TextWrapMode::Extend);
         ui.menu_button("Add node", |ui| {
-            #[derive(Debug, Copy, Clone)]
+            #[derive(Debug, Clone)]
             enum NodeCombo {
                 Factory(Ustr),
+                Subgraph(Uuid, String),
                 Object(ETypeId),
             }
 
@@ -305,6 +307,7 @@ impl SnarlViewer<SnarlNode> for GraphViewer<'_> {
                     match self {
                         NodeCombo::Factory(id) => id.as_str(),
                         NodeCombo::Object(id) => id.as_raw().unwrap(),
+                        NodeCombo::Subgraph(_, id) => id.as_str(),
                     }
                 }
             }
@@ -318,6 +321,15 @@ impl SnarlViewer<SnarlNode> for GraphViewer<'_> {
                     let injector = nucleo.injector();
                     let factories = all_node_factories();
                     let all_nodes = factories.iter().map(|(id, _)| NodeCombo::Factory(*id));
+                    let all_subgraphs = self
+                        .ctx
+                        .graphs
+                        .expect("Project graphs should be present while editing")
+                        .graphs
+                        .iter()
+                        .filter(|x| x.1.is_node_group)
+                        .map(|x| NodeCombo::Subgraph(*x.0, x.1.name.clone()));
+
                     let objects = self
                         .ctx
                         .registry
@@ -326,7 +338,7 @@ impl SnarlViewer<SnarlNode> for GraphViewer<'_> {
                             !PROP_OBJECT_GRAPH_SEARCH_HIDE.get(obj.extra_properties(), false)
                         })
                         .map(|s| NodeCombo::Object(s.ident()));
-                    for node in all_nodes.chain(objects) {
+                    for node in all_nodes.chain(objects).chain(all_subgraphs) {
                         injector.push(node, |i, col| {
                             col[0] = i.as_ref().to_string().into();
                         });
@@ -379,6 +391,10 @@ impl SnarlViewer<SnarlNode> for GraphViewer<'_> {
                                     .ctx
                                     .as_full(snarl)
                                     .create_object_node(*id, pos, None, &mut self.commands),
+                                NodeCombo::Subgraph(id, _) => self
+                                    .ctx
+                                    .as_full(snarl)
+                                    .create_subgraph_node(*id, pos, &mut self.commands),
                             };
                         if let Err(err) = node {
                             report_error(err);

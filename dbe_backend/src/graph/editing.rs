@@ -2,6 +2,7 @@ use crate::graph::execution::GraphExecutionContext;
 use crate::graph::inputs::{GraphInput, GraphOutput};
 use crate::graph::node::commands::{SnarlCommand, SnarlCommands};
 use crate::graph::node::enum_node::EnumNode;
+use crate::graph::node::groups::subgraph::SubgraphNode;
 use crate::graph::node::list::ListNode;
 use crate::graph::node::struct_node::StructNode;
 use crate::graph::node::{get_node_factory, Node, NodeContext, SnarlNode};
@@ -307,6 +308,20 @@ impl GraphEditingContext<'_, '_> {
         }
 
         Ok(())
+    }
+
+    pub fn create_subgraph_node(
+        &mut self,
+        id: Uuid,
+        pos: Pos2,
+        commands: &mut SnarlCommands,
+    ) -> miette::Result<SmallVec<[NodeId; 2]>> {
+        let node = Box::new(SubgraphNode::with_graph(id));
+        let id = self.snarl.insert_node(pos, SnarlNode::new(node));
+        self.mark_dirty();
+        self.process_created_nodes([id], commands)?;
+
+        Ok(smallvec![id])
     }
 
     pub fn create_object_node(

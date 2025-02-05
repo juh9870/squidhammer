@@ -34,6 +34,13 @@ impl SubgraphNode {
         Default::default()
     }
 
+    pub fn with_graph(graph_id: Uuid) -> Self {
+        Self {
+            graph_id,
+            ..Default::default()
+        }
+    }
+
     fn get_graph<'ctx>(&self, context: NodeContext<'ctx>) -> miette::Result<&'ctx ProjectGraph> {
         let graphs = context.graphs.ok_or_else(|| miette!("No graph context"))?;
         let graph = graphs
