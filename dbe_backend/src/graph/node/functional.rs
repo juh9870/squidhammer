@@ -9,6 +9,7 @@ use crate::graph::node::{NodeContext, NodeFactory};
 use crate::project::side_effects::SideEffect;
 use crate::registry::ETypesRegistry;
 use crate::value::{ENumber, EValue};
+use miette::bail;
 use std::fmt::{Debug, Formatter};
 use std::hash::{Hash, Hasher};
 use std::marker::PhantomData;
@@ -412,6 +413,23 @@ pub fn functional_nodes() -> Vec<Arc<dyn NodeFactory>> {
             },
             "debug_print",
             &["value"],
+            &[],
+            &["debug"],
+        ),
+        side_effects_node(
+            |_: C, value: bool, msg: String| {
+                if !value {
+                    let msg = msg.trim();
+                    if msg.is_empty() {
+                        bail!("assert failed")
+                    } else {
+                        bail!("{}", msg)
+                    }
+                }
+                Ok(())
+            },
+            "assert",
+            &["value", "message"],
             &[],
             &["debug"],
         ),
