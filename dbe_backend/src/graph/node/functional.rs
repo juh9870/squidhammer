@@ -1,18 +1,14 @@
 use crate::etype::default::DefaultEValue;
-use crate::etype::eitem::EItemInfo;
 use crate::etype::EDataType;
 use crate::graph::node::extras::ExecutionExtras;
 use crate::graph::node::format_node::format_evalue_for_graph;
-use crate::graph::node::functional::generic::{GenericFieldAdapter, GenericValue};
-use crate::graph::node::functional::raw_manip::SwapValueResult;
+use crate::graph::node::functional::generic::GenericFieldAdapter;
 use crate::graph::node::functional::values::AnyEValue;
 use crate::graph::node::generic::{GenericNodeField, GenericNodeFieldMut};
-use crate::graph::node::ports::{port_types_compatible, NodePortType};
 use crate::graph::node::{NodeContext, NodeFactory};
 use crate::project::side_effects::SideEffect;
 use crate::registry::ETypesRegistry;
 use crate::value::{ENumber, EValue};
-use miette::{bail, miette};
 use std::fmt::{Debug, Formatter};
 use std::hash::{Hash, Hasher};
 use std::marker::PhantomData;
@@ -21,10 +17,13 @@ use std::sync::Arc;
 mod generic;
 mod impls;
 mod macros;
-mod raw_manip;
 mod values;
 
+mod list;
 mod mappings;
+mod math;
+mod optional;
+mod raw_manip;
 mod transient_storage;
 
 pub type FunctionalArgNames = &'static [&'static str];
@@ -320,224 +319,6 @@ fn functional_node<I, O, Arg: IntoFunctionalNode<I, O>>(
 pub fn functional_nodes() -> Vec<Arc<dyn NodeFactory>> {
     let mut nodes: Vec<Arc<dyn NodeFactory>> = vec![
         functional_node(
-            |_: C, a: ENumber, b: ENumber| a + b,
-            "add",
-            &["a", "b"],
-            &["sum"],
-            &["math"],
-        ),
-        functional_node(
-            |_: C, a: ENumber, b: ENumber| a - b,
-            "subtract",
-            &["a", "b"],
-            &["difference"],
-            &["math"],
-        ),
-        functional_node(
-            |_: C, a: ENumber, b: ENumber| a * b,
-            "multiply",
-            &["a", "b"],
-            &["product"],
-            &["math"],
-        ),
-        functional_node(
-            |_: C, a: ENumber, b: ENumber| a / b,
-            "divide",
-            &["a", "b"],
-            &["quotient"],
-            &["math"],
-        ),
-        functional_node(
-            |_: C, a: ENumber, b: ENumber| ENumber::from(a.powf(b.0)),
-            "power",
-            &["a", "b"],
-            &["result"],
-            &["math"],
-        ),
-        functional_node(|_: C, a: ENumber| -a, "negate", &["a"], &["-a"], &["math"]),
-        functional_node(
-            |_: C, a: ENumber| ENumber::from(a.sqrt()),
-            "square_root",
-            &["a"],
-            &["√a"],
-            &["math"],
-        ),
-        functional_node(
-            |_: C, a: ENumber| ENumber::from(a.abs()),
-            "absolute",
-            &["a"],
-            &["|a|"],
-            &["math"],
-        ),
-        functional_node(
-            |_: C, a: ENumber| ENumber::from(a.floor()),
-            "floor",
-            &["a"],
-            &["⌊a⌋"],
-            &["math.rounding"],
-        ),
-        functional_node(
-            |_: C, a: ENumber| ENumber::from(a.ceil()),
-            "ceiling",
-            &["a"],
-            &["⌈a⌉"],
-            &["math.rounding"],
-        ),
-        functional_node(
-            |_: C, a: ENumber| ENumber::from(a.round()),
-            "round",
-            &["a"],
-            &["⌊a⌋"],
-            &["math.rounding"],
-        ),
-        functional_node(
-            |_: C, a: ENumber| ENumber::from(a.trunc()),
-            "truncate",
-            &["a"],
-            &["result"],
-            &["math.rounding"],
-        ),
-        functional_node(
-            |_: C, a: ENumber| ENumber::from(a.fract()),
-            "fractional",
-            &["a"],
-            &["{a}"],
-            &["math.rounding"],
-        ),
-        functional_node(
-            |_: C, a: ENumber| ENumber::from(a.ln()),
-            "natural_logarithm",
-            &["a"],
-            &["ln(a)"],
-            &["math.transcendental"],
-        ),
-        functional_node(
-            |_: C, a: ENumber| ENumber::from(a.log10()),
-            "logarithm_base_10",
-            &["a"],
-            &["log10(a)"],
-            &["math.transcendental"],
-        ),
-        functional_node(
-            |_: C, a: ENumber| ENumber::from(a.sin()),
-            "exponential",
-            &["a"],
-            &["e^a"],
-            &["math.transcendental"],
-        ),
-        functional_node(
-            |_: C, a: ENumber| ENumber::from(a.sin()),
-            "sine",
-            &["a"],
-            &["sin(a)"],
-            &["math.trigonometry"],
-        ),
-        functional_node(
-            |_: C, a: ENumber| ENumber::from(a.cos()),
-            "cosine",
-            &["a"],
-            &["cos(a)"],
-            &["math.trigonometry"],
-        ),
-        functional_node(
-            |_: C, a: ENumber| ENumber::from(a.tan()),
-            "tangent",
-            &["a"],
-            &["tan(a)"],
-            &["math.trigonometry"],
-        ),
-        functional_node(
-            |_: C, a: ENumber| ENumber::from(a.asin()),
-            "arc_sine",
-            &["a"],
-            &["asin(a)"],
-            &["math.trigonometry"],
-        ),
-        functional_node(
-            |_: C, a: ENumber| ENumber::from(a.acos()),
-            "arc_cosine",
-            &["a"],
-            &["acos(a)"],
-            &["math.trigonometry"],
-        ),
-        functional_node(
-            |_: C, a: ENumber| ENumber::from(a.atan()),
-            "arc_tangent",
-            &["a"],
-            &["atan(a)"],
-            &["math.trigonometry"],
-        ),
-        functional_node(
-            |_: C| ENumber::from(std::f64::consts::PI),
-            "pi",
-            &[],
-            &["pi"],
-            &["math.trigonometry", "math.constants"],
-        ),
-        functional_node(
-            |_: C| ENumber::from(std::f64::consts::E),
-            "e",
-            &[],
-            &["e"],
-            &["math.transcendental", "math.constants"],
-        ),
-        functional_node(
-            |_: C| ENumber::from(std::f64::consts::TAU),
-            "tau",
-            &[],
-            &["tau"],
-            &["math.trigonometry", "math.constants"],
-        ),
-        functional_node(
-            |_: C| ENumber::from(1.618_033_988_749_895_f64),
-            "golden_ratio",
-            &[],
-            &["phi"],
-            &["math.constants"],
-        ),
-        functional_node(
-            |_: C| ENumber::from(std::f64::consts::SQRT_2),
-            "sqrt_2",
-            &[],
-            &["√2"],
-            &["math.constants"],
-        ),
-        functional_node(
-            |_: C, a: ENumber, b: ENumber| a > b,
-            "greater_than",
-            &["a", "b"],
-            &["a > b"],
-            &["math.comparison"],
-        ),
-        functional_node(
-            |_: C, a: ENumber, b: ENumber| a >= b,
-            "greater_or_equal_than",
-            &["a", "b"],
-            &["a >= b"],
-            &["math.comparison"],
-        ),
-        functional_node(
-            |_: C, a: ENumber, b: ENumber| a < b,
-            "lesser_than",
-            &["a", "b"],
-            &["a < b"],
-            &["math.comparison"],
-        ),
-        functional_node(
-            |_: C, a: ENumber, b: ENumber| a <= b,
-            "lesser_or_equal_than",
-            &["a", "b"],
-            &["a <= b"],
-            &["math.comparison"],
-        ),
-        functional_node(
-            |_: C, a: ENumber, b: ENumber| a == b,
-            "num_equals",
-            &["a", "b"],
-            &["a == b"],
-            &["math.comparison"],
-        ),
-        functional_node(
             |_: C, a: bool, b: bool| a == b,
             "bool_equals",
             &["a", "b"],
@@ -621,238 +402,6 @@ pub fn functional_nodes() -> Vec<Arc<dyn NodeFactory>> {
             &["result"],
             &["string"],
         ),
-        // unwrap node is a side effect node, since it can intentionally interrupt the execution
-        side_effects_node(
-            |_: C, value: Option<GenericValue<0>>, msg: String| {
-                value.ok_or_else(|| {
-                    let msg = msg.trim();
-                    if msg.is_empty() {
-                        miette!("value is None")
-                    } else {
-                        miette!("{}", msg)
-                    }
-                })
-            },
-            "unwrap",
-            &["value", "message"],
-            &["value"],
-            &["optional"],
-        ),
-        functional_node(
-            |ctx: C, value: Option<GenericValue<0>>| {
-                value.unwrap_or_else(|| {
-                    GenericValue(
-                        ctx.input_types[0]
-                            .unwrap_or_else(EDataType::null)
-                            .default_value(ctx.context.registry)
-                            .into_owned(),
-                    )
-                })
-            },
-            "unwrap_or_default",
-            &["value"],
-            &["value"],
-            &["optional"],
-        ),
-        functional_node(
-            |ctx: C, value: AnyEValue, field: String| {
-                let value = value.0;
-                let value = raw_manip::get_value(ctx.context.registry, &value, &field)?;
-                Ok(value.map(AnyEValue))
-            },
-            "try_get_field",
-            &["object", "field"],
-            &["result"],
-            &["optional.raw"],
-        ),
-        functional_node(
-            |ctx: C, value: AnyEValue, field: String| {
-                let value = value.0;
-                let Some(value) = raw_manip::get_value(ctx.context.registry, &value, &field)?
-                else {
-                    bail!(
-                        "field `{}` not found in object of type `{}`",
-                        field,
-                        value.ty().name()
-                    )
-                };
-
-                Ok(AnyEValue(value))
-            },
-            "get_field",
-            &["object", "field"],
-            &["result"],
-            &["optional.raw"],
-        ),
-        functional_node(
-            |ctx: C, mut obj: GenericValue<0>, field: String, mut value: AnyEValue| {
-                let success = match raw_manip::swap_value(
-                    ctx.context.registry,
-                    &mut obj.0,
-                    &field,
-                    &mut value.0,
-                )? {
-                    SwapValueResult::Swapped => true,
-                    SwapValueResult::InvalidType => false,
-                    SwapValueResult::FieldNotFound => false,
-                };
-                Ok((obj, success, success.then_some(value)))
-            },
-            "try_set_field",
-            &["object", "field", "value"],
-            &["object", "success", "old_value"],
-            &["optional.raw"],
-        ),
-        functional_node(
-            |ctx: C, mut obj: GenericValue<0>, field: String, mut value: AnyEValue| {
-                match raw_manip::swap_value(ctx.context.registry, &mut obj.0, &field, &mut value.0)?
-                {
-                    SwapValueResult::Swapped => {}
-                    SwapValueResult::InvalidType => {
-                        bail!(
-                            "type mismatch when setting field `{}` in object of type `{}`",
-                            field,
-                            obj.0.ty().name()
-                        );
-                    }
-                    SwapValueResult::FieldNotFound => {
-                        bail!(
-                            "field `{}` not found in object of type `{}`",
-                            field,
-                            obj.0.ty().name()
-                        );
-                    }
-                }
-                Ok((obj, value))
-            },
-            "set_field",
-            &["object", "field", "value"],
-            &["object", "old_value"],
-            &["optional.raw"],
-        ),
-        functional_node(
-            |ctx: C, value: AnyEValue| -> miette::Result<Option<GenericValue<0>>> {
-                let target_ty = ctx.output_types[0].unwrap_or_else(EDataType::null);
-                let in_info = EItemInfo::simple_type(value.0.ty());
-                let out_info = EItemInfo::simple_type(target_ty);
-
-                if !port_types_compatible(ctx.context.registry, &in_info, &out_info) {
-                    return Ok(None);
-                }
-
-                let in_port: NodePortType = in_info.into();
-                let out_port: NodePortType = out_info.into();
-
-                let converted = NodePortType::convert_value(
-                    ctx.context.registry,
-                    &in_port,
-                    &out_port,
-                    value.0,
-                )?;
-                Ok(Some(GenericValue(converted)))
-            },
-            "try_as_type",
-            &["value"],
-            &["result"],
-            &["optional.raw"],
-        ),
-        functional_node(
-            |ctx: C, value: AnyEValue| -> miette::Result<GenericValue<0>> {
-                let target_ty = ctx.output_types[0].unwrap_or_else(EDataType::null);
-                let in_port: NodePortType = EItemInfo::simple_type(value.0.ty()).into();
-                let out_port: NodePortType = EItemInfo::simple_type(target_ty).into();
-
-                let converted = NodePortType::convert_value(
-                    ctx.context.registry,
-                    &in_port,
-                    &out_port,
-                    value.0,
-                )?;
-                Ok(GenericValue(converted))
-            },
-            "as_type",
-            &["value"],
-            &["result"],
-            &["optional.raw"],
-        ),
-        functional_node(
-            |_: C, value: Option<GenericValue<0>>| ENumber::from(value.is_some()),
-            "is_some",
-            &["option"],
-            &["is_some"],
-            &["optional"],
-        ),
-        functional_node(
-            |_: C, value: Option<GenericValue<0>>| ENumber::from(value.is_none()),
-            "is_none",
-            &["option"],
-            &["is_none"],
-            &["optional"],
-        ),
-        functional_node(
-            |_: C, value: Vec<GenericValue<0>>| ENumber::from(value.len() as f64),
-            "list_length",
-            &["list"],
-            &["length"],
-            &["list"],
-        ),
-        functional_node(
-            |_: C, mut list: Vec<GenericValue<0>>, item: GenericValue<0>| {
-                list.push(item);
-                list
-            },
-            "list_push",
-            &["list", "item"],
-            &["list"],
-            &["list"],
-        ),
-        functional_node(
-            |_: C, mut a: Vec<GenericValue<0>>, b: Vec<GenericValue<0>>| {
-                a.extend(b);
-                a
-            },
-            "list_concat",
-            &["a", "b"],
-            &["result"],
-            &["list"],
-        ),
-        functional_node(
-            |_: C, mut list: Vec<GenericValue<0>>, index: ENumber, item: GenericValue<0>| {
-                list.insert(index.0 as usize, item);
-                list
-            },
-            "list_insert",
-            &["list", "index", "item"],
-            &["list"],
-            &["list"],
-        ),
-        functional_node(
-            |_: C, mut list: Vec<GenericValue<0>>| {
-                let item = list.pop();
-                (item, list)
-            },
-            "list_pop",
-            &["list"],
-            &["item", "list"],
-            &["list"],
-        ),
-        functional_node(
-            |_: C, mut list: Vec<GenericValue<0>>, index: ENumber| {
-                let item = list.remove(index.0 as usize);
-                (item, list)
-            },
-            "list_remove",
-            &["list", "index"],
-            &["item", "list"],
-            &["list"],
-        ),
-        functional_node(
-            |_: C, list: Vec<GenericValue<0>>, item: GenericValue<0>| list.contains(&item),
-            "list_contains",
-            &["list", "item"],
-            &["contains"],
-            &["list"],
-        ),
         side_effects_node(
             |ctx: C, value: AnyEValue| {
                 // ignore errors
@@ -868,7 +417,11 @@ pub fn functional_nodes() -> Vec<Arc<dyn NodeFactory>> {
         ),
     ];
 
+    nodes.extend(list::nodes());
     nodes.extend(mappings::nodes());
+    nodes.extend(math::nodes());
+    nodes.extend(optional::nodes());
+    nodes.extend(raw_manip::nodes());
     nodes.extend(transient_storage::nodes());
 
     nodes
