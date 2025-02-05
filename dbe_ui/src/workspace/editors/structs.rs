@@ -1,4 +1,5 @@
 use crate::main_toolbar::docs::docs_label;
+use crate::ui_props::PROP_FIELD_HIDE_FIELDS;
 use crate::widgets::report::diagnostics_column;
 use crate::workspace::editors::utils::{labeled_field, unsupported, EditorResultExt, EditorSize};
 use crate::workspace::editors::{
@@ -10,7 +11,7 @@ use dbe_backend::etype::property::default_properties::PROP_FIELD_INLINE;
 use dbe_backend::project::docs::DocsRef;
 use dbe_backend::registry::ETypesRegistry;
 use dbe_backend::value::EValue;
-use egui::Ui;
+use egui::{Label, RichText, Ui};
 use itertools::Itertools;
 use miette::miette;
 
@@ -24,15 +25,16 @@ impl Editor for StructEditor {
         item: Option<&EItemInfo>,
         _object_props: DynProps,
     ) -> miette::Result<DynProps> {
-        if item
-            .map(|i| i.extra_properties())
-            .and_then(|p| PROP_FIELD_INLINE.try_get(p))
-            .unwrap_or(false)
-        {
-            Ok(StructProps { inline: true }.pack())
-        } else {
-            Ok(StructProps { inline: false }.pack())
+        let props = item.map(|i| i.extra_properties());
+        let inline = props.and_then(|p| PROP_FIELD_INLINE.try_get(p));
+        let hide_fields = props.and_then(|p| PROP_FIELD_HIDE_FIELDS.try_get(p));
+        Ok(StructProps {
+            inline: inline.unwrap_or(false),
+            hide_fields: hide_fields
+                .map(|f| f.as_str().split(',').collect_vec())
+                .unwrap_or_default(),
         }
+        .pack())
     }
 
     fn size(&self, _props: &DynProps) -> EditorSize {
@@ -63,13 +65,23 @@ impl Editor for StructEditor {
                 let items = data
                     .fields
                     .iter()
+                    .filter(|f| !props.hide_fields.contains(&f.name.as_str()))
                     .map(|f| (f, editor_for_item(ctx.registry, &f.ty)))
                     .collect_vec();
 
-                let inline =
-                    items.len() <= 3 && items.iter().all(|f| f.1.size() <= EditorSize::Inline);
+                let hidden = data.fields.len() - items.len();
+
+                let inline = hidden == 0
+                    && items.len() <= 3
+                    && items.iter().all(|f| f.1.size() <= EditorSize::Inline);
 
                 let draw_fields = |ui: &mut Ui| {
+                    if hidden > 0 {
+                        ui.add_enabled(
+                            false,
+                            Label::new(RichText::new(format!("{} fields hidden", hidden)).small()),
+                        );
+                    }
                     for (field, editor) in items {
                         ui.push_id(field.name, |ui| {
                             fields
@@ -133,6 +145,7 @@ impl Editor for StructEditor {
 #[derive(Debug, Clone)]
 struct StructProps {
     inline: bool,
+    hide_fields: Vec<&'static str>,
 }
 
 impl EditorProps for StructProps {}
