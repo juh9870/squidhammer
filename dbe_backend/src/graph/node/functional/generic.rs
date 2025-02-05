@@ -43,6 +43,7 @@ pub(super) fn sync_generic_state<'a>(
     }
 }
 
+#[derive(Debug, Clone, Eq, PartialEq, Hash, Ord, PartialOrd)]
 pub(super) struct GenericValue<const N: usize>(pub EValue);
 
 pub(super) trait GenericFieldAdapter {
