@@ -197,6 +197,7 @@ impl Graph {
                     .try_input(
                         NodeContext {
                             registry,
+                            docs: &Docs::Stub,
                             inputs: &graph.inputs,
                             outputs: &graph.outputs,
                             regions: &graph.regions,
@@ -249,7 +250,7 @@ impl Graph {
                 continue;
             };
 
-            if !node.has_inline_values()? {
+            if !node.has_inline_values(pin.input)? {
                 continue;
             }
 
@@ -306,11 +307,13 @@ impl Graph {
     pub fn snarl_and_context<'a>(
         &'a mut self,
         registry: &'a ETypesRegistry,
+        docs: &'a Docs,
     ) -> (&'a mut Snarl<SnarlNode>, NodeContext<'a>) {
         (
             &mut self.snarl,
             NodeContext {
                 registry,
+                docs,
                 inputs: &self.inputs,
                 outputs: &self.outputs,
                 regions: &self.regions,

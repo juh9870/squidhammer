@@ -163,6 +163,7 @@ pub trait NodeFactory: Send + Sync + Debug + 'static {
 #[derive(Debug, Copy, Clone)]
 pub struct NodeContext<'a> {
     pub registry: &'a ETypesRegistry,
+    pub docs: &'a Docs,
     pub inputs: &'a SmallVec<[GraphInput; 1]>,
     pub outputs: &'a SmallVec<[GraphOutput; 1]>,
     pub regions: &'a OrderMap<Uuid, RegionInfo>,
@@ -330,7 +331,8 @@ pub trait Node: DynClone + DynHash + Debug + Send + Sync + Downcast + 'static {
     }
 
     /// Determines if the node has inline editable values
-    fn has_inline_values(&self) -> miette::Result<bool> {
+    fn has_inline_values(&self, input: usize) -> miette::Result<bool> {
+        let _ = (input,);
         Ok(true)
     }
 
