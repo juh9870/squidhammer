@@ -47,7 +47,7 @@ impl Node for ListNode {
         ListNodeFactory.id()
     }
 
-    fn has_inline_values(&self) -> miette::Result<bool> {
+    fn has_inline_values(&self, _input: usize) -> miette::Result<bool> {
         Ok(false)
     }
 
