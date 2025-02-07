@@ -160,17 +160,17 @@ impl Node for SubgraphNode {
                 &mut graph_in,
             )?;
 
-            let mut ctx = GraphExecutionContext::from_graph(
+            let side_effects_available = variables.side_effects.is_available();
+            let mut ctx = GraphExecutionContext::from_graph_and_context(
                 graph.graph(),
-                context.registry,
-                context.graphs,
+                context,
                 variables.side_effects.with_subgraph(self.graph_id),
                 true,
                 &graph_in,
                 &mut graph_out,
             );
 
-            ctx.full_eval(true)?;
+            ctx.full_eval(side_effects_available)?;
 
             drop(ctx);
 

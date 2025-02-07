@@ -31,6 +31,7 @@ macro_rules! node_context {
     ($source:expr) => {
         NodeContext {
             registry: $source.registry,
+            docs: $source.docs,
             inputs: $source.inputs,
             outputs: $source.outputs,
             regions: $source.regions,
@@ -70,6 +71,26 @@ impl<'a> GraphEditingContext<'a, 'a> {
         );
         Self { snarl, ctx }
     }
+
+    pub fn from_graph_and_context(
+        graph: &'a mut Graph,
+        context: NodeContext<'a>,
+        side_effects: SideEffectsContext<'a>,
+        is_node_group: bool,
+        input_values: &'a [EValue],
+        output_values: &'a mut Option<Vec<EValue>>,
+    ) -> Self {
+        Self::from_graph(
+            graph,
+            context.registry,
+            context.docs,
+            context.graphs,
+            side_effects,
+            is_node_group,
+            input_values,
+            output_values,
+        )
+    }
 }
 
 impl<'a> Deref for GraphEditingContext<'a, '_> {
@@ -93,6 +114,7 @@ impl GraphEditingContext<'_, '_> {
             self.ctx.outputs,
             self.ctx.inline_values,
             self.ctx.registry,
+            self.ctx.docs,
             self.ctx.graphs,
             self.ctx.side_effects.clone(),
             self.ctx.is_node_group,
@@ -111,7 +133,7 @@ impl GraphEditingContext<'_, '_> {
     pub fn ensure_inline_input(&mut self, pin: InPinId) -> miette::Result<bool> {
         let node = &self.snarl[pin.node];
 
-        if !node.has_inline_values()? {
+        if !node.has_inline_values(pin.input)? {
             return Ok(false);
         }
 
