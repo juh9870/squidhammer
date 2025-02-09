@@ -1,6 +1,7 @@
 use crate::error::report_error;
 use crate::main_toolbar::docs::{docs_hover_type, docs_label};
 use crate::workspace::editors::{editor_for_item, EditorContext};
+use crate::workspace::graph::viewer::default_view::inline_popout::show_input_popout_menu;
 use crate::workspace::graph::viewer::default_view::state_editor::show_state_editor;
 use crate::workspace::graph::viewer::NodeView;
 use crate::workspace::graph::{any_pin, pin_info, GraphViewer};
@@ -13,6 +14,7 @@ use egui_snarl::{InPin, NodeId, OutPin, Snarl};
 use std::fmt::Debug;
 use ustr::Ustr;
 
+pub mod inline_popout;
 pub mod state_editor;
 
 #[derive(Debug)]
@@ -79,6 +81,7 @@ impl NodeView for DefaultNodeView {
         _scale: f32,
         snarl: &mut Snarl<SnarlNode>,
     ) -> miette::Result<InnerResponse<PinInfo>> {
+        let mut has_connection = false;
         let res = ui.push_id(pin.id, |ui| -> miette::Result<_> {
             let registry = viewer.ctx.registry;
             let docs = viewer.ctx.docs;
@@ -123,12 +126,22 @@ impl NodeView for DefaultNodeView {
                     docs_label(ui, &input_data.name, docs, registry, ctx.docs_ref);
                 }
             } else {
+                has_connection = true;
                 docs_label(ui, &input_data.name, docs, registry, ctx.docs_ref);
             }
 
             Ok(pin_info(&input_data.ty, registry))
         });
         let inner = res.inner?;
+
+        res.response.context_menu(|ui| {
+            ui.add_enabled_ui(!has_connection, |ui| {
+                ui.menu_button("Inline Node", |ui| {
+                    show_input_popout_menu(viewer, snarl, pin, ui);
+                })
+            });
+        });
+
         Ok(InnerResponse::new(inner, res.response))
     }
 

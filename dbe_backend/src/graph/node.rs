@@ -56,6 +56,7 @@ use uuid::Uuid;
 
 pub mod colors;
 pub mod commands;
+pub mod creation;
 pub mod editable_state;
 pub mod enum_node;
 pub mod expression_node;
