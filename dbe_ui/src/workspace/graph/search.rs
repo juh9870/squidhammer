@@ -353,7 +353,10 @@ fn dyn_search_ui(
         let row_height =
             ui.style().spacing.button_padding.y + ui.text_style_height(&TextStyle::Button);
 
+        ui.add_space(4.0);
+
         if let Some(node) = ScrollArea::vertical()
+            .min_scrolled_height(row_height * 10.0)
             .show_rows(
                 ui,
                 row_height,
