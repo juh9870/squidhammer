@@ -24,6 +24,7 @@ use egui_snarl::ui::{
 };
 use egui_snarl::{InPin, NodeId, OutPin, Snarl};
 use inline_tweak::tweak;
+use itertools::{Itertools, PeekingNext};
 use random_color::options::Luminosity;
 use random_color::RandomColor;
 use std::iter::Peekable;
@@ -299,22 +300,35 @@ impl SnarlViewer<SnarlNode> for GraphViewer<'_> {
             let node = search_ui(ui, "add_node_searchbar", search, |ui| {
                 let categories =
                     ui.use_memo(|| category_tree(self.ctx.graphs, self.ctx.registry), ());
-                let mut categories = categories.iter().peekable();
+                let mut categories = categories
+                    .iter()
+                    .map(|x| (x.0.split('.').collect_vec(), x.1))
+                    .peekable();
 
-                fn is_sub_category(category: &str, parent: &str) -> bool {
-                    category.starts_with(parent)
-                        && category.chars().nth(parent.len()).is_some_and(|c| c == '.')
-                }
-                fn show<'a>(
+                fn show<'a, C: AsRef<[&'a str]>>(
                     ui: &mut Ui,
-                    parent: &str,
-                    categories: &mut Peekable<
-                        impl Iterator<Item = (&'a String, &'a Vec<NodeCombo>)>,
-                    >,
+                    parent: &[&str],
+                    categories: &mut Peekable<impl Iterator<Item = (C, &'a Vec<NodeCombo>)>>,
                 ) -> Option<NodeCombo> {
                     while let Some((cat, _)) = categories.peek() {
-                        if !parent.is_empty() && !is_sub_category(cat, parent) {
+                        let cat = cat.as_ref();
+                        if !parent.is_empty() && !cat.starts_with(parent) {
                             return None;
+                        }
+                        let cat_name = cat.strip_prefix(parent).unwrap();
+
+                        if cat_name.len() > 1 {
+                            let next_cat = parent
+                                .iter()
+                                .chain(cat_name.iter().take(1))
+                                .copied()
+                                .collect_vec();
+                            return ui
+                                .menu_button(cat_name[0], |ui| {
+                                    show(ui, next_cat.as_slice(), categories)
+                                })
+                                .inner
+                                .flatten();
                         }
 
                         if !parent.is_empty() {
@@ -322,14 +336,12 @@ impl SnarlViewer<SnarlNode> for GraphViewer<'_> {
                         }
 
                         let (category, factories) = categories.next().unwrap();
-                        let cat_name = category
-                            .strip_prefix(parent)
-                            .and_then(|c| c.strip_prefix("."))
-                            .unwrap_or(category);
+                        let category = category.as_ref();
+                        let cat_name = category.strip_prefix(parent).unwrap();
                         if let Some(node) = ui
-                            .menu_button(cat_name, |ui| {
+                            .menu_button(cat_name.join("."), |ui| {
                                 for node in factories.iter() {
-                                    if ui.button(node.as_ref()).clicked() {
+                                    if ui.button(node.display_title()).clicked() {
                                         ui.close_menu();
                                         return Some(node.clone());
                                     }
@@ -343,18 +355,16 @@ impl SnarlViewer<SnarlNode> for GraphViewer<'_> {
                             return Some(node);
                         }
 
-                        while let Some((next_cat, _)) = categories.peek() {
-                            if !is_sub_category(next_cat, category) {
-                                break;
-                            }
-                            categories.next();
+                        while let Some(_) = categories
+                            .peeking_next(|(next_cat, _)| next_cat.as_ref().starts_with(category))
+                        {
                         }
                     }
 
                     None
                 }
 
-                show(ui, "", &mut categories)
+                show(ui, &[], &mut categories)
             });
 
             if let Some(to_insert) = node {
@@ -392,7 +402,12 @@ impl SnarlViewer<SnarlNode> for GraphViewer<'_> {
                             return;
                         }
                     };
-                    let search = ui.use_memo(move || GraphSearch::for_input_data(&data), ());
+                    let graphs = self.ctx.graphs;
+                    let registry = self.ctx.registry;
+                    let search = ui.use_memo(
+                        move || GraphSearch::for_input_data(graphs, registry, &data),
+                        (),
+                    );
 
                     if let Some(node) = search_ui_always(ui, "dropped_wire_search_menu", search) {
                         ui.close_menu();

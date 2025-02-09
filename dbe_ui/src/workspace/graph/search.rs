@@ -15,6 +15,7 @@ use itertools::{Itertools, Position};
 use nucleo::pattern::{CaseMatching, Normalization};
 use nucleo::{Item, Nucleo, Snapshot};
 use smallvec::SmallVec;
+use std::borrow::Cow;
 use std::collections::BTreeMap;
 use std::hash::Hash;
 use std::ops::{Deref, DerefMut};
@@ -26,22 +27,31 @@ use uuid::Uuid;
 pub enum NodeCombo {
     Factory(Ustr),
     Subgraph(Uuid, String),
-    Object(ETypeId),
+    Object(ETypeId, String),
     List(EListId),
 }
 
-impl AsRef<str> for NodeCombo {
-    fn as_ref(&self) -> &str {
+impl NodeCombo {
+    /// Formats the node for display in search results
+    pub fn display_search(&self) -> Cow<str> {
         match self {
-            NodeCombo::Factory(id) => id.as_str(),
-            NodeCombo::Object(id) => id.as_raw().unwrap(),
-            NodeCombo::Subgraph(_, id) => id.as_str(),
-            NodeCombo::List(id) => id.as_raw().unwrap(),
+            NodeCombo::Object(id, title) => format!("{} ({})", title, id.as_raw().unwrap()).into(),
+            NodeCombo::Subgraph(_, name) => name.into(),
+            _ => self.display_title(),
         }
     }
-}
 
-impl NodeCombo {
+    /// Formats the node for display in the file tree or other places where ID
+    /// is unnecessary
+    pub fn display_title(&self) -> Cow<str> {
+        match self {
+            NodeCombo::Factory(id) => id.as_str().into(),
+            NodeCombo::Object(_, title) => title.into(),
+            NodeCombo::Subgraph(_, name) => name.into(),
+            NodeCombo::List(id) => id.as_raw().unwrap().into(),
+        }
+    }
+
     pub fn create(
         &self,
         ctx: &mut GraphEditingContext,
@@ -49,7 +59,7 @@ impl NodeCombo {
     ) -> miette::Result<SmallVec<[NodeId; 2]>> {
         match self {
             NodeCombo::Factory(id) => ctx.create_node(*id, pos),
-            NodeCombo::Object(id) => ctx.create_object_node(*id, pos, None),
+            NodeCombo::Object(id, _) => ctx.create_object_node(*id, pos, None),
             NodeCombo::Subgraph(id, _) => ctx.create_subgraph_node(*id, pos),
             NodeCombo::List(id) => ctx.create_list_node(*id, pos),
         }
@@ -66,7 +76,7 @@ impl NodeCombo {
         let nodes = match self {
             NodeCombo::Factory(id) => ctx.create_node(*id, pos)?,
             NodeCombo::Subgraph(id, _) => ctx.create_subgraph_node(*id, pos)?,
-            NodeCombo::Object(ident) => {
+            NodeCombo::Object(ident, _) => {
                 let inline_value = ctx.inline_values.remove(pin);
                 ctx.create_object_node(*ident, pos, inline_value)?
             }
@@ -126,6 +136,10 @@ pub fn category_tree(
         .all_ready_objects()
         .filter(|obj| !PROP_OBJECT_GRAPH_SEARCH_HIDE.get(obj.extra_properties(), false))
     {
+        if !obj.generic_arguments_names().is_empty() {
+            continue;
+        }
+        let title = obj.title(registry);
         let id = obj.ident();
         let category = ["types"]
             .into_iter()
@@ -138,7 +152,7 @@ pub fn category_tree(
         categories
             .entry(category)
             .or_default()
-            .push(NodeCombo::Object(id));
+            .push(NodeCombo::Object(id, title));
     }
 
     categories
@@ -189,7 +203,10 @@ impl GraphSearch {
         let objects = registry
             .all_ready_objects()
             .filter(|obj| !PROP_OBJECT_GRAPH_SEARCH_HIDE.get(obj.extra_properties(), false))
-            .map(|s| NodeCombo::Object(s.ident()));
+            .map(|s| {
+                let title = s.title(registry);
+                NodeCombo::Object(s.ident(), title)
+            });
         for node in all_nodes.chain(objects).filter(|x| filter(x)) {
             push_to_injector(&injector, node);
         }
@@ -202,7 +219,11 @@ impl GraphSearch {
         GraphSearch(Arc::new(parking_lot::RwLock::new(data)))
     }
 
-    pub fn for_input_data(input: &InputData) -> Self {
+    pub fn for_input_data(
+        _graphs: Option<&ProjectGraphs>,
+        registry: &ETypesRegistry,
+        input: &InputData,
+    ) -> Self {
         if !input.ty.is_specific() {
             return Self::empty();
         }
@@ -212,7 +233,9 @@ impl GraphSearch {
 
         match input.ty.ty() {
             EDataType::Object { ident } => {
-                push_to_injector(&injector, NodeCombo::Object(ident));
+                let obj = registry.get_object(&ident).unwrap();
+                let title = obj.title(registry);
+                push_to_injector(&injector, NodeCombo::Object(ident, title));
             }
             EDataType::List { id } => {
                 push_to_injector(&injector, NodeCombo::List(id));
@@ -305,7 +328,7 @@ fn dyn_search_ui<'c>(
 
         for node in snapshot.matched_items(10) {
             let node = node.data;
-            let name = node.as_ref();
+            let name = node.display_search();
             if ui.button(name).clicked() {
                 return Some(node.clone());
             }
@@ -347,6 +370,6 @@ fn init_nucleo() -> Nucleo<NodeCombo> {
 
 fn push_to_injector(injector: &nucleo::Injector<NodeCombo>, node: NodeCombo) {
     injector.push(node, |i, col| {
-        col[0] = i.as_ref().to_string().into();
+        col[0] = i.display_search().to_string().into();
     });
 }
