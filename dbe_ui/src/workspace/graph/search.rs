@@ -232,7 +232,8 @@ impl GraphSearch {
         let nucleo = init_nucleo();
         let injector = nucleo.injector();
 
-        match input.ty.ty() {
+        let ty = input.ty.ty();
+        match ty {
             EDataType::Object { ident } => {
                 let obj = registry.get_object(&ident).unwrap();
                 let title = obj.title(registry);
@@ -241,10 +242,16 @@ impl GraphSearch {
             EDataType::List { id } => {
                 push_to_injector(&injector, NodeCombo::List(id));
             }
-            _ => {
-                // TODO: Support other types
-            }
+            _ => {}
         };
+
+        let factories = all_node_factories();
+
+        for (id, factory) in factories.iter() {
+            if factory.output_port_for(ty, registry).is_some() {
+                push_to_injector(&injector, NodeCombo::Factory(*id));
+            }
+        }
 
         let data = SearchData {
             engine: nucleo,
@@ -294,11 +301,13 @@ pub fn search_ui_always(ui: &mut Ui, id: impl Hash, search: GraphSearch) -> Opti
     dyn_search_ui(ui, id, search, None)
 }
 
-fn dyn_search_ui<'c>(
+type DynUiCb<'c> = Box<dyn FnOnce(&mut Ui) -> Option<NodeCombo> + 'c>;
+
+fn dyn_search_ui(
     ui: &mut Ui,
     id: impl Hash,
     search: GraphSearch,
-    no_search_ui: Option<Box<dyn FnOnce(&mut Ui) -> Option<NodeCombo> + 'c>>,
+    no_search_ui: Option<DynUiCb>,
 ) -> Option<NodeCombo> {
     ui.push_id(id, |ui| {
         ui.style_mut().wrap_mode = Some(egui::TextWrapMode::Extend);
@@ -374,11 +383,6 @@ fn dyn_search_ui<'c>(
 pub trait SearchSnapshot {
     fn matched_item_count(&self) -> usize;
 
-    fn matched_items(
-        &self,
-        limit: usize,
-    ) -> impl ExactSizeIterator<Item = Item<'_, NodeCombo>> + DoubleEndedIterator + '_;
-
     fn matched_items_range(
         &self,
         range: Range<usize>,
@@ -388,14 +392,6 @@ pub trait SearchSnapshot {
 impl<'a> SearchSnapshot for parking_lot::MappedRwLockReadGuard<'a, Snapshot<NodeCombo>> {
     fn matched_item_count(&self) -> usize {
         Snapshot::matched_item_count(self) as usize
-    }
-
-    fn matched_items(
-        &self,
-        limit: usize,
-    ) -> impl ExactSizeIterator<Item = Item<'_, NodeCombo>> + DoubleEndedIterator + '_ {
-        self.deref()
-            .matched_items(0..(self.matched_item_count().min(limit) as u32))
     }
 
     fn matched_items_range(
