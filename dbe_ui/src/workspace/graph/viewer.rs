@@ -17,7 +17,6 @@ pub mod default_view;
 pub mod destructuring;
 pub mod reroute;
 pub mod subgraph;
-pub mod tree_subgraph;
 
 static NODE_VIEWERS: LazyLock<AtomicRefCell<UstrMap<Arc<dyn NodeView>>>> =
     LazyLock::new(|| AtomicRefCell::new(default_viewers().collect()));
