@@ -1,10 +1,14 @@
+use crate::error::report_error;
 use crate::ui_props::PROP_OBJECT_GRAPH_SEARCH_HIDE;
 use dbe_backend::etype::eobject::EObject;
 use dbe_backend::etype::EDataType;
 use dbe_backend::graph::editing::GraphEditingContext;
 use dbe_backend::graph::node::commands::SnarlCommands;
-use dbe_backend::graph::node::ports::InputData;
-use dbe_backend::graph::node::{all_node_factories, node_factories_by_category};
+use dbe_backend::graph::node::generic::destructuring::DestructuringNodeFactory;
+use dbe_backend::graph::node::ports::{InputData, OutputData};
+use dbe_backend::graph::node::{
+    all_node_factories, get_node_factory, node_factories_by_category, NodeFactory,
+};
 use dbe_backend::project::project_graph::ProjectGraphs;
 use dbe_backend::registry::ETypesRegistry;
 use dbe_backend::value::id::{EListId, ETypeId};
@@ -13,6 +17,7 @@ use egui_hooks::UseHookExt;
 use egui_snarl::{InPinId, NodeId, OutPinId};
 use inline_tweak::tweak;
 use itertools::{Itertools, Position};
+use miette::miette;
 use nucleo::pattern::{CaseMatching, Normalization};
 use nucleo::{Item, Nucleo, Snapshot};
 use smallvec::SmallVec;
@@ -66,7 +71,7 @@ impl NodeCombo {
         }
     }
 
-    pub fn create_from_pin(
+    pub fn create_from_input_pin(
         &self,
         ctx: &mut GraphEditingContext,
         pos: Pos2,
@@ -74,8 +79,22 @@ impl NodeCombo {
         commands: &mut SnarlCommands,
     ) -> miette::Result<SmallVec<[NodeId; 2]>> {
         let in_pin = ctx.snarl.in_pin(*pin);
+        let mut port_id = 0;
         let nodes = match self {
-            NodeCombo::Factory(id) => ctx.create_node(*id, pos)?,
+            NodeCombo::Factory(id) => {
+                let factory = get_node_factory(id).unwrap();
+                let in_data = ctx.snarl[pin.node].try_input(ctx.as_node_context(), pin.input)?;
+                port_id = factory
+                    .input_port_for(in_data.ty.ty(), ctx.registry)
+                    .ok_or_else(|| {
+                        miette!(
+                            "Node {} does not have an output port for type {}",
+                            id,
+                            in_data.ty.ty().name()
+                        )
+                    })?;
+                ctx.create_node(*id, pos)?
+            }
             NodeCombo::Subgraph(id, _) => ctx.create_subgraph_node(*id, pos)?,
             NodeCombo::Object(ident, _) => {
                 let inline_value = ctx.inline_values.remove(pin);
@@ -84,16 +103,52 @@ impl NodeCombo {
             NodeCombo::List(id) => ctx.create_list_node(*id, pos)?,
         };
         if let Some(node_id) = nodes.last() {
-            let node = &ctx.snarl[*node_id];
-            let out_count = node.outputs_count(ctx.as_node_context());
-            for output in 0..out_count {
-                let out_pin = &ctx.snarl.out_pin(OutPinId {
-                    node: *node_id,
-                    output,
-                });
-                if ctx.connect(out_pin, &in_pin, commands)? {
-                    break;
-                }
+            let out_pin = ctx.snarl.out_pin(OutPinId {
+                node: *node_id,
+                output: port_id,
+            });
+            if !ctx.connect(&out_pin, &in_pin, commands)? {
+                report_error(miette!("Failed to connect dragged-out pins"));
+            }
+        }
+
+        Ok(nodes)
+    }
+    pub fn create_from_output_pin(
+        &self,
+        ctx: &mut GraphEditingContext,
+        pos: Pos2,
+        pin: &OutPinId,
+        commands: &mut SnarlCommands,
+    ) -> miette::Result<SmallVec<[NodeId; 2]>> {
+        let out_pin = ctx.snarl.out_pin(*pin);
+        let mut port_id = 0;
+        let nodes = match self {
+            NodeCombo::Factory(id) => {
+                let factory = get_node_factory(id).unwrap();
+                let out_data = ctx.snarl[pin.node].try_output(ctx.as_node_context(), pin.output)?;
+                port_id = factory
+                    .input_port_for(out_data.ty.ty(), ctx.registry)
+                    .ok_or_else(|| {
+                        miette!(
+                            "Node {} does not have an input port for type {}",
+                            id,
+                            out_data.ty.ty().name()
+                        )
+                    })?;
+                ctx.create_node(*id, pos)?
+            }
+            NodeCombo::Subgraph(id, _) => ctx.create_subgraph_node(*id, pos)?,
+            NodeCombo::Object(ident, _) => ctx.create_object_node(*ident, pos, None)?,
+            NodeCombo::List(id) => ctx.create_list_node(*id, pos)?,
+        };
+        if let Some(node_id) = nodes.first() {
+            let in_pin = &ctx.snarl.in_pin(InPinId {
+                node: *node_id,
+                input: port_id,
+            });
+            if !ctx.connect(&out_pin, &in_pin, commands)? {
+                report_error(miette!("Failed to connect dragged-out pins"));
             }
         }
 
@@ -249,6 +304,47 @@ impl GraphSearch {
 
         for (id, factory) in factories.iter() {
             if factory.output_port_for(ty, registry).is_some() {
+                push_to_injector(&injector, NodeCombo::Factory(*id));
+            }
+        }
+
+        let data = SearchData {
+            engine: nucleo,
+            last_query: None,
+        };
+
+        GraphSearch(Arc::new(parking_lot::RwLock::new(data)))
+    }
+
+    pub fn for_output_data(
+        _graphs: Option<&ProjectGraphs>,
+        registry: &ETypesRegistry,
+        input: &OutputData,
+    ) -> Self {
+        if !input.ty.is_specific() {
+            return Self::empty();
+        }
+
+        let nucleo = init_nucleo();
+        let injector = nucleo.injector();
+
+        let ty = input.ty.ty();
+        match ty {
+            EDataType::Object { ident } => {
+                if registry.get_struct(&ident).is_some() {
+                    push_to_injector(&injector, NodeCombo::Factory(DestructuringNodeFactory.id()));
+                }
+            }
+            EDataType::List { id } => {
+                push_to_injector(&injector, NodeCombo::List(id));
+            }
+            _ => {}
+        };
+
+        let factories = all_node_factories();
+
+        for (id, factory) in factories.iter() {
+            if factory.input_port_for(ty, registry).is_some() {
                 push_to_injector(&injector, NodeCombo::Factory(*id));
             }
         }
