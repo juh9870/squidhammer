@@ -1,10 +1,11 @@
 use crate::error::report_error;
 use crate::m_try;
-use crate::ui_props::{PROP_OBJECT_GRAPH_SEARCH_HIDE, PROP_OBJECT_PIN_COLOR};
+use crate::ui_props::PROP_OBJECT_PIN_COLOR;
 use crate::widgets::report::diagnostic_widget;
 use crate::workspace::graph::rects::NodeRects;
+use crate::workspace::graph::search::{category_tree, search_ui, search_ui_always};
+use crate::workspace::graph::search::{GraphSearch, NodeCombo};
 use crate::workspace::graph::viewer::get_viewer;
-use atomic_refcell::AtomicRefCell;
 use dbe_backend::diagnostic::context::DiagnosticContextRef;
 use dbe_backend::diagnostic::prelude::{Diagnostic, DiagnosticLevel};
 use dbe_backend::etype::econst::ETypeConst;
@@ -13,30 +14,23 @@ use dbe_backend::etype::EDataType;
 use dbe_backend::graph::editing::PartialGraphEditingContext;
 use dbe_backend::graph::node::commands::SnarlCommands;
 use dbe_backend::graph::node::ports::NodePortType;
-use dbe_backend::graph::node::{
-    all_node_factories, node_factories_by_category, NodeFactory, SnarlNode,
-};
+use dbe_backend::graph::node::{Node, NodeFactory, SnarlNode};
 use dbe_backend::registry::ETypesRegistry;
-use dbe_backend::value::id::ETypeId;
 use egui::epaint::PathShape;
 use egui::{Color32, Frame, Painter, Pos2, Rect, Stroke, Style, Ui};
 use egui_hooks::UseHookExt;
 use egui_snarl::ui::{
     AnyPins, BackgroundPattern, NodeLayout, PinInfo, SnarlStyle, SnarlViewer, Viewport,
 };
-use egui_snarl::{InPin, NodeId, OutPin, OutPinId, Snarl};
+use egui_snarl::{InPin, NodeId, OutPin, Snarl};
 use inline_tweak::tweak;
-use nucleo::pattern::{CaseMatching, Normalization};
-use nucleo::Nucleo;
 use random_color::options::Luminosity;
 use random_color::RandomColor;
 use std::iter::Peekable;
-use std::ops::{Deref, DerefMut};
-use std::sync::Arc;
-use ustr::Ustr;
-use uuid::Uuid;
 
+pub mod drag_out;
 pub mod rects;
+pub mod search;
 pub mod toolbar;
 pub mod viewer;
 
@@ -190,6 +184,7 @@ impl SnarlViewer<SnarlNode> for GraphViewer<'_> {
         snarl: &mut Snarl<SnarlNode>,
     ) -> PinInfo {
         m_try(|| get_viewer(&snarl[pin.id.node].id()).show_input(self, pin, ui, _scale, snarl))
+            .map(|r| r.inner)
             .unwrap_or_else(|err| {
                 // ui.set_max_width(128.0);
                 diagnostic_widget(
@@ -215,6 +210,7 @@ impl SnarlViewer<SnarlNode> for GraphViewer<'_> {
         snarl: &mut Snarl<SnarlNode>,
     ) -> PinInfo {
         m_try(|| get_viewer(&snarl[pin.id.node].id()).show_output(self, pin, ui, _scale, snarl))
+            .map(|r| r.inner)
             .unwrap_or_else(|err| {
                 ui.set_max_width(128.0);
                 diagnostic_widget(
@@ -295,117 +291,14 @@ impl SnarlViewer<SnarlNode> for GraphViewer<'_> {
     ) {
         ui.style_mut().wrap_mode = Some(egui::TextWrapMode::Extend);
         ui.menu_button("Add node", |ui| {
-            #[derive(Debug, Clone)]
-            enum NodeCombo {
-                Factory(Ustr),
-                Subgraph(Uuid, String),
-                Object(ETypeId),
-            }
-
-            impl AsRef<str> for NodeCombo {
-                fn as_ref(&self) -> &str {
-                    match self {
-                        NodeCombo::Factory(id) => id.as_str(),
-                        NodeCombo::Object(id) => id.as_raw().unwrap(),
-                        NodeCombo::Subgraph(_, id) => id.as_str(),
-                    }
-                }
-            }
-            let mut search_query = ui.use_state(|| "".to_string(), ()).into_var();
-            let nucleo = ui.use_memo(
-                || {
-                    let mut cfg = nucleo::Config::DEFAULT;
-                    cfg.set_match_paths();
-                    let nucleo = Nucleo::<NodeCombo>::new(cfg, Arc::new(|| {}), None, 1);
-
-                    let injector = nucleo.injector();
-                    let factories = all_node_factories();
-                    let all_nodes = factories.iter().map(|(id, _)| NodeCombo::Factory(*id));
-                    let all_subgraphs = self
-                        .ctx
-                        .graphs
-                        .expect("Project graphs should be present while editing")
-                        .graphs
-                        .iter()
-                        .filter(|x| x.1.is_node_group)
-                        .map(|x| NodeCombo::Subgraph(*x.0, x.1.name.clone()));
-
-                    let objects = self
-                        .ctx
-                        .registry
-                        .all_ready_objects()
-                        .filter(|obj| {
-                            !PROP_OBJECT_GRAPH_SEARCH_HIDE.get(obj.extra_properties(), false)
-                        })
-                        .map(|s| NodeCombo::Object(s.ident()));
-                    for node in all_nodes.chain(objects).chain(all_subgraphs) {
-                        injector.push(node, |i, col| {
-                            col[0] = i.as_ref().to_string().into();
-                        });
-                    }
-                    Arc::new(AtomicRefCell::new(nucleo))
-                },
+            let search = ui.use_memo(
+                || GraphSearch::all_nodes(self.ctx.graphs, self.ctx.registry, |_| true),
                 (),
             );
 
-            nucleo.borrow_mut().tick(10);
-
-            let search_bar = ui.text_edit_singleline(search_query.deref_mut());
-            ui.use_effect(
-                || {
-                    search_bar.request_focus();
-                },
-                (),
-            );
-
-            ui.use_effect(
-                || {
-                    let mut n = nucleo.deref().borrow_mut();
-                    n.pattern.reparse(
-                        0,
-                        search_query.trim(),
-                        CaseMatching::Ignore,
-                        Normalization::Smart,
-                        false,
-                    )
-                },
-                search_query.trim().to_owned(),
-            );
-
-            let nucleo = nucleo.deref().borrow();
-            let snapshot = nucleo.snapshot();
-
-            if search_query.trim() != "" {
-                for node in snapshot.matched_items(0..snapshot.matched_item_count().min(10)) {
-                    let node = node.data;
-                    let name = node.as_ref();
-                    if ui.button(name).clicked() {
-                        let node =
-                            match node {
-                                NodeCombo::Factory(id) => self.ctx.as_full(snarl).create_node(
-                                    *id,
-                                    pos,
-                                    &mut self.commands,
-                                ),
-                                NodeCombo::Object(id) => self
-                                    .ctx
-                                    .as_full(snarl)
-                                    .create_object_node(*id, pos, None, &mut self.commands),
-                                NodeCombo::Subgraph(id, _) => self
-                                    .ctx
-                                    .as_full(snarl)
-                                    .create_subgraph_node(*id, pos, &mut self.commands),
-                            };
-                        if let Err(err) = node {
-                            report_error(err);
-                        }
-                        *search_query = "".to_string();
-                        ui.close_menu();
-                        return;
-                    }
-                }
-            } else {
-                let categories = node_factories_by_category();
+            let node = search_ui(ui, "add_node_searchbar", search, |ui| {
+                let categories =
+                    ui.use_memo(|| category_tree(self.ctx.graphs, self.ctx.registry), ());
                 let mut categories = categories.iter().peekable();
 
                 fn is_sub_category(category: &str, parent: &str) -> bool {
@@ -414,11 +307,11 @@ impl SnarlViewer<SnarlNode> for GraphViewer<'_> {
                 }
                 fn show<'a>(
                     ui: &mut Ui,
-                    parent: &'static str,
+                    parent: &str,
                     categories: &mut Peekable<
-                        impl Iterator<Item = (&'a &'static str, &'a Vec<Arc<dyn NodeFactory>>)>,
+                        impl Iterator<Item = (&'a String, &'a Vec<NodeCombo>)>,
                     >,
-                ) -> Option<Ustr> {
+                ) -> Option<NodeCombo> {
                     while let Some((cat, _)) = categories.peek() {
                         if !parent.is_empty() && !is_sub_category(cat, parent) {
                             return None;
@@ -435,11 +328,10 @@ impl SnarlViewer<SnarlNode> for GraphViewer<'_> {
                             .unwrap_or(category);
                         if let Some(node) = ui
                             .menu_button(cat_name, |ui| {
-                                for factory in factories.iter() {
-                                    if ui.button(factory.id().as_str()).clicked() {
-                                        // let node = factory.create();
+                                for node in factories.iter() {
+                                    if ui.button(node.as_ref()).clicked() {
                                         ui.close_menu();
-                                        return Some(factory.id());
+                                        return Some(node.clone());
                                     }
                                 }
 
@@ -462,14 +354,13 @@ impl SnarlViewer<SnarlNode> for GraphViewer<'_> {
                     None
                 }
 
-                if let Some(to_insert) = show(ui, "", &mut categories) {
-                    if let Err(err) =
-                        self.ctx
-                            .as_full(snarl)
-                            .create_node(to_insert, pos, &mut self.commands)
-                    {
-                        report_error(err)
-                    }
+                show(ui, "", &mut categories)
+            });
+
+            if let Some(to_insert) = node {
+                ui.close_menu();
+                if let Err(err) = to_insert.create(&mut self.ctx.as_full(snarl), pos) {
+                    report_error(err)
                 }
             }
         });
@@ -492,65 +383,28 @@ impl SnarlViewer<SnarlNode> for GraphViewer<'_> {
             AnyPins::Out(_) => ui.close_menu(),
             AnyPins::In(pins) => {
                 for pin in pins {
-                    m_try(|| {
-                        let node = &snarl[pin.node];
-                        let data = node.try_input(self.ctx.as_node_context(), pin.input)?;
-                        match data.ty.ty() {
-                            EDataType::Object { ident } => {
-                                if ui.button(ident.as_raw().unwrap()).clicked() {
-                                    let inline_value = self.ctx.inline_values.remove(pin);
-                                    let nodes = self.ctx.as_full(snarl).create_object_node(
-                                        ident,
-                                        pos,
-                                        inline_value,
-                                        &mut self.commands,
-                                    )?;
-                                    if let Some(node) = nodes.last() {
-                                        let out_pin = &snarl.out_pin(OutPinId {
-                                            node: *node,
-                                            output: 0,
-                                        });
-                                        let in_pin = snarl.in_pin(*pin);
-                                        self.ctx.as_full(snarl).connect(
-                                            out_pin,
-                                            &in_pin,
-                                            &mut self.commands,
-                                        )?;
-                                    }
-                                    ui.close_menu();
-                                }
-                            }
-                            EDataType::List { id } => {
-                                if ui.button("List").clicked() {
-                                    let nodes = self.ctx.as_full(snarl).create_list_node(
-                                        id,
-                                        pos,
-                                        &mut self.commands,
-                                    )?;
-                                    if let Some(node) = nodes.last() {
-                                        let out_pin = &snarl.out_pin(OutPinId {
-                                            node: *node,
-                                            output: 0,
-                                        });
-                                        let in_pin = snarl.in_pin(*pin);
-                                        self.ctx.as_full(snarl).connect(
-                                            out_pin,
-                                            &in_pin,
-                                            &mut self.commands,
-                                        )?;
-                                    }
-                                    ui.close_menu();
-                                }
-                            }
-                            // TODO: search by output type
-                            _ => ui.close_menu(),
+                    let node = &snarl[pin.node];
+                    let data = match node.try_input(self.ctx.as_node_context(), pin.input) {
+                        Ok(data) => data,
+                        Err(err) => {
+                            report_error(err);
+                            ui.close_menu();
+                            return;
                         }
-                        Ok(())
-                    })
-                    .unwrap_or_else(|err| {
-                        report_error(err);
-                        ui.close_menu()
-                    })
+                    };
+                    let search = ui.use_memo(move || GraphSearch::for_input_data(&data), ());
+
+                    if let Some(node) = search_ui_always(ui, "dropped_wire_search_menu", search) {
+                        ui.close_menu();
+                        if let Err(err) = node.create_from_pin(
+                            &mut self.ctx.as_full(snarl),
+                            pos,
+                            pin,
+                            &mut self.commands,
+                        ) {
+                            report_error(err)
+                        }
+                    }
                 }
             }
         }
@@ -571,9 +425,7 @@ impl SnarlViewer<SnarlNode> for GraphViewer<'_> {
     ) {
         m_try(|| {
             if ui.button("Duplicate").clicked() {
-                self.ctx
-                    .as_full(snarl)
-                    .duplicate_node(node, &mut self.commands)?;
+                self.ctx.as_full(snarl).duplicate_node(node)?;
                 ui.close_menu();
             }
             if ui.button("Remove").clicked() {

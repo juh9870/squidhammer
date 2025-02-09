@@ -7,7 +7,7 @@ use crate::workspace::graph::{any_pin, pin_info, GraphViewer};
 use dbe_backend::graph::node::SnarlNode;
 use dbe_backend::project::docs::{DocsRef, DocsWindowRef};
 use dbe_backend::value::EValue;
-use egui::Ui;
+use egui::{InnerResponse, Ui};
 use egui_snarl::ui::{NodeLayout, PinInfo};
 use egui_snarl::{InPin, NodeId, OutPin, Snarl};
 use std::fmt::Debug;
@@ -78,8 +78,8 @@ impl NodeView for DefaultNodeView {
         ui: &mut Ui,
         _scale: f32,
         snarl: &mut Snarl<SnarlNode>,
-    ) -> miette::Result<PinInfo> {
-        ui.push_id(pin.id, |ui| {
+    ) -> miette::Result<InnerResponse<PinInfo>> {
+        let res = ui.push_id(pin.id, |ui| -> miette::Result<_> {
             let registry = viewer.ctx.registry;
             let docs = viewer.ctx.docs;
             let node = &snarl[pin.id.node];
@@ -123,8 +123,9 @@ impl NodeView for DefaultNodeView {
             }
 
             Ok(pin_info(&input_data.ty, registry))
-        })
-        .inner
+        });
+        let inner = res.inner?;
+        Ok(InnerResponse::new(inner, res.response))
     }
 
     fn show_output(
@@ -134,8 +135,8 @@ impl NodeView for DefaultNodeView {
         ui: &mut Ui,
         _scale: f32,
         snarl: &mut Snarl<SnarlNode>,
-    ) -> miette::Result<PinInfo> {
-        ui.push_id(pin.id, |ui| {
+    ) -> miette::Result<InnerResponse<PinInfo>> {
+        let res = ui.push_id(pin.id, |ui| -> miette::Result<_> {
             let registry = viewer.ctx.registry;
             let node = &snarl[pin.id.node];
             let output_data = node.try_output(viewer.ctx.as_node_context(), pin.id.output)?;
@@ -148,8 +149,10 @@ impl NodeView for DefaultNodeView {
             });
 
             Ok(pin_info(&output_data.ty, registry))
-        })
-        .inner
+        });
+
+        let inner = res.inner?;
+        Ok(InnerResponse::new(inner, res.response))
     }
 
     fn node_layout(&self, _viewer: &mut GraphViewer, _node: &SnarlNode) -> NodeLayout {
