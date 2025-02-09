@@ -100,6 +100,10 @@ impl NodeView for DefaultNodeView {
                 let mut full_ctx = viewer.ctx.as_full(snarl);
                 if let Some(value) = full_ctx.get_inline_input_mut(pin.id)? {
                     if input_data.ty.has_inline_value(registry) {
+                        if value.ty() != input_data.ty.ty() {
+                            *value = input_data.ty.default_value(registry).into_owned();
+                        }
+
                         let editor = editor_for_item(registry, info);
                         ui.vertical(|ui| {
                             editor.show(
