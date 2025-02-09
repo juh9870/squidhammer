@@ -173,8 +173,8 @@ impl GraphEditingContext<'_, '_> {
         from: &OutPin,
         to: &InPin,
         commands: &mut SnarlCommands,
-    ) -> miette::Result<()> {
-        m_try(|| {
+    ) -> miette::Result<bool> {
+        let success = m_try(|| -> miette::Result<bool> {
             let from_node = &self.snarl[from.id.node];
 
             let from_pin = from_node.try_output(node_context!(self), from.id.output)?;
@@ -198,7 +198,7 @@ impl GraphEditingContext<'_, '_> {
                     to,
                     &from_pin.ty,
                 )? {
-                    return Ok(());
+                    return Ok(false);
                 }
 
                 if based_on_input {
@@ -212,13 +212,17 @@ impl GraphEditingContext<'_, '_> {
                         &to_pin.ty,
                     )?;
                 }
-            }
 
-            Ok(())
+                Ok(true)
+            } else {
+                Ok(false)
+            }
         })
         .with_context(|| format!("failed to connect pins: {:?} -> {:?}", from.id, to.id))?;
 
-        commands.execute(self)
+        commands.execute(self)?;
+
+        Ok(success)
     }
 
     pub fn disconnect(
@@ -244,11 +248,7 @@ impl GraphEditingContext<'_, '_> {
             .with_context(|| format!("failed to remove node: {:?}", node))
     }
 
-    pub fn duplicate_node(
-        &mut self,
-        node_id: NodeId,
-        commands: &mut SnarlCommands,
-    ) -> miette::Result<()> {
+    pub fn duplicate_node(&mut self, node_id: NodeId) -> miette::Result<()> {
         let node = self.snarl.get_node_info(node_id).unwrap();
         let factory_id = node.value.id();
         let duplicate_nodes = node.value.duplicate();
@@ -277,7 +277,7 @@ impl GraphEditingContext<'_, '_> {
             let node = &mut self.snarl[*id].node;
             *node = duplicated_node;
         }
-        self.process_created_nodes(created_ids.iter().copied(), commands)?;
+        self.process_created_nodes(created_ids.iter().copied())?;
 
         let inline_values = self
             .inline_values
@@ -299,16 +299,11 @@ impl GraphEditingContext<'_, '_> {
         Ok(())
     }
 
-    pub fn create_node(
-        &mut self,
-        id: Ustr,
-        pos: Pos2,
-        commands: &mut SnarlCommands,
-    ) -> miette::Result<SmallVec<[NodeId; 2]>> {
+    pub fn create_node(&mut self, id: Ustr, pos: Pos2) -> miette::Result<SmallVec<[NodeId; 2]>> {
         let ids = get_node_factory(&id).unwrap().create_nodes(self.snarl, pos);
         self.mark_dirty();
 
-        self.process_created_nodes(ids.iter().copied(), commands)?;
+        self.process_created_nodes(ids.iter().copied())?;
 
         Ok(ids)
     }
@@ -316,7 +311,6 @@ impl GraphEditingContext<'_, '_> {
     fn process_created_nodes(
         &mut self,
         ids: impl IntoIterator<Item = NodeId>,
-        _commands: &mut SnarlCommands,
     ) -> miette::Result<()> {
         for id in ids {
             let node = &self.snarl[id].node;
@@ -336,12 +330,11 @@ impl GraphEditingContext<'_, '_> {
         &mut self,
         id: Uuid,
         pos: Pos2,
-        commands: &mut SnarlCommands,
     ) -> miette::Result<SmallVec<[NodeId; 2]>> {
         let node = Box::new(SubgraphNode::with_graph(id));
         let id = self.snarl.insert_node(pos, SnarlNode::new(node));
         self.mark_dirty();
-        self.process_created_nodes([id], commands)?;
+        self.process_created_nodes([id])?;
 
         Ok(smallvec![id])
     }
@@ -351,7 +344,6 @@ impl GraphEditingContext<'_, '_> {
         object: ETypeId,
         pos: Pos2,
         apply_value: Option<EValue>,
-        _commands: &mut SnarlCommands,
     ) -> miette::Result<SmallVec<[NodeId; 2]>> {
         let info = self
             .registry
@@ -398,7 +390,6 @@ impl GraphEditingContext<'_, '_> {
         &mut self,
         item_ty: EListId,
         pos: Pos2,
-        _commands: &mut SnarlCommands,
     ) -> miette::Result<SmallVec<[NodeId; 2]>> {
         let item_ty = self
             .registry

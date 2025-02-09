@@ -12,6 +12,7 @@ use crate::graph::node::generic::destructuring::DestructuringNodeFactory;
 use crate::graph::node::groups::input::GroupInputNodeFactory;
 use crate::graph::node::groups::output::GroupOutputNodeFactory;
 use crate::graph::node::groups::subgraph::SubgraphNodeFactory;
+use crate::graph::node::groups::tree_subgraph::TreeSubgraphFactory;
 use crate::graph::node::list::ListNodeFactory;
 use crate::graph::node::ports::{InputData, NodePortType, OutputData};
 use crate::graph::node::regional::generic_regional::construct::ConstructListNode;
@@ -109,6 +110,7 @@ fn default_nodes() -> impl Iterator<Item = (Ustr, Arc<dyn NodeFactory>)> {
     push(v, FormatNodeFactory);
     push(v, ExpressionNodeFactory);
     push(v, DestructuringNodeFactory);
+    push(v, TreeSubgraphFactory);
     // regional
     push(v, RegionalNodeFactory::<RepeatNode>::INSTANCE);
     push(v, RegionalNodeFactory::<ConditionalIfNode>::INSTANCE);
