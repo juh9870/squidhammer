@@ -14,10 +14,10 @@ use dbe_backend::etype::EDataType;
 use dbe_backend::graph::editing::PartialGraphEditingContext;
 use dbe_backend::graph::node::commands::SnarlCommands;
 use dbe_backend::graph::node::ports::NodePortType;
-use dbe_backend::graph::node::{Node, NodeFactory, SnarlNode};
+use dbe_backend::graph::node::SnarlNode;
 use dbe_backend::registry::ETypesRegistry;
 use egui::epaint::PathShape;
-use egui::{Color32, Frame, Painter, Pos2, Rect, Stroke, Style, Ui};
+use egui::{Color32, Frame, Painter, Pos2, Rect, ScrollArea, Stroke, Style, Ui};
 use egui_hooks::UseHookExt;
 use egui_snarl::ui::{
     AnyPins, BackgroundPattern, NodeLayout, PinInfo, SnarlStyle, SnarlViewer, Viewport,
@@ -340,14 +340,19 @@ impl SnarlViewer<SnarlNode> for GraphViewer<'_> {
                         let cat_name = category.strip_prefix(parent).unwrap();
                         if let Some(node) = ui
                             .menu_button(cat_name.join("."), |ui| {
-                                for node in factories.iter() {
-                                    if ui.button(node.display_title()).clicked() {
-                                        ui.close_menu();
-                                        return Some(node.clone());
-                                    }
-                                }
+                                ScrollArea::vertical()
+                                    .max_height(ui.ctx().screen_rect().height() / 2.0)
+                                    .show(ui, |ui| {
+                                        for node in factories.iter() {
+                                            if ui.button(node.display_title()).clicked() {
+                                                ui.close_menu();
+                                                return Some(node.clone());
+                                            }
+                                        }
 
-                                show(ui, category, categories)
+                                        show(ui, category, categories)
+                                    })
+                                    .inner
                             })
                             .inner
                             .flatten()
