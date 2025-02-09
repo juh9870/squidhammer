@@ -8,9 +8,10 @@ use dbe_backend::graph::node::{all_node_factories, node_factories_by_category};
 use dbe_backend::project::project_graph::ProjectGraphs;
 use dbe_backend::registry::ETypesRegistry;
 use dbe_backend::value::id::{EListId, ETypeId};
-use egui::{Pos2, Ui};
+use egui::{Pos2, ScrollArea, TextEdit, TextStyle, Ui};
 use egui_hooks::UseHookExt;
 use egui_snarl::{InPinId, NodeId, OutPinId};
+use inline_tweak::tweak;
 use itertools::{Itertools, Position};
 use nucleo::pattern::{CaseMatching, Normalization};
 use nucleo::{Item, Nucleo, Snapshot};
@@ -18,7 +19,7 @@ use smallvec::SmallVec;
 use std::borrow::Cow;
 use std::collections::BTreeMap;
 use std::hash::Hash;
-use std::ops::{Deref, DerefMut};
+use std::ops::{Deref, DerefMut, Range};
 use std::sync::Arc;
 use ustr::Ustr;
 use uuid::Uuid;
@@ -300,16 +301,30 @@ fn dyn_search_ui<'c>(
     no_search_ui: Option<Box<dyn FnOnce(&mut Ui) -> Option<NodeCombo> + 'c>>,
 ) -> Option<NodeCombo> {
     ui.push_id(id, |ui| {
+        ui.style_mut().wrap_mode = Some(egui::TextWrapMode::Extend);
         search.tick(10);
 
+        let scale = ui.ctx().style().spacing.combo_width / ui.style().spacing.combo_width;
+        let min_size = tweak!(300.0) / scale;
+        let searchbar_galley_width = ui.use_state(|| min_size, ());
+
         let mut search_query = ui.use_state(|| "".to_string(), ()).into_var();
-        let search_bar = ui.text_edit_singleline(search_query.deref_mut());
+        let bar_id = ui.id().with("search_bar");
+        let bar = TextEdit::singleline(search_query.deref_mut())
+            .id(bar_id)
+            .desired_width(*searchbar_galley_width + 8.0);
+        let scroll = ScrollArea::horizontal()
+            .id_salt("bar_scroll")
+            .max_width(*searchbar_galley_width + 8.0);
+
+        let search_bar = scroll.show(ui, |ui| bar.show(ui)).inner;
         ui.use_effect(
             || {
-                search_bar.request_focus();
+                search_bar.response.request_focus();
             },
             (),
         );
+        searchbar_galley_width.set_next(search_bar.galley.size().y.max(min_size));
 
         ui.use_effect(
             || {
@@ -326,12 +341,29 @@ fn dyn_search_ui<'c>(
             }
         }
 
-        for node in snapshot.matched_items(10) {
-            let node = node.data;
-            let name = node.display_search();
-            if ui.button(name).clicked() {
-                return Some(node.clone());
-            }
+        let row_height =
+            ui.style().spacing.button_padding.y + ui.text_style_height(&TextStyle::Button);
+
+        if let Some(node) = ScrollArea::vertical()
+            .show_rows(
+                ui,
+                row_height,
+                snapshot.matched_item_count(),
+                |ui, range| {
+                    for node in snapshot.matched_items_range(range) {
+                        let node = node.data;
+                        let name = node.display_title();
+                        let btn = ui.button(name);
+                        if btn.clicked() {
+                            return Some(node.clone());
+                        }
+                    }
+                    None
+                },
+            )
+            .inner
+        {
+            return Some(node);
         }
 
         None
@@ -340,25 +372,38 @@ fn dyn_search_ui<'c>(
 }
 
 pub trait SearchSnapshot {
-    fn matched_item_count(&self) -> u32;
+    fn matched_item_count(&self) -> usize;
 
     fn matched_items(
         &self,
-        limit: u32,
+        limit: usize,
+    ) -> impl ExactSizeIterator<Item = Item<'_, NodeCombo>> + DoubleEndedIterator + '_;
+
+    fn matched_items_range(
+        &self,
+        range: Range<usize>,
     ) -> impl ExactSizeIterator<Item = Item<'_, NodeCombo>> + DoubleEndedIterator + '_;
 }
 
 impl<'a> SearchSnapshot for parking_lot::MappedRwLockReadGuard<'a, Snapshot<NodeCombo>> {
-    fn matched_item_count(&self) -> u32 {
-        Snapshot::matched_item_count(self)
+    fn matched_item_count(&self) -> usize {
+        Snapshot::matched_item_count(self) as usize
     }
 
     fn matched_items(
         &self,
-        limit: u32,
+        limit: usize,
     ) -> impl ExactSizeIterator<Item = Item<'_, NodeCombo>> + DoubleEndedIterator + '_ {
         self.deref()
-            .matched_items(0..self.matched_item_count().min(limit))
+            .matched_items(0..(self.matched_item_count().min(limit) as u32))
+    }
+
+    fn matched_items_range(
+        &self,
+        range: Range<usize>,
+    ) -> impl ExactSizeIterator<Item = Item<'_, NodeCombo>> + DoubleEndedIterator + '_ {
+        self.deref()
+            .matched_items((range.start as u32)..(range.end as u32))
     }
 }
 

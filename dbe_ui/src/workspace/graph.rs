@@ -310,6 +310,7 @@ impl SnarlViewer<SnarlNode> for GraphViewer<'_> {
                     parent: &[&str],
                     categories: &mut Peekable<impl Iterator<Item = (C, &'a Vec<NodeCombo>)>>,
                 ) -> Option<NodeCombo> {
+                    ui.style_mut().wrap_mode = Some(egui::TextWrapMode::Extend);
                     while let Some((cat, _)) = categories.peek() {
                         let cat = cat.as_ref();
                         if !parent.is_empty() && !cat.starts_with(parent) {
