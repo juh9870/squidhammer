@@ -29,7 +29,6 @@ use random_color::options::Luminosity;
 use random_color::RandomColor;
 use std::iter::Peekable;
 
-pub mod drag_out;
 pub mod rects;
 pub mod search;
 pub mod toolbar;
@@ -361,10 +360,10 @@ impl SnarlViewer<SnarlNode> for GraphViewer<'_> {
                             return Some(node);
                         }
 
-                        while let Some(_) = categories
+                        while categories
                             .peeking_next(|(next_cat, _)| next_cat.as_ref().starts_with(category))
-                        {
-                        }
+                            .is_some()
+                        {}
                     }
 
                     None

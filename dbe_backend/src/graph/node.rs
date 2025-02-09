@@ -1,4 +1,5 @@
 use crate::etype::default::DefaultEValue;
+use crate::etype::EDataType;
 use crate::graph::inputs::{GraphInput, GraphOutput};
 use crate::graph::node::colors::NodeColorScheme;
 use crate::graph::node::commands::{SnarlCommand, SnarlCommands};
@@ -159,6 +160,16 @@ pub trait NodeFactory: Send + Sync + Debug + 'static {
     fn create_nodes(&self, graph: &mut Snarl<SnarlNode>, pos: Pos2) -> SmallVec<[NodeId; 2]> {
         let id = graph.insert_node(pos, SnarlNode::new(self.create()));
         smallvec![id]
+    }
+
+    fn output_port_for(&self, ty: EDataType, registry: &ETypesRegistry) -> Option<usize> {
+        let _ = (ty, registry);
+        None
+    }
+
+    fn input_port_for(&self, ty: EDataType, registry: &ETypesRegistry) -> Option<usize> {
+        let _ = (ty, registry);
+        None
     }
 }
 
