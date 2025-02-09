@@ -395,7 +395,38 @@ impl SnarlViewer<SnarlNode> for GraphViewer<'_> {
     ) {
         ui.style_mut().wrap_mode = Some(egui::TextWrapMode::Extend);
         match src_pins {
-            AnyPins::Out(_) => ui.close_menu(),
+            AnyPins::Out(pins) => {
+                for pin in pins {
+                    let node = &snarl[pin.node];
+                    let data = match node.try_output(self.ctx.as_node_context(), pin.output) {
+                        Ok(data) => data,
+                        Err(err) => {
+                            report_error(err);
+                            ui.close_menu();
+                            return;
+                        }
+                    };
+                    let graphs = self.ctx.graphs;
+                    let registry = self.ctx.registry;
+                    let search = ui.use_memo(
+                        move || GraphSearch::for_output_data(graphs, registry, &data),
+                        (),
+                    );
+
+                    if let Some(node) = search_ui_always(ui, "dropped_wire_out_search_menu", search)
+                    {
+                        ui.close_menu();
+                        if let Err(err) = node.create_from_output_pin(
+                            &mut self.ctx.as_full(snarl),
+                            pos,
+                            pin,
+                            &mut self.commands,
+                        ) {
+                            report_error(err)
+                        }
+                    }
+                }
+            }
             AnyPins::In(pins) => {
                 for pin in pins {
                     let node = &snarl[pin.node];
@@ -414,9 +445,10 @@ impl SnarlViewer<SnarlNode> for GraphViewer<'_> {
                         (),
                     );
 
-                    if let Some(node) = search_ui_always(ui, "dropped_wire_search_menu", search) {
+                    if let Some(node) = search_ui_always(ui, "dropped_wire_in_search_menu", search)
+                    {
                         ui.close_menu();
-                        if let Err(err) = node.create_from_pin(
+                        if let Err(err) = node.create_from_input_pin(
                             &mut self.ctx.as_full(snarl),
                             pos,
                             pin,
