@@ -240,7 +240,7 @@ impl GraphExecutionContext<'_, '_> {
         pin: InPinId,
         node: &SnarlNode,
     ) -> miette::Result<Option<&EValue>> {
-        if !node.has_inline_values(pin.input)? {
+        if !node.has_inline_values(pin.input) {
             return Ok(None);
         }
         if !node

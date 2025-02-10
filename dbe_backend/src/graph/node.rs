@@ -345,9 +345,9 @@ pub trait Node: DynClone + DynHash + Debug + Send + Sync + Downcast + 'static {
     }
 
     /// Determines if the node has inline editable values
-    fn has_inline_values(&self, input: usize) -> miette::Result<bool> {
+    fn has_inline_values(&self, input: usize) -> bool {
         let _ = (input,);
-        Ok(true)
+        true
     }
 
     /// Node inputs
