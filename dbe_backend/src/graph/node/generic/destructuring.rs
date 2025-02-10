@@ -67,8 +67,8 @@ impl Node for DestructuringNode {
         Ok(())
     }
 
-    fn has_inline_values(&self, _input: usize) -> miette::Result<bool> {
-        Ok(false)
+    fn has_inline_values(&self, _input: usize) -> bool {
+        false
     }
 
     fn inputs_count(&self, _context: NodeContext) -> usize {

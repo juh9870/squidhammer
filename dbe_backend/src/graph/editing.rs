@@ -133,7 +133,7 @@ impl GraphEditingContext<'_, '_> {
     pub fn ensure_inline_input(&mut self, pin: InPinId) -> miette::Result<bool> {
         let node = &self.snarl[pin.node];
 
-        if !node.has_inline_values(pin.input)? {
+        if !node.has_inline_values(pin.input) {
             return Ok(false);
         }
 

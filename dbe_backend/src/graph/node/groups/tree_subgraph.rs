@@ -130,9 +130,9 @@ impl Node for TreeSubgraph {
         Ok(())
     }
 
-    fn has_inline_values(&self, input: usize) -> miette::Result<bool> {
+    fn has_inline_values(&self, input: usize) -> bool {
         let Some((node, pin)) = self.tree.node_for_input(input) else {
-            bail!("input cache not initialized")
+            return false;
         };
 
         node.has_inline_values(pin.input)
@@ -450,7 +450,7 @@ mod tree {
             variables: &mut ExecutionExtras,
         ) -> miette::Result<()> {
             outputs.clear();
-            let mut sub_outputs = Some(std::mem::take(outputs));
+            let mut sub_outputs = None;
 
             let side_effects_available = variables.side_effects.is_available();
             let mut ctx = GraphExecutionContext::from_graph(
@@ -572,7 +572,7 @@ mod tree {
                         })?;
                     ids.push((id, in_pin));
                     let is_connected = *connected_inputs.entry(id).or_insert(false);
-                    if is_connected {
+                    if is_connected || pin_node.has_inline_values(pin.input) {
                         commands.push(SnarlCommand::Connect {
                             from: OutPinId {
                                 node: group_input_node,
@@ -680,6 +680,8 @@ mod tree {
                 bail!("tree graph state is still invalid after reconstruction");
             }
 
+            self.graph.ensure_region_graph_ready();
+
             Ok(true)
         }
 
@@ -724,7 +726,7 @@ mod tree {
                     return false;
                 }
                 let is_connected = *connected_inputs.entry(*uuid).or_insert(false);
-                if is_connected {
+                if is_connected || self.graph.snarl[pin.node].has_inline_values(pin.input) {
                     let Some(connection) = group_input_connections.get(&idx) else {
                         trace!(idx, pin = ?pin, uuid = ?uuid, ?group_input_connections, "input not connected when expected to");
                         return false;
@@ -935,6 +937,8 @@ mod tree {
                     .ok_or_else(|| miette!("missing `input_ids` field"))?,
             )
             .into_diagnostic()?;
+
+            self.graph.ensure_region_graph_ready();
 
             Ok(())
         }

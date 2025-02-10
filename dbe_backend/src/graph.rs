@@ -250,7 +250,7 @@ impl Graph {
                 continue;
             };
 
-            if !node.has_inline_values(pin.input)? {
+            if !node.has_inline_values(pin.input) {
                 continue;
             }
 
