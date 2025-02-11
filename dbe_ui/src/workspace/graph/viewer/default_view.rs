@@ -58,8 +58,8 @@ impl NodeView for DefaultNodeView {
     ) -> miette::Result<()> {
         let node = &snarl[node_id];
 
-        let res = ui.label(node_id.0.to_string())
-            | ui.label(node.title(viewer.ctx.as_node_context(), viewer.ctx.docs));
+        let res =
+            ui.label(node_id.0.to_string()) | ui.label(node.title(viewer.ctx.as_node_context()));
 
         docs_hover_type(
             ui,

@@ -201,11 +201,11 @@ impl SnarlNode {
         }
     }
 
-    pub fn title(&self, context: NodeContext, docs: &Docs) -> String {
+    pub fn title(&self, context: NodeContext) -> String {
         if let Some(title) = &self.custom_title {
             title.clone()
         } else {
-            self.node.title(context, docs)
+            self.node.title(context)
         }
     }
 }
@@ -275,10 +275,9 @@ pub trait Node: DynClone + DynHash + Debug + Send + Sync + Downcast + 'static {
     }
 
     /// Human-readable title of the node
-    fn title(&self, context: NodeContext, docs: &Docs) -> String {
-        let _ = (context, docs);
+    fn title(&self, context: NodeContext) -> String {
         DocsWindowRef::Node(self.id())
-            .title(docs, context.registry)
+            .title(context.docs, context.registry)
             .to_string()
     }
 

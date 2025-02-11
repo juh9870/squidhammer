@@ -101,7 +101,14 @@ impl SnarlViewer<SnarlNode> for GraphViewer<'_> {
         default
     }
 
-    fn has_node_style(&mut self, node: &SnarlNode) -> bool {
+    fn has_node_style(
+        &mut self,
+        node: NodeId,
+        _inputs: &[InPin],
+        _outputs: &[OutPin],
+        snarl: &Snarl<SnarlNode>,
+    ) -> bool {
+        let node = &snarl[node];
         node.color_scheme.is_some()
     }
 
