@@ -168,6 +168,14 @@ impl GraphEditingContext<'_, '_> {
         ))
     }
 
+    pub fn update_all_nodes_state(&mut self, commands: &mut SnarlCommands) -> miette::Result<()> {
+        for (id, node) in self.snarl.nodes_ids_mut() {
+            node.update_state(node_context!(self.ctx), commands, id)
+                .with_context(|| format!("failed to update state of node: {:?}", id))?;
+        }
+        Ok(())
+    }
+
     pub fn connect(
         &mut self,
         from: &OutPin,

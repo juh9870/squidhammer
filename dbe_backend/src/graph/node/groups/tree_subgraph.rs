@@ -970,12 +970,25 @@ mod tree {
             registry: &ETypesRegistry,
             _: Self::State<'_>,
         ) -> miette::Result<JsonValue> {
-            let graph = self.graph.write_json(registry)?;
+            let graph = self
+                .graph
+                .write_json(registry)
+                .context("failed to serialize `graph` field")?;
+            let root = serde_json::to_value(self.root)
+                .into_diagnostic()
+                .context("failed to serialize `root` field")?;
+            let tree = serde_json::to_value(&self.tree)
+                .into_diagnostic()
+                .context("failed to serialize `tree` field")?;
+            let input_ids = self.input_ids.iter().collect_vec();
+            let input_ids = serde_json::to_value(&input_ids)
+                .into_diagnostic()
+                .context("failed to serialize `input_ids` field")?;
             Ok(json!({
                 "graph": graph,
-                "root": self.root,
-                "tree": self.tree,
-                "input_ids": self.input_ids,
+                "root": root,
+                "tree": tree,
+                "input_ids": input_ids,
             }))
         }
 
@@ -1003,11 +1016,12 @@ mod tree {
                     .ok_or_else(|| miette!("missing `tree` field"))?,
             )
             .into_diagnostic()?;
-            self.input_ids = serde_json::from_value(
+            let input_ids: Vec<(InPinId, Uuid)> = serde_json::from_value(
                 obj.remove("input_ids")
                     .ok_or_else(|| miette!("missing `input_ids` field"))?,
             )
             .into_diagnostic()?;
+            self.input_ids = input_ids.into_iter().collect();
 
             self.graph.ensure_region_graph_ready();
 
