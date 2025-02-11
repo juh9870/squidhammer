@@ -171,6 +171,8 @@ impl Graph {
                 ctx.connect(&out_pin, &in_pin, commands)?;
             }
 
+            ctx.update_all_nodes_state(commands)?;
+
             commands
                 .execute(&mut ctx)
                 .with_context(|| "failed to execute commands")?;
