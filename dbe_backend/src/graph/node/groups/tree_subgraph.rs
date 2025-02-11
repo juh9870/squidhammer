@@ -13,7 +13,7 @@ use crate::project::docs::{Docs, DocsRef};
 use crate::project::project_graph::ProjectGraphs;
 use crate::registry::ETypesRegistry;
 use crate::value::EValue;
-use egui_snarl::{InPin, NodeId, OutPin, OutPinId};
+use egui_snarl::{InPin, InPinId, NodeId, OutPin, OutPinId};
 use emath::pos2;
 use miette::bail;
 use std::collections::BTreeMap;
@@ -48,6 +48,10 @@ impl TreeSubgraph {
         node: NodeCombo,
     ) -> miette::Result<()> {
         self.tree.insert_node(context.into(), input, node)
+    }
+
+    pub fn tree_cache(&mut self, context: NodeContext) -> &TreeState {
+        self.tree.calculate_tree_cache(context.into())
     }
 
     fn mark_dirty(&mut self) {
@@ -253,7 +257,7 @@ mod tree {
     use crate::graph::node::extras::ExecutionExtras;
     use crate::graph::node::groups::input::GroupInputNode;
     use crate::graph::node::groups::output::GroupOutputNode;
-    use crate::graph::node::groups::tree_subgraph::TreeContext;
+    use crate::graph::node::groups::tree_subgraph::{TreeContext, TreeState};
     use crate::graph::node::{NodeContext, SnarlNode};
     use crate::graph::Graph;
     use crate::json_utils::json_serde::JsonSerde;
@@ -261,7 +265,7 @@ mod tree {
     use crate::project::side_effects::SideEffectsContext;
     use crate::registry::ETypesRegistry;
     use crate::value::EValue;
-    use collection_traits::Iterable;
+    use collection_traits::{Iterable, Resizable};
     use egui_snarl::{InPinId, NodeId, OutPinId};
     use emath::pos2;
     use itertools::Itertools;
@@ -271,6 +275,7 @@ mod tree {
     use std::collections::BTreeMap;
     use std::hash::{Hash, Hasher};
     use tracing::{error_span, trace};
+    use utils::map::HashMap;
     use uuid::Uuid;
 
     #[derive(Debug, Clone)]
@@ -280,7 +285,7 @@ mod tree {
         tree: BTreeMap<NodeId, Vec<Option<NodeId>>>,
         input_ids: BTreeMap<InPinId, Uuid>,
         // cached data
-        inputs_cache: Option<Vec<InPinId>>,
+        tree_cache: Option<TreeState>,
         group_input_node: Option<NodeId>,
         group_output_node: Option<NodeId>,
     }
@@ -306,7 +311,7 @@ mod tree {
                 tree: [(root, vec![])].into_iter().collect(),
                 root,
                 input_ids: Default::default(),
-                inputs_cache: None,
+                tree_cache: None,
                 group_input_node: None,
                 group_output_node: None,
             }
@@ -318,7 +323,7 @@ mod tree {
                 root: NodeId(usize::MAX),
                 tree: Default::default(),
                 input_ids: Default::default(),
-                inputs_cache: None,
+                tree_cache: None,
                 group_input_node: None,
                 group_output_node: None,
             }
@@ -338,8 +343,8 @@ mod tree {
             input: usize,
             node: NodeCombo,
         ) -> miette::Result<()> {
-            self.calculate_inputs(context);
-            let inputs = self.inputs_cache.as_ref().unwrap();
+            self.calculate_tree_cache(context);
+            let inputs = &self.tree_cache.as_ref().unwrap().inputs;
             let Some(pin) = inputs.get(input) else {
                 bail!("invalid input index")
             };
@@ -378,13 +383,13 @@ mod tree {
             let inputs = self.tree.get_mut(&pin.node).unwrap();
             inputs[pin.input] = Some(id);
 
-            self.inputs_cache = None;
+            self.tree_cache = None;
 
             Ok(())
         }
 
         pub fn node_for_input(&self, input: usize) -> Option<(&SnarlNode, InPinId)> {
-            let inputs = self.inputs_cache.as_ref()?;
+            let inputs = &self.tree_cache.as_ref()?.inputs;
 
             let pin = inputs.get(input)?;
 
@@ -416,6 +421,10 @@ mod tree {
         pub fn all_nodes(&self) -> impl Iterator<Item = (NodeId, &SnarlNode)> {
             self.graph.snarl.node_ids()
         }
+
+        // pub fn position_in_group(&self, input: usize) -> Option<itertools::Position> {
+        //
+        // }
 
         pub fn update_nodes_state(&mut self, context: TreeContext) -> miette::Result<()> {
             let mut commands = SnarlCommands::new();
@@ -475,7 +484,112 @@ mod tree {
         }
 
         pub fn clear_cache(&mut self) {
-            self.inputs_cache = None;
+            self.tree_cache = None;
+        }
+
+        /// Calculates "leaf" inputs, that should be connected to the group input
+        pub fn calculate_tree_cache(&mut self, context: TreeContext) -> &TreeState {
+            self.graph.ensure_region_graph_ready();
+            if self.tree_cache.is_none() {
+                enum Item {
+                    Input(InPinId),
+                    Node(NodeId),
+                }
+
+                let mut inputs_count = HashMap::default();
+                let mut inputs = vec![Item::Node(self.root)];
+                let mut tmp_hold = vec![];
+
+                let mut i: usize = 0;
+                while i < inputs.len() {
+                    match &inputs[i] {
+                        Item::Input(_) => {
+                            i += 1;
+                        }
+                        Item::Node(node) => {
+                            let tree_node = self.tree.get_mut(node).unwrap();
+                            let snarl_node = &self.graph.snarl[*node];
+                            let count = snarl_node.inputs_count(context!(self.graph, context));
+                            inputs_count.insert(*node, count);
+                            tree_node.resize_with(count, Default::default);
+
+                            for (idx, input) in tree_node.iter().enumerate() {
+                                if let Some(input) = input {
+                                    tmp_hold.push(Item::Node(*input));
+                                } else {
+                                    tmp_hold.push(Item::Input(InPinId {
+                                        node: *node,
+                                        input: idx,
+                                    }));
+                                }
+                            }
+
+                            inputs.splice(i..=i, tmp_hold.drain(..));
+                        }
+                    }
+                }
+
+                let inputs = inputs
+                    .into_iter()
+                    .map(|x| match x {
+                        Item::Input(input) => input,
+                        _ => unreachable!(),
+                    })
+                    .collect_vec();
+
+                let mut inverse: HashMap<NodeId, (NodeId, usize)> = HashMap::default();
+
+                for (id, inputs) in self.tree.iter() {
+                    for (idx, child) in inputs
+                        .iter()
+                        .enumerate()
+                        .filter_map(|x| x.1.map(|id| (x.0, id)))
+                    {
+                        if inverse.insert(child, (*id, idx)).is_some() {
+                            panic!("Each node should have a unique parent");
+                        }
+                    }
+                }
+
+                let mut hierarchy = vec![vec![]; inputs.len()];
+                let mut start_of = vec![vec![]; inputs.len()];
+                let mut end_of = vec![vec![]; inputs.len()];
+
+                for (idx, id) in inputs.iter().enumerate() {
+                    let mut current = id.node;
+                    hierarchy[idx].push(current);
+                    if id.input == 0 {
+                        start_of[idx].push(current);
+                    }
+
+                    if id.input == inputs_count.get(&current).unwrap() - 1 {
+                        end_of[idx].push(current);
+                    }
+
+                    while let Some((parent, input)) = inverse.get(&current) {
+                        hierarchy[idx].push(*parent);
+                        if *input == 0 && start_of[idx].ends_with(&[current]) {
+                            start_of[idx].push(*parent);
+                        }
+                        if *input == inputs_count.get(parent).unwrap() - 1
+                            && end_of[idx].ends_with(&[current])
+                        {
+                            end_of[idx].push(*parent);
+                        }
+                        current = *parent;
+                    }
+                }
+
+                self.tree_cache = Some(TreeState {
+                    inputs,
+                    width: hierarchy.iter().map(|x| x.len()).max().unwrap_or(0),
+                    hierarchy,
+                    start_of,
+                    end_of,
+                })
+            };
+
+            self.tree_cache.as_ref().unwrap()
         }
     }
 
@@ -500,7 +614,7 @@ mod tree {
             let all_wires = self.graph.snarl.wires().collect::<Vec<_>>();
             let _guard = error_span!("Sync Tree State", ?all_wires).entered();
             let mut commands = SnarlCommands::new();
-            self.calculate_inputs(context);
+            self.calculate_tree_cache(context);
             let (group_input_node, group_output_node) = self.get_group_io_nodes();
 
             let mut body_correct = !full_check || self.check_body_correctness(context);
@@ -558,7 +672,7 @@ mod tree {
                 }
 
                 let mut ids = vec![];
-                for (idx, pin) in self.inputs_cache.as_ref().unwrap().iter().enumerate() {
+                for (idx, pin) in self.tree_cache.as_ref().unwrap().inputs.iter().enumerate() {
                     let id = *self.input_ids.entry(*pin).or_insert_with(Uuid::new_v4);
                     let pin_node = &self.graph.snarl[pin.node].node;
                     let in_pin = pin_node
@@ -584,8 +698,14 @@ mod tree {
                 }
 
                 // Only keep live IDs
-                self.input_ids
-                    .retain(|id, _| self.inputs_cache.as_ref().unwrap().iter().any(|x| x == id));
+                self.input_ids.retain(|id, _| {
+                    self.tree_cache
+                        .as_ref()
+                        .unwrap()
+                        .inputs
+                        .iter()
+                        .any(|x| x == id)
+                });
 
                 connected_inputs.retain(|id, _| ids.iter().any(|(x, _)| x == id));
 
@@ -691,8 +811,8 @@ mod tree {
             connected_inputs: &mut BTreeMap<Uuid, bool>,
         ) -> bool {
             let (input, _) = self.get_group_io_nodes();
-            self.calculate_inputs(context);
-            let inputs = self.inputs_cache.as_ref().unwrap();
+            self.calculate_tree_cache(context);
+            let inputs = &self.tree_cache.as_ref().unwrap().inputs;
             let group_input_connections: BTreeMap<_, _> = self
                 .graph
                 .snarl
@@ -836,59 +956,6 @@ mod tree {
 
             (group_input_node, group_output_node)
         }
-
-        /// Calculates "leaf" inputs, that should be connected to the group input
-        fn calculate_inputs(&mut self, context: TreeContext) -> &[InPinId] {
-            if self.inputs_cache.is_none() {
-                enum Item {
-                    Input(InPinId),
-                    Node(NodeId),
-                }
-
-                let mut inputs = vec![Item::Node(self.root)];
-                let mut tmp_hold = vec![];
-
-                let mut i: usize = 0;
-                while i < inputs.len() {
-                    match &inputs[i] {
-                        Item::Input(_) => {
-                            i += 1;
-                        }
-                        Item::Node(node) => {
-                            let tree_node = self.tree.get_mut(node).unwrap();
-                            let snarl_node = &self.graph.snarl[*node];
-                            let count = snarl_node.inputs_count(context!(self.graph, context));
-                            tree_node.resize_with(count, Default::default);
-
-                            for (idx, input) in tree_node.iter().enumerate() {
-                                if let Some(input) = input {
-                                    tmp_hold.push(Item::Node(*input));
-                                } else {
-                                    tmp_hold.push(Item::Input(InPinId {
-                                        node: *node,
-                                        input: idx,
-                                    }));
-                                }
-                            }
-
-                            inputs.splice(i..=i, tmp_hold.drain(..));
-                        }
-                    }
-                }
-
-                self.inputs_cache = Some(
-                    inputs
-                        .into_iter()
-                        .map(|x| match x {
-                            Item::Input(input) => input,
-                            _ => unreachable!(),
-                        })
-                        .collect(),
-                );
-            };
-
-            self.inputs_cache.as_ref().unwrap()
-        }
     }
 
     impl JsonSerde for TreeGraphData {
@@ -969,6 +1036,15 @@ impl<'a> From<NodeContext<'a>> for TreeContext<'a> {
             graphs: context.graphs,
         }
     }
+}
+
+#[derive(Debug, Clone)]
+pub struct TreeState {
+    pub inputs: Vec<InPinId>,
+    pub hierarchy: Vec<Vec<NodeId>>,
+    pub start_of: Vec<Vec<NodeId>>,
+    pub end_of: Vec<Vec<NodeId>>,
+    pub width: usize,
 }
 
 #[derive(Debug, Copy, Clone, Hash, Default)]
