@@ -8,7 +8,7 @@ use crate::graph::node::ports::{InputData, NodePortType, OutputData};
 use crate::graph::node::serde_node::impl_serde_node;
 use crate::graph::node::struct_node::StructNodeFieldMapper;
 use crate::graph::node::{ExecutionResult, Node, NodeContext, NodeFactory};
-use crate::project::docs::{Docs, DocsRef};
+use crate::project::docs::DocsRef;
 use crate::registry::ETypesRegistry;
 use crate::value::id::ETypeId;
 use crate::value::EValue;
@@ -31,7 +31,7 @@ impl Node for DestructuringNode {
         DestructuringNodeFactory.id()
     }
 
-    fn title(&self, context: NodeContext, _docs: &Docs) -> String {
+    fn title(&self, context: NodeContext) -> String {
         let Some(id) = self.id else {
             return "Destructuring".into();
         };

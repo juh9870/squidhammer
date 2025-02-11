@@ -54,6 +54,10 @@ impl TreeSubgraph {
         self.tree.calculate_tree_cache(context.into())
     }
 
+    pub fn node_title<'a>(&self, id: NodeId, context: impl Into<TreeContext<'a>>) -> String {
+        self.tree.node_title(id, context.into())
+    }
+
     fn mark_dirty(&mut self) {
         self.tree.clear_cache()
     }
@@ -88,8 +92,8 @@ impl Node for TreeSubgraph {
         node.default_input_value(context, pin.input)
     }
 
-    fn title(&self, context: NodeContext, docs: &Docs) -> String {
-        let title = self.tree.root_node().title(context, docs);
+    fn title(&self, context: NodeContext) -> String {
+        let title = self.tree.root_node().title(context);
         format!("{} (Nested)", title)
     }
 
@@ -422,9 +426,9 @@ mod tree {
             self.graph.snarl.node_ids()
         }
 
-        // pub fn position_in_group(&self, input: usize) -> Option<itertools::Position> {
-        //
-        // }
+        pub fn node_title(&self, id: NodeId, context: TreeContext) -> String {
+            self.graph.snarl[id].title(context!(self.graph, context))
+        }
 
         pub fn update_nodes_state(&mut self, context: TreeContext) -> miette::Result<()> {
             let mut commands = SnarlCommands::new();
@@ -1022,10 +1026,10 @@ mod tree {
 }
 
 #[derive(Debug, Copy, Clone)]
-struct TreeContext<'a> {
-    registry: &'a ETypesRegistry,
-    docs: &'a Docs,
-    graphs: Option<&'a ProjectGraphs>,
+pub struct TreeContext<'a> {
+    pub registry: &'a ETypesRegistry,
+    pub docs: &'a Docs,
+    pub graphs: Option<&'a ProjectGraphs>,
 }
 
 impl<'a> From<NodeContext<'a>> for TreeContext<'a> {

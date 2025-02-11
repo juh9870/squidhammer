@@ -10,7 +10,6 @@ use crate::graph::node::ports::{InputData, OutputData};
 use crate::graph::node::serde_node::impl_serde_node;
 use crate::graph::node::{ExecutionExtras, ExecutionResult, Node, NodeContext, NodeFactory};
 use crate::m_try;
-use crate::project::docs::Docs;
 use crate::project::project_graph::ProjectGraph;
 use crate::value::EValue;
 use egui_snarl::NodeId;
@@ -63,7 +62,7 @@ impl Node for SubgraphNode {
         SubgraphNodeFactory.id()
     }
 
-    fn title(&self, context: NodeContext, _docs: &Docs) -> String {
+    fn title(&self, context: NodeContext) -> String {
         let Ok(graph) = self.get_graph(context) else {
             return "!!unknown graph!!".to_string();
         };

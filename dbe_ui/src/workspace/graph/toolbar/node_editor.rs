@@ -52,7 +52,7 @@ pub fn edit_node(
     let node = &mut snarl[node_id];
 
     ui.horizontal(|ui| {
-        let default_name = node.title(context, docs);
+        let default_name = node.title(context);
         edit_opt(
             ui,
             &mut node.custom_title,
