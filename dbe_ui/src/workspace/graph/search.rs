@@ -110,7 +110,7 @@ impl GraphSearch {
             for node in graphs
                 .graphs
                 .iter()
-                .filter(|x| x.1.is_node_group)
+                .filter(|x| x.1.is_node_group && !x.1.hide_from_search)
                 .map(|x| NodeCombo::Subgraph(*x.0, x.1.name.clone()))
                 .filter(|x| filter(x))
             {
