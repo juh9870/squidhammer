@@ -95,11 +95,17 @@ impl Graph {
 
         m_try(|| {
             for (serialized_id, mut node) in packed.nodes {
-                let mut created_node = get_node_factory(&node.id)
-                    .ok_or_else(|| miette!("node type {} not found", node.id))?
-                    .create();
+                let created_node = m_try(|| {
+                    let mut created_node = get_node_factory(&node.id)
+                        .ok_or_else(|| miette!("node type {} not found", node.id))?
+                        .create();
 
-                created_node.parse_json(registry, &mut node.data)?;
+                    created_node.parse_json(registry, &mut node.data)?;
+                    Ok(created_node)
+                })
+                .with_context(|| {
+                    format!("failed to create node {}({:?})", node.id, serialized_id)
+                })?;
 
                 let mut created_node = SnarlNode::new(created_node);
 
