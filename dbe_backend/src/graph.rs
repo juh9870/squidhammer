@@ -149,6 +149,12 @@ impl Graph {
             );
             let commands = &mut SnarlCommands::new();
 
+            ctx.update_all_nodes_state(commands)?;
+
+            commands
+                .execute(&mut ctx)
+                .with_context(|| "failed to execute commands")?;
+
             let mut to_connect = Vec::with_capacity(packed.edges.len());
 
             for (mut out_pin, mut in_pin) in packed.edges {

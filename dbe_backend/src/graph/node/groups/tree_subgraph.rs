@@ -15,7 +15,8 @@ use crate::registry::ETypesRegistry;
 use crate::value::EValue;
 use egui_snarl::{InPin, InPinId, NodeId, OutPin, OutPinId};
 use emath::pos2;
-use miette::bail;
+use miette::{bail, miette, Context, IntoDiagnostic};
+use serde_json::json;
 use std::collections::BTreeMap;
 use std::ops::{Deref, DerefMut};
 use ustr::Ustr;
@@ -64,10 +65,27 @@ impl TreeSubgraph {
         self.tree.clear_cache()
     }
 }
-
 impl Node for TreeSubgraph {
     fn write_json(&self, registry: &ETypesRegistry) -> miette::Result<JsonValue> {
-        self.tree.write_json(registry, ())
+        let tree = self
+            .tree
+            .write_json(registry, ())
+            .context("failed to serialize `tree` field")?;
+        let inputs = serde_json::to_value(&self.inputs)
+            .into_diagnostic()
+            .context("failed to serialize `inputs` field")?;
+        let outputs = serde_json::to_value(&self.outputs)
+            .into_diagnostic()
+            .context("failed to serialize `outputs` field")?;
+        let connected_inputs = serde_json::to_value(&self.connected_inputs)
+            .into_diagnostic()
+            .context("failed to serialize `connected_inputs` field")?;
+        Ok(json!({
+            "tree": tree,
+            "inputs": inputs,
+            "outputs": outputs,
+            "connected_inputs": connected_inputs,
+        }))
     }
 
     fn parse_json(
@@ -75,7 +93,38 @@ impl Node for TreeSubgraph {
         registry: &ETypesRegistry,
         value: &mut JsonValue,
     ) -> miette::Result<()> {
-        self.tree.parse_json(registry, (), value)
+        let JsonValue::Object(mut obj) = value.take() else {
+            bail!("expected object");
+        };
+        self.tree
+            .parse_json(
+                registry,
+                (),
+                &mut obj
+                    .remove("tree")
+                    .ok_or_else(|| miette!("missing `tree` field"))?,
+            )
+            .context("failed to deserialize `tree` field")?;
+        self.inputs = serde_json::from_value(
+            obj.remove("inputs")
+                .ok_or_else(|| miette!("missing `inputs` field"))?,
+        )
+        .into_diagnostic()
+        .context("failed to deserialize `inputs` field")?;
+        self.outputs = serde_json::from_value(
+            obj.remove("outputs")
+                .ok_or_else(|| miette!("missing `outputs` field"))?,
+        )
+        .into_diagnostic()
+        .context("failed to deserialize `outputs` field")?;
+        self.connected_inputs = serde_json::from_value(
+            obj.remove("connected_inputs")
+                .ok_or_else(|| miette!("missing `connected_inputs` field"))?,
+        )
+        .into_diagnostic()
+        .context("failed to deserialize `connected_inputs` field")?;
+
+        Ok(())
     }
 
     fn id(&self) -> Ustr {
@@ -108,9 +157,11 @@ impl Node for TreeSubgraph {
         for _ in 0..DEFAULT_MAX_ITERATIONS {
             self.tree.update_nodes_state(context.into())?;
 
+            let bad_body = self.tree.sync_tree_to_graph();
+
             let changed =
                 self.tree
-                    .sync_tree_state(context.into(), &mut self.connected_inputs, false)?;
+                    .sync_tree_state(context.into(), &mut self.connected_inputs, bad_body)?;
 
             if changed {
                 let inputs = self.tree.group_inputs();
@@ -199,7 +250,6 @@ impl Node for TreeSubgraph {
     ) -> miette::Result<bool> {
         if self._default_try_connect(context, commands, from, to, incoming_type)? {
             self.connected_inputs.insert(self.inputs[to.id.input], true);
-            self.update_state(context, commands, to.id.node)?;
             Ok(true)
         } else {
             Ok(false)
@@ -216,7 +266,6 @@ impl Node for TreeSubgraph {
         self.connected_inputs
             .insert(self.inputs[to.id.input], false);
         self._default_try_disconnect(context, commands, from, to)?;
-        self.update_state(context, commands, to.id.node)?;
         Ok(())
     }
 
@@ -276,7 +325,7 @@ mod tree {
     use crate::project::side_effects::SideEffectsContext;
     use crate::registry::ETypesRegistry;
     use crate::value::EValue;
-    use collection_traits::{Iterable, Resizable};
+    use collection_traits::Iterable;
     use egui_snarl::{InPinId, NodeId, OutPinId};
     use emath::pos2;
     use itertools::Itertools;
@@ -293,7 +342,7 @@ mod tree {
     pub struct TreeGraphData {
         graph: Graph,
         root: NodeId,
-        tree: BTreeMap<NodeId, Vec<Option<NodeId>>>,
+        tree: BTreeMap<NodeId, Vec<Option<OutPinId>>>,
         input_ids: BTreeMap<InPinId, Uuid>,
         // cached data
         tree_cache: Option<TreeState>,
@@ -392,7 +441,10 @@ mod tree {
 
             self.tree.insert(id, vec![]);
             let inputs = self.tree.get_mut(&pin.node).unwrap();
-            inputs[pin.input] = Some(id);
+            inputs[pin.input] = Some(OutPinId {
+                node: id,
+                output: 0,
+            });
 
             self.tree_cache = None;
 
@@ -526,7 +578,7 @@ mod tree {
 
                             for (idx, input) in tree_node.iter().enumerate() {
                                 if let Some(input) = input {
-                                    tmp_hold.push(Item::Node(*input));
+                                    tmp_hold.push(Item::Node(input.node));
                                 } else {
                                     tmp_hold.push(Item::Input(InPinId {
                                         node: *node,
@@ -556,7 +608,7 @@ mod tree {
                         .enumerate()
                         .filter_map(|x| x.1.map(|id| (x.0, id)))
                     {
-                        if inverse.insert(child, (*id, idx)).is_some() {
+                        if inverse.insert(child.node, (*id, idx)).is_some() {
                             panic!("Each node should have a unique parent");
                         }
                     }
@@ -601,6 +653,65 @@ mod tree {
             };
 
             self.tree_cache.as_ref().unwrap()
+        }
+
+        pub fn sync_tree_to_graph(&mut self) -> bool {
+            let _guard = error_span!("syncing tree to graph").entered();
+            fn insert_resizing<T: Default>(vec: &mut Vec<T>, index: usize, value: T) -> Option<T> {
+                if vec.len() <= index {
+                    vec.resize_with(index + 1, Default::default);
+                    vec[index] = value;
+                    return None;
+                }
+                let mut swapped = value;
+                std::mem::swap(&mut vec[index], &mut swapped);
+                Some(swapped)
+            }
+
+            let (input_node, output_node) = self.get_group_io_nodes();
+            let root_node = self.root;
+            let mut new_tree = BTreeMap::new();
+            new_tree.insert(root_node, vec![]);
+            for (out_pin, in_pin) in self.graph.snarl.wires() {
+                if out_pin.node == input_node
+                    || out_pin.node == root_node
+                    || in_pin.node == output_node
+                {
+                    continue;
+                }
+                new_tree.entry(out_pin.node).or_default();
+                insert_resizing(
+                    new_tree.entry(in_pin.node).or_default(),
+                    in_pin.input,
+                    Some(out_pin),
+                );
+            }
+
+            let dangling = self
+                .graph
+                .snarl
+                .node_ids()
+                .filter(|(id, _)| {
+                    !new_tree.contains_key(id)
+                        && id != &input_node
+                        && id != &output_node
+                        && id != &root_node
+                })
+                .map(|x| x.0)
+                .collect_vec();
+
+            if !dangling.is_empty() {
+                // TODO: delete node?
+                self.graph.region_graph.mark_dirty();
+                return false;
+            }
+
+            if self.tree != new_tree {
+                self.tree = new_tree;
+                self.tree_cache = None;
+            }
+
+            true
         }
     }
 
@@ -661,10 +772,7 @@ mod tree {
                         .filter_map(|x| x.1.map(|y| (x.0, y)))
                     {
                         commands.push(SnarlCommand::Connect {
-                            from: OutPinId {
-                                node: in_node,
-                                output: 0,
-                            },
+                            from: in_node,
                             to: InPinId {
                                 node: *id,
                                 input: idx,
@@ -915,11 +1023,11 @@ mod tree {
                     return false;
                 };
 
-                let Some(node) = target.get(in_pin.input).and_then(|x| x.as_ref()) else {
+                let Some(node_out_pin) = target.get(in_pin.input).and_then(|x| x.as_ref()) else {
                     return false;
                 };
 
-                if node != &out_pin.node {
+                if node_out_pin != &out_pin {
                     return false;
                 }
             }
@@ -940,6 +1048,7 @@ mod tree {
                 {
                     node
                 } else {
+                    self.graph.region_graph.mark_dirty();
                     let input = GroupInputNode::new();
                     snarl.insert_node(pos2(0.0, 0.0), SnarlNode::new(Box::new(input)))
                 };
@@ -958,6 +1067,7 @@ mod tree {
                 {
                     node
                 } else {
+                    self.graph.region_graph.mark_dirty();
                     let output = GroupOutputNode::new();
                     snarl.insert_node(pos2(0.0, 0.0), SnarlNode::new(Box::new(output)))
                 };
@@ -1013,22 +1123,26 @@ mod tree {
                 registry,
                 obj.get_mut("graph")
                     .ok_or_else(|| miette!("missing `graph` field"))?,
-            )?;
+            )
+            .context("failed to deserialize `graph` field")?;
             self.root = serde_json::from_value(
                 obj.remove("root")
                     .ok_or_else(|| miette!("missing `root` field"))?,
             )
-            .into_diagnostic()?;
+            .into_diagnostic()
+            .context("failed to deserialize `root` field")?;
             self.tree = serde_json::from_value(
                 obj.remove("tree")
                     .ok_or_else(|| miette!("missing `tree` field"))?,
             )
-            .into_diagnostic()?;
+            .into_diagnostic()
+            .context("failed to deserialize `tree` field")?;
             let input_ids: Vec<(InPinId, Uuid)> = serde_json::from_value(
                 obj.remove("input_ids")
                     .ok_or_else(|| miette!("missing `input_ids` field"))?,
             )
-            .into_diagnostic()?;
+            .into_diagnostic()
+            .context("failed to deserialize `input_ids` field")?;
             self.input_ids = input_ids.into_iter().collect();
 
             self.graph.ensure_region_graph_ready();
