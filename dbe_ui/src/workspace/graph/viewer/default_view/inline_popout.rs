@@ -2,7 +2,7 @@ use crate::error::report_error;
 use crate::workspace::graph::search::{search_ui_always, GraphSearch};
 use crate::workspace::graph::GraphViewer;
 use dbe_backend::graph::node::groups::tree_subgraph::TreeSubgraph;
-use dbe_backend::graph::node::{Node, SnarlNode};
+use dbe_backend::graph::node::SnarlNode;
 use egui::Ui;
 use egui_hooks::UseHookExt;
 use egui_snarl::{InPin, Snarl};
