@@ -164,18 +164,18 @@ impl<T: FunctionalNode + Clone> NodeFactory for T {
             GenericNodeField::Value(_) => true,
             GenericNodeField::Option(_) => is_type_option(ty),
             GenericNodeField::Object(_) => ty.is_object(),
-            GenericNodeField::Fixed(fixed_ty) => fixed_ty.is_unknown() || ty == fixed_ty,
+            GenericNodeField::Fixed(fixed_ty) => ty == fixed_ty,
         })
     }
 
     fn input_port_for(&self, ty: EDataType, registry: &ETypesRegistry) -> Option<usize> {
-        let count = T::outputs_count();
-        (0..count).find(|&i| match T::output(registry, i, &None) {
+        let count = T::inputs_count();
+        (0..count).find(|&i| match T::input(registry, i, &None) {
             GenericNodeField::List(_) => ty.is_list(),
             GenericNodeField::Value(_) => true,
             GenericNodeField::Option(_) => is_type_option(ty),
             GenericNodeField::Object(_) => ty.is_object(),
-            GenericNodeField::Fixed(fixed_ty) => ty == fixed_ty,
+            GenericNodeField::Fixed(fixed_ty) => fixed_ty.is_unknown() || ty == fixed_ty,
         })
     }
 }
