@@ -1,11 +1,11 @@
 use crate::workspace::graph::viewer::default_view::DefaultNodeView;
 use crate::workspace::graph::viewer::NodeView;
-use crate::workspace::graph::GraphViewer;
+use crate::workspace::graph::{any_pin, GraphViewer};
 use dbe_backend::graph::node::groups::tree_subgraph::{
     TreeContext, TreeSubgraph, TreeSubgraphFactory,
 };
 use dbe_backend::graph::node::{Node, NodeFactory, SnarlNode};
-use egui::{vec2, InnerResponse, Rect, Stroke, Ui};
+use egui::{vec2, InnerResponse, Rect, RichText, Stroke, Ui};
 use egui_snarl::ui::PinInfo;
 use egui_snarl::{InPin, Snarl};
 use inline_tweak::tweak;
@@ -36,6 +36,11 @@ impl NodeView for TreeSubgraphNodeViewer {
 
         let tree_node = snarl[pin.id.node].downcast_mut::<TreeSubgraph>().unwrap();
         let state = tree_node.tree_cache(viewer.ctx.as_node_context());
+        if pin.id.input >= state.hierarchy.len() {
+            let res =
+                ui.label(RichText::new("Invalid input").color(ui.style().visuals.error_fg_color));
+            return Ok(InnerResponse::new(any_pin(), res));
+        }
         let mut start_of = state.start_of[pin.id.input].clone();
         let mut end_of = state.end_of[pin.id.input].clone();
         let mut hierarchy = state.hierarchy[pin.id.input].clone();
@@ -49,11 +54,8 @@ impl NodeView for TreeSubgraphNodeViewer {
 
         assert!(start_of.len() <= hierarchy.len());
         assert!(end_of.len() <= hierarchy.len());
-        debug_assert!(start_of.iter().zip(hierarchy.iter()).all(|(x, y)| x == y));
-        debug_assert!(end_of
-            .iter()
-            .zip(hierarchy.iter().rev())
-            .all(|(x, y)| x == y));
+        debug_assert_eq!(&start_of, &hierarchy[..start_of.len()]);
+        debug_assert_eq!(&end_of, &hierarchy[..end_of.len()]);
 
         // let _guard = trace_span!("tree_node_show_input", input=pin.id.input, ?hierarchy_width, hierarchy_len=?hierarchy.len()).entered();
         let titles = start_of

@@ -21,6 +21,8 @@ use std::ops::{Deref, DerefMut};
 use ustr::Ustr;
 use uuid::Uuid;
 
+const DEFAULT_MAX_ITERATIONS: usize = 10;
+
 #[derive(Debug, Clone, Hash)]
 pub struct TreeSubgraph {
     tree: AccessWrapper<tree::TreeGraphData>,
@@ -103,39 +105,46 @@ impl Node for TreeSubgraph {
         commands: &mut SnarlCommands,
         id: NodeId,
     ) -> miette::Result<()> {
-        self.tree.update_nodes_state(context.into())?;
+        for _ in 0..DEFAULT_MAX_ITERATIONS {
+            self.tree.update_nodes_state(context.into())?;
 
-        let changed =
-            self.tree
-                .sync_tree_state(context.into(), &mut self.connected_inputs, false)?;
+            let changed =
+                self.tree
+                    .sync_tree_state(context.into(), &mut self.connected_inputs, false)?;
 
-        if changed {
-            let inputs = self.tree.group_inputs();
+            if changed {
+                let inputs = self.tree.group_inputs();
 
-            sync_fields(
-                commands,
-                inputs,
-                &mut self.inputs,
-                None,
-                id,
-                IoDirection::Input(0),
-            );
+                sync_fields(
+                    commands,
+                    inputs,
+                    &mut self.inputs,
+                    None,
+                    id,
+                    IoDirection::Input(0),
+                );
 
-            self.outputs.clear();
-            self.outputs
-                .extend(self.tree.group_outputs().iter().map(|x| x.id));
+                self.outputs.clear();
+                self.outputs
+                    .extend(self.tree.group_outputs().iter().map(|x| x.id));
 
-            for idx in 0..self.outputs.len() {
-                commands.push(SnarlCommand::ReconnectOutput {
-                    id: OutPinId {
-                        node: id,
-                        output: idx,
-                    },
-                })
+                for idx in 0..self.outputs.len() {
+                    commands.push(SnarlCommand::ReconnectOutput {
+                        id: OutPinId {
+                            node: id,
+                            output: idx,
+                        },
+                    })
+                }
+            } else {
+                return Ok(());
             }
         }
 
-        Ok(())
+        bail!(
+            "failed to stabilize tree subgraph within {} iterations",
+            DEFAULT_MAX_ITERATIONS
+        )
     }
 
     fn has_inline_values(&self, input: usize) -> bool {
@@ -191,7 +200,6 @@ impl Node for TreeSubgraph {
         if self._default_try_connect(context, commands, from, to, incoming_type)? {
             self.connected_inputs.insert(self.inputs[to.id.input], true);
             self.update_state(context, commands, to.id.node)?;
-            self.mark_dirty();
             Ok(true)
         } else {
             Ok(false)
@@ -209,7 +217,6 @@ impl Node for TreeSubgraph {
             .insert(self.inputs[to.id.input], false);
         self._default_try_disconnect(context, commands, from, to)?;
         self.update_state(context, commands, to.id.node)?;
-        self.mark_dirty();
         Ok(())
     }
 
@@ -615,6 +622,7 @@ mod tree {
             connected_inputs: &mut BTreeMap<Uuid, bool>,
             full_check: bool,
         ) -> miette::Result<bool> {
+            self.clear_cache();
             let all_wires = self.graph.snarl.wires().collect::<Vec<_>>();
             let _guard = error_span!("Sync Tree State", ?all_wires).entered();
             let mut commands = SnarlCommands::new();
