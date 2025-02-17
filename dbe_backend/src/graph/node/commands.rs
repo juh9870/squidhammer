@@ -102,7 +102,8 @@ pub enum SnarlCommand {
 
 pub type RearrangeIndices = SmallVec<[usize; 4]>;
 
-type CustomCommand = Box<dyn FnOnce(&mut GraphEditingContext) -> miette::Result<()>>;
+type CustomCommand =
+    Box<dyn FnOnce(&mut GraphEditingContext, &mut SnarlCommands) -> miette::Result<()>>;
 
 impl SnarlCommand {
     pub fn execute(
@@ -246,7 +247,7 @@ impl SnarlCommand {
                 }
             }
             SnarlCommand::Custom { cb } => {
-                cb(ctx)?;
+                cb(ctx, commands)?;
             }
             SnarlCommand::ReconnectOutput { id } => {
                 for pin in ctx.snarl.out_pin(id).remotes {

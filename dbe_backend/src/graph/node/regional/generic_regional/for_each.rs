@@ -246,7 +246,7 @@ impl<const KIND: u8> GenericStatefulNode for ForEachLikeRegionalNode<KIND> {
         };
 
         commands.push(SnarlCommand::Custom {
-            cb: Box::new(move |ctx| {
+            cb: Box::new(move |ctx, _| {
                 let other = ctx.snarl[other_id]
                     .downcast_mut::<RegionIONode<Self>>()
                     .unwrap();
