@@ -13,13 +13,17 @@ use crate::project::docs::{Docs, DocsRef};
 use crate::project::project_graph::ProjectGraphs;
 use crate::registry::ETypesRegistry;
 use crate::value::EValue;
+use collection_traits::Iterable;
 use egui_snarl::{InPin, InPinId, NodeId, OutPin, OutPinId};
-use emath::pos2;
+use emath::{pos2, vec2};
+use itertools::Itertools;
 use miette::{bail, miette, Context, IntoDiagnostic};
 use serde_json::json;
 use std::collections::BTreeMap;
 use std::ops::{Deref, DerefMut};
+use tracing::warn;
 use ustr::Ustr;
+use utils::map::HashMap;
 use uuid::Uuid;
 
 const DEFAULT_MAX_ITERATIONS: usize = 10;
@@ -53,16 +57,108 @@ impl TreeSubgraph {
         self.tree.insert_node(context.into(), input, node)
     }
 
+    pub fn push_extract_input_cmd(input: usize, node_id: NodeId, commands: &mut SnarlCommands) {
+        commands.push(SnarlCommand::Custom {
+            cb: Box::new(move |ctx, commands| {
+                let (snarl, p_ctx) = ctx.as_partial();
+                let Some(info) = snarl.get_node_info_mut(node_id) else {
+                    return Ok(());
+                };
+
+                let Some(subgraph_node) = info.value.downcast_mut::<TreeSubgraph>() else {
+                    return Ok(());
+                };
+
+                let ExtractedNode {
+                    node,
+                    inputs: extracted_indices,
+                    outputs,
+                } = subgraph_node.tree.extract_node(
+                    TreeContext {
+                        registry: p_ctx.registry,
+                        docs: p_ctx.docs,
+                        graphs: p_ctx.graphs,
+                    },
+                    input,
+                )?;
+
+                let new_pos = info.pos - vec2(0.0, 100.0);
+                let created_id = snarl.insert_node(new_pos, node);
+
+                let connected_wires = snarl
+                    .wires()
+                    .filter(|(_, to)| to.node == node_id)
+                    .collect_vec();
+
+                for (external_idx, internal_pin) in extracted_indices {
+                    if let Some(old_inline) = p_ctx.inline_values.remove(&InPinId {
+                        node: node_id,
+                        input: external_idx,
+                    }) {
+                        p_ctx.inline_values.insert(
+                            InPinId {
+                                node: created_id,
+                                input: internal_pin.input,
+                            },
+                            old_inline,
+                        );
+                    };
+
+                    if let Some((wire_from, _)) = connected_wires
+                        .iter()
+                        .find(|(_, to)| to.input == external_idx)
+                    {
+                        commands.push(SnarlCommand::Connect {
+                            from: *wire_from,
+                            to: InPinId {
+                                node: created_id,
+                                input: internal_pin.input,
+                            },
+                        })
+                    }
+                }
+
+                let Some(info) = snarl.get_node_info_mut(node_id) else {
+                    bail!("parent node got deleted during extraction")
+                };
+                let Some(subgraph_node) = info.value.downcast_mut::<TreeSubgraph>() else {
+                    bail!("parent node changed type during extraction")
+                };
+                subgraph_node.update_state(p_ctx.as_node_context(), commands, node_id)?;
+
+                let state = subgraph_node
+                    .tree
+                    .calculate_tree_cache(p_ctx.as_node_context().into());
+
+                for ExtractedNodeOutput { output, input } in outputs {
+                    let Some(pin) = state.inputs.iter().position(|x| x == &input) else {
+                        warn!(output, ?input, ?state.inputs, "output pin not found in inputs");
+                        continue;
+                    };
+
+                    commands.push(SnarlCommand::Connect {
+                        from: OutPinId {
+                            node: created_id,
+                            output,
+                        },
+                        to: InPinId {
+                            node: node_id,
+                            input: pin,
+                        },
+                    });
+                }
+
+                Ok(())
+            }),
+        });
+    }
+
     pub fn tree_cache(&mut self, context: NodeContext) -> &TreeState {
         self.tree.calculate_tree_cache(context.into())
     }
 
     pub fn node_title<'a>(&self, id: NodeId, context: impl Into<TreeContext<'a>>) -> String {
         self.tree.node_title(id, context.into())
-    }
-
-    fn mark_dirty(&mut self) {
-        self.tree.clear_cache()
     }
 }
 impl Node for TreeSubgraph {
@@ -263,8 +359,9 @@ impl Node for TreeSubgraph {
         from: &OutPin,
         to: &InPin,
     ) -> miette::Result<()> {
-        self.connected_inputs
-            .insert(self.inputs[to.id.input], false);
+        if let Some(key) = self.inputs.get(to.id.input) {
+            self.connected_inputs.insert(*key, false);
+        }
         self._default_try_disconnect(context, commands, from, to)?;
         Ok(())
     }
@@ -317,7 +414,9 @@ mod tree {
     use crate::graph::node::extras::ExecutionExtras;
     use crate::graph::node::groups::input::GroupInputNode;
     use crate::graph::node::groups::output::GroupOutputNode;
-    use crate::graph::node::groups::tree_subgraph::{TreeContext, TreeState};
+    use crate::graph::node::groups::tree_subgraph::{
+        ExtractedNode, ExtractedNodeOutput, TreeContext, TreeState,
+    };
     use crate::graph::node::{NodeContext, SnarlNode};
     use crate::graph::Graph;
     use crate::json_utils::json_serde::JsonSerde;
@@ -449,6 +548,61 @@ mod tree {
             self.tree_cache = None;
 
             Ok(())
+        }
+
+        pub fn extract_node(
+            &mut self,
+            context: TreeContext,
+            input: usize,
+        ) -> miette::Result<ExtractedNode> {
+            self.calculate_tree_cache(context);
+
+            let state = self.tree_cache.as_ref().unwrap();
+
+            let node = state.inputs[input].node;
+
+            if state
+                .has_inlined_inputs
+                .get(&node)
+                .copied()
+                .unwrap_or(false)
+            {
+                bail!("cannot extract node that has inlined inputs")
+            }
+
+            let inputs = state
+                .inputs
+                .iter()
+                .copied()
+                .enumerate()
+                .filter(|(_, x)| x.node == node)
+                .collect_vec();
+
+            let outputs = self
+                .tree
+                .iter()
+                .filter_map(|(id, pins)| {
+                    let (index, pin) = pins
+                        .iter()
+                        .find_position(|pin| pin.is_some_and(|p| p.node == node))?;
+                    let pin = pin.unwrap();
+                    Some(ExtractedNodeOutput {
+                        input: InPinId {
+                            node: *id,
+                            input: index,
+                        },
+                        output: pin.output,
+                    })
+                })
+                .collect_vec();
+
+            let node = self.graph.snarl.remove_node(node);
+
+            Ok(ExtractedNode {
+                node,
+                inputs,
+                outputs,
+            })
         }
 
         pub fn node_for_input(&self, input: usize) -> Option<(&SnarlNode, InPinId)> {
@@ -649,6 +803,11 @@ mod tree {
                     hierarchy,
                     start_of,
                     end_of,
+                    has_inlined_inputs: self
+                        .tree
+                        .iter()
+                        .map(|x| (*x.0, x.1.iter().any(|x| x.is_some())))
+                        .collect(),
                 })
             };
 
@@ -716,17 +875,6 @@ mod tree {
     }
 
     impl TreeGraphData {
-        pub fn transform_context<'a>(&'a self, context: TreeContext<'a>) -> NodeContext<'a> {
-            NodeContext {
-                registry: context.registry,
-                docs: context.docs,
-                inputs: &self.graph.inputs,
-                outputs: &self.graph.outputs,
-                regions: &self.graph.regions,
-                region_graph: &self.graph.region_graph,
-                graphs: context.graphs,
-            }
-        }
         pub fn sync_tree_state(
             &mut self,
             context: TreeContext,
@@ -1184,7 +1332,19 @@ pub struct TreeState {
     pub hierarchy: Vec<Vec<NodeId>>,
     pub start_of: Vec<Vec<NodeId>>,
     pub end_of: Vec<Vec<NodeId>>,
+    pub has_inlined_inputs: HashMap<NodeId, bool>,
     pub width: usize,
+}
+
+struct ExtractedNode {
+    node: SnarlNode,
+    inputs: Vec<(usize, InPinId)>,
+    outputs: Vec<ExtractedNodeOutput>,
+}
+
+struct ExtractedNodeOutput {
+    output: usize,
+    input: InPinId,
 }
 
 #[derive(Debug, Copy, Clone, Hash, Default)]

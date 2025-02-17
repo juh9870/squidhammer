@@ -1,13 +1,11 @@
 use crate::error::report_error;
 use crate::m_try;
 use crate::ui_props::PROP_OBJECT_PIN_COLOR;
-use crate::widgets::report::diagnostic_widget;
 use crate::workspace::graph::rects::NodeRects;
 use crate::workspace::graph::search::GraphSearch;
 use crate::workspace::graph::search::{category_tree, search_ui, search_ui_always};
 use crate::workspace::graph::viewer::get_viewer;
 use dbe_backend::diagnostic::context::DiagnosticContextRef;
-use dbe_backend::diagnostic::prelude::{Diagnostic, DiagnosticLevel};
 use dbe_backend::etype::econst::ETypeConst;
 use dbe_backend::etype::eobject::EObject;
 use dbe_backend::etype::EDataType;
@@ -169,14 +167,7 @@ impl SnarlViewer<SnarlNode> for GraphViewer<'_> {
             Ok(())
         })
         .unwrap_or_else(|err| {
-            ui.set_max_width(128.0);
-            diagnostic_widget(
-                ui,
-                &Diagnostic {
-                    info: err,
-                    level: DiagnosticLevel::Error,
-                },
-            );
+            report_error(err);
         })
     }
 
@@ -194,14 +185,7 @@ impl SnarlViewer<SnarlNode> for GraphViewer<'_> {
         m_try(|| get_viewer(&snarl[pin.id.node].id()).show_input(self, pin, ui, _scale, snarl))
             .map(|r| r.inner)
             .unwrap_or_else(|err| {
-                // ui.set_max_width(128.0);
-                diagnostic_widget(
-                    ui,
-                    &Diagnostic {
-                        info: err,
-                        level: DiagnosticLevel::Error,
-                    },
-                );
+                report_error(err);
                 PinInfo::circle().with_fill(Color32::BLACK)
             })
     }
@@ -220,14 +204,7 @@ impl SnarlViewer<SnarlNode> for GraphViewer<'_> {
         m_try(|| get_viewer(&snarl[pin.id.node].id()).show_output(self, pin, ui, _scale, snarl))
             .map(|r| r.inner)
             .unwrap_or_else(|err| {
-                ui.set_max_width(128.0);
-                diagnostic_widget(
-                    ui,
-                    &Diagnostic {
-                        info: err,
-                        level: DiagnosticLevel::Error,
-                    },
-                );
+                report_error(err);
                 PinInfo::circle().with_fill(Color32::BLACK)
             })
     }
@@ -262,15 +239,7 @@ impl SnarlViewer<SnarlNode> for GraphViewer<'_> {
                 self.commands.execute(&mut self.ctx.as_full(snarl))?;
                 Ok(())
             })
-            .unwrap_or_else(|err| {
-                diagnostic_widget(
-                    ui,
-                    &Diagnostic {
-                        info: err,
-                        level: DiagnosticLevel::Error,
-                    },
-                );
-            })
+            .unwrap_or_else(report_error)
         });
     }
 

@@ -93,6 +93,17 @@ impl<'a> GraphEditingContext<'a, 'a> {
     }
 }
 
+impl<'a, 'snarl> GraphEditingContext<'a, 'snarl> {
+    pub fn as_partial<'b>(
+        &'b mut self,
+    ) -> (
+        &'b mut &'snarl mut Snarl<SnarlNode>,
+        &'b mut PartialGraphEditingContext<'a>,
+    ) {
+        (&mut self.snarl, &mut self.ctx)
+    }
+}
+
 impl<'a> Deref for GraphEditingContext<'a, '_> {
     type Target = PartialGraphEditingContext<'a>;
 

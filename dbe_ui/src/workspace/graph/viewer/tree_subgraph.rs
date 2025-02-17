@@ -4,7 +4,7 @@ use crate::workspace::graph::{any_pin, GraphViewer};
 use dbe_backend::graph::node::groups::tree_subgraph::{
     TreeContext, TreeSubgraph, TreeSubgraphFactory,
 };
-use dbe_backend::graph::node::{Node, NodeFactory, SnarlNode};
+use dbe_backend::graph::node::{NodeFactory, SnarlNode};
 use egui::{vec2, InnerResponse, Rect, RichText, Stroke, Ui};
 use egui_snarl::ui::PinInfo;
 use egui_snarl::{InPin, Snarl};
@@ -44,6 +44,10 @@ impl NodeView for TreeSubgraphNodeViewer {
         let mut start_of = state.start_of[pin.id.input].clone();
         let mut end_of = state.end_of[pin.id.input].clone();
         let mut hierarchy = state.hierarchy[pin.id.input].clone();
+        let inlined_inputs = start_of
+            .iter()
+            .map(|x| state.has_inlined_inputs[x])
+            .collect_vec();
         let root = hierarchy.pop().unwrap();
         if start_of.ends_with(&[root]) {
             start_of.pop();
@@ -58,19 +62,24 @@ impl NodeView for TreeSubgraphNodeViewer {
         debug_assert_eq!(&end_of, &hierarchy[..end_of.len()]);
 
         // let _guard = trace_span!("tree_node_show_input", input=pin.id.input, ?hierarchy_width, hierarchy_len=?hierarchy.len()).entered();
-        let titles = start_of
-            .iter()
-            .map(|x| {
-                tree_node.node_title(
-                    *x,
-                    TreeContext {
-                        registry: viewer.ctx.registry,
-                        docs: viewer.ctx.docs,
-                        graphs: viewer.ctx.graphs,
-                    },
-                )
+        let titles = (!start_of.is_empty())
+            .then(|| {
+                start_of
+                    .iter()
+                    .map(|x| {
+                        tree_node.node_title(
+                            *x,
+                            TreeContext {
+                                registry: viewer.ctx.registry,
+                                docs: viewer.ctx.docs,
+                                graphs: viewer.ctx.graphs,
+                            },
+                        )
+                    })
+                    .zip(inlined_inputs)
+                    .collect_vec()
             })
-            .collect_vec();
+            .unwrap_or_else(Default::default);
 
         let full_width = ui.available_width();
 
@@ -78,7 +87,9 @@ impl NodeView for TreeSubgraphNodeViewer {
             .vertical(|ui| -> miette::Result<_> {
                 let input_start_pos = ui.cursor().min;
                 let mut hline_start_pos = vec![];
-                for (idx, (_, title)) in start_of.iter().zip(titles).rev().enumerate() {
+                for (idx, (_, (title, has_inlined_inputs))) in
+                    start_of.iter().zip(titles).rev().enumerate()
+                {
                     let pos = ui.cursor().min;
                     hline_start_pos.push(pos);
                     let offset = hierarchy.len() + idx - start_of.len();
@@ -92,7 +103,22 @@ impl NodeView for TreeSubgraphNodeViewer {
                     );
                     ui.add_space(rect_size);
                     ui.add_space(margin);
-                    ui.label(title);
+                    let res = ui.label(title);
+                    res.context_menu(|ui| {
+                        if has_inlined_inputs {
+                            ui.add_enabled_ui(false, |ui| {
+                                ui.button("Pop out (pop out all the inputs first)")
+                            });
+                            return;
+                        }
+                        if ui.button("Pop out").clicked() {
+                            TreeSubgraph::push_extract_input_cmd(
+                                pin.id.input,
+                                pin.id.node,
+                                &mut viewer.commands,
+                            );
+                        }
+                    });
                 }
                 if !start_of.is_empty() {
                     ui.add_space(margin);
