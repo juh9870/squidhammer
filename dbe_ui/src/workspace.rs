@@ -21,7 +21,7 @@ use egui::{Color32, Context, Frame, Margin, RichText, Ui, WidgetText};
 use egui_dock::{DockArea, TabViewer};
 use egui_hooks::UseHookExt;
 use egui_modal::Modal;
-use egui_snarl::ui::SnarlStyle;
+use egui_snarl::ui::{SnarlStyle, WireStyle};
 use egui_snarl::{NodeId, Snarl};
 use egui_toast::{Toast, ToastKind, ToastOptions};
 use inline_tweak::tweak;
@@ -382,12 +382,13 @@ impl<Io: ProjectIO> TabViewer for WorkspaceTabViewer<'_, Io> {
                                     rects.deref_mut(),
                                 );
 
-                                snarl.show(
-                                    &mut viewer,
-                                    &SnarlStyle::default(),
-                                    tab.to_string(),
-                                    ui,
-                                );
+                                let style = SnarlStyle {
+                                    wire_style: Some(WireStyle::AxisAligned {
+                                        corner_radius: tweak!(32.0),
+                                    }),
+                                    ..Default::default()
+                                };
+                                snarl.show(&mut viewer, &style, tab.to_string(), ui);
 
                                 *selected_nodes =
                                     Snarl::<SnarlNode>::get_selected_nodes(tab.to_string(), ui);
