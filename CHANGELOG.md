@@ -6,6 +6,23 @@
 
 > Released on ReleaseDate
 
+### Added
+
+- More nodes and node search to the node input drag-out menu (by juh9870)
+- Types section for add node menu (by juh9870)
+- Scrolling to node search (by juh9870)
+- Scroll bar to add node menus for very large sections (by juh9870)
+- Node selection menu for dragging out wire from output ports (by juh9870)
+- Node values inlining (by juh9870)
+- Subgraph categories, so they would show up in add node menu (by juh9870)
+
+### Changed
+
+- Wire style to rounded Axis Aligned. This provides clearer picture for when the output wire is conected to the output to the left of the output port (by juh9870)
+- Better error reporting when deserializing node graphs (by juh9870)
+- Type titles are now shown in search bar (by juh9870)
+- Added min height to the undo history scrollbar (by juh9870)
+
 ## [0.2.1]
 
 > Released on 2025-02-05
