@@ -304,6 +304,10 @@ impl<'a> NumericIDRegistry<'a> {
     /// Runs the provided closure with an iterator over available IDs for the
     /// given type, as well as the reserved IDs, and all IDs for types that
     /// this type is satisfied by
+    #[expect(
+        clippy::significant_drop_tightening,
+        reason = "the iterator utilizes the guard"
+    )]
     pub fn with_available_ids<T>(
         &self,
         ref_ty: EDataType,
@@ -509,6 +513,8 @@ impl DataValidator for Id {
             &mut smallvec![],
             true,
         )?;
+
+        drop(reg);
 
         for error in errors {
             ctx.emit_error(error.into());
