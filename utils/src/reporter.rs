@@ -82,7 +82,7 @@ impl<T, R> ReportReceiver<T, R> {
                 !self.done.load(Ordering::Relaxed),
                 "Progress message was received after Done by ReportReceiver"
             );
-            self.reporter.push(x)
+            self.reporter.push(x);
         }
         for r in self.result_channel.try_iter() {
             assert!(

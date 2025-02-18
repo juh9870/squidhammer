@@ -168,13 +168,13 @@ fn folder_context_menu(ui: &mut Ui, path: &Utf8Path, commands: &mut Vec<Command>
             commands.push(Command::NewFile {
                 folder: path.to_path_buf(),
             });
-            ui.close_menu()
+            ui.close_menu();
         }
         if ui.button("Graph").clicked() {
             commands.push(Command::NewGraph {
                 folder: path.to_path_buf(),
             });
-            ui.close_menu()
+            ui.close_menu();
         }
     });
 }

@@ -62,7 +62,7 @@ where
                     None
                 }
             })
-            .collect::<Vec<usize>>()
+            .collect::<Vec<usize>>();
     }
 
     /// QuickHull implement.

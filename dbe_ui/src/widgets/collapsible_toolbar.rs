@@ -500,7 +500,7 @@ impl<Tab: SerializableAny + Eq + Hash> CollapsibleToolbar<'_, Tab> {
                                 debug!("started rearranging");
                                 drag_state.rearranging = true;
                                 ui.memory_mut(|mem| {
-                                    *mem.data.get_temp_mut_or_insert_with(timer_id, || time) = time
+                                    *mem.data.get_temp_mut_or_insert_with(timer_id, || time) = time;
                                 });
                                 changed = true;
                                 ui.close_menu();
@@ -570,7 +570,7 @@ impl<Tab: SerializableAny + Eq + Hash> CollapsibleToolbar<'_, Tab> {
                 }
             }
             if changed {
-                res.mark_changed()
+                res.mark_changed();
             }
 
             drag_state.save(ui.ctx(), drag_id);

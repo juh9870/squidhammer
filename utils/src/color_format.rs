@@ -232,7 +232,7 @@ mod tests {
     #[case("rBaG", ColorFormat([R, B, A, G]))]
     fn should_parse_formats(#[case] raw: String, #[case] format: ColorFormat) {
         let parsed = ColorFormat::from_str(&raw).expect("Should parse");
-        assert_eq!(parsed, format)
+        assert_eq!(parsed, format);
     }
 
     #[rstest]
@@ -240,7 +240,7 @@ mod tests {
     #[case("rgfA")]
     #[case("++++")]
     fn should_fail_on_bad_symbols(#[case] raw: String) {
-        assert!(ColorFormat::from_str(&raw).is_err())
+        assert!(ColorFormat::from_str(&raw).is_err());
     }
 
     #[rstest]
@@ -249,7 +249,7 @@ mod tests {
     #[case("")]
     #[case("RGBABA")]
     fn should_fail_on_bad_length(#[case] raw: String) {
-        assert!(ColorFormat::from_str(&raw).is_err())
+        assert!(ColorFormat::from_str(&raw).is_err());
     }
 
     #[rstest]
@@ -258,7 +258,7 @@ mod tests {
     #[case("RRR")]
     #[case("BBBB")]
     fn should_fail_on_duplicates(#[case] raw: String) {
-        assert!(ColorFormat::from_str(&raw).is_err())
+        assert!(ColorFormat::from_str(&raw).is_err());
     }
 
     #[rstest]
@@ -266,7 +266,7 @@ mod tests {
     #[case("RAB")]
     #[case("AGB")]
     fn should_fail_on_missing_color_channel(#[case] raw: String) {
-        assert!(ColorFormat::from_str(&raw).is_err())
+        assert!(ColorFormat::from_str(&raw).is_err());
     }
 
     fn parse_color(raw: &str, format: &str) -> miette::Result<Rgba> {

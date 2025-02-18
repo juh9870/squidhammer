@@ -4,11 +4,11 @@ impl<T> Resizable for Vec<T> {
     type Item = T;
 
     fn resize_with(&mut self, new_len: usize, f: impl FnMut() -> Self::Item) {
-        self.resize_with(new_len, f)
+        self.resize_with(new_len, f);
     }
 
     fn push(&mut self, item: Self::Item) {
-        self.push(item)
+        self.push(item);
     }
 
     fn pop(&mut self) -> Option<Self::Item> {
@@ -16,7 +16,7 @@ impl<T> Resizable for Vec<T> {
     }
 
     fn insert(&mut self, index: usize, item: Self::Item) {
-        self.insert(index, item)
+        self.insert(index, item);
     }
 
     fn remove(&mut self, index: usize) -> Self::Item {

@@ -204,7 +204,7 @@ impl<const KIND: u8> GenericStatefulNode for ConditionalNode<KIND> {
                         condition,
                     });
                     if let Some(value) = value {
-                        outputs.push(value.clone())
+                        outputs.push(value.clone());
                     }
                 }
             }

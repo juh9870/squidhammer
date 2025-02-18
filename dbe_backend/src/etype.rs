@@ -273,7 +273,7 @@ impl EDataType {
                         list.value_type
                             .parse_json(registry, x, false)
                             .with_context(|| format!("at index {}", i))?,
-                    )
+                    );
                 }
 
                 Ok(EValue::List {

@@ -102,7 +102,7 @@ impl Node for GroupOutputNode {
             commands.push(SnarlCommand::SetGroupOutputType {
                 id: field.id,
                 ty: incoming_type.ty(),
-            })
+            });
         }
 
         self._default_try_connect(context, commands, from, to, incoming_type)

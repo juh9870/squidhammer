@@ -106,7 +106,7 @@ pub fn sync_fields<
     node_id: NodeId,
     io: IoDirection,
 ) {
-    sync_fields_and_types(mapper, commands, fields, ids, None, node_id, io)
+    sync_fields_and_types(mapper, commands, fields, ids, None, node_id, io);
 }
 
 /// Synchronizes the inputs or outputs of a node and updates the local cached
@@ -170,7 +170,7 @@ pub fn sync_fields_and_types<
                     output: drop_pos + io.output_offset(),
                     node: node_id,
                 },
-            })
+            });
         }
         if io.is_input() {
             commands.push(SnarlCommand::DeletePinValue {
@@ -184,7 +184,7 @@ pub fn sync_fields_and_types<
                     input: drop_pos + io.input_offset(),
                     node: node_id,
                 },
-            })
+            });
         }
     }
 
@@ -205,13 +205,13 @@ pub fn sync_fields_and_types<
                 node: node_id,
                 indices: rearrangements,
                 offset: io.output_offset(),
-            })
+            });
         } else if io.is_input() {
             commands.push(SnarlCommand::InputsRearrangedRaw {
                 node: node_id,
                 indices: rearrangements,
                 offset: io.input_offset(),
-            })
+            });
         }
     }
 

@@ -310,7 +310,7 @@ impl<T: RegionalNode> Node for RegionIONode<T> {
                             changed,
                             "generic_try_connect should succeed with changing ty, \
                             since incoming type is not specific"
-                        )
+                        );
                     }
                     ControlFlow::Break(_) => return Ok(false),
                 };
@@ -323,7 +323,7 @@ impl<T: RegionalNode> Node for RegionIONode<T> {
                             id: new_pin_id,
                             name: "value".to_string(),
                         }),
-                    })
+                    });
                 }
             } else {
                 let input = to.id.input - self.node.inputs_count(context, &self.data);

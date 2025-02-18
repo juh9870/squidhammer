@@ -65,7 +65,7 @@ impl Editor for EnumFlagsEditor {
                     flags.push(Flag {
                         id: *id,
                         ty: value,
-                    })
+                    });
                 }
 
                 Ok(flags)

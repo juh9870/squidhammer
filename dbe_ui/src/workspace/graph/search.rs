@@ -238,7 +238,7 @@ impl GraphSearch {
             CaseMatching::Ignore,
             Normalization::Smart,
             false,
-        )
+        );
     }
 
     pub fn snapshot(&self) -> impl SearchSnapshot + '_ {

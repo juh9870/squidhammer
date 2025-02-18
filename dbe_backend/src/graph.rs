@@ -370,7 +370,7 @@ impl Graph {
     }
 
     pub fn ensure_region_graph_ready(&mut self) {
-        self.region_graph.ensure_ready(&self.snarl)
+        self.region_graph.ensure_ready(&self.snarl);
     }
 }
 

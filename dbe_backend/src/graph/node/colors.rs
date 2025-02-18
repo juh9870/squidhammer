@@ -19,7 +19,7 @@ impl Eq for NodeColorScheme {}
 impl Hash for NodeColorScheme {
     fn hash<H: Hasher>(&self, state: &mut H) {
         for c in self.theme.theme() {
-            c.rgb().hash(state)
+            c.rgb().hash(state);
         }
         self.dark_mode.hash(state);
     }

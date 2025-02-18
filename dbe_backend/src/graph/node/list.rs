@@ -120,7 +120,7 @@ impl Node for ListNode {
                     node: to.id.node,
                     output: 0,
                 },
-            })
+            });
         }
 
         if self._default_try_connect(context, commands, from, to, incoming_type)? {

@@ -136,32 +136,32 @@ mod tests {
     #[case("namespace_123:a1/a2/a3/4/5/6")]
     #[case("eh:objects/faction")]
     fn should_parse_type_id(#[case] id: &str) {
-        assert!(ETypeId::parse(id).is_ok())
+        assert!(ETypeId::parse(id).is_ok());
     }
 
     #[test]
     fn should_fail_empty() {
-        assert!(ETypeId::parse("").is_err())
+        assert!(ETypeId::parse("").is_err());
     }
 
     #[test]
     fn should_fail_no_colon() {
-        assert!(ETypeId::parse("some_name").is_err())
+        assert!(ETypeId::parse("some_name").is_err());
     }
 
     #[test]
     fn should_fail_empty_namespace() {
-        assert!(ETypeId::parse(":some_name").is_err())
+        assert!(ETypeId::parse(":some_name").is_err());
     }
 
     #[test]
     fn should_fail_empty_path() {
-        assert!(ETypeId::parse("some_name:").is_err())
+        assert!(ETypeId::parse("some_name:").is_err());
     }
 
     #[test]
     fn should_fail_slashes_in_namespace() {
-        assert!(ETypeId::parse("namespace/other:path").is_err())
+        assert!(ETypeId::parse("namespace/other:path").is_err());
     }
 
     #[test]
@@ -175,6 +175,6 @@ mod tests {
     #[case("namespace:path.other")]
     #[case("namespace:path-other")]
     fn should_fail_invalid_characters(#[case] id: &str) {
-        assert!(ETypeId::parse(id).is_err())
+        assert!(ETypeId::parse(id).is_err());
     }
 }

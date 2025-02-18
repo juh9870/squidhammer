@@ -263,7 +263,7 @@ impl<T: TryFrom<ETypeConst, Error: Debug>> Property<T> {
                 "{} property {} not registered",
                 kind.name(),
                 self.info.id
-            )
+            );
         }
     }
 

@@ -63,7 +63,7 @@ impl ToolbarViewer for GraphToolbarViewer<'_> {
                             ui.horizontal(|ui| {
                                 let res = ui.text_edit_singleline(item);
                                 if res.changed() {
-                                    *item = item.replace(['/', '\\', ':'], ".")
+                                    *item = item.replace(['/', '\\', ':'], ".");
                                 }
                             });
                         });

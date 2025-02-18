@@ -72,7 +72,7 @@ impl Node for RerouteNode {
                     node: to.id.node,
                     output: i,
                 },
-            })
+            });
         }
 
         self._default_try_connect(context, commands, from, to, incoming_type)

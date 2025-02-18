@@ -43,7 +43,7 @@ pub fn minkowski(mut p: Vec<Pos2>, mut q: Vec<Pos2>) -> Vec<Pos2> {
         }
 
         #[cfg(debug_assertions)]
-        assert!(result.len() <= 1000000, "Infinite loop")
+        assert!(result.len() <= 1000000, "Infinite loop");
     }
 
     result
@@ -55,9 +55,9 @@ fn reorder_polygon(points: &mut [Pos2]) {
         if points[i].y < points[pos].y
             || (points[i].y == points[pos].y && points[i].x < points[pos].x)
         {
-            pos = i
+            pos = i;
         }
     }
 
-    points.rotate_left(pos)
+    points.rotate_left(pos);
 }

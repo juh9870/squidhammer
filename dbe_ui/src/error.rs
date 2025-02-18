@@ -82,7 +82,7 @@ pub fn render_ansi(ui: &mut Ui, ansi: &str) {
             TextFormat {
                 ..Default::default()
             },
-        )
+        );
     }
 
     let galley = ui.ctx().fonts(|f| f.layout_job(job));

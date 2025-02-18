@@ -119,7 +119,7 @@ impl<T, NewItem: Fn(usize) -> T, CanDelete: Fn(usize, T) -> bool, IdSource: Hash
                             match last_item_height {
                                 None => ui.ctx().request_repaint(),
                                 Some(last_height) if last_height != item_height => {
-                                    ui.ctx().request_repaint()
+                                    ui.ctx().request_repaint();
                                 }
                                 _ => {}
                             };

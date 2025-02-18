@@ -88,7 +88,7 @@ pub fn sync_fields<IO: GraphIoData, Store: AsRef<[Uuid]> + FromIterator<Uuid>>(
         types,
         node_id,
         direction,
-    )
+    );
 }
 
 pub fn map_group_inputs(

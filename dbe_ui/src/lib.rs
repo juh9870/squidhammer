@@ -151,7 +151,7 @@ impl DbeApp {
                 self.settings = storage.settings;
                 self.history = storage.history;
                 if let Some(head) = self.history.first() {
-                    self.load_project_from_path(ctx, head.clone())
+                    self.load_project_from_path(ctx, head.clone());
                 }
 
                 self.colorix = Colorix::global(ctx, storage.theme);
@@ -293,7 +293,7 @@ impl DbeApp {
                     assert!(
                         !ui.button("PANIC").clicked(),
                         "User clicked the panic button"
-                    )
+                    );
                 });
                 ui.add_space(16.0);
 
@@ -339,7 +339,7 @@ impl DbeApp {
             if dialog.show(ctx).selected() {
                 if let Some(file) = dialog.path() {
                     let file = file.to_path_buf();
-                    self.load_project_from_path(ctx, file)
+                    self.load_project_from_path(ctx, file);
                 }
             }
         }
@@ -522,7 +522,7 @@ impl DbeApp {
                         ui.ctx().send_viewport_cmd(ViewportCommand::Close);
                         self.allow_close = Some(true);
                     }
-                })
+                });
             });
         });
     }

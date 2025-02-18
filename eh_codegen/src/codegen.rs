@@ -70,7 +70,7 @@ impl Ctx {
             let parent = path.parent().expect("All paths should have parents");
 
             fs_err::create_dir_all(parent).expect("Failed to create parent directory");
-            fs_err::write(path, content).expect("Failed to write file")
+            fs_err::write(path, content).expect("Failed to write file");
         }
     }
 
@@ -187,7 +187,7 @@ impl Ctx {
                         .cloned()
                         .collect_vec(),
                     false,
-                )
+                );
             }
             self.enums.insert(edata.name.clone(), edata);
             enum_id
@@ -411,7 +411,7 @@ impl Ctx {
 
         code += "\n}";
 
-        self.output(id, code)
+        self.output(id, code);
     }
 
     fn emit_enum(&mut self, data: EnumData) {
@@ -446,7 +446,7 @@ impl Ctx {
             code
         };
 
-        self.output(data.id, code)
+        self.output(data.id, code);
     }
 
     fn output(&mut self, id: String, content: String) {
