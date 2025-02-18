@@ -98,7 +98,8 @@ impl Widget for Handle {
         let (rect, response) = ui.allocate_at_least(size, Sense::hover());
 
         if ui.is_rect_visible(response.rect) {
-            let color = color.unwrap_or(ui.visuals().widgets.noninteractive.bg_stroke.color);
+            let color =
+                color.unwrap_or_else(|| ui.visuals().widgets.noninteractive.bg_stroke.color);
             let painter = ui.painter();
             for row in 0..rows {
                 for column in 0..columns {
