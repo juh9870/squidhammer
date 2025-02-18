@@ -187,9 +187,10 @@ impl ProjectGraph {
     }
 
     fn return_graph(&mut self, graph: Box<Graph>) {
-        if !self.graph.is_editing() {
-            panic!("Cannot return graph: graph is not being edited");
-        }
+        assert!(
+            self.graph.is_editing(),
+            "Cannot return graph: graph is not being edited"
+        );
         self.graph = GraphHolder::Graph(graph);
     }
 }

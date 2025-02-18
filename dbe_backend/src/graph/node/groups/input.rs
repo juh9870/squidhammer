@@ -107,9 +107,10 @@ impl Node for GroupInputNode {
             .get_field(context, from.id.output)
             .expect("output field should exist, because `can_output_to` succeeded");
 
-        if field.ty.is_some() {
-            panic!("output field should not have a type, because `can_output_to` succeeded");
-        };
+        assert!(
+            field.ty.is_none(),
+            "output field should not have a type, because `can_output_to` succeeded"
+        );
 
         commands.push(SnarlCommand::SetGroupInputType {
             ty: incoming_type.ty(),

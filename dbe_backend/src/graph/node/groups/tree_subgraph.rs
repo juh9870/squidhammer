@@ -762,9 +762,10 @@ mod tree {
                         .enumerate()
                         .filter_map(|x| x.1.map(|id| (x.0, id)))
                     {
-                        if inverse.insert(child.node, (*id, idx)).is_some() {
-                            panic!("Each node should have a unique parent");
-                        }
+                        assert!(
+                            inverse.insert(child.node, (*id, idx)).is_none(),
+                            "Each node should have a unique parent"
+                        );
                     }
                 }
 

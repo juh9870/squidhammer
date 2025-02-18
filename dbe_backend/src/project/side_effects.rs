@@ -126,9 +126,7 @@ impl SideEffects {
         let mut iter = 0;
         while !self.effects.is_empty() {
             iter += 1;
-            if iter > 1000 {
-                panic!("Side effects formed an infinite loop");
-            }
+            assert!(iter <= 1000, "Side effects formed an infinite loop");
             let mut effects = std::mem::take(&mut self.effects);
             for (emitter, effect) in effects.drain(..) {
                 effect.execute(emitter, project)?;

@@ -78,15 +78,17 @@ pub struct ReportReceiver<T, R> {
 impl<T, R> ReportReceiver<T, R> {
     fn sync(&mut self) {
         for x in self.progress_channel.try_iter() {
-            if self.done.load(Ordering::Relaxed) {
-                panic!("Progress message was received after Done by ReportReceiver")
-            }
+            assert!(
+                !self.done.load(Ordering::Relaxed),
+                "Progress message was received after Done by ReportReceiver"
+            );
             self.reporter.push(x)
         }
         for r in self.result_channel.try_iter() {
-            if self.done.load(Ordering::Relaxed) {
-                panic!("Multiple Done messages were passed to ReportReceiver")
-            }
+            assert!(
+                !self.done.load(Ordering::Relaxed),
+                "Multiple Done messages were passed to ReportReceiver"
+            );
             self.done_data = Some(r);
         }
     }
@@ -126,9 +128,10 @@ impl<T, R> ReportSender<T, R> {
     /// Panics if `done` payload was already passed. Can only happen as a
     /// result of usage of [ReportSender::clone_unchecked]
     pub fn progress(&self, data: T) -> Result<(), SendError<T>> {
-        if self.done.load(Ordering::Relaxed) {
-            panic!("Progress message can't be passed after Done");
-        }
+        assert!(
+            !self.done.load(Ordering::Relaxed),
+            "Progress message can't be passed after Done"
+        );
         self.progress_channel.send(data)
     }
 
@@ -139,9 +142,10 @@ impl<T, R> ReportSender<T, R> {
     /// Panics if `done` message was already passed. Can only happen as a
     /// result of usage of [ReportSender::clone_unchecked]
     pub fn done(self, data: R) -> Result<(), SendError<R>> {
-        if self.done.load(Ordering::Relaxed) {
-            panic!("Done message can't be passed more than once");
-        }
+        assert!(
+            !self.done.load(Ordering::Relaxed),
+            "Done message can't be passed more than once"
+        );
         self.result_channel.send(data)
     }
 

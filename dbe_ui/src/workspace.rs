@@ -283,9 +283,7 @@ impl<Io: ProjectIO> TabViewer for WorkspaceTabViewer<'_, Io> {
                             "",
                             value,
                         );
-                        if res.changed {
-                            panic!("Generated value was edited");
-                        }
+                        assert!(!res.changed, "Generated value was edited")
                     });
 
                     ui.add_space(ui.ctx().screen_rect().height() * 0.5);

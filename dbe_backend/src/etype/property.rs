@@ -258,9 +258,12 @@ impl<T: TryFrom<ETypeConst, Error: Debug>> Property<T> {
         {
             let all_properties = ALL_PROPERTIES.borrow();
             let key = (self.info.id.to_string(), kind);
-            if !all_properties.contains_key(&key) {
-                panic!("{} property {} not registered", kind.name(), self.info.id);
-            }
+            assert!(
+                all_properties.contains_key(&key),
+                "{} property {} not registered",
+                kind.name(),
+                self.info.id
+            )
         }
     }
 
