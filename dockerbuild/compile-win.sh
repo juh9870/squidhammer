@@ -1,0 +1,1 @@
+docker buildx build --target=artifact --output type=local,dest=$(pwd)/target/x86_64-pc-windows-gnu/ . -f dockerbuild/Dockerfile-win

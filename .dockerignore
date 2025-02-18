@@ -1,0 +1,7 @@
+/target
+/.idea
+/.direnv
+dbe.log
+dbe.previous.log
+crash.log
+/dockerbuild
