@@ -139,7 +139,7 @@ impl Editor for EnumEditor {
                     })
                     .body_unindented(|ui| editor.body(ui))
                     .2
-                    .map_or(EditorResponse::unchanged(), |r| r.inner)
+                    .map_or_else(EditorResponse::unchanged, |r| r.inner)
                 } else {
                     let dir = if editor.body_size() <= EditorSize::Inline {
                         Direction::LeftToRight
@@ -170,7 +170,7 @@ impl Editor for EnumEditor {
                         })
                         .body_unindented(|ui| editor.body(ui))
                         .2
-                        .map_or(EditorResponse::unchanged(), |r| r.inner)
+                        .map_or_else(EditorResponse::unchanged, |r| r.inner)
                     })
                     .inner
                 } else {

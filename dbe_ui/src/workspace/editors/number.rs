@@ -34,8 +34,8 @@ impl Editor for NumberEditor {
         let max = props.and_then(|p| PROP_FIELD_MAX.try_get(p));
         let logarithmic = props.and_then(|p| PROP_FIELD_LOGARITHMIC.try_get(p));
 
-        let min = min.unwrap_or(ENumber::min_value()).0;
-        let max = max.unwrap_or(ENumber::max_value()).0;
+        let min = min.unwrap_or_else(ENumber::min_value).0;
+        let max = max.unwrap_or_else(ENumber::max_value).0;
 
         Ok(NumericProps {
             range: min..=max,
