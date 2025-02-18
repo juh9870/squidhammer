@@ -24,7 +24,7 @@ use serde::{Deserialize, Serialize};
 use std::collections::{hash_map, BTreeMap};
 use std::path::{Path, PathBuf};
 use std::time::Instant;
-use tracing::info;
+use tracing::{error_span, info};
 use utils::map::{HashMap, HashSet};
 use uuid::Uuid;
 
@@ -339,6 +339,7 @@ impl<IO: ProjectIO> Project<IO> {
         }
 
         for (path, (json, ty)) in import_jsons {
+            error_span!("Loading value file", %path, ?ty);
             let item = match project
                 .deserialize_json(json, ty)
                 .with_context(|| format!("failed to deserialize JSON at `{}`", path))
