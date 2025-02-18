@@ -127,9 +127,7 @@ impl Node for EnumNode {
         let Some((enum_data, variant)) = self.get_data(context.registry) else {
             panic!("Unknown enum variant");
         };
-        if input != 0 {
-            panic!("Enum only has one input");
-        }
+        assert!(input == 0, "Enum only has one input");
         Ok(InputData::new(variant.data.clone().into(), variant.name)
             .with_custom_docs(DocsRef::EnumVariant(enum_data.ident, variant.name)))
     }
@@ -146,9 +144,7 @@ impl Node for EnumNode {
             panic!("Unknown enum variant");
         };
 
-        if output != 0 {
-            panic!("Enum only has one output");
-        }
+        assert!(output == 0, "Enum only has one output");
 
         Ok(OutputData::new(
             EItemInfo::simple_type(EDataType::Object { ident: data.ident }).into(),
@@ -168,9 +164,7 @@ impl Node for EnumNode {
             panic!("Unknown enum variant");
         };
 
-        if to.id.input != 0 {
-            panic!("Enum only has one input");
-        }
+        assert!(to.id.input == 0, "Enum only has one input");
 
         for (variant, id) in data.variants_with_ids() {
             if variant.data.ty() == incoming_type.ty() {

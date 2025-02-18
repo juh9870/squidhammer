@@ -43,9 +43,7 @@ pub fn minkowski(mut p: Vec<Pos2>, mut q: Vec<Pos2>) -> Vec<Pos2> {
         }
 
         #[cfg(debug_assertions)]
-        if result.len() > 1000000 {
-            panic!("Infinite loop");
-        }
+        assert!(result.len() <= 1000000, "Infinite loop")
     }
 
     result

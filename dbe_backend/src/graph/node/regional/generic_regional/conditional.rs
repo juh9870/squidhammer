@@ -60,9 +60,7 @@ impl<const KIND: u8> NodeWithVariables for ConditionalNode<KIND> {
         data: &RegionIoData,
         ty: &'a Option<EDataType>,
     ) -> GenericNodeField<'a> {
-        if !data.is_end() {
-            panic!("Repeat node has no variables on the start")
-        }
+        assert!(data.is_end(), "Repeat node has no variables on the start");
 
         GenericNodeField::Option(ty)
     }
@@ -73,9 +71,7 @@ impl<const KIND: u8> NodeWithVariables for ConditionalNode<KIND> {
         data: &RegionIoData,
         ty: &'a mut Option<EDataType>,
     ) -> GenericNodeFieldMut<'a> {
-        if !data.is_end() {
-            panic!("Repeat node has no variables on the start")
-        }
+        assert!(data.is_end(), "Repeat node has no variables on the start");
 
         GenericNodeFieldMut::Option(ty)
     }
@@ -92,9 +88,7 @@ impl<const KIND: u8> GenericStatefulNode for ConditionalNode<KIND> {
     }
 
     fn input_names(&self, data: &Self::State<'_>) -> &[&str] {
-        if !data.is_start() {
-            panic!("Conditional node has no inputs on the end")
-        }
+        assert!(data.is_start(), "Conditional node has no inputs on the end");
 
         match self.kind() {
             ConditionalKind::If => &["condition"],
@@ -103,9 +97,10 @@ impl<const KIND: u8> GenericStatefulNode for ConditionalNode<KIND> {
     }
 
     fn output_names(&self, data: &Self::State<'_>) -> &[&str] {
-        if !data.is_start() {
-            panic!("Conditional node has no outputs on the end")
-        }
+        assert!(
+            data.is_start(),
+            "Conditional node has no outputs on the end"
+        );
         match self.kind() {
             ConditionalKind::If => &[],
             ConditionalKind::Map => &["value"],

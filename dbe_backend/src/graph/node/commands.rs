@@ -342,9 +342,12 @@ impl SnarlCommand {
                     panic!("Input {} not found", id);
                 };
 
-                if input.ty.is_some() {
-                    panic!("Input `{}` ({}) already has a type", input.name, id);
-                }
+                assert!(
+                    input.ty.is_none(),
+                    "Input `{}` ({}) already has a type",
+                    input.name,
+                    id
+                );
 
                 input.ty = Some(ty);
             }
@@ -353,9 +356,12 @@ impl SnarlCommand {
                     panic!("Output {} not found", id);
                 };
 
-                if output.ty.is_some() {
-                    panic!("Output `{}` ({}) already has a type", output.name, id);
-                }
+                assert!(
+                    output.ty.is_none(),
+                    "Output `{}` ({}) already has a type",
+                    output.name,
+                    id
+                );
 
                 output.ty = Some(ty);
             }
@@ -394,9 +400,7 @@ impl SnarlCommands {
         let mut iter = 0;
         while !self.commands.is_empty() {
             iter += 1;
-            if iter > 1000 {
-                panic!("Node commands formed an infinite loop");
-            }
+            assert!(iter <= 1000, "Node commands formed an infinite loop");
             let mut commands = std::mem::take(&mut self.commands);
             for command in commands.drain(..) {
                 command.execute(ctx, self)?;
