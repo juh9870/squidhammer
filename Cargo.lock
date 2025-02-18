@@ -4736,7 +4736,7 @@ dependencies = [
 
 [[package]]
 name = "squidhammer"
-version = "0.2.2"
+version = "0.2.3"
 dependencies = [
  "backtrace-on-stack-overflow",
  "color-backtrace",

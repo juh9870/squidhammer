@@ -6,6 +6,10 @@
 
 > Released on ReleaseDate
 
+## [0.2.3]
+
+> Released on 2025-02-18
+
 ### Added
 
 - Context to warnings emitted upon loading a file (by juh9870)
@@ -157,7 +161,8 @@
 No changelog for this and all previous versions.
 
 <!-- next-url -->
-[Unreleased]: https://github.com/juh9870/squidhammer/compare/v0.2.2...HEAD
+[Unreleased]: https://github.com/juh9870/squidhammer/compare/v0.2.3...HEAD
+[0.2.3]: https://github.com/juh9870/squidhammer/compare/v0.2.2...v0.2.3
 [0.2.2]: https://github.com/juh9870/squidhammer/compare/v0.2.1...v0.2.2
 
 [0.2.1]: https://github.com/juh9870/squidhammer/compare/v0.2.0...v0.2.1
