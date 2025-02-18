@@ -169,19 +169,19 @@ impl<T: GenericStatefulNode> JsonSerde for T {
 
     fn write_json(
         &self,
-        _registry: &ETypesRegistry,
+        registry: &ETypesRegistry,
         external_state: Self::State<'_>,
     ) -> miette::Result<JsonValue> {
-        <T as GenericStatefulNode>::write_json(self, _registry, external_state)
+        <T as GenericStatefulNode>::write_json(self, registry, external_state)
     }
 
     fn parse_json(
         &mut self,
-        _registry: &ETypesRegistry,
+        registry: &ETypesRegistry,
         external_state: Self::State<'_>,
         value: &mut JsonValue,
     ) -> miette::Result<()> {
-        <T as GenericStatefulNode>::parse_json(self, _registry, external_state, value)
+        <T as GenericStatefulNode>::parse_json(self, registry, external_state, value)
     }
 }
 

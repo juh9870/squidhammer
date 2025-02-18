@@ -509,7 +509,7 @@ mod tree {
             };
             let mut commands = SnarlCommands::new();
 
-            let mut _outputs = None;
+            let mut ignored_outputs = None;
             let mut ctx = GraphEditingContext::from_graph(
                 &mut self.graph,
                 context.registry,
@@ -518,7 +518,7 @@ mod tree {
                 SideEffectsContext::Unavailable,
                 true,
                 &[],
-                &mut _outputs,
+                &mut ignored_outputs,
             );
 
             let nodes = node.create_from_input_pin(&mut ctx, pos2(0.0, 0.0), pin, &mut commands)?;
@@ -650,7 +650,7 @@ mod tree {
                 node.update_state(context!(self.graph, context), &mut commands, id)?;
             }
 
-            let mut _outputs = None;
+            let mut ignored_outputs = None;
             let mut ctx = GraphEditingContext::from_graph(
                 &mut self.graph,
                 context.registry,
@@ -659,7 +659,7 @@ mod tree {
                 SideEffectsContext::Unavailable,
                 true,
                 &[],
-                &mut _outputs,
+                &mut ignored_outputs,
             );
             commands
                 .execute(&mut ctx)
@@ -1046,7 +1046,7 @@ mod tree {
                     .ids = self.graph.outputs.iter().map(|x| x.id).collect();
             }
 
-            let mut _outputs = None;
+            let mut ignored_outputs = None;
             let mut ctx = GraphEditingContext::from_graph(
                 &mut self.graph,
                 context.registry,
@@ -1055,7 +1055,7 @@ mod tree {
                 SideEffectsContext::Unavailable,
                 true,
                 &[],
-                &mut _outputs,
+                &mut ignored_outputs,
             );
             commands
                 .execute(&mut ctx)

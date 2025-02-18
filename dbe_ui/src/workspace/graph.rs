@@ -179,10 +179,10 @@ impl SnarlViewer<SnarlNode> for GraphViewer<'_> {
         &mut self,
         pin: &InPin,
         ui: &mut Ui,
-        _scale: f32,
+        scale: f32,
         snarl: &mut Snarl<SnarlNode>,
     ) -> PinInfo {
-        m_try(|| get_viewer(&snarl[pin.id.node].id()).show_input(self, pin, ui, _scale, snarl))
+        m_try(|| get_viewer(&snarl[pin.id.node].id()).show_input(self, pin, ui, scale, snarl))
             .map_or_else(
                 |err| {
                     report_error(err);
@@ -200,10 +200,10 @@ impl SnarlViewer<SnarlNode> for GraphViewer<'_> {
         &mut self,
         pin: &OutPin,
         ui: &mut Ui,
-        _scale: f32,
+        scale: f32,
         snarl: &mut Snarl<SnarlNode>,
     ) -> PinInfo {
-        m_try(|| get_viewer(&snarl[pin.id.node].id()).show_output(self, pin, ui, _scale, snarl))
+        m_try(|| get_viewer(&snarl[pin.id.node].id()).show_output(self, pin, ui, scale, snarl))
             .map_or_else(
                 |err| {
                     report_error(err);

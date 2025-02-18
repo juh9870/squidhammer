@@ -48,8 +48,8 @@ impl<T: ManualEItemInfoAdapter> From<CustomEValue<T>> for EValue {
 }
 
 impl<T: ManualEItemInfoAdapter> EItemInfoAdapter for CustomEValue<T> {
-    fn edata_type(_registry: &ETypesRegistry) -> EItemInfo {
-        T::edata_type(_registry)
+    fn edata_type(registry: &ETypesRegistry) -> EItemInfo {
+        T::edata_type(registry)
     }
 }
 
