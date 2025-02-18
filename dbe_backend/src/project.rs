@@ -667,6 +667,8 @@ fn path_has_suffix(path: &Utf8Path, extension: &str) -> bool {
     if path_str.len() < extension.len() {
         return false;
     }
+    let path_bytes = path_str.as_bytes();
+    let extension_bytes = extension.as_bytes();
 
-    path_str[(path_str.len() - extension.len())..].eq_ignore_ascii_case(extension)
+    path_bytes[(path_bytes.len() - extension_bytes.len())..].eq_ignore_ascii_case(extension_bytes)
 }
