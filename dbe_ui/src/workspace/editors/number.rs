@@ -29,7 +29,7 @@ impl Editor for NumberEditor {
         item: Option<&EItemInfo>,
         _object_props: DynProps,
     ) -> miette::Result<DynProps> {
-        let props = item.map(|i| i.extra_properties());
+        let props = item.map(EItemInfo::extra_properties);
         let min = props.and_then(|p| PROP_FIELD_MIN.try_get(p));
         let max = props.and_then(|p| PROP_FIELD_MAX.try_get(p));
         let logarithmic = props.and_then(|p| PROP_FIELD_LOGARITHMIC.try_get(p));

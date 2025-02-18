@@ -39,7 +39,7 @@ fn ty_and_id(registry: &ETypesRegistry, data: &EValue) -> miette::Result<(Ustr, 
     let Some(id) = fields.get(&Ustr::from("id")) else {
         bail!(
             "expected field `id` in an ID struct, got {:?}",
-            fields.keys().map(|x| x.as_str()).join(", ")
+            fields.keys().map(Ustr::as_str).join(", ")
         );
     };
 

@@ -70,7 +70,7 @@ impl EEnumVariant {
                     let data = get_object(ident).context("This error might potentially be caused by the circular reference in types. Try specifying enum pattern manually")?;
                     // .ok_or_else(|| miette!("!!INTERNAL ERROR!! unknown object `{}` while deserializing enum pattern", ident))?;
 
-                    if let Some(pat) = data.repr().and_then(|repr| repr.enum_pat()) {
+                    if let Some(pat) = data.repr().and_then(JsonRepr::enum_pat) {
                         pat
                     } else {
                         EnumPattern::UntaggedObject

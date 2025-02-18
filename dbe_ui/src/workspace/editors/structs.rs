@@ -25,7 +25,7 @@ impl Editor for StructEditor {
         item: Option<&EItemInfo>,
         _object_props: DynProps,
     ) -> miette::Result<DynProps> {
-        let props = item.map(|i| i.extra_properties());
+        let props = item.map(EItemInfo::extra_properties);
         let inline = props.and_then(|p| PROP_FIELD_INLINE.try_get(p));
         let hide_fields = props.and_then(|p| PROP_FIELD_HIDE_FIELDS.try_get(p));
         Ok(StructProps {

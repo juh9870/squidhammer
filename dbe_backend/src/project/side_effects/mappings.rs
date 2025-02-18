@@ -282,7 +282,7 @@ fn next_id_raw(
         bail!("No ID ranges are available. Please add a new range to the available IDs")
     }
 
-    while let Some(id) = ids.iter_mut().find_map(|range| range.next()) {
+    while let Some(id) = ids.iter_mut().find_map(Iterator::next) {
         // Check that ID is not already occupied
         if !occupied_ids.contains(&id) {
             occupied_ids.insert(id);

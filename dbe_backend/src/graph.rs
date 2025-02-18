@@ -1,6 +1,6 @@
 use crate::graph::editing::GraphEditingContext;
 use crate::graph::inputs::{GraphInput, GraphOutput};
-use crate::graph::node::colors::PackedNodeColorScheme;
+use crate::graph::node::colors::{NodeColorScheme, PackedNodeColorScheme};
 use crate::graph::node::commands::SnarlCommands;
 use crate::graph::node::{get_node_factory, NodeContext, SnarlNode};
 use crate::graph::region::region_graph::RegionGraph;
@@ -109,7 +109,7 @@ impl Graph {
 
                 let mut created_node = SnarlNode::new(created_node);
 
-                created_node.color_scheme = node.color_scheme.map(|c| c.unpack());
+                created_node.color_scheme = node.color_scheme.map(PackedNodeColorScheme::unpack);
                 created_node.custom_title = node.custom_title;
 
                 let node_id = if node.open {
@@ -286,7 +286,7 @@ impl Graph {
                     .with_context(|| format!("failed to serialize node {:?}", id))?,
                 pos: info.pos,
                 open: info.open,
-                color_scheme: info.value.color_scheme.as_ref().map(|c| c.pack()),
+                color_scheme: info.value.color_scheme.as_ref().map(NodeColorScheme::pack),
                 custom_title: info.value.custom_title.clone(),
             };
             packed.nodes.push((id, packed_node));

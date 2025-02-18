@@ -398,12 +398,12 @@ pub fn write_generic_json_fields<
     let inputs = inputs(node)
         .as_ref()
         .iter()
-        .map(|ty| ty.save_type())
+        .map(GenericNodeField::save_type)
         .collect_vec();
     let outputs = outputs(node)
         .as_ref()
         .iter()
-        .map(|ty| ty.save_type())
+        .map(GenericNodeField::save_type)
         .collect_vec();
 
     serde_json::to_value((inputs, outputs)).into_diagnostic()

@@ -28,7 +28,7 @@ impl Editor for IdRefEditor {
         item: Option<&EItemInfo>,
         _object_props: DynProps,
     ) -> miette::Result<DynProps> {
-        let props = item.map(|i| i.extra_properties());
+        let props = item.map(EItemInfo::extra_properties);
         let show_file_path = props
             .and_then(|p| PROP_FIELD_SHOW_FILE_PATH.try_get(p))
             .unwrap_or(false);

@@ -119,7 +119,7 @@ pub fn get_values<'a, T: TryFrom<&'a EValue, Error = E>, E: Into<miette::Error>,
             fields
                 .get(&name.into())
                 .ok_or_else(|| miette!("Field {name} is missing"))
-                .and_then(|value| T::try_from(value).map_err(|err| err.into()))
+                .and_then(|value| T::try_from(value).map_err(Into::into))
         })
         .try_collect()?;
 

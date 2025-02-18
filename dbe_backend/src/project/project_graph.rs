@@ -266,7 +266,7 @@ impl ProjectGraphs {
                 let other_path = self
                     .paths
                     .get(&id)
-                    .map_or_else(|| "unknown file".to_string(), |p| p.to_string());
+                    .map_or_else(|| "unknown file".to_string(), ToString::to_string);
                 bail!(
                     "graph with id {:?} already exists at `{}`. Were graph files copied manually?",
                     id,

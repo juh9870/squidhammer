@@ -21,7 +21,7 @@ impl Editor for ConstEditor {
         item: Option<&EItemInfo>,
         _object_props: DynProps,
     ) -> miette::Result<DynProps> {
-        if let Some(ty) = item.map(|i| i.ty()) {
+        if let Some(ty) = item.map(EItemInfo::ty) {
             let EDataType::Const { value } = ty else {
                 bail!("unsupported item. Expected const")
             };

@@ -6,7 +6,7 @@ use std::sync::LazyLock;
 use lockfree_object_pool::{LinearObjectPool, LinearReusable};
 
 static PATH_VEC_POOL: LazyLock<LinearObjectPool<Vec<DiagnosticPathSegment>>> =
-    LazyLock::new(|| LinearObjectPool::new(Vec::new, |v| v.clear()));
+    LazyLock::new(|| LinearObjectPool::new(Vec::new, Vec::clear));
 
 #[derive(Debug, Clone, Eq, PartialEq, Hash, Ord, PartialOrd)]
 pub enum DiagnosticPathSegment {

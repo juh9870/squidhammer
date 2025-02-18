@@ -28,6 +28,7 @@ use std::ops::Deref;
 use std::sync::{Arc, LazyLock};
 use ustr::{Ustr, UstrMap};
 use utils::map::HashMap;
+use utils::whatever_ref::o_map::WhateverRefCallMap;
 use utils::whatever_ref::WhateverRef;
 
 pub mod config;
@@ -301,7 +302,7 @@ impl ETypesRegistry {
                             |e| e.as_struct().expect("Was checked to be struct"),
                         ))
                     })
-                    .map(|e| e.into_dyn_ref())
+                    .map(WhateverRefCallMap::into_dyn_ref)
             })
     }
 
@@ -325,7 +326,7 @@ impl ETypesRegistry {
                             |e| e.as_enum().expect("Was checked to be enum"),
                         ))
                     })
-                    .map(|e| e.into_dyn_ref())
+                    .map(WhateverRefCallMap::into_dyn_ref)
             })
     }
 

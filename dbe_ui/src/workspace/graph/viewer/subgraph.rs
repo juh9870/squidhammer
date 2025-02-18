@@ -4,7 +4,7 @@ use crate::workspace::graph::GraphViewer;
 use dbe_backend::graph::node::groups::subgraph::{SubgraphNode, SubgraphNodeFactory};
 use dbe_backend::graph::node::{Node, NodeFactory, SnarlNode};
 use dbe_backend::project::docs::DocsRef;
-use dbe_backend::project::project_graph::ProjectGraphs;
+use dbe_backend::project::project_graph::{ProjectGraph, ProjectGraphs};
 use egui::Ui;
 use egui_hooks::UseHookExt;
 use egui_snarl::{InPin, NodeId, OutPin, Snarl};
@@ -60,12 +60,10 @@ impl NodeView for SubgraphNodeViewer {
 fn graphs_combobox(ui: &mut Ui, selected: &mut Uuid, graphs: &ProjectGraphs) {
     ui.push_id("graphs_combobox", |ui| {
         egui::ComboBox::from_id_salt("dropdown")
-            .selected_text(
-                graphs
-                    .graphs
-                    .get(selected)
-                    .map_or_else(|| "!!unknown graph!!".to_string(), |g| g.display_name()),
-            )
+            .selected_text(graphs.graphs.get(selected).map_or_else(
+                || "!!unknown graph!!".to_string(),
+                ProjectGraph::display_name,
+            ))
             .show_ui(ui, |ui| {
                 let mut search_query = ui.use_state(|| "".to_string(), *selected).into_var();
                 let search_bar = ui.text_edit_singleline(search_query.deref_mut());
