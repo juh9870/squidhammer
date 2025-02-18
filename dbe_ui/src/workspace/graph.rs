@@ -183,11 +183,13 @@ impl SnarlViewer<SnarlNode> for GraphViewer<'_> {
         snarl: &mut Snarl<SnarlNode>,
     ) -> PinInfo {
         m_try(|| get_viewer(&snarl[pin.id.node].id()).show_input(self, pin, ui, _scale, snarl))
-            .map(|r| r.inner)
-            .unwrap_or_else(|err| {
-                report_error(err);
-                PinInfo::circle().with_fill(Color32::BLACK)
-            })
+            .map_or_else(
+                |err| {
+                    report_error(err);
+                    PinInfo::circle().with_fill(Color32::BLACK)
+                },
+                |r| r.inner,
+            )
     }
 
     fn outputs(&mut self, node: &SnarlNode) -> usize {
@@ -202,11 +204,13 @@ impl SnarlViewer<SnarlNode> for GraphViewer<'_> {
         snarl: &mut Snarl<SnarlNode>,
     ) -> PinInfo {
         m_try(|| get_viewer(&snarl[pin.id.node].id()).show_output(self, pin, ui, _scale, snarl))
-            .map(|r| r.inner)
-            .unwrap_or_else(|err| {
-                report_error(err);
-                PinInfo::circle().with_fill(Color32::BLACK)
-            })
+            .map_or_else(
+                |err| {
+                    report_error(err);
+                    PinInfo::circle().with_fill(Color32::BLACK)
+                },
+                |r| r.inner,
+            )
     }
 
     fn has_body(&mut self, node: &SnarlNode) -> bool {
@@ -581,34 +585,34 @@ fn pin_color(ty: EDataType, registry: &ETypesRegistry) -> Color32 {
             None => NULL_COLOR,
             Some(data) => PROP_OBJECT_PIN_COLOR
                 .try_get(data.extra_properties())
-                .map(|e| e.0)
-                .unwrap_or_else(|| {
-                    let c = RandomColor::new()
-                        .seed(ident.to_string())
-                        .luminosity(Luminosity::Light)
-                        .alpha(1.0)
-                        .to_rgb_array();
-                    Color32::from_rgb(c[0], c[1], c[2])
-                }),
+                .map_or_else(
+                    || {
+                        let c = RandomColor::new()
+                            .seed(ident.to_string())
+                            .luminosity(Luminosity::Light)
+                            .alpha(1.0)
+                            .to_rgb_array();
+                        Color32::from_rgb(c[0], c[1], c[2])
+                    },
+                    |e| e.0,
+                ),
         },
         EDataType::List { id } => registry
             .get_list(&id)
-            .map(|e| pin_color(e.value_type, registry))
-            .unwrap_or(NULL_COLOR),
+            .map_or(NULL_COLOR, |e| pin_color(e.value_type, registry)),
         EDataType::Map { id } => registry
             .get_map(&id)
-            .map(|e| pin_color(e.value_type, registry))
-            .unwrap_or(NULL_COLOR),
+            .map_or(NULL_COLOR, |e| pin_color(e.value_type, registry)),
         EDataType::Unknown => UNKNOWN_COLOR,
     }
 }
 
 fn pin_stroke(ty: EDataType, registry: &ETypesRegistry) -> Stroke {
     if let EDataType::Map { id } = ty {
-        let color = registry
-            .get_map(&id)
-            .map(|e| pin_color(e.key_type, registry))
-            .unwrap_or_else(|| pin_color(ty, registry));
+        let color = registry.get_map(&id).map_or_else(
+            || pin_color(ty, registry),
+            |e| pin_color(e.key_type, registry),
+        );
         Stroke::new(tweak!(2.0), color)
     } else {
         Stroke::NONE

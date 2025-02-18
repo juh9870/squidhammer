@@ -115,9 +115,10 @@ impl NodePortType {
     }
 
     pub fn item_info_or_null(&self) -> Cow<EItemInfo> {
-        self.item_info()
-            .map(Cow::Borrowed)
-            .unwrap_or_else(|| Cow::Owned(EItemInfo::simple_type(EDataType::null())))
+        self.item_info().map_or_else(
+            || Cow::Owned(EItemInfo::simple_type(EDataType::null())),
+            Cow::Borrowed,
+        )
     }
 
     pub fn ty(&self) -> EDataType {
@@ -142,12 +143,10 @@ impl NodePortType {
                 EDataType::Const { .. } => false,
                 EDataType::List { id } => registry
                     .get_list(&id)
-                    .map(|list| has_inline_value(registry, list.value_type))
-                    .unwrap_or(true),
+                    .map_or(true, |list| has_inline_value(registry, list.value_type)),
                 EDataType::Map { id } => registry
                     .get_map(&id)
-                    .map(|map| has_inline_value(registry, map.value_type))
-                    .unwrap_or(true),
+                    .map_or(true, |map| has_inline_value(registry, map.value_type)),
                 EDataType::Unknown => false,
             }
         }

@@ -64,8 +64,7 @@ fn graphs_combobox(ui: &mut Ui, selected: &mut Uuid, graphs: &ProjectGraphs) {
                 graphs
                     .graphs
                     .get(selected)
-                    .map(|g| g.display_name())
-                    .unwrap_or_else(|| "!!unknown graph!!".to_string()),
+                    .map_or_else(|| "!!unknown graph!!".to_string(), |g| g.display_name()),
             )
             .show_ui(ui, |ui| {
                 let mut search_query = ui.use_state(|| "".to_string(), *selected).into_var();

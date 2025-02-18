@@ -140,8 +140,7 @@ pub fn get_port_input<IO: GraphIoData>(
     Ok(InputData::new(
         f.ty()
             .map(EItemInfo::simple_type)
-            .map(NodePortType::Specific)
-            .unwrap_or_else(|| NodePortType::BasedOnSource),
+            .map_or_else(|| NodePortType::BasedOnSource, NodePortType::Specific),
         f.name().into(),
     ))
 }
@@ -161,8 +160,7 @@ pub fn get_port_output<IO: GraphIoData>(
     Ok(OutputData::new(
         f.ty()
             .map(EItemInfo::simple_type)
-            .map(NodePortType::Specific)
-            .unwrap_or_else(|| NodePortType::BasedOnTarget),
+            .map_or_else(|| NodePortType::BasedOnTarget, NodePortType::Specific),
         f.name().into(),
     ))
 }

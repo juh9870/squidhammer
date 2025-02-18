@@ -425,8 +425,7 @@ impl Ctx {
                     item.name,
                     struct_id,
                     item.value
-                        .map(|s| s.replace('\'', "\""))
-                        .unwrap_or_else(|| i.to_string())
+                        .map_or_else(|| i.to_string(), |s| s.replace('\'', "\""))
                 );
             }
             code += "\n}";
@@ -439,8 +438,7 @@ impl Ctx {
                     "\n\tconst \"{}\" {}",
                     item.name,
                     item.value
-                        .map(|s| s.replace('\'', "\""))
-                        .unwrap_or_else(|| i.to_string())
+                        .map_or_else(|| i.to_string(), |s| s.replace('\'', "\""))
                 );
             }
 

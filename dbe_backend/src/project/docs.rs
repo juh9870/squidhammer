@@ -337,12 +337,11 @@ impl DocsWindowRef {
             DocsWindowRef::Node(node) => docs
                 .get_node(node.as_str())
                 .map(|d| d.title.as_str())
-                .map(Cow::Borrowed)
-                .unwrap_or_else(|| Cow::Borrowed(node.as_str())),
-            DocsWindowRef::Type(ty) => registry
-                .get_object(ty)
-                .map(|ty| Cow::Owned(ty.title(registry)))
-                .unwrap_or_else(|| Cow::Owned(ty.to_string())),
+                .map_or_else(|| Cow::Borrowed(node.as_str()), Cow::Borrowed),
+            DocsWindowRef::Type(ty) => registry.get_object(ty).map_or_else(
+                || Cow::Owned(ty.to_string()),
+                |ty| Cow::Owned(ty.title(registry)),
+            ),
         }
     }
 
@@ -434,20 +433,17 @@ impl DocsRef {
             DocsRef::NodeInput(node, input) => docs
                 .get_node(node.as_str())
                 .and_then(|d| d.inputs.iter().find(|i| i.id == input.as_str()))
-                .map(|i| i.title.as_str())
-                .unwrap_or_else(|| input.as_str())
+                .map_or_else(|| input.as_str(), |i| i.title.as_str())
                 .into(),
             DocsRef::NodeOutput(node, output) => docs
                 .get_node(node.as_str())
                 .and_then(|d| d.outputs.iter().find(|i| i.id == output.as_str()))
-                .map(|o| o.title.as_str())
-                .unwrap_or_else(|| output.as_str())
+                .map_or_else(|| output.as_str(), |o| o.title.as_str())
                 .into(),
             DocsRef::NodeState(node, field) => docs
                 .get_node(node.as_str())
                 .and_then(|d| d.outputs.iter().find(|i| i.id == field.as_str()))
-                .map(|o| o.title.as_str())
-                .unwrap_or_else(|| field.as_str())
+                .map_or_else(|| field.as_str(), |o| o.title.as_str())
                 .into(),
             DocsRef::TypeField(_, field) => field.as_str().into(),
             DocsRef::EnumVariant(_, variant) => variant.as_str().into(),
