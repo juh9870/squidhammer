@@ -247,8 +247,7 @@ impl SideEffectPathItem {
                 .graphs
                 .graphs
                 .get(id)
-                .map(|subgraph| subgraph.name.clone())
-                .unwrap_or_else(|| id.to_string()),
+                .map_or_else(|| id.to_string(), |subgraph| subgraph.name.clone()),
         }
     }
 }

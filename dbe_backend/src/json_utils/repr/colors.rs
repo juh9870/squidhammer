@@ -55,10 +55,10 @@ impl JsonRepr for ColorStringRepr {
     fn into_repr(&self, _registry: &ETypesRegistry, data: JsonValue) -> miette::Result<JsonValue> {
         let obj = json_expected(data.as_object(), &data, "object")?;
 
-        let a = obj.get("a").map(|a| a.as_f64().unwrap()).unwrap_or(1.0) as f32;
-        let r = obj.get("r").map(|a| a.as_f64().unwrap()).unwrap_or(0.0) as f32;
-        let g = obj.get("g").map(|a| a.as_f64().unwrap()).unwrap_or(0.0) as f32;
-        let b = obj.get("b").map(|a| a.as_f64().unwrap()).unwrap_or(0.0) as f32;
+        let a = obj.get("a").map_or(1.0, |a| a.as_f64().unwrap()) as f32;
+        let r = obj.get("r").map_or(0.0, |a| a.as_f64().unwrap()) as f32;
+        let g = obj.get("g").map_or(0.0, |a| a.as_f64().unwrap()) as f32;
+        let b = obj.get("b").map_or(0.0, |a| a.as_f64().unwrap()) as f32;
 
         let str = if a == 1.0 {
             ColorFormat::rgb().format(Rgba::from_rgb(r, g, b))

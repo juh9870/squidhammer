@@ -119,11 +119,7 @@ fn show_folder(
                         Err(mut iter) => {
                             let sub_path = path.join(iter.next().expect("Should not be empty"));
                             let mut folder_items = vec![];
-                            while fs
-                                .peek()
-                                .map(|e| e.as_ref().starts_with(&sub_path))
-                                .unwrap_or(false)
-                            {
+                            while fs.peek().is_some_and(|e| e.as_ref().starts_with(&sub_path)) {
                                 folder_items
                                     .push(fs.next().expect("Peeked item should be present"));
                             }
