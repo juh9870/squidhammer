@@ -13,3 +13,6 @@ inline_tweak = { workspace = true }
 
 [package.metadata.release]
 release = false
+
+[lints]
+workspace = true

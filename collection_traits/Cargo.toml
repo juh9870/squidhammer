@@ -17,3 +17,6 @@ ordermap = ["dep:ordermap"]
 
 [package.metadata.release]
 release = false
+
+[lints]
+workspace = true

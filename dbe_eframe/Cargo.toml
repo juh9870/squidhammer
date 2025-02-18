@@ -29,3 +29,6 @@ fs-err = { workspace = true }
 default = []
 # Enables backtrace-on-stack-overflow ONLY on linux machines when debug assertions are enabled
 backtrace-on-stack-overflow = ["dep:backtrace-on-stack-overflow"]
+
+[lints]
+workspace = true

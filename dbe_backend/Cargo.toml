@@ -64,3 +64,6 @@ release = false
 
 [package.metadata.cargo-machete]
 ignored = ["collection_traits"]
+
+[lints]
+workspace = true

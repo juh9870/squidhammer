@@ -16,6 +16,7 @@ pub enum ParsingError {
 }
 
 impl PreparedFmt {
+    #[expect(clippy::string_slice, reason = "ranges are created via char_indices")]
     pub fn parse(fmt: &str) -> Result<Self, ParsingError> {
         let mut segments = Segments::new();
         let mut keys = Keys::new();

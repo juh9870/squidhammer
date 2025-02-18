@@ -638,6 +638,7 @@ pub enum GraphRegionBuildError {
 }
 
 fn format_region(id: Uuid) -> String {
+    #[expect(clippy::string_slice, reason = "UUID string representation is ASCII")]
     id.to_string()[..8].to_string()
 }
 
