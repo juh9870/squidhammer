@@ -147,8 +147,7 @@ pub(super) fn nodes() -> Vec<Arc<dyn NodeFactory>> {
                 let success =
                     match swap_value(ctx.context.registry, &mut obj.0, &field, &mut value.0)? {
                         SwapValueResult::Swapped => true,
-                        SwapValueResult::InvalidType => false,
-                        SwapValueResult::FieldNotFound => false,
+                        SwapValueResult::InvalidType | SwapValueResult::FieldNotFound => false,
                     };
                 Ok((obj, success, success.then_some(value)))
             },

@@ -52,9 +52,9 @@ pub fn main() -> miette::Result<()> {
                 SchemaItem::Data(data) => match &data.ty {
                     SchemaDataType::Enum => ctx.consume_enum(relative, data),
                     SchemaDataType::Expression => {}
-                    SchemaDataType::Struct => ctx.consume_struct(relative, data),
-                    SchemaDataType::Settings => ctx.consume_struct(relative, data),
-                    SchemaDataType::Object => ctx.consume_struct(relative, data),
+                    SchemaDataType::Struct | SchemaDataType::Settings | SchemaDataType::Object => {
+                        ctx.consume_struct(relative, data)
+                    }
                 },
             }
         }

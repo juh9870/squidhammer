@@ -627,10 +627,9 @@ fn pin_info(ty: &NodePortType, registry: &ETypesRegistry) -> PinInfo {
                 EDataType::Boolean
                 | EDataType::Number
                 | EDataType::String
-                | EDataType::Const { .. } => PinInfo::circle(),
-                EDataType::Object { .. } => PinInfo::circle(),
-                EDataType::List { .. } => PinInfo::square(),
-                EDataType::Map { .. } => PinInfo::square(),
+                | EDataType::Const { .. }
+                | EDataType::Object { .. } => PinInfo::circle(),
+                EDataType::List { .. } | EDataType::Map { .. } => PinInfo::square(),
                 EDataType::Unknown => PinInfo::star(),
             };
 

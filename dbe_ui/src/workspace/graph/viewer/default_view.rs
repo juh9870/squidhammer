@@ -34,10 +34,9 @@ pub fn format_value(value: &EValue) -> String {
                 format!("{:?}", value)
             }
         }
-        EValue::Struct { .. } => "".to_string(),
-        EValue::Enum { .. } => "".to_string(),
-        EValue::List { .. } => "".to_string(),
-        EValue::Map { .. } => "".to_string(),
+        EValue::Struct { .. } | EValue::Enum { .. } | EValue::List { .. } | EValue::Map { .. } => {
+            "".to_string()
+        }
     }
 }
 

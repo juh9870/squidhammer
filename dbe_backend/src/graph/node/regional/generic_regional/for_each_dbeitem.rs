@@ -42,11 +42,8 @@ impl GenericStatefulNode for ForEachDbeItem {
         "for_each_dbeitem".into()
     }
 
-    fn input_names(&self, data: &&RegionIoData) -> &[&str] {
-        match data.kind {
-            RegionIoKind::Start => &[],
-            RegionIoKind::End => &[],
-        }
+    fn input_names(&self, _data: &&RegionIoData) -> &[&str] {
+        &[]
     }
     fn output_names(&self, data: &&RegionIoData) -> &[&str] {
         match data.kind {

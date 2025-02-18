@@ -133,31 +133,29 @@ impl NodePortType {
     pub fn has_inline_value(&self, registry: &ETypesRegistry) -> bool {
         fn has_inline_value(registry: &ETypesRegistry, ty: EDataType) -> bool {
             match ty {
-                EDataType::Boolean => true,
-                EDataType::Number => true,
-                EDataType::String => true,
+                EDataType::Boolean | EDataType::Number | EDataType::String => true,
+                EDataType::Const { .. } | EDataType::Unknown => false,
                 EDataType::Object { ident } => registry
                     .get_object(&ident)
                     .and_then(|obj| PROP_OBJECT_GRAPH_INLINE.try_get(obj.extra_properties()))
                     .unwrap_or(true),
-                EDataType::Const { .. } => false,
                 EDataType::List { id } => registry
                     .get_list(&id)
                     .map_or(true, |list| has_inline_value(registry, list.value_type)),
                 EDataType::Map { id } => registry
                     .get_map(&id)
                     .map_or(true, |map| has_inline_value(registry, map.value_type)),
-                EDataType::Unknown => false,
             }
         }
         match self {
-            NodePortType::Invalid => false,
-            NodePortType::BasedOnSource => false,
-            NodePortType::BasedOnTarget => false,
+            NodePortType::Invalid | NodePortType::BasedOnSource | NodePortType::BasedOnTarget => {
+                false
+            }
             NodePortType::Specific(ty) => has_inline_value(registry, ty.ty()),
         }
     }
 
+    #[expect(clippy::match_same_arms, reason = "for readability")]
     pub fn compatible(registry: &ETypesRegistry, from: &NodePortType, to: &NodePortType) -> bool {
         match (from, to) {
             (NodePortType::Invalid, _) => false, // Invalid never connects

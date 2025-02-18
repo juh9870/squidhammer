@@ -104,10 +104,10 @@ fn validate_inner(
         }
 
         match data {
-            EValue::Null => {}
-            EValue::Boolean { .. } => {}
-            EValue::Number { .. } => {}
-            EValue::String { .. } => {}
+            EValue::Null
+            | EValue::Boolean { .. }
+            | EValue::Number { .. }
+            | EValue::String { .. } => {}
             EValue::Struct { ident, fields } => {
                 let obj = registry.get_struct(ident).ok_or_else(|| {
                     miette!(
