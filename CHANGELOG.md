@@ -6,6 +6,14 @@
 
 > Released on ReleaseDate
 
+### Added
+
+- Context to warnings emitted upon loading a file (by juh9870)
+
+### Fixed
+
+- Crash when file names contain wide UTF characters before the extension (by juh9870)
+
 ## [0.2.2]
 
 > Released on 2025-02-17
