@@ -115,7 +115,7 @@ utils = { path = "utils" }
 opt-level = 3
 codegen-units = 1
 lto = true
-strip = true
+strip = false
 
 # Enable a small amount of optimization in debug mode
 [profile.dev]
