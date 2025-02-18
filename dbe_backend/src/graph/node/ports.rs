@@ -257,26 +257,6 @@ pub fn port_types_compatible(registry: &ETypesRegistry, from: &EItemInfo, to: &E
 }
 
 fn enum_assignable(registry: &ETypesRegistry, from: &EItemInfo, to: &EItemInfo) -> bool {
-    let target_ty = to.ty();
-
-    let EDataType::Object { ident } = target_ty else {
-        return false;
-    };
-
-    let Some(enum_data) = registry.get_enum(&ident) else {
-        return false;
-    };
-
-    let autoconvert = PROP_OBJECT_GRAPH_AUTOCONVERT.get(&enum_data.extra_properties, true);
-    if !autoconvert {
-        return false;
-    }
-
-    let recursive_convert =
-        PROP_OBJECT_GRAPH_AUTOCONVERT_RECURSIVE.get(&enum_data.extra_properties, false);
-    let autoconvert_variant =
-        PROP_OBJECT_GRAPH_AUTOCONVERT_VARIANT.try_get(&enum_data.extra_properties);
-
     fn check_variant(
         registry: &ETypesRegistry,
         variant: &EEnumVariant,
@@ -305,6 +285,26 @@ fn enum_assignable(registry: &ETypesRegistry, from: &EItemInfo, to: &EItemInfo) 
         false
     }
 
+    let target_ty = to.ty();
+
+    let EDataType::Object { ident } = target_ty else {
+        return false;
+    };
+
+    let Some(enum_data) = registry.get_enum(&ident) else {
+        return false;
+    };
+
+    let autoconvert = PROP_OBJECT_GRAPH_AUTOCONVERT.get(&enum_data.extra_properties, true);
+    if !autoconvert {
+        return false;
+    }
+
+    let recursive_convert =
+        PROP_OBJECT_GRAPH_AUTOCONVERT_RECURSIVE.get(&enum_data.extra_properties, false);
+    let autoconvert_variant =
+        PROP_OBJECT_GRAPH_AUTOCONVERT_VARIANT.try_get(&enum_data.extra_properties);
+
     if let Some(autoconvert_variant) = autoconvert_variant {
         for variant in enum_data.variants() {
             if variant.name == autoconvert_variant {
@@ -328,6 +328,13 @@ fn convert_enum(
     to: &EItemInfo,
     value: EValue,
 ) -> miette::Result<Option<EValue>> {
+    fn make_enum(variant: &EEnumVariantId, value: EValue) -> EValue {
+        EValue::Enum {
+            variant: *variant,
+            data: Box::new(value),
+        }
+    }
+
     let target_ty = to.ty();
 
     let EDataType::Object { ident } = target_ty else {
@@ -347,13 +354,6 @@ fn convert_enum(
         PROP_OBJECT_GRAPH_AUTOCONVERT_RECURSIVE.get(&enum_data.extra_properties, false);
     let autoconvert_variant =
         PROP_OBJECT_GRAPH_AUTOCONVERT_VARIANT.try_get(&enum_data.extra_properties);
-
-    fn make_enum(variant: &EEnumVariantId, value: EValue) -> EValue {
-        EValue::Enum {
-            variant: *variant,
-            data: Box::new(value),
-        }
-    }
 
     for variant in enum_data.variants_with_ids() {
         let (variant, variant_id) = variant;

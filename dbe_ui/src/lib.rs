@@ -186,11 +186,6 @@ impl DbeApp {
     }
 
     pub fn update(&mut self, ctx: &Context) {
-        #[cfg(debug_assertions)]
-        {
-            ctx.set_debug_on_hover(inline_tweak::tweak!(false));
-        }
-
         static INIT: OnceLock<()> = OnceLock::new();
 
         INIT.get_or_init(|| {
@@ -203,6 +198,11 @@ impl DbeApp {
                 );
             }
         });
+
+        #[cfg(debug_assertions)]
+        {
+            ctx.set_debug_on_hover(inline_tweak::tweak!(false));
+        }
 
         self.dark_mode = ctx.style().visuals.dark_mode;
         self.colorix.draw_background(ctx, false);

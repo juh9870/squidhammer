@@ -268,6 +268,71 @@ impl SnarlViewer<SnarlNode> for GraphViewer<'_> {
     ) {
         ui.style_mut().wrap_mode = Some(egui::TextWrapMode::Extend);
         ui.menu_button("Add node", |ui| {
+            fn show<'a, C: AsRef<[&'a str]>>(
+                ui: &mut Ui,
+                parent: &[&str],
+                categories: &mut Peekable<impl Iterator<Item = (C, &'a Vec<NodeCombo>)>>,
+            ) -> Option<NodeCombo> {
+                ui.style_mut().wrap_mode = Some(egui::TextWrapMode::Extend);
+                while let Some((cat, _)) = categories.peek() {
+                    let cat = cat.as_ref();
+                    if !parent.is_empty() && !cat.starts_with(parent) {
+                        return None;
+                    }
+                    let cat_name = cat.strip_prefix(parent).unwrap();
+
+                    if cat_name.len() > 1 {
+                        let next_cat = parent
+                            .iter()
+                            .chain(cat_name.iter().take(1))
+                            .copied()
+                            .collect_vec();
+                        return ui
+                            .menu_button(cat_name[0], |ui| {
+                                show(ui, next_cat.as_slice(), categories)
+                            })
+                            .inner
+                            .flatten();
+                    }
+
+                    if !parent.is_empty() {
+                        ui.separator();
+                    }
+
+                    let (category, factories) = categories.next().unwrap();
+                    let category = category.as_ref();
+                    let cat_name = category.strip_prefix(parent).unwrap();
+                    if let Some(node) = ui
+                        .menu_button(cat_name.join("."), |ui| {
+                            ScrollArea::vertical()
+                                .max_height(ui.ctx().screen_rect().height() / 2.0)
+                                .show(ui, |ui| {
+                                    for node in factories.iter() {
+                                        if ui.button(node.display_title()).clicked() {
+                                            ui.close_menu();
+                                            return Some(node.clone());
+                                        }
+                                    }
+
+                                    show(ui, category, categories)
+                                })
+                                .inner
+                        })
+                        .inner
+                        .flatten()
+                    {
+                        return Some(node);
+                    }
+
+                    while categories
+                        .peeking_next(|(next_cat, _)| next_cat.as_ref().starts_with(category))
+                        .is_some()
+                    {}
+                }
+
+                None
+            }
+
             let search = ui.use_memo(
                 || GraphSearch::all_nodes(self.ctx.graphs, self.ctx.registry, |_| true),
                 (),
@@ -280,71 +345,6 @@ impl SnarlViewer<SnarlNode> for GraphViewer<'_> {
                     .iter()
                     .map(|x| (x.0.split('.').collect_vec(), x.1))
                     .peekable();
-
-                fn show<'a, C: AsRef<[&'a str]>>(
-                    ui: &mut Ui,
-                    parent: &[&str],
-                    categories: &mut Peekable<impl Iterator<Item = (C, &'a Vec<NodeCombo>)>>,
-                ) -> Option<NodeCombo> {
-                    ui.style_mut().wrap_mode = Some(egui::TextWrapMode::Extend);
-                    while let Some((cat, _)) = categories.peek() {
-                        let cat = cat.as_ref();
-                        if !parent.is_empty() && !cat.starts_with(parent) {
-                            return None;
-                        }
-                        let cat_name = cat.strip_prefix(parent).unwrap();
-
-                        if cat_name.len() > 1 {
-                            let next_cat = parent
-                                .iter()
-                                .chain(cat_name.iter().take(1))
-                                .copied()
-                                .collect_vec();
-                            return ui
-                                .menu_button(cat_name[0], |ui| {
-                                    show(ui, next_cat.as_slice(), categories)
-                                })
-                                .inner
-                                .flatten();
-                        }
-
-                        if !parent.is_empty() {
-                            ui.separator();
-                        }
-
-                        let (category, factories) = categories.next().unwrap();
-                        let category = category.as_ref();
-                        let cat_name = category.strip_prefix(parent).unwrap();
-                        if let Some(node) = ui
-                            .menu_button(cat_name.join("."), |ui| {
-                                ScrollArea::vertical()
-                                    .max_height(ui.ctx().screen_rect().height() / 2.0)
-                                    .show(ui, |ui| {
-                                        for node in factories.iter() {
-                                            if ui.button(node.display_title()).clicked() {
-                                                ui.close_menu();
-                                                return Some(node.clone());
-                                            }
-                                        }
-
-                                        show(ui, category, categories)
-                                    })
-                                    .inner
-                            })
-                            .inner
-                            .flatten()
-                        {
-                            return Some(node);
-                        }
-
-                        while categories
-                            .peeking_next(|(next_cat, _)| next_cat.as_ref().starts_with(category))
-                            .is_some()
-                        {}
-                    }
-
-                    None
-                }
 
                 show(ui, &[], &mut categories)
             });

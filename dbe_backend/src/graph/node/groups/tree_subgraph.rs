@@ -815,7 +815,6 @@ mod tree {
         }
 
         pub fn sync_tree_to_graph(&mut self) -> bool {
-            let _guard = error_span!("syncing tree to graph").entered();
             fn insert_resizing<T: Default>(vec: &mut Vec<T>, index: usize, value: T) -> Option<T> {
                 if vec.len() <= index {
                     vec.resize_with(index + 1, Default::default);
@@ -826,6 +825,8 @@ mod tree {
                 std::mem::swap(&mut vec[index], &mut swapped);
                 Some(swapped)
             }
+
+            let _guard = error_span!("syncing tree to graph").entered();
 
             let (input_node, output_node) = self.get_group_io_nodes();
             let root_node = self.root;

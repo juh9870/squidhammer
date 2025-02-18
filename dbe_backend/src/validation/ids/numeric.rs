@@ -201,7 +201,6 @@ impl<'a> NumericIDRegistry<'a> {
     }
 
     pub fn is_id_assignable(&self, from: Ustr, to: Ustr) -> miette::Result<bool> {
-        let config = config(self.registry)?;
         fn is_assignable(
             config: &ReservedIdConfig,
             from: Ustr,
@@ -227,6 +226,8 @@ impl<'a> NumericIDRegistry<'a> {
 
             false
         }
+
+        let config = config(self.registry)?;
 
         Ok(is_assignable(&config, from, to, &mut smallvec![]))
     }
@@ -254,17 +255,6 @@ impl<'a> NumericIDRegistry<'a> {
         ref_ty: EDataType,
         id: ENumber,
     ) -> miette::Result<Option<String>> {
-        let EDataType::Object { ident } = ref_ty else {
-            bail!("expected object type, got {:?}", ref_ty);
-        };
-
-        let category = extract_generic_arg(self.registry, &ident)?;
-
-        let config = config(self.registry)?;
-
-        let reg = self.registry.extra_data::<Data>();
-        let reg = reg.read();
-
         fn location(
             config: &ReservedIdConfig,
             reg: &NumericIDsRegistry,
@@ -296,6 +286,17 @@ impl<'a> NumericIDRegistry<'a> {
 
             None
         }
+
+        let EDataType::Object { ident } = ref_ty else {
+            bail!("expected object type, got {:?}", ref_ty);
+        };
+
+        let category = extract_generic_arg(self.registry, &ident)?;
+
+        let config = config(self.registry)?;
+
+        let reg = self.registry.extra_data::<Data>();
+        let reg = reg.read();
 
         Ok(location(&config, &reg, id, category, &mut smallvec![]))
     }
@@ -425,9 +426,6 @@ impl DataValidator for Id {
         _item: Option<&EItemInfo>,
         data: &EValue,
     ) -> miette::Result<()> {
-        let reg = registry.extra_data::<Data>();
-        let mut reg = reg.write();
-
         fn check_id_conflicts(
             registry: &ETypesRegistry,
             reg: &mut RwLockWriteGuard<NumericIDsRegistry>,
@@ -497,6 +495,9 @@ impl DataValidator for Id {
             Ok(errors)
         }
 
+        let reg = registry.extra_data::<Data>();
+        let mut reg = reg.write();
+
         let (ty, id) = ty_and_id(registry, data)?;
 
         let errors = check_id_conflicts(
@@ -536,11 +537,6 @@ impl DataValidator for Ref {
         _item: Option<&EItemInfo>,
         data: &EValue,
     ) -> miette::Result<()> {
-        let reg = registry.extra_data::<Data>();
-        let mut reg = reg.write();
-
-        let (ty, id) = ty_and_id(registry, data)?;
-
         fn check_id_exists(
             registry: &ETypesRegistry,
             reg: &mut RwLockWriteGuard<NumericIDsRegistry>,
@@ -575,6 +571,11 @@ impl DataValidator for Ref {
                 .or_default()
                 .is_empty())
         }
+
+        let reg = registry.extra_data::<Data>();
+        let mut reg = reg.write();
+
+        let (ty, id) = ty_and_id(registry, data)?;
 
         if !check_id_exists(registry, &mut reg, ty, id, &mut smallvec![])? {
             ctx.emit_error(miette!("ID {} of type `{}` is not defined", id, ty));

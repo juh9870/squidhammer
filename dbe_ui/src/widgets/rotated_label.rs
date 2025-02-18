@@ -58,6 +58,11 @@ impl SelectableRotLabel {
 
 impl Widget for SelectableRotLabel {
     fn ui(self, ui: &mut Ui) -> Response {
+        #[inline(always)]
+        fn transpose(vec: Vec2) -> Vec2 {
+            vec2(vec.y, vec.x)
+        }
+
         let Self {
             selected,
             text,
@@ -66,11 +71,6 @@ impl Widget for SelectableRotLabel {
 
         if direction == RotLabelDirection::Horizontal {
             return SelectableLabel::new(selected, text).ui(ui);
-        }
-
-        #[inline(always)]
-        fn transpose(vec: Vec2) -> Vec2 {
-            vec2(vec.y, vec.x)
         }
 
         let button_padding = transpose(ui.spacing().button_padding);

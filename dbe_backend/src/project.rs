@@ -147,13 +147,6 @@ impl<IO: ProjectIO> Project<IO> {
         files: impl IntoIterator<Item = PathBuf>,
         mut io: IO,
     ) -> miette::Result<Self> {
-        let mut registry_items = HashMap::default();
-        let mut import_jsons = HashMap::<Utf8PathBuf, (JsonValue, Option<EDataType>)>::default();
-        let mut types_jsons = HashMap::<Utf8PathBuf, JsonValue>::default();
-        let mut graphs = HashMap::<Utf8PathBuf, JsonValue>::default();
-        let mut docs = Docs::Docs(Default::default());
-        let mut modules = HashMap::<Utf8PathBuf, DbeModule>::default();
-
         fn utf8str(path: &Utf8Path, data: Vec<u8>) -> miette::Result<String> {
             String::from_utf8(data).into_diagnostic().with_context(|| {
                 format!(
@@ -183,6 +176,13 @@ impl<IO: ProjectIO> Project<IO> {
                 hash_map::Entry::Occupied(e) => Ok(e.into_mut()),
             }
         }
+
+        let mut registry_items = HashMap::default();
+        let mut import_jsons = HashMap::<Utf8PathBuf, (JsonValue, Option<EDataType>)>::default();
+        let mut types_jsons = HashMap::<Utf8PathBuf, JsonValue>::default();
+        let mut graphs = HashMap::<Utf8PathBuf, JsonValue>::default();
+        let mut docs = Docs::Docs(Default::default());
+        let mut modules = HashMap::<Utf8PathBuf, DbeModule>::default();
 
         let root = root.as_ref();
         let root = Utf8PathBuf::from_path_buf(root.to_path_buf())
@@ -503,8 +503,6 @@ impl<IO: ProjectIO> Project<IO> {
         self.files.par_iter().try_for_each_with(
             no_delete_sender,
             |sender, (path, file)| -> miette::Result<()> {
-                sender.send(path.clone()).unwrap();
-                let mut generated = false;
                 fn wrap_if_dbe(path: &Utf8Path, value: &EValue, json: JsonValue) -> JsonValue {
                     if path
                         .extension()
@@ -521,6 +519,9 @@ impl<IO: ProjectIO> Project<IO> {
                         json
                     }
                 }
+
+                sender.send(path.clone()).unwrap();
+                let mut generated = false;
                 let json_string = m_try(|| {
                     let json = match file {
                         ProjectFile::Value(value) => {

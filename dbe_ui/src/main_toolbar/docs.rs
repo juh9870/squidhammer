@@ -48,13 +48,6 @@ pub fn docs_tab(ui: &mut Ui, app: &mut DbeApp) {
 
     ScrollArea::vertical().show(ui, |ui| match selection.deref_mut() {
         SelectedDocs::None => {
-            TextEdit::singleline(search_text.deref_mut())
-                .hint_text("Search")
-                .ui(ui);
-
-            let search_query = search_text.trim();
-            let force_show = (!search_query.is_empty()).then_some(true);
-
             fn search<'a>(query: &str, title: &'a str, id: &'a str) -> (bool, Cow<'a, str>) {
                 if query.is_empty() {
                     return (true, title.into());
@@ -68,6 +61,13 @@ pub fn docs_tab(ui: &mut Ui, app: &mut DbeApp) {
                 };
                 (title_contains || id_contains, content)
             }
+
+            TextEdit::singleline(search_text.deref_mut())
+                .hint_text("Search")
+                .ui(ui);
+
+            let search_query = search_text.trim();
+            let force_show = (!search_query.is_empty()).then_some(true);
 
             CollapsingHeader::new("Nodes")
                 .open(force_show)
