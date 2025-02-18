@@ -26,7 +26,7 @@ pub fn category_tree(
         .iter()
         .map(|(category, factories)| {
             (
-                category.to_string(),
+                (*category).to_string(),
                 factories
                     .iter()
                     .map(|f| NodeCombo::Factory(f.id()))
