@@ -18,13 +18,6 @@ pub enum ParsingError {
 impl PreparedFmt {
     #[expect(clippy::string_slice, reason = "ranges are created via char_indices")]
     pub fn parse(fmt: &str) -> Result<Self, ParsingError> {
-        let mut segments = Segments::new();
-        let mut keys = Keys::new();
-        let mut cur_range_start = 0usize;
-        let mut in_key = false;
-
-        let mut bad_key_char = None::<(usize, char)>;
-
         #[inline(always)]
         fn push_literal(
             segments: &mut Segments,
@@ -67,6 +60,13 @@ impl PreparedFmt {
 
             Ok(())
         }
+
+        let mut segments = Segments::new();
+        let mut keys = Keys::new();
+        let mut cur_range_start = 0usize;
+        let mut in_key = false;
+
+        let mut bad_key_char = None::<(usize, char)>;
 
         let mut chars = fmt.char_indices().peekable();
         while let Some((idx, char)) = chars.next() {

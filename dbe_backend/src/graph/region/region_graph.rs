@@ -457,6 +457,8 @@ impl RegionGraphBuilder<'_> {
 
     /// Assigns nodes to the regions based on computed hierarchy
     fn assign_nodes(&mut self) -> Result<RegionGraphData, GraphRegionBuildError> {
+        const DELETED_REGION: usize = usize::MAX;
+
         let mut graph = RegionGraphData {
             topological_order: self
                 .region_data
@@ -519,8 +521,6 @@ impl RegionGraphBuilder<'_> {
                         self.region_data[*reg].toposort_index
                     }
                 });
-
-                const DELETED_REGION: usize = usize::MAX;
 
                 for i in 0..data.input_regions.len() {
                     let region_id = data.input_regions[i];

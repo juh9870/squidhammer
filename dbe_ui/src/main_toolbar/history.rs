@@ -3,18 +3,6 @@ use dbe_backend::project::undo::{FileSnapshot, SnapshotKind};
 use egui::{Button, Ui};
 
 pub fn history_tab(ui: &mut Ui, app: &mut DbeApp) {
-    ui.label("Undo History");
-
-    let height =
-        ui.text_style_height(&egui::TextStyle::Button) + ui.style().spacing.button_padding.y * 2.0;
-
-    app.undo_buttons(ui);
-
-    let Some(project) = &mut app.project else {
-        ui.label("No project loaded");
-        return;
-    };
-
     enum Entry<'a> {
         Past(&'a FileSnapshot),
         UndoneHistory(&'a FileSnapshot),
@@ -44,6 +32,18 @@ pub fn history_tab(ui: &mut Ui, app: &mut DbeApp) {
             }
         }
     }
+
+    ui.label("Undo History");
+
+    let height =
+        ui.text_style_height(&egui::TextStyle::Button) + ui.style().spacing.button_padding.y * 2.0;
+
+    app.undo_buttons(ui);
+
+    let Some(project) = &mut app.project else {
+        ui.label("No project loaded");
+        return;
+    };
 
     let history = project.history.history();
     let undone = project.history.undone_history();

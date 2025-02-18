@@ -149,12 +149,6 @@ impl EStructData {
         json_data: &mut JsonValue,
         inline: bool,
     ) -> miette::Result<EValue> {
-        if !json_data.is_object() {
-            bail!(
-                "invalid data type. Expected object but got `{}`",
-                json_kind(json_data)
-            )
-        };
         #[inline(always)]
         fn j_fields(
             json_data: &mut JsonValue,
@@ -167,6 +161,13 @@ impl EStructData {
             };
             Ok(data)
         }
+
+        if !json_data.is_object() {
+            bail!(
+                "invalid data type. Expected object but got `{}`",
+                json_kind(json_data)
+            )
+        };
 
         let mut fields = BTreeMap::<Ustr, EValue>::default();
 
@@ -219,11 +220,11 @@ impl EStructData {
         fields: &BTreeMap<Ustr, EValue>,
         registry: &ETypesRegistry,
     ) -> miette::Result<JsonValue> {
-        let mut json_fields = JsonMap::new();
-
         fn conflicting_fields(name: &str) -> miette::Report {
             miette!("multiple occurrences of field `{}` are present", name)
         }
+
+        let mut json_fields = JsonMap::new();
 
         // always save default values if the object has a repr
         let save_default = self.repr.is_some()

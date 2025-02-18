@@ -36,6 +36,16 @@ fn main() -> anyhow::Result<()> {
 }
 
 fn check_workspace_deps() -> anyhow::Result<()> {
+    fn clear_deps(obj: &JsonValue, dependencies: &mut HashSet<&str>) {
+        for key in ["dependencies", "dev-dependencies", "build-dependencies"] {
+            if let Some(keys) = obj[key].as_object().map(|o| o.keys()) {
+                for k in keys {
+                    dependencies.remove(k.as_str());
+                }
+            }
+        }
+    }
+
     let workspace_str = fs_err::read_to_string("Cargo.toml")?;
     let workspace: JsonValue = toml::de::from_str(&workspace_str)?;
 
@@ -46,16 +56,6 @@ fn check_workspace_deps() -> anyhow::Result<()> {
         .keys()
         .map(|s| s.as_str())
         .collect::<HashSet<_>>();
-
-    fn clear_deps(obj: &JsonValue, dependencies: &mut HashSet<&str>) {
-        for key in ["dependencies", "dev-dependencies", "build-dependencies"] {
-            if let Some(keys) = obj[key].as_object().map(|o| o.keys()) {
-                for k in keys {
-                    dependencies.remove(k.as_str());
-                }
-            }
-        }
-    }
 
     for member in members.as_array().unwrap() {
         let member_str =
