@@ -9,7 +9,7 @@ const EPS: f32 = 1e-5;
 
 /// Calculate the cross product of two vectors
 pub fn cross(a: Vec2, b: Vec2) -> f32 {
-    a.x * b.y - a.y * b.x
+    a.x.mul_add(b.y, -(a.y * b.x))
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, EnumIs)]
