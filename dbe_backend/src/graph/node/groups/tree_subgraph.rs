@@ -800,14 +800,14 @@ mod tree {
 
                 self.tree_cache = Some(TreeState {
                     inputs,
-                    width: hierarchy.iter().map(|x| x.len()).max().unwrap_or(0),
+                    width: hierarchy.iter().map(Vec::len).max().unwrap_or(0),
                     hierarchy,
                     start_of,
                     end_of,
                     has_inlined_inputs: self
                         .tree
                         .iter()
-                        .map(|x| (*x.0, x.1.iter().any(|x| x.is_some())))
+                        .map(|x| (*x.0, x.1.iter().any(Option::is_some)))
                         .collect(),
                 })
             };

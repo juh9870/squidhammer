@@ -49,7 +49,7 @@ impl RegionGraph {
 
     /// Attempts to get a reference to the underlying region graph
     pub fn try_as_data(&self) -> Result<&RegionGraphData, GraphRegionBuildError> {
-        self.0.as_ref().map_err(|err| err.clone())
+        self.0.as_ref().map_err(Clone::clone)
     }
 
     /// Forces a rebuild in the region graph

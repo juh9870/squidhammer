@@ -95,7 +95,7 @@ fn validate_inner(
     data: &EValue,
 ) -> miette::Result<()> {
     m_try(|| {
-        if let Some(validators) = item.map(|i| i.validators()) {
+        if let Some(validators) = item.map(EItemInfo::validators) {
             for validator in validators {
                 validator
                     .validate(registry, ctx.enter_inline(), item, data)

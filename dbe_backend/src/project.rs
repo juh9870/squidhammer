@@ -195,7 +195,7 @@ impl<IO: ProjectIO> Project<IO> {
             let path = Utf8Path::from_path(relative)
                 .ok_or_else(|| miette!("Got non-UTF8 path at {}", relative.display()))?;
 
-            let Some(ext) = path.extension().map(|ext| ext.to_lowercase()) else {
+            let Some(ext) = path.extension().map(str::to_lowercase) else {
                 continue;
             };
 

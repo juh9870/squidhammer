@@ -20,7 +20,7 @@ impl Editor for StringEditor {
         item: Option<&EItemInfo>,
         _object_props: DynProps,
     ) -> miette::Result<DynProps> {
-        let props = item.map(|i| i.extra_properties());
+        let props = item.map(EItemInfo::extra_properties);
         let multiline = props
             .and_then(|p| PROP_FIELD_MULTILINE.try_get(p))
             .unwrap_or(false);

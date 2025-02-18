@@ -287,7 +287,7 @@ impl Display for EValue {
                 write!(
                     f,
                     "{id}[{}]",
-                    values.iter().map(|e| e.to_string()).join(", ")
+                    values.iter().map(ToString::to_string).join(", ")
                 )
             }
             EValue::Map { id, values } => {

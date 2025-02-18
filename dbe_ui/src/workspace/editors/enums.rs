@@ -63,7 +63,7 @@ impl Editor for EnumEditor {
         object_props: DynProps,
     ) -> miette::Result<DynProps> {
         let kind = prop(
-            item.map(|i| i.extra_properties()),
+            item.map(EItemInfo::extra_properties),
             PROP_FIELD_KIND.deref(),
             EnumEditorType::Auto,
         )?;

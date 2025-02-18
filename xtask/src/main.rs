@@ -54,7 +54,7 @@ fn check_workspace_deps() -> anyhow::Result<()> {
         .as_object()
         .unwrap()
         .keys()
-        .map(|s| s.as_str())
+        .map(String::as_str)
         .collect::<HashSet<_>>();
 
     for member in members.as_array().unwrap() {

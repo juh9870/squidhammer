@@ -2,7 +2,7 @@
 
 use egui::{
     text::{CCursor, CCursorRange},
-    Id, Response, ScrollArea, TextEdit, Ui, Widget, WidgetText,
+    Id, Memory, Response, ScrollArea, TextEdit, Ui, Widget, WidgetText,
 };
 use std::hash::Hash;
 
@@ -141,7 +141,7 @@ impl<F: FnMut(&mut Ui, &V, &str) -> Response, V: AsRef<str>, I: Iterator<Item = 
                                 *buf = text.to_owned();
                                 changed = true;
 
-                                ui.memory_mut(|m| m.close_popup());
+                                ui.memory_mut(Memory::close_popup);
                             }
                         }
                     });
