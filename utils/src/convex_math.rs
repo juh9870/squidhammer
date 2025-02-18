@@ -23,6 +23,7 @@ pub enum WindingDirection {
 /// Returns None if the winding direction cannot be determined (e.g. all points
 /// are collinear)
 pub fn convex_winding_direction(points: &[Pos2]) -> Option<WindingDirection> {
+    assert!(points.len() > 1);
     let mut dx = (points[1] - points[0]).normalized();
     for i in 1..points.len() {
         let next_dx = (points[(i + 1) % points.len()] - points[i]).normalized();

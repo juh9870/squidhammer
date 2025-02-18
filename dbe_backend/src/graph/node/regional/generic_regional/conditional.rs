@@ -189,15 +189,16 @@ impl<const KIND: u8> GenericStatefulNode for ConditionalNode<KIND> {
         outputs.clear();
 
         if region.is_start() {
+            let condition = &inputs[0];
             match ConditionalKind::of(KIND) {
                 ConditionalKind::If => {
-                    let condition = *inputs[0].try_as_boolean()?;
+                    let condition = *condition.try_as_boolean()?;
                     variables.get_or_init_region_data(region.region, |_| ConditionalNodeState {
                         condition,
                     });
                 }
                 ConditionalKind::Map => {
-                    let value = unwrap_optional_value(context.registry, &inputs[0])?;
+                    let value = unwrap_optional_value(context.registry, condition)?;
                     let condition = value.is_some();
                     variables.get_or_init_region_data(region.region, |_| ConditionalNodeState {
                         condition,

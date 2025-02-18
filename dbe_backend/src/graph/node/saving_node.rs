@@ -70,6 +70,7 @@ impl<const ALLOW_ANY: bool> Node for SavingNode<ALLOW_ANY> {
         _outputs: &mut Vec<EValue>,
         variables: &mut ExecutionExtras,
     ) -> miette::Result<ExecutionResult> {
+        assert!(inputs.len() > 1);
         let EValue::Enum { variant, data } = &inputs[0] else {
             bail!("path input must be an enum, got {:?}", inputs[0]);
         };

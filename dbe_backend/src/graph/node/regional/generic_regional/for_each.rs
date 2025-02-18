@@ -276,6 +276,7 @@ impl<const KIND: u8> GenericStatefulNode for ForEachLikeRegionalNode<KIND> {
         variables: &mut ExecutionExtras,
     ) -> miette::Result<ExecutionResult> {
         if region.is_start() {
+            assert!(inputs.len() > 1);
             let EValue::List { values, .. } = &inputs[0] else {
                 bail!("Expected list input, got: {}", inputs[0].ty().name());
             };

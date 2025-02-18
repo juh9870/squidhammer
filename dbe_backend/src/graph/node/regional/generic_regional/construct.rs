@@ -65,6 +65,7 @@ impl GenericStatefulNode for ConstructListNode {
         Ok(state.current < state.repeats)
     }
 
+    #[allow(clippy::missing_asserts_for_indexing)]
     fn execute(
         &self,
         context: NodeContext,
