@@ -133,13 +133,9 @@ impl GenericNodeFieldMut<'_> {
     /// Overwrites the fields with the incoming types
     fn load_from(&mut self, incoming: Option<EDataType>) -> miette::Result<()> {
         match self {
-            GenericNodeFieldMut::List(ty) => {
-                **ty = incoming;
-            }
-            GenericNodeFieldMut::Value(ty) => {
-                **ty = incoming;
-            }
-            GenericNodeFieldMut::Option(ty) => {
+            GenericNodeFieldMut::List(ty)
+            | GenericNodeFieldMut::Value(ty)
+            | GenericNodeFieldMut::Option(ty) => {
                 **ty = incoming;
             }
             GenericNodeFieldMut::Object(ident) => {
@@ -161,9 +157,9 @@ impl GenericNodeFieldMut<'_> {
 impl GenericNodeField<'_> {
     pub fn is_specific(&self) -> bool {
         match self {
-            GenericNodeField::List(ty) => ty.is_some(),
-            GenericNodeField::Value(ty) => ty.is_some(),
-            GenericNodeField::Option(ty) => ty.is_some(),
+            GenericNodeField::List(ty)
+            | GenericNodeField::Value(ty)
+            | GenericNodeField::Option(ty) => ty.is_some(),
             GenericNodeField::Object(ident) => ident.is_some(),
             GenericNodeField::Fixed(_) => true,
         }
@@ -252,9 +248,9 @@ impl GenericNodeField<'_> {
 
     fn save_type(&self) -> Option<EDataType> {
         match self {
-            GenericNodeField::List(ty) => **ty,
-            GenericNodeField::Value(ty) => **ty,
-            GenericNodeField::Option(ty) => **ty,
+            GenericNodeField::List(ty)
+            | GenericNodeField::Value(ty)
+            | GenericNodeField::Option(ty) => **ty,
             GenericNodeField::Fixed(ty) => Some(*ty),
             GenericNodeField::Object(ident) => ident.map(|ident| EDataType::Object { ident }),
         }

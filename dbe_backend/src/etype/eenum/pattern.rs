@@ -77,14 +77,13 @@ impl EnumPattern {
                                 || tag == &ETypeConst::String("".into())))
                 }
             }),
-            EnumPattern::UntaggedObject => value.is_object(),
             EnumPattern::Boolean => value.is_boolean(),
             EnumPattern::Number => value.is_number(),
             EnumPattern::String => value.is_string(),
             EnumPattern::Ref(_) => value.is_string() || value.is_number(),
             EnumPattern::Const(c) => c.matches_json(value).by_value,
             EnumPattern::List => value.is_array(),
-            EnumPattern::Map => value.is_object(),
+            EnumPattern::UntaggedObject | EnumPattern::Map => value.is_object(),
             EnumPattern::Never => false,
         }
     }

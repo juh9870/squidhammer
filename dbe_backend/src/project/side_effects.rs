@@ -59,8 +59,7 @@ impl SideEffect {
             } => {
                 let path = Utf8PathBuf::from(clean_up_path(&path) + extension(is_dbevalue));
                 match project.files.get(&path) {
-                    None => {}
-                    Some(ProjectFile::GeneratedValue(..)) => {
+                    None | Some(ProjectFile::GeneratedValue(..)) => {
                         // ok to overwrite
                     }
                     Some(_) => {
