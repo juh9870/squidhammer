@@ -150,8 +150,9 @@ impl Node for DestructuringNode {
             return Ok(ExecutionResult::Done);
         };
 
-        let EValue::Struct { ident, fields } = &inputs[0] else {
-            bail!("expected struct, got `{}`", inputs[0].ty().name());
+        let input = &inputs[0];
+        let EValue::Struct { ident, fields } = &input else {
+            bail!("expected struct, got `{}`", input.ty().name());
         };
 
         if *ident != id {
