@@ -8,7 +8,7 @@ use crate::workspace::graph::{any_pin, pin_info, GraphViewer};
 use dbe_backend::graph::node::SnarlNode;
 use dbe_backend::project::docs::{DocsRef, DocsWindowRef};
 use dbe_backend::value::EValue;
-use egui::{InnerResponse, Ui};
+use egui::{InnerResponse, TextBuffer, Ui};
 use egui_snarl::ui::{NodeLayout, PinInfo};
 use egui_snarl::{InPin, NodeId, OutPin, Snarl};
 use std::fmt::Debug;
@@ -29,7 +29,7 @@ pub fn format_value(value: &EValue) -> String {
             .to_string(),
         EValue::String { value } => {
             if value.len() > 8 {
-                format!("{:?}...", &value[..8])
+                format!("{:?}...", value.char_range(0..8))
             } else {
                 format!("{:?}", value)
             }

@@ -76,7 +76,11 @@ impl ColorFormat {
         self.0[3] != ColorChannel::None
     }
 
+    #[expect(clippy::string_slice, reason = "color is checked to be ASCII")]
     pub fn parse(&self, mut color: &str) -> miette::Result<Rgba> {
+        if !color.is_ascii() {
+            bail!("Color must be ASCII")
+        }
         if color.starts_with('#') {
             color = &color[1..];
         }
@@ -206,6 +210,7 @@ pub fn parse_rgb32(color: &str) -> miette::Result<Color32> {
 
 #[cfg(test)]
 mod tests {
+    #![expect(clippy::string_slice, reason = "test module")]
     use super::{ColorChannel, ColorFormat};
     use crate::color_format::parse_rgb32;
     use ecolor::{Color32, Rgba};

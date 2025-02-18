@@ -46,3 +46,6 @@ uuid = { workspace = true, features = ["v4"] }
 
 [package.metadata.release]
 release = false
+
+[lints]
+workspace = true

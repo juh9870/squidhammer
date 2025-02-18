@@ -111,6 +111,9 @@ utils = { path = "utils" }
 #[patch.crates-io]
 #miette = { git = "https://github.com/zkat/miette", rev = "bf5aa3742fd664be3c93160b9c28c145b1ed8bc9" }
 
+[workspace.lints.clippy]
+string_slice = "warn"
+
 [profile.release]
 opt-level = 3
 codegen-units = 1
