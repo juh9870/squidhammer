@@ -125,10 +125,10 @@ map_with_unused_argument_over_ranges = "warn"
 match_same_arms = "warn"
 mismatching_type_param_order = "warn"
 missing_asserts_for_indexing = "warn"
-#missing_const_for_fn = "allow" # add to individual crates#missing_panics_doc = "allow" # add to individual crates
-#needless_continue = "warn"
-#needless_pass_by_value = "warn"
-#non_std_lazy_statics = "warn"
+#missing_const_for_fn = "allow" # add to individual crates
+#missing_panics_doc = "allow" # add to individual crates
+needless_continue = "warn"
+#needless_pass_by_value = "warn"#non_std_lazy_statics = "warn"
 #nonstandard_macro_braces = "warn"
 #option_if_let_else = "warn"
 #or_fun_call = "warn"
