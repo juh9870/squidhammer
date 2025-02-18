@@ -57,7 +57,7 @@ impl Editor for RgbEditor {
                                         ("b", value[2]),
                                         ("a", value[3]),
                                     ],
-                                )
+                                );
                             },
                         );
                     } else {

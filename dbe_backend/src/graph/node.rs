@@ -94,7 +94,7 @@ static NODE_FACTORIES_BY_CATEGORY: LazyLock<AtomicRefCell<FactoriesByCategory>> 
 
 fn default_nodes() -> impl Iterator<Item = (Ustr, Arc<dyn NodeFactory>)> {
     fn push<T: NodeFactory>(v: &mut Vec<Arc<dyn NodeFactory>>, t: T) {
-        v.push(Arc::new(t))
+        v.push(Arc::new(t));
     }
 
     let mut factories: Vec<Arc<dyn NodeFactory>> = functional_nodes();

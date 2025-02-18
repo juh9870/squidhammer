@@ -226,7 +226,7 @@ enum "Item" editor="enum" port="hollow" {
         match ty {
             Ok(data) => {
                 let data = format!("{data:?}");
-                println!("{data}")
+                println!("{data}");
             }
             Err(err) => {
                 let err = miette::Report::from(err);

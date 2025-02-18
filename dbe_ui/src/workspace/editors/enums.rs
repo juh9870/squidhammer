@@ -257,7 +257,7 @@ impl<'a> EnumEditorData<'a> {
         *self.variant = new_variant;
         match new_variant.variant(self.ctx.registry) {
             None => {
-                error!(id=?new_variant, "Failed to obtain enum variant for ID")
+                error!(id=?new_variant, "Failed to obtain enum variant for ID");
             }
             Some(variant) => {
                 *self.value = variant.default_value(self.ctx.registry).into_owned();
@@ -286,7 +286,7 @@ impl<'a> EnumEditorData<'a> {
         );
 
         if &selected != self.variant {
-            self.change_variant(selected)
+            self.change_variant(selected);
         }
     }
 
@@ -318,7 +318,7 @@ impl<'a> EnumEditorData<'a> {
                     first.0.name.as_str()
                 },
             );
-        })
+        });
     }
 
     fn toggle_editor_custom(
@@ -339,7 +339,7 @@ impl<'a> EnumEditorData<'a> {
         let mut after_check = checked;
         checkbox(ui, &mut after_check, first, second);
         if after_check != checked {
-            self.change_variant(if after_check { *second.1 } else { *first.1 })
+            self.change_variant(if after_check { *second.1 } else { *first.1 });
         }
     }
 

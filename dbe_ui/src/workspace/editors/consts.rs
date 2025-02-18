@@ -49,7 +49,7 @@ impl Editor for ConstEditor {
         if let Some(item) = props.item {
             let const_value = item.default_value();
             if value != &const_value {
-                labeled_error(ui, field_name, miette!("{}", ("dbe.editor.bad_const")))
+                labeled_error(ui, field_name, miette!("{}", ("dbe.editor.bad_const")));
             }
         }
 

@@ -335,7 +335,7 @@ impl<T: GenericStatefulNode> StatefulNode for T {
     }
 
     fn external_state_changed(&mut self, context: NodeContext, external_state: Self::State<'_>) {
-        <T as GenericStatefulNode>::external_state_changed(self, context, external_state)
+        <T as GenericStatefulNode>::external_state_changed(self, context, external_state);
     }
 
     fn has_side_effects(&self, external_state: Self::State<'_>) -> bool {

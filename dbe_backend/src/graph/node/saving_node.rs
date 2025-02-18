@@ -92,7 +92,7 @@ impl<const ALLOW_ANY: bool> Node for SavingNode<ALLOW_ANY> {
                     value,
                     path: path.into(),
                     is_dbevalue: ALLOW_ANY,
-                })?
+                })?;
         }
 
         Ok(ExecutionResult::Done)

@@ -164,7 +164,7 @@ impl GraphExecutionContext<'_, '_> {
                 continue;
             }
 
-            self.eval_node_if_uncached(id, side_effects)?
+            self.eval_node_if_uncached(id, side_effects)?;
         }
 
         Ok(())

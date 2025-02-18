@@ -51,7 +51,7 @@ impl DataValidator for Validator {
     }
 
     fn clear_cache(&self, registry: &ETypesRegistry) {
-        self.0.clear_cache(registry)
+        self.0.clear_cache(registry);
     }
 
     fn validate(
@@ -67,7 +67,7 @@ impl DataValidator for Validator {
 
 pub fn clear_validation_cache(registry: &ETypesRegistry) {
     for validator in VALIDATORS.borrow().values() {
-        validator.clear_cache(registry)
+        validator.clear_cache(registry);
     }
 }
 

@@ -46,9 +46,9 @@ pub fn workspace(ui: &mut Ui, app: &mut DbeApp) {
 impl DbeApp {
     pub fn open_tab_for(&mut self, _ctx: &Context, path: Utf8PathBuf) {
         if let Some(tab) = self.tabs.find_tab(&path) {
-            self.tabs.set_active_tab(tab)
+            self.tabs.set_active_tab(tab);
         } else {
-            self.tabs.push_to_focused_leaf(path)
+            self.tabs.push_to_focused_leaf(path);
         }
     }
 
@@ -92,7 +92,7 @@ impl DbeApp {
             }
 
             if project.files.contains_key(&path) {
-                report_error(miette!("File already exists"))
+                report_error(miette!("File already exists"));
             } else {
                 let value = project
                     .import_root()
@@ -103,7 +103,7 @@ impl DbeApp {
                     .insert(path.clone(), ProjectFile::Value(value));
                 app.open_tab_for(ctx, path);
             }
-        })
+        });
     }
 
     pub fn new_graph(&mut self, ctx: &Context, folder: Utf8PathBuf) {
@@ -146,13 +146,13 @@ impl DbeApp {
             }
 
             if project.files.contains_key(&path) {
-                report_error(miette!("File already exists"))
+                report_error(miette!("File already exists"));
             } else {
                 let id = project.graphs.insert_new_graph();
                 project.files.insert(path.clone(), ProjectFile::Graph(id));
                 app.open_tab_for(ctx, path);
             }
-        })
+        });
     }
 
     fn show_new_file_modal(
@@ -283,7 +283,7 @@ impl<Io: ProjectIO> TabViewer for WorkspaceTabViewer<'_, Io> {
                             "",
                             value,
                         );
-                        assert!(!res.changed, "Generated value was edited")
+                        assert!(!res.changed, "Generated value was edited");
                     });
 
                     ui.add_space(ui.ctx().screen_rect().height() * 0.5);
@@ -390,7 +390,7 @@ impl<Io: ProjectIO> TabViewer for WorkspaceTabViewer<'_, Io> {
 
                                 *selected_nodes =
                                     Snarl::<SnarlNode>::get_selected_nodes(tab.to_string(), ui);
-                            })
+                            });
                         });
                 }
             }

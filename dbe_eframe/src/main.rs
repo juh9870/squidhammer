@@ -50,7 +50,7 @@ fn main() -> eframe::Result<()> {
                 return false;
             }
             true
-        })
+        });
     }));
 
     panic::set_hook(Box::new(move |info| {
@@ -81,7 +81,7 @@ fn main() -> eframe::Result<()> {
 
         let stream = default_output_stream();
         let mut lock = stream.lock();
-        handler.print_panic_info(info, &mut lock).unwrap()
+        handler.print_panic_info(info, &mut lock).unwrap();
     }));
 
     let collector = EventCollector::default()

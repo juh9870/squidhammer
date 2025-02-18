@@ -93,7 +93,7 @@ impl SnarlViewer<SnarlNode> for GraphViewer<'_> {
         }
 
         if let Some(scheme) = &snarl[node].color_scheme {
-            default = default.fill(scheme.theme.tokens.subtle_background())
+            default = default.fill(scheme.theme.tokens.subtle_background());
         }
 
         default
@@ -122,7 +122,7 @@ impl SnarlViewer<SnarlNode> for GraphViewer<'_> {
             unreachable!()
         };
 
-        scheme.theme.tokens.set_egui_style(style)
+        scheme.theme.tokens.set_egui_style(style);
     }
 
     fn node_layout(
@@ -168,7 +168,7 @@ impl SnarlViewer<SnarlNode> for GraphViewer<'_> {
         })
         .unwrap_or_else(|err| {
             report_error(err);
-        })
+        });
     }
 
     fn inputs(&mut self, node: &SnarlNode) -> usize {
@@ -243,7 +243,7 @@ impl SnarlViewer<SnarlNode> for GraphViewer<'_> {
                 self.commands.execute(&mut self.ctx.as_full(snarl))?;
                 Ok(())
             })
-            .unwrap_or_else(report_error)
+            .unwrap_or_else(report_error);
         });
     }
 
@@ -356,7 +356,7 @@ impl SnarlViewer<SnarlNode> for GraphViewer<'_> {
             if let Some(to_insert) = node {
                 ui.close_menu();
                 if let Err(err) = to_insert.create(&mut self.ctx.as_full(snarl), pos) {
-                    report_error(err)
+                    report_error(err);
                 }
             }
         });
@@ -403,7 +403,7 @@ impl SnarlViewer<SnarlNode> for GraphViewer<'_> {
                             pin,
                             &mut self.commands,
                         ) {
-                            report_error(err)
+                            report_error(err);
                         }
                     }
                 }
@@ -435,7 +435,7 @@ impl SnarlViewer<SnarlNode> for GraphViewer<'_> {
                             pin,
                             &mut self.commands,
                         ) {
-                            report_error(err)
+                            report_error(err);
                         }
                     }
                 }
@@ -469,7 +469,7 @@ impl SnarlViewer<SnarlNode> for GraphViewer<'_> {
             }
             Ok(())
         })
-        .unwrap_or_else(report_error)
+        .unwrap_or_else(report_error);
     }
 
     fn connect(&mut self, from: &OutPin, to: &InPin, snarl: &mut Snarl<SnarlNode>) {
@@ -478,7 +478,7 @@ impl SnarlViewer<SnarlNode> for GraphViewer<'_> {
             .as_full(snarl)
             .connect(from, to, &mut self.commands)
         {
-            report_error(err)
+            report_error(err);
         }
     }
 

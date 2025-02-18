@@ -44,7 +44,7 @@ impl RegionGraph {
 
     /// Marks region hierarchy as dirty, and requiring a rebuild
     pub fn mark_dirty(&mut self) {
-        self.0 = Err(GraphRegionBuildError::Dirty)
+        self.0 = Err(GraphRegionBuildError::Dirty);
     }
 
     /// Attempts to get a reference to the underlying region graph
@@ -241,7 +241,7 @@ impl RegionGraphBuilder<'_> {
                             endpoint: id,
                             parents: vec![],
                             toposort_index: None,
-                        })
+                        });
                     }
                 }
             };
@@ -267,7 +267,7 @@ impl RegionGraphBuilder<'_> {
                             endpoint: NodeId(usize::MAX),
                             parents: vec![],
                             toposort_index: None,
-                        })
+                        });
                     }
                 }
             };

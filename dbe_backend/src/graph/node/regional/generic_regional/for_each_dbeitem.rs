@@ -180,7 +180,7 @@ impl GenericStatefulNode for ForEachDbeItem {
                         node: node_id,
                         output: 0,
                     },
-                })
+                });
             }
             self.enum_variant = None;
             return Ok(());
@@ -225,7 +225,7 @@ impl GenericStatefulNode for ForEachDbeItem {
                     node: node_id,
                     output: 0,
                 },
-            })
+            });
         }
 
         self.enum_variant = Some((variant.data.ty(), variant_id));

@@ -444,7 +444,7 @@ impl<IN> ParsedGeneric<IN, Vec<Option<EDataType>>> {
             .into_iter()
             .zip(outputs(node).as_mut().iter_mut())
         {
-            field.load_from(ty)?
+            field.load_from(ty)?;
         }
         Ok(ParsedGeneric {
             inputs: self.inputs,
@@ -464,7 +464,7 @@ impl<OUT> ParsedGeneric<Vec<Option<EDataType>>, OUT> {
             .into_iter()
             .zip(inputs(node).as_mut().iter_mut())
         {
-            field.load_from(ty)?
+            field.load_from(ty)?;
         }
         Ok(ParsedGeneric {
             inputs: (),

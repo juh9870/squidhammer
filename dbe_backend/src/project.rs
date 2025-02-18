@@ -435,7 +435,7 @@ impl<IO: ProjectIO> Project<IO> {
 
                 Ok(())
             })
-            .with_context(|| format!("failed to evaluate graph at `{}`", path))?
+            .with_context(|| format!("failed to evaluate graph at `{}`", path))?;
         }
 
         for path in generated {

@@ -88,9 +88,9 @@ fn change_all_combo(ui: &mut Ui, colorix: &mut Colorix, global: bool) {
 
         if change_all {
             if global {
-                colorix.update_theme(ui.ctx(), [*color; 12])
+                colorix.update_theme(ui.ctx(), [*color; 12]);
             } else {
-                *colorix = Colorix::local_from_style([*color; 12], colorix.dark_mode())
+                *colorix = Colorix::local_from_style([*color; 12], colorix.dark_mode());
             }
         }
     });
@@ -115,9 +115,9 @@ fn import_export(ui: &mut Ui, colorix: &mut Colorix, global: bool) {
             match serde_json5::from_str::<Theme>(&text) {
                 Ok(theme) => {
                     if global {
-                        colorix.update_theme(ui.ctx(), theme)
+                        colorix.update_theme(ui.ctx(), theme);
                     } else {
-                        *colorix = Colorix::local_from_style(theme, colorix.dark_mode())
+                        *colorix = Colorix::local_from_style(theme, colorix.dark_mode());
                     }
                 }
                 Err(e) => {

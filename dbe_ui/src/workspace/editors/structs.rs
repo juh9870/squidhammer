@@ -97,7 +97,7 @@ impl Editor for StructEditor {
                                     {
                                         changed = true;
                                     };
-                                    diagnostics_column(ui, d.get_reports_shallow())
+                                    diagnostics_column(ui, d.get_reports_shallow());
                                 });
                         });
                     }

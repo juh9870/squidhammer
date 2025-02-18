@@ -114,7 +114,7 @@ impl TreeSubgraph {
                                 node: created_id,
                                 input: internal_pin.input,
                             },
-                        })
+                        });
                     }
                 }
 
@@ -281,7 +281,7 @@ impl Node for TreeSubgraph {
                             node: id,
                             output: idx,
                         },
-                    })
+                    });
                 }
             } else {
                 return Ok(());
@@ -524,7 +524,7 @@ mod tree {
             let nodes = node.create_from_input_pin(&mut ctx, pos2(0.0, 0.0), pin, &mut commands)?;
             if nodes.len() != 1 {
                 for id in &nodes {
-                    commands.push(SnarlCommand::DeleteNode { node: *id })
+                    commands.push(SnarlCommand::DeleteNode { node: *id });
                 }
             }
 
@@ -809,7 +809,7 @@ mod tree {
                         .iter()
                         .map(|x| (*x.0, x.1.iter().any(Option::is_some)))
                         .collect(),
-                })
+                });
             };
 
             self.tree_cache.as_ref().unwrap()
@@ -963,7 +963,7 @@ mod tree {
                                 output: idx,
                             },
                             to: *pin,
-                        })
+                        });
                     }
                 }
 

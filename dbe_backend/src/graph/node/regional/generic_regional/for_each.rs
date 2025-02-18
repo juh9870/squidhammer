@@ -253,7 +253,7 @@ impl<const KIND: u8> GenericStatefulNode for ForEachLikeRegionalNode<KIND> {
                 other.node.input_ty = Some(ty);
                 Ok(())
             }),
-        })
+        });
     }
 
     fn should_execute(

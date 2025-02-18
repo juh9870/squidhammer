@@ -53,7 +53,7 @@ pub fn main() -> miette::Result<()> {
                     SchemaDataType::Enum => ctx.consume_enum(relative, data),
                     SchemaDataType::Expression => {}
                     SchemaDataType::Struct | SchemaDataType::Settings | SchemaDataType::Object => {
-                        ctx.consume_struct(relative, data)
+                        ctx.consume_struct(relative, data);
                     }
                 },
             }

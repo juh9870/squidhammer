@@ -205,7 +205,7 @@ impl EStructData {
                     "struct `{}` contains unknown fields: {}",
                     self.ident,
                     data.keys().map(|k| format!("`{k}`")).join(", ")
-                )
+                );
             }
         }
 
