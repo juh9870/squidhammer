@@ -5,3 +5,7 @@ dbe.log
 dbe.previous.log
 crash.log
 /dockerbuild
+flake.nix
+flake.lock
+.envrc
+.pre-commit-config.yaml
