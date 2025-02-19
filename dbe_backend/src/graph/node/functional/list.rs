@@ -148,6 +148,16 @@ pub(super) fn nodes() -> Vec<Arc<dyn NodeFactory>> {
             &["list"],
         ),
         functional_node(
+            |_: C, mut list: Vec<GenericValue<0>>| {
+                list.reverse();
+                list
+            },
+            "list_reverse",
+            &["list"],
+            &["list"],
+            &["list"],
+        ),
+        functional_node(
             |_: C, list: Vec<GenericValue<0>>, item: GenericValue<0>| list.contains(&item),
             "list_contains",
             &["list", "item"],

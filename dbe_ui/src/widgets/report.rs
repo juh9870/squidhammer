@@ -1,7 +1,60 @@
-use crate::error::{format_error, render_ansi};
+use crate::error::{format_error, render_ansi, report_error};
 use dbe_backend::diagnostic::prelude::{Diagnostic, DiagnosticLevel};
-use egui::{CollapsingHeader, Margin, RichText, Ui};
+use egui::{CollapsingHeader, Margin, RichText, TextStyle, Ui};
+use egui_hooks::UseHookExt;
 use inline_tweak::tweak;
+use std::sync::Arc;
+
+#[derive(Debug, Clone)]
+struct DiagnosticState {
+    msg: String,
+    err: Arc<Diagnostic>,
+    lifetime: usize,
+}
+
+pub fn reporting_error_widget(ui: &mut Ui, error: Option<miette::Report>) {
+    reporting_diagnostic_widget(
+        ui,
+        error.map(|info| Diagnostic {
+            info,
+            level: DiagnosticLevel::Error,
+        }),
+    );
+}
+pub fn reporting_diagnostic_widget(ui: &mut Ui, diagnostic: Option<Diagnostic>) {
+    ui.push_id("diagnostic", |ui| {
+        let mut var_last_state = ui.use_state(|| None::<DiagnosticState>, ()).into_var();
+
+        if let Some(last_state) = &mut *var_last_state {
+            if let Some(diagnostic) = diagnostic {
+                let new_msg = format_error(&diagnostic.info, false);
+                if new_msg != last_state.msg {
+                    last_state.msg = new_msg;
+                    last_state.err = Arc::new(diagnostic);
+                    last_state.lifetime = 0;
+                } else {
+                    last_state.lifetime += 1;
+                }
+                if last_state.lifetime >= 1 {
+                    diagnostic_widget(ui, &last_state.err);
+                }
+            } else {
+                if last_state.lifetime < 60 && last_state.err.level >= DiagnosticLevel::Error {
+                    // Message was short-lived, report it
+                    report_error(&last_state.err.info);
+                }
+                *var_last_state = None;
+            }
+        } else if let Some(diagnostic) = diagnostic {
+            let new_msg = format_error(&diagnostic.info, false);
+            *var_last_state = Some(DiagnosticState {
+                msg: new_msg,
+                err: Arc::new(diagnostic),
+                lifetime: 0,
+            });
+        }
+    });
+}
 
 pub fn diagnostic_widget(ui: &mut Ui, diagnostic: &Diagnostic) {
     let style = ui.style();
@@ -64,7 +117,7 @@ pub fn diagnostic_widget(ui: &mut Ui, diagnostic: &Diagnostic) {
                             right: tweak!(8.0),
                         })
                         .show(ui, |ui| {
-                            render_ansi(ui, rest.trim());
+                            render_ansi(ui, rest.trim(), TextStyle::Body.resolve(ui.style()));
                         });
                 });
         } else {

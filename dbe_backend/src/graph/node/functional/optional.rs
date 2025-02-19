@@ -42,6 +42,15 @@ pub(super) fn nodes() -> Vec<Arc<dyn NodeFactory>> {
             &["optional"],
         ),
         functional_node(
+            |_: C, value: Option<GenericValue<0>>, default: GenericValue<0>| {
+                value.unwrap_or(GenericValue(default.0))
+            },
+            "unwrap_or",
+            &["value", "default"],
+            &["value"],
+            &["optional"],
+        ),
+        functional_node(
             |_: C, value: Option<GenericValue<0>>| ENumber::from(value.is_some()),
             "is_some",
             &["option"],
