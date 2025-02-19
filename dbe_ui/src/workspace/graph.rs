@@ -1,6 +1,7 @@
 use crate::error::report_error;
 use crate::m_try;
 use crate::ui_props::PROP_OBJECT_PIN_COLOR;
+use crate::widgets::report::reporting_error_widget;
 use crate::workspace::graph::rects::NodeRects;
 use crate::workspace::graph::search::GraphSearch;
 use crate::workspace::graph::search::{category_tree, search_ui, search_ui_always};
@@ -148,7 +149,7 @@ impl SnarlViewer<SnarlNode> for GraphViewer<'_> {
         scale: f32,
         snarl: &mut Snarl<SnarlNode>,
     ) {
-        m_try(|| {
+        let err = m_try(|| {
             let node = &snarl[node_id];
 
             let viewer = get_viewer(&node.id());
@@ -166,9 +167,9 @@ impl SnarlViewer<SnarlNode> for GraphViewer<'_> {
 
             Ok(())
         })
-        .unwrap_or_else(|err| {
-            report_error(err);
-        });
+        .err();
+
+        reporting_error_widget(ui, err);
     }
 
     fn inputs(&mut self, node: &SnarlNode) -> usize {
@@ -182,14 +183,17 @@ impl SnarlViewer<SnarlNode> for GraphViewer<'_> {
         scale: f32,
         snarl: &mut Snarl<SnarlNode>,
     ) -> PinInfo {
-        m_try(|| get_viewer(&snarl[pin.id.node].id()).show_input(self, pin, ui, scale, snarl))
-            .map_or_else(
-                |err| {
-                    report_error(err);
-                    PinInfo::circle().with_fill(Color32::BLACK)
-                },
-                |r| r.inner,
-            )
+        match m_try(|| get_viewer(&snarl[pin.id.node].id()).show_input(self, pin, ui, scale, snarl))
+        {
+            Ok(r) => {
+                reporting_error_widget(ui, None);
+                r.inner
+            }
+            Err(err) => {
+                reporting_error_widget(ui, Some(err));
+                PinInfo::circle().with_fill(Color32::BLACK)
+            }
+        }
     }
 
     fn outputs(&mut self, node: &SnarlNode) -> usize {
@@ -203,14 +207,18 @@ impl SnarlViewer<SnarlNode> for GraphViewer<'_> {
         scale: f32,
         snarl: &mut Snarl<SnarlNode>,
     ) -> PinInfo {
-        m_try(|| get_viewer(&snarl[pin.id.node].id()).show_output(self, pin, ui, scale, snarl))
-            .map_or_else(
-                |err| {
-                    report_error(err);
-                    PinInfo::circle().with_fill(Color32::BLACK)
-                },
-                |r| r.inner,
-            )
+        match m_try(|| {
+            get_viewer(&snarl[pin.id.node].id()).show_output(self, pin, ui, scale, snarl)
+        }) {
+            Ok(r) => {
+                reporting_error_widget(ui, None);
+                r.inner
+            }
+            Err(err) => {
+                reporting_error_widget(ui, Some(err));
+                PinInfo::circle().with_fill(Color32::BLACK)
+            }
+        }
     }
 
     fn has_body(&mut self, node: &SnarlNode) -> bool {
@@ -230,7 +238,7 @@ impl SnarlViewer<SnarlNode> for GraphViewer<'_> {
         snarl: &mut Snarl<SnarlNode>,
     ) {
         ui.vertical(|ui| {
-            m_try(|| {
+            let err = m_try(|| {
                 get_viewer(&snarl[node_id].id())
                     .show_body(self, node_id, inputs, outputs, ui, scale, snarl)?;
 
@@ -243,7 +251,8 @@ impl SnarlViewer<SnarlNode> for GraphViewer<'_> {
                 self.commands.execute(&mut self.ctx.as_full(snarl))?;
                 Ok(())
             })
-            .unwrap_or_else(report_error);
+            .err();
+            reporting_error_widget(ui, err);
         });
     }
 

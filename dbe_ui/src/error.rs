@@ -1,12 +1,14 @@
 use crate::ERROR_HAPPENED;
 use cansi::v3::{categorise_text, CategorisedSlice};
 use egui::text::LayoutJob;
-use egui::{Color32, Stroke, TextFormat, Ui};
+use egui::{Color32, FontId, Stroke, TextFormat, Ui};
+use std::borrow::Borrow;
 use std::sync::atomic::Ordering;
 use tracing::error;
 
-pub fn report_error(err: miette::Report) {
-    let str = format_error(&err, true);
+pub fn report_error(err: impl Borrow<miette::Report>) {
+    let err = err.borrow();
+    let str = format_error(err, true);
     println!("{str}");
     error!("{str}");
 
@@ -43,7 +45,7 @@ pub fn format_error(err: &miette::Report, strip_ansi: bool) -> String {
     }
 }
 
-pub fn render_ansi(ui: &mut Ui, ansi: &str) {
+pub fn render_ansi(ui: &mut Ui, ansi: &str, font: FontId) {
     let slices = categorise_text(ansi);
     let mut job = LayoutJob {
         break_on_newline: true,
@@ -60,6 +62,8 @@ pub fn render_ansi(ui: &mut Ui, ansi: &str) {
     } in slices
     {
         let mut format = TextFormat::default();
+        format.font_id = font.clone();
+
         if let Some(fg) = fg {
             format.color = ansi_to_color(fg);
         }
@@ -76,13 +80,7 @@ pub fn render_ansi(ui: &mut Ui, ansi: &str) {
             format.strikethrough = Stroke::new(1.0, format.color);
         }
 
-        job.append(
-            text,
-            0.0,
-            TextFormat {
-                ..Default::default()
-            },
-        );
+        job.append(text, 0.0, format);
     }
 
     let galley = ui.ctx().fonts(|f| f.layout_job(job));

@@ -6,7 +6,7 @@ use thiserror::Error;
 pub enum ParsingError {
     #[error("Bad key character '{}' at position {}", .1, .0)]
     BadKeyChar(usize, char),
-    #[error("Empty key at position .0")]
+    #[error("Empty key at position {}", .0)]
     EmptyKey(usize),
     #[error("Unmatched closing brace '}}' at position {}. Use '}}}}' if you want to output '}}' character", .0
     )]
