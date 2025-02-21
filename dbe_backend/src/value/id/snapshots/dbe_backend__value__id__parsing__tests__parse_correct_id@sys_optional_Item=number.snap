@@ -1,0 +1,15 @@
+---
+source: dbe_backend/src/value/id/parsing.rs
+description: "For Id: sys:optional<Item=number>"
+---
+GenericObject {
+    ident: ETypeId(sys:optional),
+    generics: [
+        (
+            "Item",
+            Simple(
+                Number,
+            ),
+        ),
+    ],
+}

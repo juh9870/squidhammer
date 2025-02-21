@@ -63,10 +63,14 @@ pub fn register_object_property<T: TryFrom<ETypeConst>>(prop: &ObjectProperty<T>
 ///     pub prop<object> graph_autoconvert_variant: Ustr;
 ///     pub prop<field> graph_inline: bool;
 /// }
-/// extra_properties! {
-///    /// A
-///    /// B
-///    pub prop<object> graph_autoconvert2: bool
+/// mod other {
+/// # use dbe_backend::extra_properties;
+/// # use ustr::Ustr;
+///     extra_properties! {
+///        /// A
+///        /// B
+///        pub prop<object> graph_autoconvert2: bool
+///     }
 /// }
 /// ```
 #[macro_export]

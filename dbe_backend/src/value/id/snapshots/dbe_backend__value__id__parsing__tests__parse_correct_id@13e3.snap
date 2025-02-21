@@ -1,0 +1,11 @@
+---
+source: dbe_backend/src/value/id/parsing.rs
+description: "For Id: 13e3"
+---
+Simple(
+    Const {
+        value: Number(
+            13000.0,
+        ),
+    },
+)

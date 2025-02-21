@@ -1,0 +1,5 @@
+---
+source: dbe_backend/src/value/id/parsing.rs
+description: "For Id: .5e3"
+---
+invalid input: `.`

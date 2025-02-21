@@ -1,0 +1,9 @@
+---
+source: dbe_backend/src/value/id/parsing.rs
+description: "For Id: List<Item=number>"
+---
+List(
+    Simple(
+        Number,
+    ),
+)

@@ -361,3 +361,78 @@ impl<'a> Iterator for PeekableLexer<'a> {
         self.lexer.next()
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use insta::{assert_debug_snapshot, assert_snapshot};
+    use rstest::rstest;
+
+    #[rstest]
+    #[case("number")]
+    #[case("string")]
+    #[case("boolean")]
+    #[case("unknown")]
+    #[case("null")]
+    // lists and maps
+    #[case("List<Item=number>")]
+    #[case("Map<Key=string, Item=number>")]
+    #[case("Map<Key=string,Item=number>")]
+    // simple IDs
+    #[case("namespace:id")]
+    // generics
+    #[case("sys:optional<Item=number>")]
+    #[case("sys:optional<Item=List<Item=Map<Key=string,Item=number>>>")]
+    #[case("namespace:id<First=number,Second=string>")]
+    // numbers
+    #[case("13")]
+    #[case("13.5")]
+    #[case("13.5e3")]
+    #[case("13.e3")]
+    #[case("13e3")]
+    #[case("0.e0")]
+    // strings
+    #[case("'string'")]
+    #[case("'escaped ''text'''")]
+    // bools
+    #[case("true")]
+    #[case("false")]
+    fn parse_correct_id(#[case] id: &str) {
+        let suffix = sanitise_file_name::sanitise(id);
+        let parsed = super::parse_full_id(id).unwrap();
+        insta::with_settings!({
+            snapshot_suffix => suffix,
+            description => format!("For Id: {}", id),
+            omit_expression => true,
+        }, {
+            assert_debug_snapshot!(parsed);
+        });
+    }
+    #[rstest]
+    #[case("name-space:id")]
+    #[case("List")]
+    #[case("Map")]
+    #[case("blablabla")]
+    #[case("List<Item=")]
+    #[case("List<string>")]
+    #[case("number<Id=string>")]
+    #[case("List<Item=string,>")]
+    #[case("namespace:id<Item=string,>")]
+    // bad numbers
+    #[case(".3")]
+    #[case(".5e3")]
+    #[case(".e3")]
+    // bad strings
+    #[case("'string")]
+    #[case("'str'ing'")]
+    fn parse_incorrect_id(#[case] id: &str) {
+        let suffix = sanitise_file_name::sanitise(id);
+        let parsed = super::parse_full_id(id).unwrap_err();
+        insta::with_settings!({
+            snapshot_suffix => suffix,
+            description => format!("For Id: {}", id),
+            omit_expression => true,
+        }, {
+            assert_snapshot!(parsed);
+        });
+    }
+}

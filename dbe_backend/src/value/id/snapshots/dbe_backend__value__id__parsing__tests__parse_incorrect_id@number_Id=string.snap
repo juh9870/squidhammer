@@ -1,0 +1,5 @@
+---
+source: dbe_backend/src/value/id/parsing.rs
+description: "For Id: number<Id=string>"
+---
+unexpected token `<`, expected end of input
