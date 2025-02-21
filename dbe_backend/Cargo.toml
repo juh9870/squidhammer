@@ -27,6 +27,7 @@ include_dir = { workspace = true }
 inline_tweak = { workspace = true }
 itertools = { workspace = true }
 knus = { workspace = true }
+logos = { workspace = true }
 maybe-owned = { workspace = true }
 miette = { workspace = true }
 ordered-float = { workspace = true, features = ["serde"] }

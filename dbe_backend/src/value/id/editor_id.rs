@@ -4,6 +4,7 @@ use std::str::FromStr;
 
 use crate::project::module::DbeModule;
 use crate::project::TYPES_FOLDER;
+use crate::value::id::parsing::normalize_id;
 use itertools::Itertools;
 use miette::{bail, miette};
 use serde::{Deserializer, Serializer};
@@ -28,23 +29,14 @@ pub fn path_errors(namespace: &str) -> Option<(usize, char)> {
 }
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Hash, Ord, PartialOrd)]
-pub enum EditorId {
-    Persistent(Ustr),
-    Temp(u64),
-}
+pub struct EditorId(pub Ustr);
 
 impl serde::Serialize for EditorId {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
     {
-        match self {
-            EditorId::Persistent(id) => id.serialize(serializer),
-            EditorId::Temp(id) => Err(serde::ser::Error::custom(format!(
-                "temporary ETypetId can't be serialized: {}",
-                id
-            ))),
-        }
+        self.0.serialize(serializer)
     }
 }
 
@@ -61,7 +53,8 @@ impl serde::de::Visitor<'_> for EditorIdVisitor {
     where
         E: serde::de::Error,
     {
-        Ok(EditorId::Persistent(v.into()))
+        let id = normalize_id(v);
+        Ok(EditorId(id.into()))
     }
 }
 
@@ -94,7 +87,7 @@ impl EditorId {
             )
         }
 
-        Ok(EditorId::Persistent(data.into()))
+        Ok(EditorId(data.into()))
     }
 
     pub fn from_path(module: &DbeModule, path: &Path) -> miette::Result<Self> {
@@ -157,8 +150,7 @@ impl FromStr for EditorId {
 impl Display for EditorId {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
-            EditorId::Persistent(id) => write!(f, "{}", id),
-            EditorId::Temp(id) => write!(f, "$temp:{}", id),
+            EditorId(id) => write!(f, "{}", id),
         }
     }
 }

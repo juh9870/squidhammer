@@ -22,7 +22,7 @@ impl NodeCombo {
     /// Formats the node for display in search results
     pub fn display_search(&self) -> Cow<str> {
         match self {
-            NodeCombo::Object(id, title) => format!("{} ({})", title, id.as_raw().unwrap()).into(),
+            NodeCombo::Object(id, title) => format!("{} ({})", title, id.as_raw()).into(),
             NodeCombo::Subgraph(_, name) => name.into(),
             _ => self.display_title(),
         }
@@ -35,7 +35,7 @@ impl NodeCombo {
             NodeCombo::Factory(id) => id.as_str().into(),
             NodeCombo::Object(_, title) => title.into(),
             NodeCombo::Subgraph(_, name) => name.into(),
-            NodeCombo::List(id) => id.as_raw().unwrap().into(),
+            NodeCombo::List(id) => id.as_raw().into(),
         }
     }
 

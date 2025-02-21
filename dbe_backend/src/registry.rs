@@ -12,6 +12,7 @@ use crate::json_utils::JsonValue;
 use crate::project::ProjectConfig;
 use crate::registry::config::ExtraConfig;
 use crate::serialization::deserialize_etype;
+use crate::value::id::parsing::{parse_full_id, ParsedId};
 use crate::value::id::{EListId, EMapId, ETypeId};
 use crate::value::EValue;
 use atomic_refcell::AtomicRefCell;
@@ -26,6 +27,7 @@ use std::collections::BTreeMap;
 use std::fmt::Debug;
 use std::ops::Deref;
 use std::sync::{Arc, LazyLock};
+use tracing::error;
 use ustr::{Ustr, UstrMap};
 use utils::map::HashMap;
 use utils::whatever_ref::o_map::WhateverRefCallMap;
@@ -266,20 +268,46 @@ impl ETypesRegistry {
     }
 
     pub fn get_object(&self, id: &ETypeId) -> Option<WhateverRef<EObjectType>> {
-        self.types
-            .get(id)
-            .map(RegistryItem::expect_ready)
-            .map(|x| WhateverRef::from_ref(x.deref()))
-            .or_else(|| {
-                if !self.ready {
-                    return None;
+        fn get_obj<'a>(
+            reg: &'a ETypesRegistry,
+            id: &ETypeId,
+        ) -> Option<WhateverRef<'a, EObjectType>> {
+            reg.types
+                .get(id)
+                .map(RegistryItem::expect_ready)
+                .map(|x| WhateverRef::from_ref(x.deref()))
+                .or_else(|| {
+                    if !reg.ready {
+                        return None;
+                    }
+                    reg.pending_types
+                        .borrow()
+                        .get(id)
+                        .map(RegistryItem::expect_ready)
+                        .map(|x| WhateverRef::from_arc(x.clone()))
+                })
+        }
+
+        let obj = get_obj(self, id);
+        if obj.is_some() || !id.has_generics() {
+            return obj;
+        }
+        drop(obj);
+
+        match self.type_for_raw_id_pending(id.as_raw()) {
+            Ok(ty) => {
+                if let EDataType::Object { ident } = ty {
+                    get_obj(self, &ident)
+                } else {
+                    error!(%id, "Type for object id is not an object");
+                    None
                 }
-                self.pending_types
-                    .borrow()
-                    .get(id)
-                    .map(RegistryItem::expect_ready)
-                    .map(|x| WhateverRef::from_arc(x.clone()))
-            })
+            }
+            Err(err) => {
+                error!(%id, ?err, "Failed to unravel generic object ID");
+                None
+            }
+        }
     }
 
     pub fn get_struct(&self, id: &ETypeId) -> Option<WhateverRef<EStructData>> {
@@ -331,11 +359,45 @@ impl ETypesRegistry {
     }
 
     pub fn get_list(&self, id: &EListId) -> Option<ListData> {
-        self.lists.read().get(id).copied()
+        let value = self.lists.read().get(id).copied();
+        match value {
+            None => match self.type_for_raw_id_pending(id.as_raw()) {
+                Ok(ty) => {
+                    if let EDataType::List { id } = ty {
+                        self.lists.read().get(&id).copied()
+                    } else {
+                        error!(%id, "Type for list id is not a list");
+                        None
+                    }
+                }
+                Err(err) => {
+                    error!(%id, ?err, "Failed to unravel generic list ID");
+                    None
+                }
+            },
+            Some(data) => Some(data),
+        }
     }
 
     pub fn get_map(&self, id: &EMapId) -> Option<MapData> {
-        self.maps.read().get(id).copied()
+        let value = self.maps.read().get(id).copied();
+        match value {
+            None => match self.type_for_raw_id_pending(id.as_raw()) {
+                Ok(ty) => {
+                    if let EDataType::Map { id } = ty {
+                        self.maps.read().get(&id).copied()
+                    } else {
+                        error!(%id, "Type for map id is not a map");
+                        None
+                    }
+                }
+                Err(err) => {
+                    error!(%id, ?err, "Failed to unravel generic map ID");
+                    None
+                }
+            },
+            Some(data) => Some(data),
+        }
     }
 
     // pub fn register_struct(&mut self, id: ETypeId, data: EStructData) -> EDataType {
@@ -368,7 +430,7 @@ impl ETypesRegistry {
     }
 
     pub fn map_of(&self, key_type: EDataType, value_type: EDataType) -> EDataType {
-        let id = format!("Map<Key={}, Item={}>", key_type.name(), value_type.name());
+        let id = format!("Map<Key={},Item={}>", key_type.name(), value_type.name());
         let id = EMapId::from_raw(id.into());
         match self.maps.write().entry(id) {
             Entry::Occupied(_) => {}
@@ -520,6 +582,72 @@ impl ETypesRegistry {
               //     Ok(long_id)
               // }
         }
+    }
+
+    fn type_for_raw_id(&mut self, id: &str) -> miette::Result<EDataType> {
+        let parsed = parse_full_id(id)?;
+
+        fn type_for_parsed_id(
+            reg: &mut ETypesRegistry,
+            parsed: ParsedId,
+        ) -> miette::Result<EDataType> {
+            match parsed {
+                ParsedId::Simple(ty) => Ok(ty),
+                ParsedId::GenericObject { ident, generics } => {
+                    let mut generics_map = UstrMap::default();
+                    for (name, value) in generics {
+                        let ty = type_for_parsed_id(reg, value)?;
+                        generics_map.insert(name.into(), EItemInfo::simple_type(ty));
+                    }
+                    let id = reg.make_generic(ident, generics_map)?;
+                    Ok(EDataType::Object { ident: id })
+                }
+                ParsedId::List(item) => {
+                    let ty = type_for_parsed_id(reg, *item)?;
+                    Ok(reg.list_of(ty))
+                }
+                ParsedId::Map { key, value } => {
+                    let key = type_for_parsed_id(reg, *key)?;
+                    let value = type_for_parsed_id(reg, *value)?;
+                    Ok(reg.map_of(key, value))
+                }
+            }
+        }
+
+        type_for_parsed_id(self, parsed)
+    }
+
+    fn type_for_raw_id_pending(&self, id: &str) -> miette::Result<EDataType> {
+        let parsed = parse_full_id(id)?;
+
+        fn type_for_parsed_id_pending(
+            reg: &ETypesRegistry,
+            parsed: ParsedId,
+        ) -> miette::Result<EDataType> {
+            match parsed {
+                ParsedId::Simple(ty) => Ok(ty),
+                ParsedId::GenericObject { ident, generics } => {
+                    let mut generics_map = UstrMap::default();
+                    for (name, value) in generics {
+                        let ty = type_for_parsed_id_pending(reg, value)?;
+                        generics_map.insert(name.into(), EItemInfo::simple_type(ty));
+                    }
+                    let id = reg.make_generic_pending(ident, generics_map)?;
+                    Ok(EDataType::Object { ident: id })
+                }
+                ParsedId::List(item) => {
+                    let ty = type_for_parsed_id_pending(reg, *item)?;
+                    Ok(reg.list_of(ty))
+                }
+                ParsedId::Map { key, value } => {
+                    let key = type_for_parsed_id_pending(reg, *key)?;
+                    let value = type_for_parsed_id_pending(reg, *value)?;
+                    Ok(reg.map_of(key, value))
+                }
+            }
+        }
+
+        type_for_parsed_id_pending(self, parsed)
     }
 
     /// Returns Arc with extra registry data of the specified type
