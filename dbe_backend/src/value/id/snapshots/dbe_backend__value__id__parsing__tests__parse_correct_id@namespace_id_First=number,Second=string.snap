@@ -1,0 +1,21 @@
+---
+source: dbe_backend/src/value/id/parsing.rs
+description: "For Id: namespace:id<First=number,Second=string>"
+---
+GenericObject {
+    ident: ETypeId(namespace:id),
+    generics: [
+        (
+            "First",
+            Simple(
+                Number,
+            ),
+        ),
+        (
+            "Second",
+            Simple(
+                String,
+            ),
+        ),
+    ],
+}

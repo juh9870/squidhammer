@@ -1,0 +1,11 @@
+---
+source: dbe_backend/src/value/id/parsing.rs
+description: "For Id: 0.e0"
+---
+Simple(
+    Const {
+        value: Number(
+            0.0,
+        ),
+    },
+)

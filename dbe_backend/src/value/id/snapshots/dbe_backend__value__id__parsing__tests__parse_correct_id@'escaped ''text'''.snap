@@ -1,0 +1,11 @@
+---
+source: dbe_backend/src/value/id/parsing.rs
+description: "For Id: 'escaped ''text'''"
+---
+Simple(
+    Const {
+        value: String(
+            u!("escaped 'text'"),
+        ),
+    },
+)

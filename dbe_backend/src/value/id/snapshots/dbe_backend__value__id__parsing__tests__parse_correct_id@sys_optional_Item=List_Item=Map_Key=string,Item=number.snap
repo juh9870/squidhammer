@@ -1,0 +1,22 @@
+---
+source: dbe_backend/src/value/id/parsing.rs
+description: "For Id: sys:optional<Item=List<Item=Map<Key=string,Item=number>>>"
+---
+GenericObject {
+    ident: ETypeId(sys:optional),
+    generics: [
+        (
+            "Item",
+            List(
+                Map {
+                    key: Simple(
+                        String,
+                    ),
+                    value: Simple(
+                        Number,
+                    ),
+                },
+            ),
+        ),
+    ],
+}
