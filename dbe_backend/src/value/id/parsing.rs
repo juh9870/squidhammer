@@ -59,7 +59,7 @@ pub fn unescape_const_string(str: &str) -> String {
 pub enum IdParseError {
     #[error("unexpected end of input")]
     UnexpectedEnd,
-    #[error("unexpected token {0}, expected {1}")]
+    #[error("unexpected token `{0}`, expected {1}")]
     UnexpectedToken(String, &'static str),
     #[error("invalid input: `{0}`")]
     BadToken(String),
@@ -199,6 +199,7 @@ fn parse_type(tokens: &mut PeekableLexer) -> Result<ParsedId, IdParseError> {
                         return Ok(generics);
                     }
                     Token::OpenAngle => {
+                        tokens.next();
                         // continue
                     }
                     _ => {
@@ -297,7 +298,7 @@ fn parse_type(tokens: &mut PeekableLexer) -> Result<ParsedId, IdParseError> {
         | Token::Key
         | Token::OtherAlphanumeric => Err(IdParseError::UnexpectedToken(
             tokens.slice().to_string(),
-            "type or id",
+            "object id, List, or Map",
         )),
     }
 }
