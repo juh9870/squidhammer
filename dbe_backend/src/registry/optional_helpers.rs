@@ -68,7 +68,5 @@ pub fn is_type_option(ty: EDataType) -> bool {
         return false;
     };
 
-    ident
-        .as_raw()
-        .is_some_and(|id| id.starts_with(OPTIONAL_PREFIX))
+    ident.as_raw().starts_with(OPTIONAL_PREFIX)
 }

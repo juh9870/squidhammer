@@ -96,6 +96,7 @@ xflags = "0.3"
 xshell = "0.2"
 zip = "2.2.2"
 nucleo = "0.5.0"
+logos = "0.15.0"
 
 # Workspace crates
 collection_traits = { path = "collection_traits" }

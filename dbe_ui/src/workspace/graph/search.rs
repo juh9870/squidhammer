@@ -61,7 +61,7 @@ pub fn category_tree(
         let id = obj.ident();
         let category = ["types"]
             .into_iter()
-            .chain(id.as_raw().unwrap().split([':', '/', '.']))
+            .chain(id.as_raw().split([':', '/', '.']))
             .with_position()
             .take_while(|x| x.0 != Position::Last)
             .map(|x| x.1)

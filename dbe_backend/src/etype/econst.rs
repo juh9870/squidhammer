@@ -1,4 +1,5 @@
 use crate::json_utils::JsonValue;
+use crate::value::id::parsing::escape_const_string;
 use crate::value::{ENumber, EValue};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
@@ -95,7 +96,7 @@ impl Display for ETypeConst {
         match self {
             ETypeConst::Boolean(value) => write!(f, "{value}"),
             ETypeConst::Number(value) => write!(f, "{value}"),
-            ETypeConst::String(value) => write!(f, "'{value}'"),
+            ETypeConst::String(value) => write!(f, "'{}'", escape_const_string(value)),
             ETypeConst::Null => write!(f, "null"),
         }
     }

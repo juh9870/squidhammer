@@ -3,6 +3,7 @@ use crate::value::id::editor_id::EditorId;
 use std::path::Path;
 
 pub mod editor_id;
+pub mod parsing;
 
 macro_rules! id_type {
     ($ident:ident) => {
@@ -18,19 +19,11 @@ macro_rules! id_type {
             }
 
             pub(crate) fn from_raw(raw: ustr::Ustr) -> $ident {
-                Self(EditorId::Persistent(raw))
+                Self(EditorId(raw))
             }
 
-            pub fn temp(id: u64) -> Self {
-                Self(EditorId::Temp(id))
-            }
-
-            pub fn as_raw(&self) -> Option<&str> {
-                if let EditorId::Persistent(raw) = self.0 {
-                    Some(raw.as_str())
-                } else {
-                    None
-                }
+            pub fn as_raw(&self) -> &str {
+                self.0 .0.as_str()
             }
         }
 
@@ -64,15 +57,14 @@ impl ETypeId {
     }
 
     pub fn strip_generics(&self) -> Self {
-        match self.0 {
-            EditorId::Temp(_) => *self,
-            EditorId::Persistent(id) => {
-                let Some(id) = id.split('<').next() else {
-                    return *self;
-                };
-                Self(EditorId::Persistent(id.into()))
-            }
-        }
+        let Some(id) = self.0 .0.split('<').next() else {
+            return *self;
+        };
+        Self(EditorId(id.into()))
+    }
+
+    pub fn has_generics(&self) -> bool {
+        self.0 .0.contains('<')
     }
 }
 
