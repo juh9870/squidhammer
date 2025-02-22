@@ -9,12 +9,24 @@ use serde::{Deserialize, Serialize};
 use smallvec::SmallVec;
 use std::collections::hash_map::Entry;
 use std::hash::Hash;
-use strum::EnumIs;
+use strum::{AsRefStr, EnumIs, VariantArray};
 use utils::map::HashMap;
 use uuid::Uuid;
 
 #[derive(
-    Debug, Copy, Clone, Default, Serialize, Deserialize, Hash, Eq, PartialEq, Ord, PartialOrd,
+    Debug,
+    Copy,
+    Clone,
+    Default,
+    Serialize,
+    Deserialize,
+    Hash,
+    Eq,
+    PartialEq,
+    Ord,
+    PartialOrd,
+    AsRefStr,
+    VariantArray,
 )]
 pub enum EvaluationStage {
     Data,
