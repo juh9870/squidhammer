@@ -4,13 +4,14 @@ use crate::widgets::toggle_button::toggle_button_label;
 use crate::workspace::graph::toolbar::edit_inputs::edit_inputs_outputs;
 use crate::workspace::graph::toolbar::node_editor::edit_node_properties;
 use dbe_backend::project::docs::Docs;
-use dbe_backend::project::project_graph::ProjectGraph;
+use dbe_backend::project::project_graph::{EvaluationStage, ProjectGraph};
 use dbe_backend::registry::ETypesRegistry;
-use egui::{CollapsingHeader, Ui};
+use egui::{CollapsingHeader, ComboBox, Ui};
 use egui_snarl::NodeId;
 use list_edit::list_editor;
 use serde::{Deserialize, Serialize};
 use std::borrow::Cow;
+use strum::VariantArray;
 
 pub mod edit_inputs;
 pub mod node_editor;
@@ -51,6 +52,28 @@ impl ToolbarViewer for GraphToolbarViewer<'_> {
                     toggle_button_label(ui, &mut self.graph.is_node_group, "Is Node Group");
 
                 checkbox_res.on_hover_text("When enabled, the graph is treated as node group.\nThis means that other graphs can include this graph into themselves, but this graph will not be executed on its own.");
+
+                ui.add_enabled_ui(!self.graph.is_node_group, |ui| {
+                    let res = ui.horizontal(|ui| {
+                        ui.label("Execution stage") |
+                        ComboBox::new("stage_combo", "")
+                            .selected_text(self.graph.stage.as_ref())
+                            .show_ui(ui, |ui| {
+                                for stage in EvaluationStage::VARIANTS {
+                                    ui.selectable_value(&mut self.graph.stage, *stage, stage.as_ref());
+                                }
+                            }).response
+                    });
+
+                    res.inner.on_hover_text(
+                        "The stage at which the graph will be executed.\n\
+                        Stages are in order:\n\
+                        - Data: this stage is intended for data generation and should produce data that will be used in the later stages.\n\
+                        - Early, Main, Late: main execution stages, executed in the listed order.\n\
+                        - Validation: intended for validation of the data produced in the main stages.\
+                        "
+                    );
+                });
 
                 ui.add_enabled_ui(self.graph.is_node_group, |ui| {
                     ui.horizontal(|ui| {
