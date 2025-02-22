@@ -1,5 +1,6 @@
 use crate::widgets::collapsible_toolbar::ToolbarViewer;
 use crate::widgets::rotated_label::RotLabelDirection;
+use crate::widgets::toggle_button::toggle_button_label;
 use crate::workspace::graph::toolbar::edit_inputs::edit_inputs_outputs;
 use crate::workspace::graph::toolbar::node_editor::edit_node_properties;
 use dbe_backend::project::docs::Docs;
@@ -46,7 +47,8 @@ impl ToolbarViewer for GraphToolbarViewer<'_> {
     fn ui(&mut self, ui: &mut Ui, tab: &Self::Tab, _direction: RotLabelDirection) {
         match tab {
             GraphTab::General => {
-                let checkbox_res = ui.checkbox(&mut self.graph.is_node_group, "Is Node Group");
+                let checkbox_res =
+                    toggle_button_label(ui, &mut self.graph.is_node_group, "Is Node Group");
 
                 checkbox_res.on_hover_text("When enabled, the graph is treated as node group.\nThis means that other graphs can include this graph into themselves, but this graph will not be executed on its own.");
 
@@ -55,6 +57,8 @@ impl ToolbarViewer for GraphToolbarViewer<'_> {
                         ui.label("Name");
                         ui.text_edit_singleline(&mut self.graph.name);
                     });
+
+                    toggle_button_label(ui, &mut self.graph.hide_from_search, "Hide from search");
 
                     ui.label("Categories");
                     list_editor::<String, _>(ui.id().with("categories"))

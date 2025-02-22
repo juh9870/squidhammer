@@ -21,13 +21,13 @@ impl AppSettings {
             Label::new(RichText::new("Hover over the labels to see more information").small()),
         );
 
-        toggle_button_label(ui, "Check for updates", &mut self.check_for_updates)
+        toggle_button_label(ui, &mut self.check_for_updates, "Check for updates")
             .on_hover_text("Check for updates on startup");
 
-        toggle_button_label(ui, "Exit Confirmation", &mut self.exit_confirmation)
+        toggle_button_label(ui, &mut self.exit_confirmation, "Exit Confirmation")
             .on_hover_text("Show exit confirmation dialog when a project is loaded");
 
-        toggle_button_label(ui, "Autosave", &mut self.autosave)
+        toggle_button_label(ui, &mut self.autosave, "Autosave")
             .on_hover_text("Automatically save the project at a set interval");
 
         ui.add_enabled_ui(self.autosave, |ui| {

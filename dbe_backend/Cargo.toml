@@ -56,10 +56,10 @@ walkdir = { workspace = true }
 zip = { workspace = true }
 
 [dev-dependencies]
+insta = { workspace = true }
 miette = { workspace = true, features = ["fancy-no-syscall"] }
 rand = { workspace = true, features = ["std", "small_rng"] }
 rstest = { workspace = true }
-insta = { workspace = true }
 
 [package.metadata.release]
 release = false
