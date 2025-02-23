@@ -1,4 +1,5 @@
 use crate::etype::EDataType;
+use crate::project::project_graph::EvaluationStage;
 use crate::registry::ETypesRegistry;
 use crate::value::id::ETypeId;
 use crate::value::EValue;
@@ -24,7 +25,7 @@ pub struct Mappings {
     /// Mainly here to allow for proper functioning of the [Mappings::new_id],
     /// which checks whenever the ID was already "created" during the current
     /// session
-    currently_created: HashSet<String>,
+    currently_created: HashMap<String, EvaluationStage>,
     /// Set of all occupied IDs
     occupied_ids: HashSet<i64>,
     /// List of available ID ranges
@@ -37,6 +38,8 @@ pub struct Mappings {
     default_ranges: SmallVec<[PackedRange; 1]>,
     /// Whenever the default ranges were initialized
     default_ranges_initialized: bool,
+    /// Current evaluation stage
+    current_stage: EvaluationStage,
 }
 
 #[derive(Debug, Clone)]
@@ -65,8 +68,13 @@ impl Mappings {
     /// Establishes a new link between the string ID and the numeric ID, or
     /// bails if the string ID is already taken
     pub fn new_id(&mut self, id: String, persistent: bool) -> miette::Result<i64> {
-        if !self.currently_created.insert(id.clone()) {
-            bail!("ID `{}` is already taken", id);
+        match self.currently_created.entry(id.clone()) {
+            Entry::Occupied(_) => {
+                bail!("ID `{}` is already taken", id);
+            }
+            Entry::Vacant(e) => {
+                e.insert(self.current_stage);
+            }
         }
         self.get_id_raw(id, persistent)
     }
@@ -98,7 +106,8 @@ impl Mappings {
 
     /// Returns the numeric ID corresponding to the given string ID if it exists
     pub fn existing_id(&self, id: &str) -> miette::Result<i64> {
-        if !self.currently_created.contains(id) {
+        let created_at_stage = self.currently_created.get(id);
+        if created_at_stage.is_none_or(|s| s >= &self.current_stage) {
             bail!("ID `{}` is not yet created via `NewId` mapping", id);
         }
         self.ids
@@ -111,6 +120,17 @@ impl Mappings {
     pub fn has_persistent_ids(&self) -> bool {
         self.ids.iter().any(|(_, v)| v.persistent)
     }
+
+    /// Progresses the stage, allowing all currently created IDs to be visible to [`Mappings::existing_id`]
+    pub fn set_stage(&mut self, stage: EvaluationStage) {
+        assert!(
+            self.current_stage <= stage,
+            "Cannot set stage to {:?} from {:?}",
+            stage,
+            self.current_stage
+        );
+        self.current_stage = stage;
+    }
 }
 
 impl Mappings {
@@ -122,6 +142,7 @@ impl Mappings {
             available_ids: Default::default(),
             default_ranges: Default::default(),
             default_ranges_initialized: false,
+            current_stage: EvaluationStage::earliest(),
         };
 
         if let Some(ranges) = ranges {
@@ -248,6 +269,7 @@ impl PackedMappings {
             default_ranges: self.ranges,
             currently_created: Default::default(),
             default_ranges_initialized: true,
+            current_stage: EvaluationStage::earliest(),
         };
 
         // debug!("Converted packed mappings to full: {:?}", m);

@@ -82,10 +82,7 @@ pub(super) fn nodes() -> Vec<Arc<dyn NodeFactory>> {
                 let id = match kind_idx.0 {
                     0.0 => mappings.get_id_raw(value.to_string(), persistent.0)?,
                     1.0 => mappings.new_id(value.to_string(), persistent.0)?,
-                    // 2.0 => mappings.existing_id(value)?,
-                    2.0 => bail!(
-                        "existing ID mapping is not yet implemented, blocked due to multistage runtime"
-                    ), // TODO: allow once multi-stage runtime is implemented
+                    2.0 => mappings.existing_id(&value)?,
                     _ => bail!("invalid kind index: {}", kind_idx.0),
                 };
 

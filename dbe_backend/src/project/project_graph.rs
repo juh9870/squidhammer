@@ -37,6 +37,26 @@ pub enum EvaluationStage {
     Validation,
 }
 
+impl EvaluationStage {
+    pub const fn earliest() -> Self {
+        EvaluationStage::Data
+    }
+
+    pub const fn index(&self) -> usize {
+        match self {
+            EvaluationStage::Data => 0,
+            EvaluationStage::Early => 1,
+            EvaluationStage::Main => 2,
+            EvaluationStage::Late => 3,
+            EvaluationStage::Validation => 4,
+        }
+    }
+
+    pub const fn len() -> usize {
+        5
+    }
+}
+
 #[derive(Debug, Clone, Hash)]
 pub struct ProjectGraph {
     pub id: Uuid,

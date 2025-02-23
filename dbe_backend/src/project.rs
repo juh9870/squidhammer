@@ -6,7 +6,7 @@ use crate::m_try;
 use crate::project::docs::{Docs, DocsFile};
 use crate::project::io::{FilesystemIO, ProjectIO};
 use crate::project::module::{find_dbemodule_path, DbeModule};
-use crate::project::project_graph::{ProjectGraph, ProjectGraphs};
+use crate::project::project_graph::{EvaluationStage, ProjectGraph, ProjectGraphs};
 use crate::project::side_effects::SideEffectsContext;
 use crate::project::undo::{UndoHistory, UndoSettings};
 use crate::registry::ETypesRegistry;
@@ -24,6 +24,7 @@ use serde::{Deserialize, Serialize};
 use std::collections::{hash_map, BTreeMap};
 use std::path::{Path, PathBuf};
 use std::time::Instant;
+use strum::VariantArray;
 use tracing::{error_span, info};
 use utils::map::{HashMap, HashSet};
 use uuid::Uuid;
@@ -398,51 +399,69 @@ impl<IO: ProjectIO> Project<IO> {
             graph.graph_mut().ensure_region_graph_ready();
         }
 
+        let mut stages: [Vec<_>; EvaluationStage::len()] = [vec![], vec![], vec![], vec![], vec![]];
+
         for (path, file) in &self.files {
-            side_effects.clear_transient_storage();
-            m_try(|| {
-                if file.is_generated() {
-                    generated.push(path.clone());
-                    return Ok(());
-                }
-                let ProjectFile::Graph(id) = file else {
-                    return Ok(());
-                };
+            if file.is_generated() {
+                generated.push(path.clone());
+                continue;
+            }
+            let ProjectFile::Graph(id) = file else {
+                continue;
+            };
 
-                let Some(graph) = self.graphs.graphs.get(id) else {
-                    bail!("graph {:?} at path {} is not found", id, path);
-                };
+            let Some(graph) = self.graphs.graphs.get(id) else {
+                bail!("graph {:?} at path {} is not found", id, path);
+            };
 
-                if graph.is_node_group {
-                    return Ok(());
-                }
-                let out_values = &mut None;
-                let mut ctx = GraphExecutionContext::from_graph(
-                    graph.graph(),
-                    &self.registry,
-                    &self.docs,
-                    Some(&self.graphs),
-                    SideEffectsContext::new(&mut side_effects, path.clone(), &self.files),
-                    graph.is_node_group,
-                    &[],
-                    out_values,
-                );
-                ctx.full_eval(true)?;
-                drop(ctx);
-                if out_values.is_some() {
-                    bail!("graph {:?} at path {} has outputs", id, path);
-                }
-
-                Ok(())
-            })
-            .with_context(|| format!("failed to evaluate graph at `{}`", path))?;
+            if graph.is_node_group {
+                continue;
+            }
+            let stage = graph.stage;
+            stages[stage as usize].push((path.clone(), *id));
         }
 
         for path in generated {
             self.delete_file(&path)?;
         }
 
-        side_effects.execute(self)?;
+        for (stage_index, stage_graphs) in stages.into_iter().enumerate() {
+            let stage = EvaluationStage::VARIANTS[stage_index];
+            side_effects.set_stage(stage);
+            for (path, id) in stage_graphs {
+                m_try(|| {
+                    let Some(graph) = self.graphs.graphs.get(&id) else {
+                        bail!("!!INTERNAL!! graph {:?} at path {} is missing, even tho it passed the stages check", id, path);
+                    };
+
+                    if graph.is_node_group {
+                        bail!("!!INTERNAL!! graph {:?} at path {} is a node group", id, path);
+                    }
+
+                    side_effects.clear_transient_storage();
+
+                    let out_values = &mut None;
+                    let mut ctx = GraphExecutionContext::from_graph(
+                        graph.graph(),
+                        &self.registry,
+                        &self.docs,
+                        Some(&self.graphs),
+                        SideEffectsContext::new(&mut side_effects, path.clone(), &self.files),
+                        graph.is_node_group,
+                        &[],
+                        out_values,
+                    );
+                    ctx.full_eval(true)?;
+                    drop(ctx);
+                    if out_values.is_some() {
+                        bail!("graph {:?} at path {} has outputs", id, path);
+                    }
+                    Ok(())
+                })
+                    .with_context(|| format!("failed to evaluate graph at `{}`", path))?;
+            }
+            side_effects.execute(self)?;
+        }
 
         Ok(())
     }
