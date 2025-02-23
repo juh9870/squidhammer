@@ -426,8 +426,6 @@ impl<IO: ProjectIO> Project<IO> {
         }
 
         for (stage_index, stage_graphs) in stages.into_iter().enumerate() {
-            let stage = EvaluationStage::VARIANTS[stage_index];
-            side_effects.set_stage(stage);
             for (path, id) in stage_graphs {
                 m_try(|| {
                     let Some(graph) = self.graphs.graphs.get(&id) else {
@@ -438,7 +436,7 @@ impl<IO: ProjectIO> Project<IO> {
                         bail!("!!INTERNAL!! graph {:?} at path {} is a node group", id, path);
                     }
 
-                    side_effects.clear_transient_storage();
+                    side_effects.clear_storage_file_scope();
 
                     let out_values = &mut None;
                     let mut ctx = GraphExecutionContext::from_graph(
@@ -460,7 +458,10 @@ impl<IO: ProjectIO> Project<IO> {
                 })
                     .with_context(|| format!("failed to evaluate graph at `{}`", path))?;
             }
-            side_effects.execute(self)?;
+            side_effects.execute(
+                self,
+                EvaluationStage::VARIANTS.get(stage_index + 1).copied(),
+            )?;
         }
 
         Ok(())

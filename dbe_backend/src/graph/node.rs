@@ -78,6 +78,19 @@ pub mod variables;
 static NODE_FACTORIES: LazyLock<AtomicRefCell<UstrMap<Arc<dyn NodeFactory>>>> =
     LazyLock::new(|| AtomicRefCell::new(default_nodes().collect()));
 
+static NODE_ALIASES: LazyLock<UstrMap<Ustr>> = LazyLock::new(|| {
+    let items = vec![
+        ("get_transistent_value", "get_storage_value"),
+        ("try_get_transistent_value", "try_get_storage_value"),
+        ("has_transistent_value", "has_storage_value"),
+        ("set_transistent_value", "set_local_storage_value"),
+    ];
+    items
+        .into_iter()
+        .map(|(old, new)| (Ustr::from(old), Ustr::from(new)))
+        .collect()
+});
+
 type FactoriesByCategory = BTreeMap<&'static str, Vec<Arc<dyn NodeFactory>>>;
 static NODE_FACTORIES_BY_CATEGORY: LazyLock<AtomicRefCell<FactoriesByCategory>> =
     LazyLock::new(|| {
@@ -138,7 +151,13 @@ fn default_nodes() -> impl Iterator<Item = (Ustr, Arc<dyn NodeFactory>)> {
 // }
 
 pub fn get_node_factory(id: &Ustr) -> Option<Arc<dyn NodeFactory>> {
-    NODE_FACTORIES.borrow().get(id).cloned()
+    if let Some(factory) = NODE_FACTORIES.borrow().get(id).cloned() {
+        Some(factory)
+    } else if let Some(alias) = NODE_ALIASES.get(id) {
+        NODE_FACTORIES.borrow().get(alias).cloned()
+    } else {
+        None
+    }
 }
 
 pub fn all_node_factories() -> AtomicRef<'static, UstrMap<Arc<dyn NodeFactory>>> {

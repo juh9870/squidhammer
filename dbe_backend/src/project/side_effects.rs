@@ -1,6 +1,7 @@
 use crate::m_try;
 use crate::project::project_graph::EvaluationStage;
 use crate::project::side_effects::mappings::Mappings;
+use crate::project::side_effects::storage::TransistentStorage;
 use crate::project::{Project, ProjectFile};
 use crate::registry::ETypesRegistry;
 use crate::value::EValue;
@@ -16,6 +17,7 @@ use utils::map::HashMap;
 use uuid::Uuid;
 
 pub mod mappings;
+pub mod storage;
 
 #[derive(Debug)]
 pub enum SideEffect {
@@ -27,6 +29,10 @@ pub enum SideEffect {
     EmitTransientFile {
         value: EValue,
         is_dbevalue: bool,
+    },
+    SetGlobalStorage {
+        key: EValue,
+        value: Option<EValue>,
     },
     ShowDebug {
         value: EValue,
@@ -42,8 +48,9 @@ fn clean_up_path(path: &str) -> String {
 impl SideEffect {
     pub fn execute<Io>(
         self,
-        emitter: SideEffectEmitter,
+        effects: &mut SideEffects,
         project: &mut Project<Io>,
+        emitter: SideEffectEmitter,
     ) -> miette::Result<()> {
         fn extension(is_dbevalue: bool) -> &'static str {
             if is_dbevalue {
@@ -51,6 +58,14 @@ impl SideEffect {
             } else {
                 ".json"
             }
+        }
+        fn format_emitter<Io>(emitter: SideEffectEmitter, project: &Project<Io>) -> String {
+            format!(
+                "{}.{}.{}",
+                emitter.0,
+                emitter.1[0].to_string(project),
+                emitter.2,
+            )
         }
         match self {
             SideEffect::EmitPersistentFile {
@@ -83,6 +98,13 @@ impl SideEffect {
                     .files
                     .insert(tmp_path, ProjectFile::GeneratedValue(value));
             }
+            SideEffect::SetGlobalStorage { key, value } => {
+                effects.transistent_storage.insert_global(
+                    key,
+                    value,
+                    format_emitter(emitter, project),
+                )?;
+            }
             SideEffect::ShowDebug { value } => {
                 info!(
                     graph=%emitter.0,
@@ -102,7 +124,7 @@ impl SideEffect {
 pub struct SideEffects {
     effects: Vec<(SideEffectEmitter, SideEffect)>,
     mappings: HashMap<Utf8PathBuf, (u64, Mappings)>,
-    transistent_storage: HashMap<String, EValue>,
+    transistent_storage: TransistentStorage,
     current_stage: EvaluationStage,
 }
 
@@ -124,14 +146,18 @@ impl SideEffects {
         self.effects.push((emitter, effect));
     }
 
-    pub fn execute<Io>(&mut self, project: &mut Project<Io>) -> miette::Result<()> {
+    pub fn execute<Io>(
+        &mut self,
+        project: &mut Project<Io>,
+        next_stage: Option<EvaluationStage>,
+    ) -> miette::Result<()> {
         let mut iter = 0;
         while !self.effects.is_empty() {
             iter += 1;
             assert!(iter <= 1000, "Side effects formed an infinite loop");
             let mut effects = std::mem::take(&mut self.effects);
             for (emitter, effect) in effects.drain(..) {
-                effect.execute(emitter, project)?;
+                effect.execute(self, project, emitter)?;
             }
             if self.effects.is_empty() {
                 self.effects = effects;
@@ -139,6 +165,21 @@ impl SideEffects {
         }
 
         self.save_mappings(project)?;
+
+        if let Some(stage) = next_stage {
+            if self.current_stage < stage {
+                self.current_stage = stage;
+                for (_, m) in self.mappings.values_mut() {
+                    m.set_stage(stage);
+                }
+                self.transistent_storage.flush_stage();
+            } else {
+                panic!(
+                    "Cannot set stage to {:?} from {:?}",
+                    stage, self.current_stage
+                );
+            }
+        }
 
         Ok(())
     }
@@ -212,37 +253,20 @@ impl SideEffects {
         .with_context(|| format!("failed to load mappings at `{}`", path))
     }
 
-    pub fn get_transient_storage(&mut self, key: &str) -> Option<&EValue> {
+    pub fn get_transient_storage(&mut self, key: &EValue) -> Option<&EValue> {
         self.transistent_storage.get(key)
     }
 
-    pub fn set_transient_storage(&mut self, key: String, value: EValue) {
+    pub fn set_transient_storage(&mut self, key: EValue, value: EValue) {
         self.transistent_storage.insert(key, value);
     }
 
-    pub fn has_transient_storage(&self, key: &str) -> bool {
-        self.transistent_storage.contains_key(key)
+    pub fn has_transient_storage(&self, key: &EValue) -> bool {
+        self.transistent_storage.get(key).is_some()
     }
 
-    pub fn clear_transient_storage(&mut self) {
-        self.transistent_storage.clear();
-    }
-
-    pub fn set_stage(&mut self, stage: EvaluationStage) {
-        if self.current_stage < stage {
-            self.current_stage = stage;
-            for (_, m) in self.mappings.values_mut() {
-                m.set_stage(stage);
-            }
-        } else {
-            if self.current_stage == EvaluationStage::earliest() {
-                return;
-            }
-            panic!(
-                "Cannot set stage to {:?} from {:?}",
-                stage, self.current_stage
-            );
-        }
+    pub fn clear_storage_file_scope(&mut self) {
+        self.transistent_storage.clear_file_scope();
     }
 }
 
@@ -395,14 +419,14 @@ impl<'a> SideEffectsContext<'a> {
         }
     }
 
-    pub fn get_transient_storage(&mut self, key: &str) -> miette::Result<Option<&EValue>> {
+    pub fn get_transient_storage(&mut self, key: &EValue) -> miette::Result<Option<&EValue>> {
         match self {
             SideEffectsContext::Context { effects, .. } => Ok(effects.get_transient_storage(key)),
             SideEffectsContext::Unavailable => bail!("Side effects context is unavailable"),
         }
     }
 
-    pub fn set_transient_storage(&mut self, key: String, value: EValue) -> miette::Result<()> {
+    pub fn set_transient_storage(&mut self, key: EValue, value: EValue) -> miette::Result<()> {
         match self {
             SideEffectsContext::Context { effects, .. } => {
                 effects.set_transient_storage(key, value);
@@ -412,7 +436,7 @@ impl<'a> SideEffectsContext<'a> {
         }
     }
 
-    pub fn has_transient_storage(&self, key: &str) -> miette::Result<bool> {
+    pub fn has_transient_storage(&self, key: &EValue) -> miette::Result<bool> {
         match self {
             SideEffectsContext::Context { effects, .. } => Ok(effects.has_transient_storage(key)),
             SideEffectsContext::Unavailable => bail!("Side effects context is unavailable"),

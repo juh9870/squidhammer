@@ -52,6 +52,15 @@ impl EvaluationStage {
         }
     }
 
+    pub const fn next(&self) -> Option<Self> {
+        let next_idx = self.index() + 1;
+        if next_idx < Self::len() {
+            Some(EvaluationStage::VARIANTS[next_idx])
+        } else {
+            None
+        }
+    }
+
     pub const fn len() -> usize {
         5
     }
