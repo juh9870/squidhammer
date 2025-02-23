@@ -1,4 +1,5 @@
 use crate::m_try;
+use crate::project::project_graph::EvaluationStage;
 use crate::project::side_effects::mappings::Mappings;
 use crate::project::{Project, ProjectFile};
 use crate::registry::ETypesRegistry;
@@ -102,6 +103,7 @@ pub struct SideEffects {
     effects: Vec<(SideEffectEmitter, SideEffect)>,
     mappings: HashMap<Utf8PathBuf, (u64, Mappings)>,
     transistent_storage: HashMap<String, EValue>,
+    current_stage: EvaluationStage,
 }
 
 impl SideEffects {
@@ -110,6 +112,7 @@ impl SideEffects {
             effects: Vec::new(),
             mappings: Default::default(),
             transistent_storage: Default::default(),
+            current_stage: EvaluationStage::Data,
         }
     }
 
@@ -223,6 +226,23 @@ impl SideEffects {
 
     pub fn clear_transient_storage(&mut self) {
         self.transistent_storage.clear();
+    }
+
+    pub fn set_stage(&mut self, stage: EvaluationStage) {
+        if self.current_stage < stage {
+            self.current_stage = stage;
+            for (_, m) in self.mappings.values_mut() {
+                m.set_stage(stage);
+            }
+        } else {
+            if self.current_stage == EvaluationStage::earliest() {
+                return;
+            }
+            panic!(
+                "Cannot set stage to {:?} from {:?}",
+                stage, self.current_stage
+            );
+        }
     }
 }
 

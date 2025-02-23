@@ -72,14 +72,16 @@ impl<T, NewItem: Fn(usize) -> T, CanDelete: Fn(usize, T) -> bool, IdSource: Hash
                             let last_item_height: Option<f32> =
                                 ui.memory_mut(|mem| mem.data.get_temp(id));
 
+                            let scale = ui.style().spacing.indent / ui.ctx().style().spacing.indent;
+
                             let handle_content = |ui: &mut Ui| {
                                 let res = ui
                                     .push_id("_handle_sizer", |ui| {
                                         Handle::default()
-                                            .spacing(vec2(tweak!(3.0), tweak!(3.0)))
-                                            .margins(vec2(tweak!(2.0), tweak!(2.0)))
-                                            .dot_size(tweak!(2.0))
-                                            .width(tweak!(24.0))
+                                            .spacing(vec2(tweak!(3.0), tweak!(3.0)) * scale)
+                                            .margins(vec2(tweak!(2.0), tweak!(2.0)) * scale)
+                                            .dot_size(tweak!(2.0) * scale)
+                                            .width(tweak!(24.0) * scale)
                                             .color(
                                                 ui.style()
                                                     .visuals
