@@ -106,9 +106,14 @@ impl Mappings {
 
     /// Returns the numeric ID corresponding to the given string ID if it exists
     pub fn existing_id(&self, id: &str) -> miette::Result<i64> {
-        let created_at_stage = self.currently_created.get(id);
-        if created_at_stage.is_none_or(|s| s >= &self.current_stage) {
+        let Some(created_at_stage) = self.currently_created.get(id) else {
             bail!("ID `{}` is not yet created via `NewId` mapping", id);
+        };
+        if created_at_stage >= &self.current_stage {
+            bail!(
+                "ID `{}` was created in the same or later stage of execution",
+                id
+            );
         }
         self.ids
             .get(id)

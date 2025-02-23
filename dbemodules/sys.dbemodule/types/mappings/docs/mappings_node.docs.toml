@@ -76,8 +76,6 @@ not be able to use it, and will throw an error, but will allow nodes with \
 `ExistingId` to use it.
 
 #### ExistingId
-> **Existing ID mapping is not yet implemented, blocked on multistage runtime**
-
 An existing ID is expected.
 
 This will only work if the mapping was already created by a node with `NewId` \
